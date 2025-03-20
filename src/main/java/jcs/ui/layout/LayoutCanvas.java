@@ -26,19 +26,16 @@ import java.awt.Paint;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import javax.swing.AbstractAction;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import jcs.commandStation.autopilot.AutoPilot;
 import jcs.entities.BlockBean;
@@ -388,6 +385,12 @@ public class LayoutCanvas extends JPanel {
       TileCache.rollback(tile);
       return null;
     }
+  }
+
+  void deleteSelectedTile() {
+    Logger.trace("Selected Tile " + selectedTile.getId());
+    removeTile(selectedTile);
+    selectedTile = null;
   }
 
   void removeTile(Tile tile) {

@@ -31,6 +31,45 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="connectMIActionPerformed"/>
               </Events>
             </MenuItem>
+            <MenuItem class="javax.swing.JCheckBoxMenuItem" name="virtualCBMI">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Virtual Connection"/>
+                <Property name="name" type="java.lang.String" value="virtualCBMI" noResource="true"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="virtualCBMIActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="autoPilotMI">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Autopilot"/>
+                <Property name="toolTipText" type="java.lang.String" value="Switch Autopilot on"/>
+                <Property name="name" type="java.lang.String" value="autoPilotMI" noResource="true"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="autoPilotMIActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="startAllLocsMI">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Start All Locomotives"/>
+                <Property name="toolTipText" type="java.lang.String" value="Start All Locomotives"/>
+                <Property name="name" type="java.lang.String" value="startAllLocsMI" noResource="true"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="startAllLocsMIActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="resetAutopilotMI">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Reset Autopilot"/>
+                <Property name="toolTipText" type="java.lang.String" value="Reset Autopilot"/>
+                <Property name="name" type="java.lang.String" value="resetAutopilotMI" noResource="true"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="resetAutopilotMIActionPerformed"/>
+              </Events>
+            </MenuItem>
           </SubComponents>
         </Menu>
         <Menu class="javax.swing.JMenu" name="editMenu">
@@ -82,10 +121,10 @@
             </MenuItem>
           </SubComponents>
         </Menu>
-        <Menu class="javax.swing.JMenu" name="viewMenu">
+        <Menu class="javax.swing.JMenu" name="windowMenu">
           <Properties>
-            <Property name="text" type="java.lang.String" value="View"/>
-            <Property name="name" type="java.lang.String" value="viewMenu" noResource="true"/>
+            <Property name="text" type="java.lang.String" value="Window"/>
+            <Property name="name" type="java.lang.String" value="windowMenu" noResource="true"/>
           </Properties>
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="showHome">
@@ -110,14 +149,15 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="editLayoutActionPerformed"/>
               </Events>
             </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="showSensorMonitor">
+            <MenuItem class="javax.swing.JMenuItem" name="vncMI">
               <Properties>
-                <Property name="mnemonic" type="int" value="77"/>
-                <Property name="text" type="java.lang.String" value="Sensor Monitor"/>
-                <Property name="name" type="java.lang.String" value="showSensorMonitor" noResource="true"/>
+                <Property name="mnemonic" type="int" value="86"/>
+                <Property name="text" type="java.lang.String" value="VNC"/>
+                <Property name="toolTipText" type="java.lang.String" value="Show VNC screen"/>
+                <Property name="name" type="java.lang.String" value="vncMI" noResource="true"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showSensorMonitorActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="vncMIActionPerformed"/>
               </Events>
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="showKeyboard">
@@ -129,6 +169,26 @@
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showKeyboardActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="showSensorMonitor">
+              <Properties>
+                <Property name="mnemonic" type="int" value="77"/>
+                <Property name="text" type="java.lang.String" value="Sensor Monitor"/>
+                <Property name="name" type="java.lang.String" value="showSensorMonitor" noResource="true"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showSensorMonitorActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="showRoutesMI">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Show Routes"/>
+                <Property name="toolTipText" type="java.lang.String" value="Show Routes"/>
+                <Property name="name" type="java.lang.String" value="showRoutesMI" noResource="true"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showRoutesMIActionPerformed"/>
               </Events>
             </MenuItem>
           </SubComponents>
@@ -331,27 +391,6 @@
               <AuxValues>
                 <AuxValue name="classDetails" type="java.lang.String" value="Box.Filler.HorizontalStrut"/>
               </AuxValues>
-            </Component>
-            <Component class="javax.swing.JCheckBox" name="virtualCB">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Virtual"/>
-                <Property name="toolTipText" type="java.lang.String" value="Enable Virtual Mode"/>
-                <Property name="focusable" type="boolean" value="false"/>
-                <Property name="horizontalTextPosition" type="int" value="2"/>
-                <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[65, 30]"/>
-                </Property>
-                <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[65, 30]"/>
-                </Property>
-                <Property name="name" type="java.lang.String" value="virtualCB" noResource="true"/>
-                <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[65, 30]"/>
-                </Property>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="virtualCBActionPerformed"/>
-              </Events>
             </Component>
             <Component class="javax.swing.Box$Filler" name="filler2">
               <Properties>
@@ -748,40 +787,6 @@
               <AuxValues>
                 <AuxValue name="classDetails" type="java.lang.String" value="Box.Filler.HorizontalStrut"/>
               </AuxValues>
-            </Component>
-            <Component class="javax.swing.JButton" name="resetAutoPilotBtn">
-              <Properties>
-                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/media/reset-happy.png"/>
-                </Property>
-                <Property name="toolTipText" type="java.lang.String" value="Stop and Reset AutoPilot"/>
-                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-                  <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
-                    <LineBorder>
-                      <Color PropertyName="color" blue="cc" green="cc" red="cc" type="rgb"/>
-                    </LineBorder>
-                  </Border>
-                </Property>
-                <Property name="focusable" type="boolean" value="false"/>
-                <Property name="horizontalTextPosition" type="int" value="0"/>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[0, 0, 0, 0]"/>
-                </Property>
-                <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[40, 40]"/>
-                </Property>
-                <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[40, 40]"/>
-                </Property>
-                <Property name="name" type="java.lang.String" value="resetAutoPilotBtn" noResource="true"/>
-                <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[40, 40]"/>
-                </Property>
-                <Property name="verticalTextPosition" type="int" value="3"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="resetAutoPilotBtnActionPerformed"/>
-              </Events>
             </Component>
             <Component class="javax.swing.Box$Filler" name="filler10">
               <Properties>

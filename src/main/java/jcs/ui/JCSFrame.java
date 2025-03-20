@@ -40,7 +40,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -63,6 +63,7 @@ import jcs.commandStation.events.DisconnectionEventListener;
 import jcs.commandStation.events.PowerEvent;
 import jcs.commandStation.entities.InfoBean;
 import jcs.persistence.PersistenceFactory;
+import jcs.ui.layout.LayoutCanvas;
 import jcs.ui.layout.LayoutPanel;
 import jcs.ui.options.CommandStationDialog;
 import jcs.ui.options.CommandStationPanel;
@@ -84,6 +85,8 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
 
   private final Map<KeyStroke, Action> actionMap;
   private FeedbackSensorDialog feedbackMonitor;
+
+  private boolean editMode = false;
 
   /**
    * Creates new form JCSFrame
@@ -112,141 +115,21 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
       }
 
       initJCS();
-
-//      if (SystemInfo.isMacFullWindowContentSupported) {
-//        //avoid overlap of the red/orange/green buttons and the window title
-//        this.jcsToolBar.add(Box.createHorizontalStrut(70), 0);
-//        //this.jcsToolBar.setb
-//      }
     }
     initKeyStrokes();
   }
 
   private void initJCS() {
     if (PersistenceFactory.getService() != null) {
-      this.setTitle(this.getTitleString());
+      setTitle(this.getTitleString());
 
-//      if (RunUtil.isMacOSX()) {
-//        this.setTitle("");
-//      }
       if (JCS.getJcsCommandStation().isConnected()) {
         setControllerProperties();
       }
-
       //Show the default panel
       showOverviewPanel();
-
+      editMode = false;
       //JCS.addRefreshListener(dispatcherStatusPanel);
-    }
-  }
-
-  private class PowerAction extends AbstractAction {
-
-    private static final long serialVersionUID = 4263882874269440066L;
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-      powerButton.doClick(50);
-    }
-  }
-
-  private class QuitAction extends AbstractAction {
-
-    private static final long serialVersionUID = 106411709893099942L;
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-      QuitApp();
-    }
-  }
-
-  private class ShowMonitorAction extends AbstractAction {
-
-    private static final long serialVersionUID = -3352181383049583600L;
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-      showSensorMonitor();
-    }
-  }
-
-  private class HomeAction extends AbstractAction {
-
-    private static final long serialVersionUID = 6369350924548859534L;
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-      showOverviewPanel();
-    }
-  }
-
-  private class EditAction extends AbstractAction {
-
-    private static final long serialVersionUID = -4725560671766567186L;
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-      showEditLayoutPanel();
-    }
-  }
-
-  private class SelectModeKeyAction extends AbstractAction {
-
-    private static final long serialVersionUID = -5543240676519086334L;
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-      Logger.info("Select");
-    }
-  }
-
-  private class AddModeKeyAction extends AbstractAction {
-
-    private static final long serialVersionUID = -429465825958791906L;
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-      Logger.info("Add");
-    }
-  }
-
-  private class DeleteModeKeyAction extends AbstractAction {
-
-    private static final long serialVersionUID = 569113006687591145L;
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-      Logger.info("Delete");
-    }
-  }
-
-  private class RotateKeyAction extends AbstractAction {
-
-    private static final long serialVersionUID = -292237743142583719L;
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-      Logger.info("Rotate");
-    }
-  }
-
-  private class FlipHorizontalKeyAction extends AbstractAction {
-
-    private static final long serialVersionUID = 7657976620206362097L;
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-      Logger.info("Flip Horizontal");
-    }
-  }
-
-  private class FlipVerticalKeyAction extends AbstractAction {
-
-    private static final long serialVersionUID = -4269202419142803636L;
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-      Logger.info("Flip Vertical");
     }
   }
 
@@ -315,6 +198,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   public void showOverviewPanel() {
     CardLayout card = (CardLayout) centerPanel.getLayout();
     card.show(centerPanel, "overviewPanel");
+    editMode = false;
     overviewPanel.loadLayout();
   }
 
@@ -325,34 +209,40 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
 
   public void showTurnouts() {
     CardLayout card = (CardLayout) this.centerPanel.getLayout();
-    card.show(this.centerPanel, "turnoutsPanel");
+    card.show(centerPanel, "turnoutsPanel");
+    editMode = false;
   }
 
   public void showSignals() {
     CardLayout card = (CardLayout) this.centerPanel.getLayout();
-    card.show(this.centerPanel, "signalsPanel");
+    card.show(centerPanel, "signalsPanel");
+    editMode = false;
   }
 
   public void showKeyboards() {
     CardLayout card = (CardLayout) this.centerPanel.getLayout();
-    card.show(this.centerPanel, "diagnosticPanel");
+    card.show(centerPanel, "diagnosticPanel");
+    editMode = false;
   }
 
   public void showSettings() {
     CardLayout card = (CardLayout) this.centerPanel.getLayout();
-    card.show(this.centerPanel, "settingsPanel");
+    card.show(centerPanel, "settingsPanel");
+    editMode = false;
   }
 
   public void showVNCConsole() {
     CardLayout card = (CardLayout) this.centerPanel.getLayout();
-    card.show(this.centerPanel, "vncPanel");
+    card.show(centerPanel, "vncPanel");
+    editMode = false;
   }
 
   public void showEditLayoutPanel() {
     if (!AutoPilot.isAutoModeActive()) {
-      CardLayout card = (CardLayout) this.centerPanel.getLayout();
-      card.show(this.centerPanel, "designPanel");
+      CardLayout card = (CardLayout) centerPanel.getLayout();
+      card.show(centerPanel, "designPanel");
       layoutPanel.loadLayout();
+      editMode = true;
     }
   }
 
@@ -373,7 +263,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
         this.powerButton.setSelected(connected);
       }
       boolean virt = JCS.getJcsCommandStation().isVirtual();
-      virtualCB.setSelected(virt);
+      virtualCBMI.setSelected(virt);
     }
   }
 
@@ -398,7 +288,6 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     jcsToolBar = new JToolBar();
     connectButton = new JToggleButton();
     filler1 = new Box.Filler(new Dimension(5, 0), new Dimension(5, 0), new Dimension(5, 32767));
-    virtualCB = new JCheckBox();
     filler2 = new Box.Filler(new Dimension(5, 0), new Dimension(5, 0), new Dimension(5, 32767));
     powerButton = new JToggleButton();
     filler3 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
@@ -413,7 +302,6 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     autoPilotBtn = new JToggleButton();
     startAllLocsBtn = new JButton();
     filler9 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
-    resetAutoPilotBtn = new JButton();
     filler10 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
     statusPanel = new StatusPanel();
     mainPanel = new JPanel();
@@ -446,16 +334,22 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     fileMenu = new JMenu();
     quitMI = new JMenuItem();
     connectMI = new JMenuItem();
+    virtualCBMI = new JCheckBoxMenuItem();
+    autoPilotMI = new JMenuItem();
+    startAllLocsMI = new JMenuItem();
+    resetAutopilotMI = new JMenuItem();
     editMenu = new JMenu();
     rotateTileMI = new JMenuItem();
     flipTileHorizontallyMI = new JMenuItem();
     flipTileVerticallyMI = new JMenuItem();
     deleteTileMI = new JMenuItem();
-    viewMenu = new JMenu();
+    windowMenu = new JMenu();
     showHome = new JMenuItem();
     editLayout = new JMenuItem();
-    showSensorMonitor = new JMenuItem();
+    vncMI = new JMenuItem();
     showKeyboard = new JMenuItem();
+    showSensorMonitor = new JMenuItem();
+    showRoutesMI = new JMenuItem();
     settingsMenu = new JMenu();
     showLocosMI = new JMenuItem();
     showAccessoryMI = new JMenuItem();
@@ -511,21 +405,6 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
 
     filler1.setName("filler1"); // NOI18N
     jcsToolBar.add(filler1);
-
-    virtualCB.setText("Virtual");
-    virtualCB.setToolTipText("Enable Virtual Mode");
-    virtualCB.setFocusable(false);
-    virtualCB.setHorizontalTextPosition(SwingConstants.LEFT);
-    virtualCB.setMaximumSize(new Dimension(65, 30));
-    virtualCB.setMinimumSize(new Dimension(65, 30));
-    virtualCB.setName("virtualCB"); // NOI18N
-    virtualCB.setPreferredSize(new Dimension(65, 30));
-    virtualCB.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        virtualCBActionPerformed(evt);
-      }
-    });
-    jcsToolBar.add(virtualCB);
 
     filler2.setName("filler2"); // NOI18N
     jcsToolBar.add(filler2);
@@ -698,24 +577,6 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
 
     filler9.setName("filler9"); // NOI18N
     jcsToolBar.add(filler9);
-
-    resetAutoPilotBtn.setIcon(new ImageIcon(getClass().getResource("/media/reset-happy.png"))); // NOI18N
-    resetAutoPilotBtn.setToolTipText("Stop and Reset AutoPilot");
-    resetAutoPilotBtn.setBorder(BorderFactory.createLineBorder(new Color(204, 204, 204)));
-    resetAutoPilotBtn.setFocusable(false);
-    resetAutoPilotBtn.setHorizontalTextPosition(SwingConstants.CENTER);
-    resetAutoPilotBtn.setMargin(new Insets(0, 0, 0, 0));
-    resetAutoPilotBtn.setMaximumSize(new Dimension(40, 40));
-    resetAutoPilotBtn.setMinimumSize(new Dimension(40, 40));
-    resetAutoPilotBtn.setName("resetAutoPilotBtn"); // NOI18N
-    resetAutoPilotBtn.setPreferredSize(new Dimension(40, 40));
-    resetAutoPilotBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
-    resetAutoPilotBtn.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        resetAutoPilotBtnActionPerformed(evt);
-      }
-    });
-    jcsToolBar.add(resetAutoPilotBtn);
 
     filler10.setName("filler10"); // NOI18N
     jcsToolBar.add(filler10);
@@ -903,6 +764,45 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     });
     fileMenu.add(connectMI);
 
+    virtualCBMI.setText("Virtual Connection");
+    virtualCBMI.setName("virtualCBMI"); // NOI18N
+    virtualCBMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        virtualCBMIActionPerformed(evt);
+      }
+    });
+    fileMenu.add(virtualCBMI);
+
+    autoPilotMI.setText("Autopilot");
+    autoPilotMI.setToolTipText("Switch Autopilot on");
+    autoPilotMI.setName("autoPilotMI"); // NOI18N
+    autoPilotMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        autoPilotMIActionPerformed(evt);
+      }
+    });
+    fileMenu.add(autoPilotMI);
+
+    startAllLocsMI.setText("Start All Locomotives");
+    startAllLocsMI.setToolTipText("Start All Locomotives");
+    startAllLocsMI.setName("startAllLocsMI"); // NOI18N
+    startAllLocsMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        startAllLocsMIActionPerformed(evt);
+      }
+    });
+    fileMenu.add(startAllLocsMI);
+
+    resetAutopilotMI.setText("Reset Autopilot");
+    resetAutopilotMI.setToolTipText("Reset Autopilot");
+    resetAutopilotMI.setName("resetAutopilotMI"); // NOI18N
+    resetAutopilotMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        resetAutopilotMIActionPerformed(evt);
+      }
+    });
+    fileMenu.add(resetAutopilotMI);
+
     jcsMenuBar.add(fileMenu);
 
     editMenu.setText("Edit");
@@ -951,8 +851,8 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
 
     jcsMenuBar.add(editMenu);
 
-    viewMenu.setText("View");
-    viewMenu.setName("viewMenu"); // NOI18N
+    windowMenu.setText("Window");
+    windowMenu.setName("windowMenu"); // NOI18N
 
     showHome.setMnemonic('H');
     showHome.setText("Home");
@@ -963,7 +863,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
         showHomeActionPerformed(evt);
       }
     });
-    viewMenu.add(showHome);
+    windowMenu.add(showHome);
 
     editLayout.setMnemonic('E');
     editLayout.setText("Edit Layout");
@@ -974,17 +874,18 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
         editLayoutActionPerformed(evt);
       }
     });
-    viewMenu.add(editLayout);
+    windowMenu.add(editLayout);
 
-    showSensorMonitor.setMnemonic('M');
-    showSensorMonitor.setText("Sensor Monitor");
-    showSensorMonitor.setName("showSensorMonitor"); // NOI18N
-    showSensorMonitor.addActionListener(new ActionListener() {
+    vncMI.setMnemonic('V');
+    vncMI.setText("VNC");
+    vncMI.setToolTipText("Show VNC screen");
+    vncMI.setName("vncMI"); // NOI18N
+    vncMI.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
-        showSensorMonitorActionPerformed(evt);
+        vncMIActionPerformed(evt);
       }
     });
-    viewMenu.add(showSensorMonitor);
+    windowMenu.add(vncMI);
 
     showKeyboard.setMnemonic('K');
     showKeyboard.setText("Keyboard");
@@ -995,9 +896,29 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
         showKeyboardActionPerformed(evt);
       }
     });
-    viewMenu.add(showKeyboard);
+    windowMenu.add(showKeyboard);
 
-    jcsMenuBar.add(viewMenu);
+    showSensorMonitor.setMnemonic('M');
+    showSensorMonitor.setText("Sensor Monitor");
+    showSensorMonitor.setName("showSensorMonitor"); // NOI18N
+    showSensorMonitor.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        showSensorMonitorActionPerformed(evt);
+      }
+    });
+    windowMenu.add(showSensorMonitor);
+
+    showRoutesMI.setText("Show Routes");
+    showRoutesMI.setToolTipText("Show Routes");
+    showRoutesMI.setName("showRoutesMI"); // NOI18N
+    showRoutesMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        showRoutesMIActionPerformed(evt);
+      }
+    });
+    windowMenu.add(showRoutesMI);
+
+    jcsMenuBar.add(windowMenu);
 
     settingsMenu.setText("Settings");
     settingsMenu.setName("settingsMenu"); // NOI18N
@@ -1143,37 +1064,35 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
         connected = JCS.getJcsCommandStation().isConnected();
 
         if (info != null && connected) {
-          this.connectButton.setSelected(true);
-          this.controllerDescriptionLbl.setText(info.getProductName());
-          this.controllerCatalogNumberLbl.setText(info.getArticleNumber());
-          this.controllerSerialNumberLbl.setText(info.getSerialNumber());
-          this.controllerHostNameLbl.setText(info.getHostname());
-          this.powerButton.setSelected(JCS.getJcsCommandStation().isPowerOn());
-          this.connectMI.setText("Disconnect");
+          connectButton.setSelected(true);
+          controllerDescriptionLbl.setText(info.getProductName());
+          controllerCatalogNumberLbl.setText(info.getArticleNumber());
+          controllerSerialNumberLbl.setText(info.getSerialNumber());
+          controllerHostNameLbl.setText(info.getHostname());
+          powerButton.setSelected(JCS.getJcsCommandStation().isPowerOn());
+          connectMI.setText("Disconnect");
         } else {
-          this.connectButton.setSelected(false);
-          this.controllerHostNameLbl.setText("Disconnected");
-          this.powerButton.setSelected(JCS.getJcsCommandStation().isPowerOn());
+          connectButton.setSelected(false);
+          controllerHostNameLbl.setText("Disconnected");
+          powerButton.setSelected(JCS.getJcsCommandStation().isPowerOn());
         }
       } else {
         JCS.getJcsCommandStation().disconnect();
-        this.controllerDescriptionLbl.setText("-");
-        this.controllerCatalogNumberLbl.setText("-");
-        this.controllerSerialNumberLbl.setText("-");
-        this.controllerHostNameLbl.setText("Disconnected");
+        controllerDescriptionLbl.setText("-");
+        controllerCatalogNumberLbl.setText("-");
+        controllerSerialNumberLbl.setText("-");
+        controllerHostNameLbl.setText("Disconnected");
 
-        this.connectMI.setText("Connect");
+        connectMI.setText("Connect");
       }
     }
     JCS.getJcsCommandStation().addDisconnectionEventListener(this);
 
-    this.powerButton.setEnabled(connect && connected);
-    this.showFeedbackMonitorBtn.setEnabled(connect && connected);
+    powerButton.setEnabled(connect && connected);
+    showFeedbackMonitorBtn.setEnabled(connect && connected);
 
-    //TODO Connect the VNCPanel to the Command station and support VNC property
-    this.showVNCBtn.setEnabled(connect && connected);
-
-    this.setControllerProperties();
+    showVNCBtn.setEnabled(connect && connected);
+    setControllerProperties();
   }
 
     private void connectButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_connectButtonActionPerformed
@@ -1224,7 +1143,10 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
 
   private void autoPilotBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_autoPilotBtnActionPerformed
     //Logger.trace(evt.getActionCommand() + (autoPilotBtn.isSelected() ? " Enable" : " Disable") + " Auto mode");
+    startAutopilot();
+  }//GEN-LAST:event_autoPilotBtnActionPerformed
 
+  private void startAutopilot() {
     if (autoPilotBtn.isSelected()) {
       startAllLocsBtn.setEnabled(true);
       dispatcherStatusPanel.showDispatcherTab();
@@ -1235,24 +1157,11 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     }
 
     AutoPilot.runAutoPilot(autoPilotBtn.isSelected());
-  }//GEN-LAST:event_autoPilotBtnActionPerformed
+  }
 
-  private void resetAutoPilotBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_resetAutoPilotBtnActionPerformed
-    AutoPilot.reset();
-  }//GEN-LAST:event_resetAutoPilotBtnActionPerformed
-
-  private void virtualCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_virtualCBActionPerformed
-    Logger.trace(evt.getActionCommand() + " Switch Virtual Mode " + (virtualCB.isSelected() ? "On" : "Off"));
-    if (JCS.getJcsCommandStation() != null) {
-      JCS.getJcsCommandStation().setVirtual(virtualCB.isSelected());
-    }
-  }//GEN-LAST:event_virtualCBActionPerformed
 
   private void startAllLocsBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startAllLocsBtnActionPerformed
-    int result = JOptionPane.showConfirmDialog(this, "Are you sure you want to start All Locomotives?", "Start ALL Locomotives", JOptionPane.YES_NO_OPTION);
-    if (result == JOptionPane.YES_OPTION) {
-      AutoPilot.startAllLocomotives();
-    }
+    startAllLocomotives();
   }//GEN-LAST:event_startAllLocsBtnActionPerformed
 
   private void showAccessoryMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showAccessoryMIActionPerformed
@@ -1264,21 +1173,62 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   }//GEN-LAST:event_showPropertiesMIActionPerformed
 
   private void rotateTileMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_rotateTileMIActionPerformed
-    // TODO add your handling code here:
+    if (editMode) {
+      layoutPanel.rotateSelectedTile();
+    }
   }//GEN-LAST:event_rotateTileMIActionPerformed
 
   private void flipTileHorizontallyMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_flipTileHorizontallyMIActionPerformed
-    // TODO add your handling code here:
+    if (editMode) {
+      layoutPanel.flipSelectedTileHorizontal();
+    }
   }//GEN-LAST:event_flipTileHorizontallyMIActionPerformed
 
   private void flipTileVerticallyMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_flipTileVerticallyMIActionPerformed
-
-    // TODO add your handling code here:
+    if (editMode) {
+      layoutPanel.flipSelectedTileVerical();
+    }
   }//GEN-LAST:event_flipTileVerticallyMIActionPerformed
 
   private void deleteTileMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_deleteTileMIActionPerformed
-    // TODO add your handling code here:
+    if (editMode) {
+      layoutPanel.deleteSelectedTile();
+    }
   }//GEN-LAST:event_deleteTileMIActionPerformed
+
+  private void virtualCBMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_virtualCBMIActionPerformed
+    Logger.trace(evt.getActionCommand() + " Switch Virtual Connection " + (virtualCBMI.isSelected() ? "On" : "Off"));
+    if (JCS.getJcsCommandStation() != null) {
+      JCS.getJcsCommandStation().setVirtual(virtualCBMI.isSelected());
+    }
+  }//GEN-LAST:event_virtualCBMIActionPerformed
+
+  private void vncMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_vncMIActionPerformed
+    showVNCConsole();
+  }//GEN-LAST:event_vncMIActionPerformed
+
+  private void autoPilotMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_autoPilotMIActionPerformed
+    // TODO add your handling code here:
+  }//GEN-LAST:event_autoPilotMIActionPerformed
+
+  private void resetAutopilotMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_resetAutopilotMIActionPerformed
+    AutoPilot.reset();
+  }//GEN-LAST:event_resetAutopilotMIActionPerformed
+
+  private void startAllLocsMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startAllLocsMIActionPerformed
+    startAllLocomotives();
+  }//GEN-LAST:event_startAllLocsMIActionPerformed
+
+  private void showRoutesMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showRoutesMIActionPerformed
+    // TODO add your handling code here:
+  }//GEN-LAST:event_showRoutesMIActionPerformed
+
+  private void startAllLocomotives() {
+    int result = JOptionPane.showConfirmDialog(this, "Are you sure you want to start All Locomotives?", "Start ALL Locomotives", JOptionPane.YES_NO_OPTION);
+    if (result == JOptionPane.YES_OPTION) {
+      AutoPilot.startAllLocomotives();
+    }
+  }
 
   private String getTitleString() {
     String jcsVersion = VersionInfo.getVersion();
@@ -1300,10 +1250,10 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   public void onDisconnect(DisconnectionEvent event) {
     JOptionPane.showMessageDialog(this, "CommandStation " + event.getSource() + " is disconnected.", "Disconnection error", JOptionPane.ERROR_MESSAGE);
 
-    this.controllerHostNameLbl.setText("Disconnected");
-    this.connectMI.setText("Connect");
-    this.connectButton.setSelected(false);
-    this.showVNCBtn.setEnabled(false);
+    controllerHostNameLbl.setText("Disconnected");
+    connectMI.setText("Connect");
+    connectButton.setSelected(false);
+    showVNCBtn.setEnabled(false);
   }
 
   @Override
@@ -1339,9 +1289,11 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     powerButton.setSelected(event.isPower());
   }
 
+
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private JMenuItem aboutMI;
   private JToggleButton autoPilotBtn;
+  private JMenuItem autoPilotMI;
   private JPanel bottomLeftPanel;
   private JPanel centerPanel;
   private CommandStationPanel commandStationPanel;
@@ -1388,7 +1340,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   private LayoutPanel overviewPanel;
   private JToggleButton powerButton;
   private JMenuItem quitMI;
-  private JButton resetAutoPilotBtn;
+  private JMenuItem resetAutopilotMI;
   private JMenuItem rotateTileMI;
   private JMenu settingsMenu;
   private JPanel settingsPanel;
@@ -1402,13 +1354,135 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   private JMenuItem showLocosMI;
   private JButton showOverviewBtn;
   private JMenuItem showPropertiesMI;
+  private JMenuItem showRoutesMI;
   private JMenuItem showSensorMonitor;
   private JButton showVNCBtn;
   private JButton startAllLocsBtn;
+  private JMenuItem startAllLocsMI;
   private StatusPanel statusPanel;
   private JPanel toolbarPanel;
-  private JMenu viewMenu;
-  private JCheckBox virtualCB;
+  private JCheckBoxMenuItem virtualCBMI;
+  private JMenuItem vncMI;
   private VNCPanel vncPanel;
+  private JMenu windowMenu;
   // End of variables declaration//GEN-END:variables
+
+  private class PowerAction extends AbstractAction {
+
+    private static final long serialVersionUID = 4263882874269440066L;
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      powerButton.doClick(50);
+    }
+  }
+
+  private class QuitAction extends AbstractAction {
+
+    private static final long serialVersionUID = 106411709893099942L;
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      QuitApp();
+    }
+  }
+
+  private class ShowMonitorAction extends AbstractAction {
+
+    private static final long serialVersionUID = -3352181383049583600L;
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      showSensorMonitor();
+    }
+  }
+
+  private class HomeAction extends AbstractAction {
+
+    private static final long serialVersionUID = 6369350924548859534L;
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      showOverviewPanel();
+    }
+  }
+
+  private class EditAction extends AbstractAction {
+
+    private static final long serialVersionUID = -4725560671766567186L;
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      showEditLayoutPanel();
+    }
+  }
+
+  private class SelectModeKeyAction extends AbstractAction {
+
+    private static final long serialVersionUID = -5543240676519086334L;
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      if (editMode) {
+        layoutPanel.setMode(LayoutCanvas.Mode.SELECT);
+      }
+    }
+  }
+
+  private class AddModeKeyAction extends AbstractAction {
+
+    private static final long serialVersionUID = -429465825958791906L;
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      if (editMode) {
+        layoutPanel.setMode(LayoutCanvas.Mode.ADD);
+      }
+    }
+  }
+
+  private class DeleteModeKeyAction extends AbstractAction {
+
+    private static final long serialVersionUID = 569113006687591145L;
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      if (editMode) {
+        layoutPanel.setMode(LayoutCanvas.Mode.DELETE);
+      }
+    }
+  }
+
+  private class RotateKeyAction extends AbstractAction {
+
+    private static final long serialVersionUID = -292237743142583719L;
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      if (editMode) {
+        layoutPanel.rotateSelectedTile();
+      }
+    }
+  }
+
+  private class FlipHorizontalKeyAction extends AbstractAction {
+
+    private static final long serialVersionUID = 7657976620206362097L;
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      layoutPanel.flipSelectedTileHorizontal();
+    }
+  }
+
+  private class FlipVerticalKeyAction extends AbstractAction {
+
+    private static final long serialVersionUID = -4269202419142803636L;
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      layoutPanel.flipSelectedTileVerical();
+    }
+  }
+
 }
