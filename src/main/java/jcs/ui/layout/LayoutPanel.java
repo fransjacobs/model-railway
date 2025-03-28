@@ -44,9 +44,20 @@ import jcs.util.RunUtil;
 import org.tinylog.Logger;
 
 /**
- * This canvas / Panel is used to draw the layout
+ * The `LayoutPanel` class is a custom `JPanel` used to visually represent and manipulate a layout. 
+ * It provides a graphical canvas (`LayoutCanvas`) for drawing and editing elements,<br>
+ * along with a toolbar offering various tools for adding, deleting, manipulating, and loading/saving layouts.
+ * The panel can operate in read-only mode, disabling editing functionalities.
+ * 
+ * It uses a tile-based system to represent tracks and other elements, allowing for easy manipulation and modification of the layout.<br>
+ * The class handles events related to adding, deleting, rotating,
+ * and flipping tiles, as well as loading and saving layout configurations.<br>
+ * It supports different tile types (straight tracks, curved tracks, blocks, sensors, signals, switches, and crossings), each
+ * with different properties and behaviors.
+ * external resource (e.g., a
+ * database or configuration file) to load and save layout data. It also incorporates an undo/redo mechanism for easy recovery from mistakes.It provides options for showing/hiding the grid and offers
+ * different modes of operation (adding, deleting, selecting, moving).
  *
- * @author frans
  */
 public class LayoutPanel extends JPanel {
 
