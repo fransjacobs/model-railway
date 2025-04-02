@@ -73,7 +73,6 @@ public class JCSCommandStationImpl implements JCSCommandStation {
   private Map<String, FeedbackController> feedbackControllers;
 
   private final List<SensorEventListener> anonymousSensorListeners;
-  //private final Map<String, SensorEventListener> sensorEventListeners;
 
   private final List<AccessoryEventListener> accessoryEventListeners;
   private final List<LocomotiveFunctionEventListener> LocomotiveFunctionEventListeners;

@@ -50,8 +50,8 @@ public class PersistenceFactory {
     if (persistenceServiceImpl == null) {
       RunUtil.loadProperties();
       RunUtil.loadExternalProperties();
-      
-      persistenceServiceImpl = System.getProperty("persistenceService","jcs.persistence.H2PersistenceService");
+
+      persistenceServiceImpl = System.getProperty("persistenceService", "jcs.persistence.H2PersistenceService");
     }
 
     H2DatabaseUtil.setProperties();

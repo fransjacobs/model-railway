@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.ui.options;
+package jcs.ui.settings;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -82,7 +82,9 @@ import org.tinylog.Logger;
  *
  * @author Frans Jacobs
  */
-public class AccessoryPreferencesPanel extends JPanel implements PropertyChangeListener {
+public class AccessorySettingsPanel extends JPanel implements PropertyChangeListener {
+
+  private static final long serialVersionUID = -8354030030958257426L;
 
   private final AccessoryBeanListModel accessoryListModel;
   //TODO: support for multiple AccessoryControllers 
@@ -95,7 +97,7 @@ public class AccessoryPreferencesPanel extends JPanel implements PropertyChangeL
 
   private SynchronizationTask task;
 
-  public AccessoryPreferencesPanel() {
+  public AccessorySettingsPanel() {
     accessoryListModel = new AccessoryBeanListModel();
     protocolCBModel = new DefaultComboBoxModel(Protocol.values());
 
@@ -166,7 +168,6 @@ public class AccessoryPreferencesPanel extends JPanel implements PropertyChangeL
       }
       this.statesSpinner.setValue(states);
 
-      //Integer state = selectedAccessory.getState();
       if (null == selectedAccessory.getAccessoryValue()) {
         this.currentGreenStateLabel.setVisible(false);
         this.currentRedStateLabel.setVisible(false);
@@ -208,7 +209,6 @@ public class AccessoryPreferencesPanel extends JPanel implements PropertyChangeL
         selectedAccessory.setSource("Manual Inserted");
       }
 
-      //String commandStationId = selectedAccessory.getCommandStationId();
       boolean synch = selectedAccessory.isSynchronize();
       synchronizeCB.setSelected(synch);
     } else {
@@ -987,6 +987,8 @@ public class AccessoryPreferencesPanel extends JPanel implements PropertyChangeL
 
   class AccessoryBeanListModel extends AbstractListModel<AccessoryBean> {
 
+    private static final long serialVersionUID = 3490682684799724780L;
+
     private final List<AccessoryBean> all;
     private final List<AccessoryBean> filtered;
 
@@ -1216,7 +1218,7 @@ public class AccessoryPreferencesPanel extends JPanel implements PropertyChangeL
     }
     java.awt.EventQueue.invokeLater(() -> {
 
-      AccessoryPreferencesPanel testPanel = new AccessoryPreferencesPanel();
+      AccessorySettingsPanel testPanel = new AccessorySettingsPanel();
       JFrame testFrame = new JFrame();
       JDialog testDialog = new JDialog(testFrame, true);
 

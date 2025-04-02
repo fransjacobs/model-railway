@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 frans.
+ * Copyright 2025 fransjacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,22 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.ui.options;
+package jcs.ui.settings;
 
+import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import org.tinylog.Logger;
 
 /**
  *
- * @author frans
+ * @author fransjacobs
  */
-public class CommandStationDialog extends javax.swing.JDialog {
+public class LocomotiveDialog extends JDialog {
+
+  private static final long serialVersionUID = -8749583530332472412L;
 
   /**
-   * Creates new form CommandStationDialog
+   * Creates new form LocomotiveDialog
    */
-  public CommandStationDialog(java.awt.Frame parent, boolean modal) {
+  public LocomotiveDialog(JFrame parent, boolean modal) {
     super(parent, modal);
     initComponents();
   }
@@ -40,67 +44,47 @@ public class CommandStationDialog extends javax.swing.JDialog {
   // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
   private void initComponents() {
 
-    commandStationPanel1 = new jcs.ui.options.CommandStationPanel();
-    southPanel = new javax.swing.JPanel();
-    exitBtn = new javax.swing.JButton();
+    locomotiveSettingsPanel1 = new jcs.ui.settings.LocomotiveSettingsPanel();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-    setPreferredSize(new java.awt.Dimension(1080, 750));
-    getContentPane().add(commandStationPanel1, java.awt.BorderLayout.CENTER);
-
-    southPanel.setPreferredSize(new java.awt.Dimension(1024, 50));
-    java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT);
-    flowLayout1.setAlignOnBaseline(true);
-    southPanel.setLayout(flowLayout1);
-
-    exitBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/exit-24.png"))); // NOI18N
-    exitBtn.setText("Close");
-    exitBtn.setPreferredSize(new java.awt.Dimension(100, 36));
-    exitBtn.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        exitBtnActionPerformed(evt);
-      }
-    });
-    southPanel.add(exitBtn);
-
-    getContentPane().add(southPanel, java.awt.BorderLayout.SOUTH);
+    setTitle("Locomotives");
+    getContentPane().add(locomotiveSettingsPanel1, java.awt.BorderLayout.CENTER);
 
     pack();
   }// </editor-fold>//GEN-END:initComponents
 
-  private void exitBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitBtnActionPerformed
-    this.setVisible(false);
-    this.dispose();
-  }//GEN-LAST:event_exitBtnActionPerformed
-
   /**
+   * Only for testing
    * @param args the command line arguments
    */
   public static void main(String args[]) {
+    /* Set the FlatLightLaf look and feel */
+    //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
     try {
       UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
     } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
       Logger.warn("Can't set the LookAndFeel: " + ex);
     }
+    //</editor-fold>
 
     /* Create and display the dialog */
     java.awt.EventQueue.invokeLater(() -> {
-      CommandStationDialog dialog = new CommandStationDialog(new javax.swing.JFrame(), true);
+      LocomotiveDialog dialog = new LocomotiveDialog(new javax.swing.JFrame(), true);
       dialog.addWindowListener(new java.awt.event.WindowAdapter() {
         @Override
         public void windowClosing(java.awt.event.WindowEvent e) {
           System.exit(0);
         }
       });
-      dialog.setLocationRelativeTo(null);
+      
       dialog.pack();
+      dialog.setLocationRelativeTo(null);
       dialog.setVisible(true);
+      
     });
   }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
-  private jcs.ui.options.CommandStationPanel commandStationPanel1;
-  private javax.swing.JButton exitBtn;
-  private javax.swing.JPanel southPanel;
+  private jcs.ui.settings.LocomotiveSettingsPanel locomotiveSettingsPanel1;
   // End of variables declaration//GEN-END:variables
 }

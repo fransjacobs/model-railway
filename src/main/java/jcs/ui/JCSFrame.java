@@ -65,9 +65,11 @@ import jcs.commandStation.entities.InfoBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.layout.LayoutCanvas;
 import jcs.ui.layout.LayoutPanel;
-import jcs.ui.options.CommandStationDialog;
-import jcs.ui.options.CommandStationPanel;
-import jcs.ui.options.OptionDialog;
+import jcs.ui.settings.AccessoryDialog;
+import jcs.ui.settings.CommandStationDialog;
+import jcs.ui.settings.CommandStationPanel;
+import jcs.ui.settings.LocomotiveDialog;
+import jcs.ui.settings.OptionDialog;
 import jcs.ui.util.FrameMonitor;
 import jcs.ui.util.UICallback;
 import jcs.util.RunUtil;
@@ -87,6 +89,10 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   private FeedbackSensorDialog feedbackMonitor;
 
   private boolean editMode = false;
+
+  private LocomotiveDialog locomotiveDialog;
+  private AccessoryDialog accessoryDialog;
+  private CommandStationDialog commandStationDialog;
 
   /**
    * Creates new form JCSFrame
@@ -202,42 +208,67 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     overviewPanel.loadLayout();
   }
 
-  public void showLocomotives() {
+  private void showLocomotives() {
     Logger.debug("Show Locomotives");
-    handlePreferences();
+
+    if (locomotiveDialog == null) {
+      locomotiveDialog = new LocomotiveDialog(this, true);
+      locomotiveDialog.pack();
+      locomotiveDialog.setLocationRelativeTo(null);
+    }
+    locomotiveDialog.setVisible(true);
   }
 
-  public void showTurnouts() {
-    CardLayout card = (CardLayout) this.centerPanel.getLayout();
-    card.show(centerPanel, "turnoutsPanel");
-    editMode = false;
+  private void showAccessories() {
+    if (accessoryDialog == null) {
+      accessoryDialog = new AccessoryDialog(this, true);
+      accessoryDialog.pack();
+      accessoryDialog.setLocationRelativeTo(null);
+    }
+    accessoryDialog.setVisible(true);
   }
 
-  public void showSignals() {
-    CardLayout card = (CardLayout) this.centerPanel.getLayout();
-    card.show(centerPanel, "signalsPanel");
-    editMode = false;
+  private void showProperties() {
+
   }
 
-  public void showKeyboards() {
+  private void showCommandStations() {
+    if (commandStationDialog == null) {
+      commandStationDialog = new CommandStationDialog(this, true);
+      commandStationDialog.pack();
+      commandStationDialog.setLocationRelativeTo(null);
+    }
+    commandStationDialog.setVisible(true);
+  }
+
+//  private void showTurnouts() {
+//    CardLayout card = (CardLayout) this.centerPanel.getLayout();
+//    card.show(centerPanel, "turnoutsPanel");
+//    editMode = false;
+//  }
+//  private void showSignals() {
+//    CardLayout card = (CardLayout) this.centerPanel.getLayout();
+//    card.show(centerPanel, "signalsPanel");
+//    editMode = false;
+//  }
+  private void showKeyboards() {
     CardLayout card = (CardLayout) this.centerPanel.getLayout();
     card.show(centerPanel, "diagnosticPanel");
     editMode = false;
   }
 
-  public void showSettings() {
-    CardLayout card = (CardLayout) this.centerPanel.getLayout();
-    card.show(centerPanel, "settingsPanel");
-    editMode = false;
-  }
-
-  public void showVNCConsole() {
+//  private void showSettings() {
+//    CardLayout card = (CardLayout) this.centerPanel.getLayout();
+//    card.show(centerPanel, "settingsPanel");
+//    editMode = false;
+//  }
+  private void showVNCConsole() {
     CardLayout card = (CardLayout) this.centerPanel.getLayout();
     card.show(centerPanel, "vncPanel");
     editMode = false;
   }
 
-  public void showEditLayoutPanel() {
+  private void showEditLayoutPanel() {
     if (!AutoPilot.isAutoModeActive()) {
       CardLayout card = (CardLayout) centerPanel.getLayout();
       card.show(centerPanel, "designPanel");
@@ -1123,9 +1154,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     }//GEN-LAST:event_connectMIActionPerformed
 
   private void showCommandStationsMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showCommandStationsMIActionPerformed
-    CommandStationDialog csd = new CommandStationDialog(this, true);
-    csd.setLocationRelativeTo(null);
-    csd.setVisible(true);
+    showCommandStations();
   }//GEN-LAST:event_showCommandStationsMIActionPerformed
 
   private void aboutMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_aboutMIActionPerformed
@@ -1165,7 +1194,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   }//GEN-LAST:event_startAllLocsBtnActionPerformed
 
   private void showAccessoryMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showAccessoryMIActionPerformed
-    // TODO add your handling code here:
+    showAccessories();
   }//GEN-LAST:event_showAccessoryMIActionPerformed
 
   private void showPropertiesMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showPropertiesMIActionPerformed

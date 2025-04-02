@@ -1011,7 +1011,7 @@
                     </Constraint>
                   </Constraints>
                   <SubComponents>
-                    <Component class="jcs.ui.options.CommandStationPanel" name="commandStationPanel">
+                    <Component class="jcs.ui.settings.CommandStationPanel" name="commandStationPanel">
                       <Properties>
                         <Property name="name" type="java.lang.String" value="commandStationPanel" noResource="true"/>
                       </Properties>
@@ -1077,7 +1077,7 @@
                       </StatementProvider>
                       <Parameters>
                         <CodeExpression id="10_commandStationPanel">
-                          <CodeVariable name="commandStationPanel" type="8194" declaredType="jcs.ui.options.CommandStationPanel"/>
+                          <CodeVariable name="commandStationPanel" type="8194" declaredType="jcs.ui.settings.CommandStationPanel"/>
                           <ExpressionOrigin>
                             <ExpressionProvider type="ComponentRef">
                               <ComponentRef name="commandStationPanel"/>

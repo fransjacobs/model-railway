@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.ui.options;
+package jcs.ui.settings;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -67,9 +67,9 @@ public class OptionDialog extends javax.swing.JDialog {
     centerPanel = new JPanel();
     prefsTP = new JTabbedPane();
     commandStationPanel = new CommandStationPanel();
-    locomotivePanel = new LocomotivePreferencesPanel();
-    accessoryPreferencesPanel = new AccessoryPreferencesPanel();
-    propertiesPanel = new PropertiesPanel();
+    locomotivePanel = new LocomotiveSettingsPanel();
+    accessoryPreferencesPanel = new AccessorySettingsPanel();
+    propertiesPanel = new PropertySettingsPanel();
     southPanel = new JPanel();
     closeBtn = new JButton();
 
@@ -143,11 +143,11 @@ public class OptionDialog extends javax.swing.JDialog {
   private void prefsTPStateChanged(ChangeEvent evt) {//GEN-FIRST:event_prefsTPStateChanged
     Component c = this.prefsTP.getSelectedComponent();
 
-    if (c instanceof LocomotivePreferencesPanel) {
+    if (c instanceof LocomotiveSettingsPanel) {
       //this.locomotivePanel.refresh();
-    } else if (c instanceof AccessoryPreferencesPanel) {
+    } else if (c instanceof AccessorySettingsPanel) {
       //this.turnoutPanel.refresh();
-    } else if (c instanceof PropertiesPanel) {
+    } else if (c instanceof PropertySettingsPanel) {
       //this.propertiesPanel.refresh();
     }
 
@@ -178,13 +178,13 @@ public class OptionDialog extends javax.swing.JDialog {
 
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
-  private AccessoryPreferencesPanel accessoryPreferencesPanel;
+  private AccessorySettingsPanel accessoryPreferencesPanel;
   private JPanel centerPanel;
   private JButton closeBtn;
   private CommandStationPanel commandStationPanel;
-  private LocomotivePreferencesPanel locomotivePanel;
+  private LocomotiveSettingsPanel locomotivePanel;
   private JTabbedPane prefsTP;
-  private PropertiesPanel propertiesPanel;
+  private PropertySettingsPanel propertiesPanel;
   private JPanel southPanel;
   private JPanel topPanel;
   // End of variables declaration//GEN-END:variables

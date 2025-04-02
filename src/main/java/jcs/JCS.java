@@ -118,7 +118,6 @@ public class JCS extends Thread {
         desktop.setAboutHandler(new JCSAboutHandler());
         desktop.setQuitHandler(new JCSQuitHandler());
         desktop.setPreferencesHandler(new JCSPreferencesHandler());
-        
 
         Taskbar taskbar = Taskbar.getTaskbar();
         try {
@@ -189,22 +188,6 @@ public class JCS extends Thread {
     ProcessFactory.getInstance().shutdown();
     Logger.info("JCS " + VersionInfo.getVersion() + " session finished");
   }
-
-//  @Deprecated
-//  public static void addRefreshListener(RefreshEventListener refreshListener) {
-//    instance.refreshEventListeners.add(refreshListener);
-//  }
-
-//  @Deprecated
-//  public static void removeRefreshListener(RefreshEventListener refreshListener) {
-//    instance.refreshEventListeners.remove(refreshListener);
-//  }
-
-//  public static void settingsChanged(RefreshEvent refreshEvent) {
-//    for (RefreshEventListener rel : instance.refreshEventListeners) {
-//      rel.onChange(refreshEvent);
-//    }
-//  }
 
   public static JCS getInstance() {
     if (instance == null) {

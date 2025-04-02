@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.ui.options.table;
+package jcs.ui.settings.table;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.ui.options;
+package jcs.ui.settings;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -72,10 +72,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import jcs.JCS;
 import jcs.commandStation.ControllerFactory;
 import jcs.commandStation.DecoderController;
-import jcs.commandStation.events.RefreshEvent;
 import jcs.entities.CommandStationBean;
 import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
@@ -88,7 +86,7 @@ import org.tinylog.Logger;
 /**
  * Dialog panel for importing and editing locomotive settings
  */
-public class LocomotivePreferencesPanel extends JPanel implements PropertyChangeListener {
+public class LocomotiveSettingsPanel extends JPanel implements PropertyChangeListener {
 
   private static final long serialVersionUID = -2076222213624366106L;
 
@@ -99,7 +97,7 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
 
   private SynchronizationTask task;
 
-  public LocomotivePreferencesPanel() {
+  public LocomotiveSettingsPanel() {
     locoListModel = new LocomotiveBeanListModel();
     decoderTypes = new DefaultComboBoxModel(DecoderType.values());
 
@@ -1176,7 +1174,7 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
     }
     java.awt.EventQueue.invokeLater(() -> {
 
-      LocomotivePreferencesPanel testPanel = new LocomotivePreferencesPanel();
+      LocomotiveSettingsPanel testPanel = new LocomotiveSettingsPanel();
       JFrame testFrame = new JFrame();
       JDialog testDialog = new JDialog(testFrame, true);
 
