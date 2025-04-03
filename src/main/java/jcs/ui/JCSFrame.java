@@ -69,7 +69,8 @@ import jcs.ui.settings.AccessoryDialog;
 import jcs.ui.settings.CommandStationDialog;
 import jcs.ui.settings.CommandStationPanel;
 import jcs.ui.settings.LocomotiveDialog;
-import jcs.ui.settings.OptionDialog;
+import jcs.ui.settings.SettingsDialog;
+import jcs.ui.settings.PropertiesDialog;
 import jcs.ui.util.FrameMonitor;
 import jcs.ui.util.UICallback;
 import jcs.util.RunUtil;
@@ -93,6 +94,9 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   private LocomotiveDialog locomotiveDialog;
   private AccessoryDialog accessoryDialog;
   private CommandStationDialog commandStationDialog;
+  private PropertiesDialog propertiesDialog;
+
+  private SettingsDialog settingsDialog;
 
   /**
    * Creates new form JCSFrame
@@ -229,7 +233,12 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   }
 
   private void showProperties() {
-
+    if (propertiesDialog == null) {
+      propertiesDialog = new PropertiesDialog(this, true);
+      propertiesDialog.pack();
+      propertiesDialog.setLocationRelativeTo(null);
+    }
+    propertiesDialog.setVisible(true);
   }
 
   private void showCommandStations() {
@@ -241,27 +250,18 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     commandStationDialog.setVisible(true);
   }
 
-//  private void showTurnouts() {
-//    CardLayout card = (CardLayout) this.centerPanel.getLayout();
-//    card.show(centerPanel, "turnoutsPanel");
-//    editMode = false;
-//  }
-//  private void showSignals() {
-//    CardLayout card = (CardLayout) this.centerPanel.getLayout();
-//    card.show(centerPanel, "signalsPanel");
-//    editMode = false;
-//  }
+  private void showRoutes() {
+    if (editMode) {
+      layoutPanel.showRoutes();
+    }
+  }
+
   private void showKeyboards() {
     CardLayout card = (CardLayout) this.centerPanel.getLayout();
     card.show(centerPanel, "diagnosticPanel");
     editMode = false;
   }
 
-//  private void showSettings() {
-//    CardLayout card = (CardLayout) this.centerPanel.getLayout();
-//    card.show(centerPanel, "settingsPanel");
-//    editMode = false;
-//  }
   private void showVNCConsole() {
     CardLayout card = (CardLayout) this.centerPanel.getLayout();
     card.show(centerPanel, "vncPanel");
@@ -386,7 +386,6 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     showAccessoryMI = new JMenuItem();
     showCommandStationsMI = new JMenuItem();
     showPropertiesMI = new JMenuItem();
-    optionsMI = new JMenuItem();
     helpMenu = new JMenu();
     aboutMI = new JMenuItem();
 
@@ -994,15 +993,6 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     });
     settingsMenu.add(showPropertiesMI);
 
-    optionsMI.setText("Options");
-    optionsMI.setName("optionsMI"); // NOI18N
-    optionsMI.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        optionsMIActionPerformed(evt);
-      }
-    });
-    settingsMenu.add(optionsMI);
-
     jcsMenuBar.add(settingsMenu);
 
     helpMenu.setText("Help");
@@ -1040,10 +1030,6 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     private void formWindowClosing(WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
       QuitApp();
     }//GEN-LAST:event_formWindowClosing
-
-    private void optionsMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_optionsMIActionPerformed
-      handlePreferences();
-    }//GEN-LAST:event_optionsMIActionPerformed
 
     private void showEditDesignBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showEditDesignBtnActionPerformed
       showEditLayoutPanel();
@@ -1198,7 +1184,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   }//GEN-LAST:event_showAccessoryMIActionPerformed
 
   private void showPropertiesMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showPropertiesMIActionPerformed
-    // TODO add your handling code here:
+    showProperties();
   }//GEN-LAST:event_showPropertiesMIActionPerformed
 
   private void rotateTileMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_rotateTileMIActionPerformed
@@ -1249,7 +1235,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   }//GEN-LAST:event_startAllLocsMIActionPerformed
 
   private void showRoutesMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showRoutesMIActionPerformed
-    // TODO add your handling code here:
+    showRoutes();
   }//GEN-LAST:event_showRoutesMIActionPerformed
 
   private void startAllLocomotives() {
@@ -1301,17 +1287,17 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     dialog.setVisible(true);
   }
 
+  /**
+   * MacOs Settings, Show a Tabbed Dialog where each tab is one of the setting Dialog
+   */
   @Override
   public void handlePreferences() {
-    Logger.trace("handlePreferences");
-
-    OptionDialog preferencesDialog = new OptionDialog(this, false);
-    preferencesDialog.setVisible(true);
-
-    Logger.debug("refresh data...");
-    //this.diagnosticPanel.refreshPanel();
-    //this.overviewPanel.refreshPanel();
-
+    if (settingsDialog == null) {
+      settingsDialog = new SettingsDialog(this, true);
+      settingsDialog.pack();
+      settingsDialog.setLocationRelativeTo(null);
+    }
+    settingsDialog.setVisible(true);
   }
 
   public void powerChanged(PowerEvent event) {
@@ -1365,7 +1351,6 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   private JPanel leftPanel;
   private JSplitPane locoDisplaySP;
   private JPanel mainPanel;
-  private JMenuItem optionsMI;
   private LayoutPanel overviewPanel;
   private JToggleButton powerButton;
   private JMenuItem quitMI;

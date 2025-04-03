@@ -42,10 +42,11 @@ public class PropertiesDialog extends javax.swing.JDialog {
   // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
   private void initComponents() {
 
-    propertySettingsPanel1 = new jcs.ui.settings.PropertySettingsPanel();
+    propertySettingsPanel = new jcs.ui.settings.PropertySettingsPanel();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-    getContentPane().add(propertySettingsPanel1, java.awt.BorderLayout.CENTER);
+    setTitle("Properties");
+    getContentPane().add(propertySettingsPanel, java.awt.BorderLayout.CENTER);
 
     pack();
   }// </editor-fold>//GEN-END:initComponents
@@ -72,7 +73,6 @@ public class PropertiesDialog extends javax.swing.JDialog {
           System.exit(0);
         }
       });
-      dialog.setTitle("Property Settings");
       dialog.pack();
       dialog.setLocationRelativeTo(null);
 
@@ -81,6 +81,6 @@ public class PropertiesDialog extends javax.swing.JDialog {
   }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
-  private jcs.ui.settings.PropertySettingsPanel propertySettingsPanel1;
+  private jcs.ui.settings.PropertySettingsPanel propertySettingsPanel;
   // End of variables declaration//GEN-END:variables
 }

@@ -34,18 +34,17 @@ import javax.swing.event.ChangeListener;
 import org.tinylog.Logger;
 
 /**
- *
- * @author frans
+ * Settings Dialog combines the Settings Dialogs into one Dialog, so it can be shown in MacOS via the Settings Menu.
  */
-public class OptionDialog extends javax.swing.JDialog {
+public class SettingsDialog extends javax.swing.JDialog {
+
+  private static final long serialVersionUID = 4989500714204829315L;
 
   /**
-   * Creates new form NewJDialog
-   *
    * @param parent
    * @param modal
    */
-  public OptionDialog(Frame parent, boolean modal) {
+  public SettingsDialog(Frame parent, boolean modal) {
     super(parent, modal);
     initComponents();
     init();
@@ -63,85 +62,52 @@ public class OptionDialog extends javax.swing.JDialog {
   // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
   private void initComponents() {
 
-    topPanel = new JPanel();
     centerPanel = new JPanel();
-    prefsTP = new JTabbedPane();
-    commandStationPanel = new CommandStationPanel();
+    dialogTP = new JTabbedPane();
     locomotivePanel = new LocomotiveSettingsPanel();
     accessoryPreferencesPanel = new AccessorySettingsPanel();
+    commandStationPanel = new CommandStationPanel();
     propertiesPanel = new PropertySettingsPanel();
-    southPanel = new JPanel();
-    closeBtn = new JButton();
 
     setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-    setTitle("Options");
+    setTitle("Settings");
     setAlwaysOnTop(true);
     setMinimumSize(new Dimension(1024, 750));
     setName("Options"); // NOI18N
-    setPreferredSize(new Dimension(1024, 750));
-
-    topPanel.setMinimumSize(new Dimension(1024, 20));
-    topPanel.setName("topPanel"); // NOI18N
-    topPanel.setPreferredSize(new Dimension(1024, 20));
-    getContentPane().add(topPanel, BorderLayout.PAGE_START);
 
     centerPanel.setMinimumSize(new Dimension(1021, 750));
     centerPanel.setName("centerPanel"); // NOI18N
     centerPanel.setLayout(new BorderLayout());
 
-    prefsTP.setName("prefsTP"); // NOI18N
-    prefsTP.addChangeListener(new ChangeListener() {
+    dialogTP.setName("dialogTP"); // NOI18N
+    dialogTP.addChangeListener(new ChangeListener() {
       public void stateChanged(ChangeEvent evt) {
-        prefsTPStateChanged(evt);
+        dialogTPStateChanged(evt);
       }
     });
-
-    commandStationPanel.setName("commandStationPanel"); // NOI18N
-    prefsTP.addTab("Command Station", commandStationPanel);
 
     locomotivePanel.setName("locomotivePanel"); // NOI18N
-    prefsTP.addTab("Locomotives", locomotivePanel);
+    dialogTP.addTab("Locomotives", locomotivePanel);
 
     accessoryPreferencesPanel.setName("accessoryPreferencesPanel"); // NOI18N
-    prefsTP.addTab("Accessories", accessoryPreferencesPanel);
+    dialogTP.addTab("Accessories", accessoryPreferencesPanel);
+
+    commandStationPanel.setName("commandStationPanel"); // NOI18N
+    dialogTP.addTab("Command Stations", commandStationPanel);
 
     propertiesPanel.setName("propertiesPanel"); // NOI18N
-    prefsTP.addTab("Properties", propertiesPanel);
+    dialogTP.addTab("Properties", propertiesPanel);
 
-    centerPanel.add(prefsTP, BorderLayout.CENTER);
-    prefsTP.getAccessibleContext().setAccessibleName("Locomotives");
+    centerPanel.add(dialogTP, BorderLayout.CENTER);
+    dialogTP.getAccessibleContext().setAccessibleName("Locomotives");
 
     getContentPane().add(centerPanel, BorderLayout.CENTER);
-
-    southPanel.setName("southPanel"); // NOI18N
-    southPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
-
-    closeBtn.setIcon(new ImageIcon(getClass().getResource("/media/exit-24.png"))); // NOI18N
-    closeBtn.setText("Close");
-    closeBtn.setMaximumSize(new Dimension(100, 36));
-    closeBtn.setMinimumSize(new Dimension(100, 36));
-    closeBtn.setName("closeBtn"); // NOI18N
-    closeBtn.setPreferredSize(new Dimension(100, 36));
-    closeBtn.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        closeBtnActionPerformed(evt);
-      }
-    });
-    southPanel.add(closeBtn);
-
-    getContentPane().add(southPanel, BorderLayout.PAGE_END);
 
     pack();
   }// </editor-fold>//GEN-END:initComponents
 
-  private void closeBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_closeBtnActionPerformed
-    this.setVisible(false);
-    this.dispose();
-
-  }//GEN-LAST:event_closeBtnActionPerformed
-
-  private void prefsTPStateChanged(ChangeEvent evt) {//GEN-FIRST:event_prefsTPStateChanged
-    Component c = this.prefsTP.getSelectedComponent();
+  private void dialogTPStateChanged(ChangeEvent evt) {//GEN-FIRST:event_dialogTPStateChanged
+    Component c = this.dialogTP.getSelectedComponent();
 
     if (c instanceof LocomotiveSettingsPanel) {
       //this.locomotivePanel.refresh();
@@ -152,26 +118,32 @@ public class OptionDialog extends javax.swing.JDialog {
     }
 
     Logger.debug("Refreshed " + (c != null ? c.getName() : ""));
-  }//GEN-LAST:event_prefsTPStateChanged
+  }//GEN-LAST:event_dialogTPStateChanged
 
   /**
    * @param args the command line arguments
    */
   public static void main(String args[]) {
+    /* Set the FlatLightLaf look and feel */
+    //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
     try {
       UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
     } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
       Logger.warn("Can't set the LookAndFeel: " + ex);
     }
+    //</editor-fold>
 
+    /* Create and display the dialog */
     java.awt.EventQueue.invokeLater(() -> {
-      OptionDialog dialog = new OptionDialog(new javax.swing.JFrame(), true);
+      SettingsDialog dialog = new SettingsDialog(new javax.swing.JFrame(), true);
       dialog.addWindowListener(new java.awt.event.WindowAdapter() {
         @Override
         public void windowClosing(java.awt.event.WindowEvent e) {
           System.exit(0);
         }
       });
+      dialog.pack();
+      dialog.setLocationRelativeTo(null);
       dialog.setVisible(true);
     });
   }
@@ -180,12 +152,9 @@ public class OptionDialog extends javax.swing.JDialog {
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private AccessorySettingsPanel accessoryPreferencesPanel;
   private JPanel centerPanel;
-  private JButton closeBtn;
   private CommandStationPanel commandStationPanel;
+  private JTabbedPane dialogTP;
   private LocomotiveSettingsPanel locomotivePanel;
-  private JTabbedPane prefsTP;
   private PropertySettingsPanel propertiesPanel;
-  private JPanel southPanel;
-  private JPanel topPanel;
   // End of variables declaration//GEN-END:variables
 }

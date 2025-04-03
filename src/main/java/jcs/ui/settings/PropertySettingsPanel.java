@@ -28,14 +28,10 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import jcs.JCS;
 import jcs.entities.JCSPropertyBean;
 import jcs.persistence.PersistenceFactory;
@@ -236,33 +232,6 @@ public class PropertySettingsPanel extends JPanel {
     propertiesTableModel.refresh();
     alignPropertiesTable();
   }//GEN-LAST:event_deleteBtnActionPerformed
-
-  public static void main(String args[]) {
-    try {
-      UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
-    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
-      Logger.warn("Can't set the LookAndFeel: " + ex);
-    }
-    java.awt.EventQueue.invokeLater(() -> {
-
-      PropertySettingsPanel testPanel = new PropertySettingsPanel();
-      JFrame testFrame = new JFrame();
-      JDialog testDialog = new JDialog(testFrame, true);
-
-      testDialog.add(testPanel);
-
-      testDialog.addWindowListener(new java.awt.event.WindowAdapter() {
-        @Override
-        public void windowClosing(java.awt.event.WindowEvent e) {
-          System.exit(0);
-        }
-      });
-      testDialog.pack();
-      testDialog.setLocationRelativeTo(null);
-
-      testDialog.setVisible(true);
-    });
-  }
 
 
   // Variables declaration - do not modify//GEN-BEGIN:variables

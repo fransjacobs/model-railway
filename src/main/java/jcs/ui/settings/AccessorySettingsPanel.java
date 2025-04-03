@@ -46,7 +46,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -60,8 +59,6 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
@@ -1207,34 +1204,6 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
       initModels();
       synchronizeBtn.setEnabled(commandStationBean.isAccessorySynchronizationSupport());
     }
-  }
-
-  //Testing
-  public static void main(String args[]) {
-    try {
-      UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
-    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
-      Logger.error("Can't set the LookAndFeel: " + ex);
-    }
-    java.awt.EventQueue.invokeLater(() -> {
-
-      AccessorySettingsPanel testPanel = new AccessorySettingsPanel();
-      JFrame testFrame = new JFrame();
-      JDialog testDialog = new JDialog(testFrame, true);
-
-      testDialog.add(testPanel);
-
-      testDialog.addWindowListener(new java.awt.event.WindowAdapter() {
-        @Override
-        public void windowClosing(java.awt.event.WindowEvent e) {
-          System.exit(0);
-        }
-      });
-      testDialog.pack();
-      testDialog.setLocationRelativeTo(null);
-
-      testDialog.setVisible(true);
-    });
   }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables

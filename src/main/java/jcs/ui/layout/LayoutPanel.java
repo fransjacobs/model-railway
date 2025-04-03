@@ -44,17 +44,12 @@ import jcs.util.RunUtil;
 import org.tinylog.Logger;
 
 /**
- * The `LayoutPanel` class is a custom `JPanel` used to visually represent and manipulate a layout. 
- * It provides a graphical canvas (`LayoutCanvas`) for drawing and editing elements,<br>
- * along with a toolbar offering various tools for adding, deleting, manipulating, and loading/saving layouts.
- * The panel can operate in read-only mode, disabling editing functionalities.
- * 
+ * The `LayoutPanel` class is a custom `JPanel` used to visually represent and manipulate a layout. It provides a graphical canvas (`LayoutCanvas`) for drawing and editing elements,<br>
+ * along with a toolbar offering various tools for adding, deleting, manipulating, and loading/saving layouts. The panel can operate in read-only mode, disabling editing functionalities.
+ *
  * It uses a tile-based system to represent tracks and other elements, allowing for easy manipulation and modification of the layout.<br>
- * The class handles events related to adding, deleting, rotating,
- * and flipping tiles, as well as loading and saving layout configurations.<br>
- * It supports different tile types (straight tracks, curved tracks, blocks, sensors, signals, switches, and crossings), each
- * with different properties and behaviors.
- * external resource (e.g., a
+ * The class handles events related to adding, deleting, rotating, and flipping tiles, as well as loading and saving layout configurations.<br>
+ * It supports different tile types (straight tracks, curved tracks, blocks, sensors, signals, switches, and crossings), each with different properties and behaviors. external resource (e.g., a
  * database or configuration file) to load and save layout data. It also incorporates an undo/redo mechanism for easy recovery from mistakes.It provides options for showing/hiding the grid and offers
  * different modes of operation (adding, deleting, selecting, moving).
  *
@@ -174,7 +169,7 @@ public class LayoutPanel extends JPanel {
   public void flipSelectedTileVerical() {
     canvas.flipSelectedTileVertical();
   }
-  
+
   public void deleteSelectedTile() {
     canvas.deleteSelectedTile();
   }
@@ -870,8 +865,7 @@ public class LayoutPanel extends JPanel {
     }//GEN-LAST:event_crossRBtnActionPerformed
 
     private void routeBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_routeBtnActionPerformed
-      Logger.debug("Start Routing...");
-      this.canvas.showRoutesDialog();
+      showRoutes();
     }//GEN-LAST:event_routeBtnActionPerformed
 
     private void formComponentHidden(ComponentEvent evt) {//GEN-FIRST:event_formComponentHidden
@@ -916,7 +910,7 @@ public class LayoutPanel extends JPanel {
 
   private void startAllLocomotivesBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startAllLocomotivesBtnActionPerformed
     Logger.trace(evt.getActionCommand() + " Start All Locomotives " + this.startAllLocomotivesBtn.isSelected());
-    if (this.startAllLocomotivesBtn.isSelected()) {
+    if (startAllLocomotivesBtn.isSelected()) {
       AutoPilot.startAllLocomotives();
     }
   }//GEN-LAST:event_startAllLocomotivesBtnActionPerformed
@@ -935,6 +929,10 @@ public class LayoutPanel extends JPanel {
 
   private void setDirection(Direction direction) {
     canvas.setDirection(direction);
+  }
+
+  public void showRoutes() {
+    canvas.showRoutesDialog();
   }
 
   public void setMode(LayoutCanvas.Mode mode) {
