@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.ui.table;
+package jcs.ui.panel;
 
 import com.twelvemonkeys.image.ImageUtil;
 import java.awt.Component;
@@ -118,7 +118,7 @@ public class LocomotiveTablePanel extends JPanel implements RefreshEventListener
     locomotiveSP = new javax.swing.JScrollPane();
     locomotiveTable = new javax.swing.JTable();
 
-    setPreferredSize(new java.awt.Dimension(300, 765));
+    setPreferredSize(new java.awt.Dimension(300, 410));
     setLayout(new java.awt.BorderLayout());
 
     locomotiveSP.setViewportView(locomotiveTable);

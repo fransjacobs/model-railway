@@ -108,75 +108,6 @@ public class JCS extends Thread {
     return jcsCommandStation;
   }
 
-  private void startGui() {
-    JCS.logProgress("Check OS...");
-
-    if (RunUtil.isMacOSX()) {
-
-      try {
-        Desktop desktop = Desktop.getDesktop();
-        desktop.setAboutHandler(new JCSAboutHandler());
-        desktop.setQuitHandler(new JCSQuitHandler());
-        desktop.setPreferencesHandler(new JCSPreferencesHandler());
-
-        Taskbar taskbar = Taskbar.getTaskbar();
-        try {
-          //BufferedImage img = ImageIO.read(JCS.class.getResource("/media/jcs-train-64.png"));
-          BufferedImage img = ImageIO.read(JCS.class.getResource("/media/jcs-train-2-512.png"));
-          taskbar.setIconImage(img);
-        } catch (final UnsupportedOperationException e) {
-          Logger.warn("The os does not support: 'taskbar.setIconImage'");
-        } catch (final SecurityException e) {
-          Logger.warn("There was a security exception for: 'taskbar.setIconImage'");
-        }
-
-      } catch (SecurityException | IllegalArgumentException | IOException ex) {
-        Logger.warn("Failed to register with MacOS: " + ex);
-      }
-
-    }
-
-    java.awt.EventQueue.invokeLater(() -> {
-      jcsFrame = new JCSFrame();
-      JCS.uiCallback = jcsFrame;
-
-      //URL iconUrl = JCS.class.getResource("/media/jcs-train-64.png");
-      URL iconUrl = JCS.class.getResource("/media/jcs-train-2-512.png");
-      if (iconUrl != null) {
-        jcsFrame.setIconImage(new ImageIcon(iconUrl).getImage());
-      }
-
-      FrameMonitor.registerFrame(jcsFrame, JCS.class.getName());
-
-      jcsFrame.setVisible(true);
-      jcsFrame.toFront();
-      jcsFrame.showOverviewPanel();
-      if ("true".equalsIgnoreCase(System.getProperty("controller.autoconnect", "true"))) {
-        jcsFrame.connect(true);
-      }
-    });
-
-    JCS.logProgress("JCS started...");
-
-    int mb = 1024 * 1024;
-    Runtime runtime = Runtime.getRuntime();
-
-    StringBuilder sb = new StringBuilder();
-    sb.append("Used Memory: ");
-    sb.append((runtime.totalMemory() - runtime.freeMemory()) / mb);
-    sb.append(" [MB]. Free Memory: ");
-    sb.append(runtime.freeMemory() / mb);
-    sb.append(" [MB]. Available Memory: ");
-    sb.append(runtime.totalMemory() / mb);
-    sb.append(" [MB]. Max Memory: ");
-    sb.append(runtime.maxMemory() / mb);
-    sb.append(" [MB].");
-
-    Logger.info(sb);
-    splashScreen.hideSplash(200);
-    splashScreen.close();
-  }
-
   /**
    * Executed at shutdown in response to a Ctrl-C etc.
    */
@@ -250,7 +181,6 @@ public class JCS extends Thread {
       System.setProperty("apple.awt.application.name", "JCS");
       System.setProperty("apple.laf.useScreenMenuBar", "true");
       System.setProperty("apple.awt.application.appearance", "system");
-
     }
 
     splashScreen = new JCSSplash();
@@ -310,6 +240,7 @@ public class JCS extends Thread {
       logProgress("Starting UI...");
 
       JCS jcs = JCS.getInstance();
+
       jcs.startGui();
     } else {
       Logger.error("Could not obtain a Persistent store. Quitting....");
@@ -318,6 +249,72 @@ public class JCS extends Thread {
       splashScreen.close();
       System.exit(0);
     }
+  }
+
+  private void startGui() {
+    JCS.logProgress("Starting UI...");
+
+    if (RunUtil.isMacOSX()) {
+      try {
+        Desktop desktop = Desktop.getDesktop();
+        desktop.setAboutHandler(new JCSAboutHandler());
+        desktop.setQuitHandler(new JCSQuitHandler());
+        desktop.setPreferencesHandler(new JCSPreferencesHandler());
+
+        Taskbar taskbar = Taskbar.getTaskbar();
+        try {
+          //BufferedImage img = ImageIO.read(JCS.class.getResource("/media/jcs-train-64.png"));
+          BufferedImage img = ImageIO.read(JCS.class.getResource("/media/jcs-train-2-512.png"));
+          taskbar.setIconImage(img);
+        } catch (final UnsupportedOperationException e) {
+          Logger.warn("The os does not support: 'taskbar.setIconImage'");
+        } catch (final SecurityException e) {
+          Logger.warn("There was a security exception for: 'taskbar.setIconImage'");
+        }
+      } catch (SecurityException | IllegalArgumentException | IOException ex) {
+        Logger.warn("Failed to register with MacOS: " + ex);
+      }
+    }
+
+    java.awt.EventQueue.invokeLater(() -> {
+      jcsFrame = new JCSFrame();
+      JCS.uiCallback = jcsFrame;
+
+      //URL iconUrl = JCS.class.getResource("/media/jcs-train-64.png");
+      URL iconUrl = JCS.class.getResource("/media/jcs-train-2-512.png");
+      if (iconUrl != null) {
+        jcsFrame.setIconImage(new ImageIcon(iconUrl).getImage());
+      }
+
+      FrameMonitor.registerFrame(jcsFrame, JCS.class.getName());
+
+      jcsFrame.setVisible(true);
+      jcsFrame.toFront();
+      jcsFrame.showOverviewPanel();
+      if ("true".equalsIgnoreCase(System.getProperty("controller.autoconnect", "true"))) {
+        jcsFrame.connect(true);
+      }
+    });
+
+    JCS.logProgress("JCS started...");
+
+    int mb = 1024 * 1024;
+    Runtime runtime = Runtime.getRuntime();
+
+    StringBuilder sb = new StringBuilder();
+    sb.append("Used Memory: ");
+    sb.append((runtime.totalMemory() - runtime.freeMemory()) / mb);
+    sb.append(" [MB]. Free Memory: ");
+    sb.append(runtime.freeMemory() / mb);
+    sb.append(" [MB]. Available Memory: ");
+    sb.append(runtime.totalMemory() / mb);
+    sb.append(" [MB]. Max Memory: ");
+    sb.append(runtime.maxMemory() / mb);
+    sb.append(" [MB].");
+
+    Logger.info(sb);
+    splashScreen.hideSplash(200);
+    splashScreen.close();
   }
 
   private static class Powerlistener implements PowerEventListener {

@@ -56,12 +56,13 @@ public class DispatcherStatusPanel extends JPanel implements RefreshEventListene
   private void initComponents() {
 
     tabsPane = new javax.swing.JTabbedPane();
-    locomotiveTablePanel = new jcs.ui.table.LocomotiveTablePanel();
-    dispatcherTablePanel = new jcs.ui.table.DispatcherTablePanel();
+    locomotiveTablePanel = new jcs.ui.panel.LocomotiveTablePanel();
+    dispatcherTablePanel = new jcs.ui.panel.DispatcherTablePanel();
 
+    setPreferredSize(new java.awt.Dimension(300, 450));
     setLayout(new java.awt.BorderLayout());
 
-    tabsPane.setPreferredSize(new java.awt.Dimension(300, 800));
+    tabsPane.setPreferredSize(new java.awt.Dimension(300, 440));
     tabsPane.addTab("Locomotives", locomotiveTablePanel);
     tabsPane.addTab("Dispatcher", dispatcherTablePanel);
 
@@ -70,8 +71,8 @@ public class DispatcherStatusPanel extends JPanel implements RefreshEventListene
 
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
-  private jcs.ui.table.DispatcherTablePanel dispatcherTablePanel;
-  private jcs.ui.table.LocomotiveTablePanel locomotiveTablePanel;
+  private jcs.ui.panel.DispatcherTablePanel dispatcherTablePanel;
+  private jcs.ui.panel.LocomotiveTablePanel locomotiveTablePanel;
   private javax.swing.JTabbedPane tabsPane;
   // End of variables declaration//GEN-END:variables
 

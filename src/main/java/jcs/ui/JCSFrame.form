@@ -328,78 +328,6 @@
 
           <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBoxLayout"/>
           <SubComponents>
-            <Component class="javax.swing.JToggleButton" name="connectButton">
-              <Properties>
-                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/media/monitor-off-24.png"/>
-                </Property>
-                <Property name="toolTipText" type="java.lang.String" value="Connect/Disconnect with Central Station"/>
-                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-                  <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
-                    <LineBorder>
-                      <Color PropertyName="color" blue="cc" green="cc" red="cc" type="rgb"/>
-                    </LineBorder>
-                  </Border>
-                </Property>
-                <Property name="doubleBuffered" type="boolean" value="true"/>
-                <Property name="focusable" type="boolean" value="false"/>
-                <Property name="horizontalTextPosition" type="int" value="0"/>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[0, 0, 0, 0]"/>
-                </Property>
-                <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[40, 40]"/>
-                </Property>
-                <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[40, 40]"/>
-                </Property>
-                <Property name="name" type="java.lang.String" value="connectButton" noResource="true"/>
-                <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[40, 40]"/>
-                </Property>
-                <Property name="selectedIcon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/media/monitor-on-24.png"/>
-                </Property>
-                <Property name="verticalTextPosition" type="int" value="3"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="connectButtonActionPerformed"/>
-              </Events>
-            </Component>
-            <Component class="javax.swing.Box$Filler" name="filler1">
-              <Properties>
-                <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[5, 32767]"/>
-                </Property>
-                <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[5, 0]"/>
-                </Property>
-                <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[5, 0]"/>
-                </Property>
-                <Property name="name" type="java.lang.String" value="filler1" noResource="true"/>
-              </Properties>
-              <AuxValues>
-                <AuxValue name="classDetails" type="java.lang.String" value="Box.Filler.HorizontalStrut"/>
-              </AuxValues>
-            </Component>
-            <Component class="javax.swing.Box$Filler" name="filler2">
-              <Properties>
-                <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[5, 32767]"/>
-                </Property>
-                <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[5, 0]"/>
-                </Property>
-                <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[5, 0]"/>
-                </Property>
-                <Property name="name" type="java.lang.String" value="filler2" noResource="true"/>
-              </Properties>
-              <AuxValues>
-                <AuxValue name="classDetails" type="java.lang.String" value="Box.Filler.HorizontalStrut"/>
-              </AuxValues>
-            </Component>
             <Component class="javax.swing.JToggleButton" name="powerButton">
               <Properties>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
@@ -441,18 +369,73 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="powerButtonActionPerformed"/>
               </Events>
             </Component>
-            <Component class="javax.swing.Box$Filler" name="filler3">
+            <Component class="javax.swing.Box$Filler" name="filler1">
               <Properties>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[20, 32767]"/>
+                  <Dimension value="[5, 32767]"/>
                 </Property>
                 <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[20, 0]"/>
+                  <Dimension value="[5, 0]"/>
                 </Property>
                 <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[20, 0]"/>
+                  <Dimension value="[5, 0]"/>
                 </Property>
-                <Property name="name" type="java.lang.String" value="filler3" noResource="true"/>
+                <Property name="name" type="java.lang.String" value="filler1" noResource="true"/>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="classDetails" type="java.lang.String" value="Box.Filler.HorizontalStrut"/>
+              </AuxValues>
+            </Component>
+            <Component class="javax.swing.JToggleButton" name="connectButton">
+              <Properties>
+                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/media/monitor-off-24.png"/>
+                </Property>
+                <Property name="toolTipText" type="java.lang.String" value="Connect/Disconnect with Central Station"/>
+                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                  <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
+                    <LineBorder>
+                      <Color PropertyName="color" blue="cc" green="cc" red="cc" type="rgb"/>
+                    </LineBorder>
+                  </Border>
+                </Property>
+                <Property name="doubleBuffered" type="boolean" value="true"/>
+                <Property name="focusable" type="boolean" value="false"/>
+                <Property name="horizontalTextPosition" type="int" value="0"/>
+                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                  <Insets value="[0, 0, 0, 0]"/>
+                </Property>
+                <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                  <Dimension value="[40, 40]"/>
+                </Property>
+                <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                  <Dimension value="[40, 40]"/>
+                </Property>
+                <Property name="name" type="java.lang.String" value="connectButton" noResource="true"/>
+                <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                  <Dimension value="[40, 40]"/>
+                </Property>
+                <Property name="selectedIcon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/media/monitor-on-24.png"/>
+                </Property>
+                <Property name="verticalTextPosition" type="int" value="3"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="connectButtonActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.Box$Filler" name="filler2">
+              <Properties>
+                <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                  <Dimension value="[10, 32767]"/>
+                </Property>
+                <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                  <Dimension value="[10, 0]"/>
+                </Property>
+                <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                  <Dimension value="[10, 0]"/>
+                </Property>
+                <Property name="name" type="java.lang.String" value="filler2" noResource="true"/>
               </Properties>
               <AuxValues>
                 <AuxValue name="classDetails" type="java.lang.String" value="Box.Filler.HorizontalStrut"/>
@@ -494,23 +477,6 @@
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showOverviewBtnActionPerformed"/>
               </Events>
-            </Component>
-            <Component class="javax.swing.Box$Filler" name="filler4">
-              <Properties>
-                <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[5, 32767]"/>
-                </Property>
-                <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[5, 0]"/>
-                </Property>
-                <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[5, 0]"/>
-                </Property>
-                <Property name="name" type="java.lang.String" value="filler4" noResource="true"/>
-              </Properties>
-              <AuxValues>
-                <AuxValue name="classDetails" type="java.lang.String" value="Box.Filler.HorizontalStrut"/>
-              </AuxValues>
             </Component>
             <Component class="javax.swing.JButton" name="showEditDesignBtn">
               <Properties>
@@ -621,7 +587,7 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showKeyboardBtnActionPerformed"/>
               </Events>
             </Component>
-            <Component class="javax.swing.Box$Filler" name="filler5">
+            <Component class="javax.swing.Box$Filler" name="filler3">
               <Properties>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[20, 32767]"/>
@@ -632,7 +598,7 @@
                 <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[20, 0]"/>
                 </Property>
-                <Property name="name" type="java.lang.String" value="filler5" noResource="true"/>
+                <Property name="name" type="java.lang.String" value="filler3" noResource="true"/>
               </Properties>
               <AuxValues>
                 <AuxValue name="classDetails" type="java.lang.String" value="Box.Filler.HorizontalStrut"/>
@@ -669,7 +635,7 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showFeedbackMonitorBtnActionPerformed"/>
               </Events>
             </Component>
-            <Component class="javax.swing.Box$Filler" name="filler8">
+            <Component class="javax.swing.Box$Filler" name="filler4">
               <Properties>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[20, 32767]"/>
@@ -680,7 +646,7 @@
                 <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[20, 0]"/>
                 </Property>
-                <Property name="name" type="java.lang.String" value="filler8" noResource="true"/>
+                <Property name="name" type="java.lang.String" value="filler4" noResource="true"/>
               </Properties>
               <AuxValues>
                 <AuxValue name="classDetails" type="java.lang.String" value="Box.Filler.HorizontalStrut"/>
@@ -724,6 +690,23 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="autoPilotBtnActionPerformed"/>
               </Events>
             </Component>
+            <Component class="javax.swing.Box$Filler" name="filler5">
+              <Properties>
+                <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                  <Dimension value="[5, 32767]"/>
+                </Property>
+                <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                  <Dimension value="[5, 0]"/>
+                </Property>
+                <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                  <Dimension value="[5, 0]"/>
+                </Property>
+                <Property name="name" type="java.lang.String" value="filler5" noResource="true"/>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="classDetails" type="java.lang.String" value="Box.Filler.HorizontalStrut"/>
+              </AuxValues>
+            </Component>
             <Component class="javax.swing.JButton" name="startAllLocsBtn">
               <Properties>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
@@ -762,35 +745,18 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="startAllLocsBtnActionPerformed"/>
               </Events>
             </Component>
-            <Component class="javax.swing.Box$Filler" name="filler9">
+            <Component class="javax.swing.Box$Filler" name="filler8">
               <Properties>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[20, 32767]"/>
+                  <Dimension value="[25, 32767]"/>
                 </Property>
                 <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[20, 0]"/>
+                  <Dimension value="[25, 0]"/>
                 </Property>
                 <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[20, 0]"/>
+                  <Dimension value="[25, 0]"/>
                 </Property>
-                <Property name="name" type="java.lang.String" value="filler9" noResource="true"/>
-              </Properties>
-              <AuxValues>
-                <AuxValue name="classDetails" type="java.lang.String" value="Box.Filler.HorizontalStrut"/>
-              </AuxValues>
-            </Component>
-            <Component class="javax.swing.Box$Filler" name="filler10">
-              <Properties>
-                <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[20, 32767]"/>
-                </Property>
-                <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[20, 0]"/>
-                </Property>
-                <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[20, 0]"/>
-                </Property>
-                <Property name="name" type="java.lang.String" value="filler10" noResource="true"/>
+                <Property name="name" type="java.lang.String" value="filler8" noResource="true"/>
               </Properties>
               <AuxValues>
                 <AuxValue name="classDetails" type="java.lang.String" value="Box.Filler.HorizontalStrut"/>
@@ -1118,534 +1084,46 @@
                 <Property name="verticalGap" type="int" value="1"/>
               </Layout>
               <SubComponents>
-                <Container class="javax.swing.JPanel" name="bottomLeftPanel">
+                <Container class="javax.swing.JSplitPane" name="jSplitPane1">
                   <Properties>
-                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-                      <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                        <TitledBorder title="Controller Properties"/>
-                      </Border>
-                    </Property>
-                    <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                      <Dimension value="[220, 200]"/>
-                    </Property>
-                    <Property name="name" type="java.lang.String" value="bottomLeftPanel" noResource="true"/>
-                    <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                      <Dimension value="[200, 200]"/>
-                    </Property>
-                  </Properties>
-                  <Constraints>
-                    <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
-                      <BorderConstraints direction="South"/>
-                    </Constraint>
-                  </Constraints>
-
-                  <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBoxLayout">
-                    <Property name="axis" type="int" value="1"/>
-                  </Layout>
-                  <SubComponents>
-                    <Component class="javax.swing.Box$Filler" name="filler7">
-                      <Properties>
-                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[32767, 35]"/>
-                        </Property>
-                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[0, 10]"/>
-                        </Property>
-                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[0, 10]"/>
-                        </Property>
-                        <Property name="name" type="java.lang.String" value="filler7" noResource="true"/>
-                      </Properties>
-                      <AuxValues>
-                        <AuxValue name="classDetails" type="java.lang.String" value="Box.Filler.VerticalStrut"/>
-                      </AuxValues>
-                    </Component>
-                    <Container class="javax.swing.JPanel" name="jPanel1">
-                      <Properties>
-                        <Property name="name" type="java.lang.String" value="jPanel1" noResource="true"/>
-                      </Properties>
-                      <SubComponents>
-                        <Component class="javax.swing.JLabel" name="controllerLbl">
-                          <Properties>
-                            <Property name="horizontalAlignment" type="int" value="11"/>
-                            <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-                              <ComponentRef name="controllerDescriptionLbl"/>
-                            </Property>
-                            <Property name="text" type="java.lang.String" value="Controller:"/>
-                            <Property name="doubleBuffered" type="boolean" value="true"/>
-                            <Property name="horizontalTextPosition" type="int" value="0"/>
-                            <Property name="name" type="java.lang.String" value="controllerLbl" noResource="true"/>
-                            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                              <Dimension value="[75, 16]"/>
-                            </Property>
-                          </Properties>
-                        </Component>
-                        <Component class="javax.swing.JLabel" name="controllerDescriptionLbl">
-                          <Properties>
-                            <Property name="text" type="java.lang.String" value="..."/>
-                            <Property name="name" type="java.lang.String" value="controllerDescriptionLbl" noResource="true"/>
-                            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                              <Dimension value="[125, 16]"/>
-                            </Property>
-                          </Properties>
-                        </Component>
-                      </SubComponents>
-                      <LayoutCode>
-                        <CodeStatement>
-                          <CodeExpression id="11_flowLayout3">
-                            <CodeVariable name="flowLayout3" type="4096" declaredType="java.awt.FlowLayout"/>
-                            <ExpressionOrigin>
-                              <ExpressionProvider type="CodeConstructor">
-                                <CodeConstructor class="java.awt.FlowLayout" parameterTypes="int"/>
-                              </ExpressionProvider>
-                              <Parameters>
-                                <CodeExpression id="12">
-                                  <ExpressionOrigin>
-                                    <Value type="int" value="0"/>
-                                  </ExpressionOrigin>
-                                </CodeExpression>
-                              </Parameters>
-                            </ExpressionOrigin>
-                          </CodeExpression>
-                          <StatementProvider type="CodeExpression">
-                            <CodeExpression id="11_flowLayout3"/>
-                          </StatementProvider>
-                          <Parameters>
-                            <CodeExpression id="12"/>
-                          </Parameters>
-                        </CodeStatement>
-                        <CodeStatement>
-                          <CodeExpression id="11_flowLayout3"/>
-                          <StatementProvider type="CodeMethod">
-                            <CodeMethod name="setAlignOnBaseline" class="java.awt.FlowLayout" parameterTypes="boolean"/>
-                          </StatementProvider>
-                          <Parameters>
-                            <CodeExpression id="13">
-                              <ExpressionOrigin>
-                                <Value type="boolean" value="true"/>
-                              </ExpressionOrigin>
-                            </CodeExpression>
-                          </Parameters>
-                        </CodeStatement>
-                        <CodeStatement>
-                          <CodeExpression id="14_jPanel1">
-                            <CodeVariable name="jPanel1" type="8194" declaredType="javax.swing.JPanel"/>
-                            <ExpressionOrigin>
-                              <ExpressionProvider type="ComponentRef">
-                                <ComponentRef name="jPanel1"/>
-                              </ExpressionProvider>
-                            </ExpressionOrigin>
-                          </CodeExpression>
-                          <StatementProvider type="CodeMethod">
-                            <CodeMethod name="setLayout" class="java.awt.Container" parameterTypes="java.awt.LayoutManager"/>
-                          </StatementProvider>
-                          <Parameters>
-                            <CodeExpression id="11_flowLayout3"/>
-                          </Parameters>
-                        </CodeStatement>
-                        <CodeStatement>
-                          <CodeExpression id="14_jPanel1"/>
-                          <StatementProvider type="CodeMethod">
-                            <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
-                          </StatementProvider>
-                          <Parameters>
-                            <CodeExpression id="15_controllerLbl">
-                              <CodeVariable name="controllerLbl" type="8194" declaredType="javax.swing.JLabel"/>
-                              <ExpressionOrigin>
-                                <ExpressionProvider type="ComponentRef">
-                                  <ComponentRef name="controllerLbl"/>
-                                </ExpressionProvider>
-                              </ExpressionOrigin>
-                            </CodeExpression>
-                          </Parameters>
-                        </CodeStatement>
-                        <CodeStatement>
-                          <CodeExpression id="14_jPanel1"/>
-                          <StatementProvider type="CodeMethod">
-                            <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
-                          </StatementProvider>
-                          <Parameters>
-                            <CodeExpression id="16_controllerDescriptionLbl">
-                              <CodeVariable name="controllerDescriptionLbl" type="8194" declaredType="javax.swing.JLabel"/>
-                              <ExpressionOrigin>
-                                <ExpressionProvider type="ComponentRef">
-                                  <ComponentRef name="controllerDescriptionLbl"/>
-                                </ExpressionProvider>
-                              </ExpressionOrigin>
-                            </CodeExpression>
-                          </Parameters>
-                        </CodeStatement>
-                      </LayoutCode>
-                    </Container>
-                    <Container class="javax.swing.JPanel" name="jPanel2">
-                      <Properties>
-                        <Property name="name" type="java.lang.String" value="jPanel2" noResource="true"/>
-                      </Properties>
-                      <SubComponents>
-                        <Component class="javax.swing.JLabel" name="controllerCatalogLbl">
-                          <Properties>
-                            <Property name="horizontalAlignment" type="int" value="11"/>
-                            <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-                              <ComponentRef name="controllerCatalogNumberLbl"/>
-                            </Property>
-                            <Property name="text" type="java.lang.String" value="Model:"/>
-                            <Property name="name" type="java.lang.String" value="controllerCatalogLbl" noResource="true"/>
-                            <Property name="opaque" type="boolean" value="true"/>
-                            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                              <Dimension value="[75, 16]"/>
-                            </Property>
-                          </Properties>
-                        </Component>
-                        <Component class="javax.swing.JLabel" name="controllerCatalogNumberLbl">
-                          <Properties>
-                            <Property name="text" type="java.lang.String" value="..."/>
-                            <Property name="name" type="java.lang.String" value="controllerCatalogNumberLbl" noResource="true"/>
-                            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                              <Dimension value="[125, 16]"/>
-                            </Property>
-                          </Properties>
-                        </Component>
-                      </SubComponents>
-                      <LayoutCode>
-                        <CodeStatement>
-                          <CodeExpression id="17_flowLayout4">
-                            <CodeVariable name="flowLayout4" type="4096" declaredType="java.awt.FlowLayout"/>
-                            <ExpressionOrigin>
-                              <ExpressionProvider type="CodeConstructor">
-                                <CodeConstructor class="java.awt.FlowLayout" parameterTypes="int"/>
-                              </ExpressionProvider>
-                              <Parameters>
-                                <CodeExpression id="18">
-                                  <ExpressionOrigin>
-                                    <Value type="int" value="0"/>
-                                  </ExpressionOrigin>
-                                </CodeExpression>
-                              </Parameters>
-                            </ExpressionOrigin>
-                          </CodeExpression>
-                          <StatementProvider type="CodeExpression">
-                            <CodeExpression id="17_flowLayout4"/>
-                          </StatementProvider>
-                          <Parameters>
-                            <CodeExpression id="18"/>
-                          </Parameters>
-                        </CodeStatement>
-                        <CodeStatement>
-                          <CodeExpression id="17_flowLayout4"/>
-                          <StatementProvider type="CodeMethod">
-                            <CodeMethod name="setAlignOnBaseline" class="java.awt.FlowLayout" parameterTypes="boolean"/>
-                          </StatementProvider>
-                          <Parameters>
-                            <CodeExpression id="19">
-                              <ExpressionOrigin>
-                                <Value type="boolean" value="true"/>
-                              </ExpressionOrigin>
-                            </CodeExpression>
-                          </Parameters>
-                        </CodeStatement>
-                        <CodeStatement>
-                          <CodeExpression id="20_jPanel2">
-                            <CodeVariable name="jPanel2" type="8194" declaredType="javax.swing.JPanel"/>
-                            <ExpressionOrigin>
-                              <ExpressionProvider type="ComponentRef">
-                                <ComponentRef name="jPanel2"/>
-                              </ExpressionProvider>
-                            </ExpressionOrigin>
-                          </CodeExpression>
-                          <StatementProvider type="CodeMethod">
-                            <CodeMethod name="setLayout" class="java.awt.Container" parameterTypes="java.awt.LayoutManager"/>
-                          </StatementProvider>
-                          <Parameters>
-                            <CodeExpression id="17_flowLayout4"/>
-                          </Parameters>
-                        </CodeStatement>
-                        <CodeStatement>
-                          <CodeExpression id="20_jPanel2"/>
-                          <StatementProvider type="CodeMethod">
-                            <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
-                          </StatementProvider>
-                          <Parameters>
-                            <CodeExpression id="21_controllerCatalogLbl">
-                              <CodeVariable name="controllerCatalogLbl" type="8194" declaredType="javax.swing.JLabel"/>
-                              <ExpressionOrigin>
-                                <ExpressionProvider type="ComponentRef">
-                                  <ComponentRef name="controllerCatalogLbl"/>
-                                </ExpressionProvider>
-                              </ExpressionOrigin>
-                            </CodeExpression>
-                          </Parameters>
-                        </CodeStatement>
-                        <CodeStatement>
-                          <CodeExpression id="20_jPanel2"/>
-                          <StatementProvider type="CodeMethod">
-                            <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
-                          </StatementProvider>
-                          <Parameters>
-                            <CodeExpression id="22_controllerCatalogNumberLbl">
-                              <CodeVariable name="controllerCatalogNumberLbl" type="8194" declaredType="javax.swing.JLabel"/>
-                              <ExpressionOrigin>
-                                <ExpressionProvider type="ComponentRef">
-                                  <ComponentRef name="controllerCatalogNumberLbl"/>
-                                </ExpressionProvider>
-                              </ExpressionOrigin>
-                            </CodeExpression>
-                          </Parameters>
-                        </CodeStatement>
-                      </LayoutCode>
-                    </Container>
-                    <Container class="javax.swing.JPanel" name="jPanel3">
-                      <Properties>
-                        <Property name="name" type="java.lang.String" value="jPanel3" noResource="true"/>
-                      </Properties>
-                      <SubComponents>
-                        <Component class="javax.swing.JLabel" name="controllerSerialLbl">
-                          <Properties>
-                            <Property name="horizontalAlignment" type="int" value="11"/>
-                            <Property name="text" type="java.lang.String" value="Serial:"/>
-                            <Property name="name" type="java.lang.String" value="controllerSerialLbl" noResource="true"/>
-                            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                              <Dimension value="[75, 16]"/>
-                            </Property>
-                          </Properties>
-                        </Component>
-                        <Component class="javax.swing.JLabel" name="controllerSerialNumberLbl">
-                          <Properties>
-                            <Property name="text" type="java.lang.String" value="..."/>
-                            <Property name="name" type="java.lang.String" value="controllerSerialNumberLbl" noResource="true"/>
-                            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                              <Dimension value="[125, 16]"/>
-                            </Property>
-                          </Properties>
-                        </Component>
-                      </SubComponents>
-                      <LayoutCode>
-                        <CodeStatement>
-                          <CodeExpression id="23_flowLayout6">
-                            <CodeVariable name="flowLayout6" type="4096" declaredType="java.awt.FlowLayout"/>
-                            <ExpressionOrigin>
-                              <ExpressionProvider type="CodeConstructor">
-                                <CodeConstructor class="java.awt.FlowLayout" parameterTypes="int"/>
-                              </ExpressionProvider>
-                              <Parameters>
-                                <CodeExpression id="24">
-                                  <ExpressionOrigin>
-                                    <Value type="int" value="0"/>
-                                  </ExpressionOrigin>
-                                </CodeExpression>
-                              </Parameters>
-                            </ExpressionOrigin>
-                          </CodeExpression>
-                          <StatementProvider type="CodeExpression">
-                            <CodeExpression id="23_flowLayout6"/>
-                          </StatementProvider>
-                          <Parameters>
-                            <CodeExpression id="24"/>
-                          </Parameters>
-                        </CodeStatement>
-                        <CodeStatement>
-                          <CodeExpression id="23_flowLayout6"/>
-                          <StatementProvider type="CodeMethod">
-                            <CodeMethod name="setAlignOnBaseline" class="java.awt.FlowLayout" parameterTypes="boolean"/>
-                          </StatementProvider>
-                          <Parameters>
-                            <CodeExpression id="25">
-                              <ExpressionOrigin>
-                                <Value type="boolean" value="true"/>
-                              </ExpressionOrigin>
-                            </CodeExpression>
-                          </Parameters>
-                        </CodeStatement>
-                        <CodeStatement>
-                          <CodeExpression id="26_jPanel3">
-                            <CodeVariable name="jPanel3" type="8194" declaredType="javax.swing.JPanel"/>
-                            <ExpressionOrigin>
-                              <ExpressionProvider type="ComponentRef">
-                                <ComponentRef name="jPanel3"/>
-                              </ExpressionProvider>
-                            </ExpressionOrigin>
-                          </CodeExpression>
-                          <StatementProvider type="CodeMethod">
-                            <CodeMethod name="setLayout" class="java.awt.Container" parameterTypes="java.awt.LayoutManager"/>
-                          </StatementProvider>
-                          <Parameters>
-                            <CodeExpression id="23_flowLayout6"/>
-                          </Parameters>
-                        </CodeStatement>
-                        <CodeStatement>
-                          <CodeExpression id="26_jPanel3"/>
-                          <StatementProvider type="CodeMethod">
-                            <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
-                          </StatementProvider>
-                          <Parameters>
-                            <CodeExpression id="27_controllerSerialLbl">
-                              <CodeVariable name="controllerSerialLbl" type="8194" declaredType="javax.swing.JLabel"/>
-                              <ExpressionOrigin>
-                                <ExpressionProvider type="ComponentRef">
-                                  <ComponentRef name="controllerSerialLbl"/>
-                                </ExpressionProvider>
-                              </ExpressionOrigin>
-                            </CodeExpression>
-                          </Parameters>
-                        </CodeStatement>
-                        <CodeStatement>
-                          <CodeExpression id="26_jPanel3"/>
-                          <StatementProvider type="CodeMethod">
-                            <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
-                          </StatementProvider>
-                          <Parameters>
-                            <CodeExpression id="28_controllerSerialNumberLbl">
-                              <CodeVariable name="controllerSerialNumberLbl" type="8194" declaredType="javax.swing.JLabel"/>
-                              <ExpressionOrigin>
-                                <ExpressionProvider type="ComponentRef">
-                                  <ComponentRef name="controllerSerialNumberLbl"/>
-                                </ExpressionProvider>
-                              </ExpressionOrigin>
-                            </CodeExpression>
-                          </Parameters>
-                        </CodeStatement>
-                      </LayoutCode>
-                    </Container>
-                    <Container class="javax.swing.JPanel" name="jPanel4">
-                      <Properties>
-                        <Property name="name" type="java.lang.String" value="jPanel4" noResource="true"/>
-                      </Properties>
-                      <SubComponents>
-                        <Component class="javax.swing.JLabel" name="controllerHostLbl">
-                          <Properties>
-                            <Property name="horizontalAlignment" type="int" value="11"/>
-                            <Property name="text" type="java.lang.String" value="Host:"/>
-                            <Property name="name" type="java.lang.String" value="controllerHostLbl" noResource="true"/>
-                            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                              <Dimension value="[75, 16]"/>
-                            </Property>
-                          </Properties>
-                        </Component>
-                        <Component class="javax.swing.JLabel" name="controllerHostNameLbl">
-                          <Properties>
-                            <Property name="text" type="java.lang.String" value="..."/>
-                            <Property name="name" type="java.lang.String" value="controllerHostNameLbl" noResource="true"/>
-                            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                              <Dimension value="[125, 16]"/>
-                            </Property>
-                          </Properties>
-                        </Component>
-                      </SubComponents>
-                      <LayoutCode>
-                        <CodeStatement>
-                          <CodeExpression id="29_flowLayout5">
-                            <CodeVariable name="flowLayout5" type="4096" declaredType="java.awt.FlowLayout"/>
-                            <ExpressionOrigin>
-                              <ExpressionProvider type="CodeConstructor">
-                                <CodeConstructor class="java.awt.FlowLayout" parameterTypes="int"/>
-                              </ExpressionProvider>
-                              <Parameters>
-                                <CodeExpression id="30">
-                                  <ExpressionOrigin>
-                                    <Value type="int" value="0"/>
-                                  </ExpressionOrigin>
-                                </CodeExpression>
-                              </Parameters>
-                            </ExpressionOrigin>
-                          </CodeExpression>
-                          <StatementProvider type="CodeExpression">
-                            <CodeExpression id="29_flowLayout5"/>
-                          </StatementProvider>
-                          <Parameters>
-                            <CodeExpression id="30"/>
-                          </Parameters>
-                        </CodeStatement>
-                        <CodeStatement>
-                          <CodeExpression id="29_flowLayout5"/>
-                          <StatementProvider type="CodeMethod">
-                            <CodeMethod name="setAlignOnBaseline" class="java.awt.FlowLayout" parameterTypes="boolean"/>
-                          </StatementProvider>
-                          <Parameters>
-                            <CodeExpression id="31">
-                              <ExpressionOrigin>
-                                <Value type="boolean" value="true"/>
-                              </ExpressionOrigin>
-                            </CodeExpression>
-                          </Parameters>
-                        </CodeStatement>
-                        <CodeStatement>
-                          <CodeExpression id="32_jPanel4">
-                            <CodeVariable name="jPanel4" type="8194" declaredType="javax.swing.JPanel"/>
-                            <ExpressionOrigin>
-                              <ExpressionProvider type="ComponentRef">
-                                <ComponentRef name="jPanel4"/>
-                              </ExpressionProvider>
-                            </ExpressionOrigin>
-                          </CodeExpression>
-                          <StatementProvider type="CodeMethod">
-                            <CodeMethod name="setLayout" class="java.awt.Container" parameterTypes="java.awt.LayoutManager"/>
-                          </StatementProvider>
-                          <Parameters>
-                            <CodeExpression id="29_flowLayout5"/>
-                          </Parameters>
-                        </CodeStatement>
-                        <CodeStatement>
-                          <CodeExpression id="32_jPanel4"/>
-                          <StatementProvider type="CodeMethod">
-                            <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
-                          </StatementProvider>
-                          <Parameters>
-                            <CodeExpression id="33_controllerHostLbl">
-                              <CodeVariable name="controllerHostLbl" type="8194" declaredType="javax.swing.JLabel"/>
-                              <ExpressionOrigin>
-                                <ExpressionProvider type="ComponentRef">
-                                  <ComponentRef name="controllerHostLbl"/>
-                                </ExpressionProvider>
-                              </ExpressionOrigin>
-                            </CodeExpression>
-                          </Parameters>
-                        </CodeStatement>
-                        <CodeStatement>
-                          <CodeExpression id="32_jPanel4"/>
-                          <StatementProvider type="CodeMethod">
-                            <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
-                          </StatementProvider>
-                          <Parameters>
-                            <CodeExpression id="34_controllerHostNameLbl">
-                              <CodeVariable name="controllerHostNameLbl" type="8194" declaredType="javax.swing.JLabel"/>
-                              <ExpressionOrigin>
-                                <ExpressionProvider type="ComponentRef">
-                                  <ComponentRef name="controllerHostNameLbl"/>
-                                </ExpressionProvider>
-                              </ExpressionOrigin>
-                            </CodeExpression>
-                          </Parameters>
-                        </CodeStatement>
-                      </LayoutCode>
-                    </Container>
-                    <Component class="javax.swing.Box$Filler" name="filler6">
-                      <Properties>
-                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[32767, 35]"/>
-                        </Property>
-                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[0, 110]"/>
-                        </Property>
-                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[0, 110]"/>
-                        </Property>
-                        <Property name="name" type="java.lang.String" value="filler6" noResource="true"/>
-                      </Properties>
-                      <AuxValues>
-                        <AuxValue name="classDetails" type="java.lang.String" value="Box.Filler.VerticalStrut"/>
-                      </AuxValues>
-                    </Component>
-                  </SubComponents>
-                </Container>
-                <Component class="jcs.ui.DispatcherStatusPanel" name="dispatcherStatusPanel">
-                  <Properties>
-                    <Property name="name" type="java.lang.String" value="dispatcherStatusPanel" noResource="true"/>
+                    <Property name="dividerLocation" type="int" value="500"/>
+                    <Property name="orientation" type="int" value="0"/>
+                    <Property name="toolTipText" type="java.lang.String" value=""/>
+                    <Property name="name" type="java.lang.String" value="jSplitPane1" noResource="true"/>
                   </Properties>
                   <Constraints>
                     <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
                       <BorderConstraints direction="Center"/>
                     </Constraint>
                   </Constraints>
-                </Component>
+
+                  <Layout class="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout"/>
+                  <SubComponents>
+                    <Component class="jcs.ui.DispatcherStatusPanel" name="dispatcherStatusPanel">
+                      <Properties>
+                        <Property name="name" type="java.lang.String" value="dispatcherStatusPanel" noResource="true"/>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[300, 450]"/>
+                        </Property>
+                      </Properties>
+                      <Constraints>
+                        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout$JSplitPaneConstraintsDescription">
+                          <JSplitPaneConstraints position="left"/>
+                        </Constraint>
+                      </Constraints>
+                    </Component>
+                    <Component class="jcs.ui.panel.SmallDriverCabPanel" name="smallDriverCabPanel1">
+                      <Properties>
+                        <Property name="name" type="java.lang.String" value="smallDriverCabPanel1" noResource="true"/>
+                      </Properties>
+                      <Constraints>
+                        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout$JSplitPaneConstraintsDescription">
+                          <JSplitPaneConstraints position="right"/>
+                        </Constraint>
+                      </Constraints>
+                    </Component>
+                  </SubComponents>
+                </Container>
               </SubComponents>
             </Container>
           </SubComponents>
