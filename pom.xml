@@ -365,10 +365,10 @@
                 </dependencies>
                 <executions>
                     <execution>
-                        <id>auto</id>
-                        <phase>compile</phase>
+                        <id>checkstyle</id>
+                        <phase>checkstyle</phase>
                         <goals>
-                            <goal>compile</goal>
+                            <goal>checkstyle</goal>
                         </goals>
                     </execution>
                 </executions>
