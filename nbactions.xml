@@ -81,4 +81,11 @@
                 <goal>test</goal>
             </goals>
         </action>
+        <action>
+            <actionName>CUSTOM-checkstyle:check</actionName>
+            <displayName>checkstyle:check</displayName>
+            <goals>
+                <goal>checkstyle:check</goal>
+            </goals>
+        </action>
     </actions>
