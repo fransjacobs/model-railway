@@ -15,13 +15,13 @@
  */
 package jcs.ui.panel;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JSlider;
 import javax.swing.JToggleButton;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -37,16 +37,17 @@ import jcs.commandStation.events.PowerEventListener;
 import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
 import jcs.persistence.PersistenceFactory;
+import jcs.ui.util.LocomotiveSelectionChangedListener;
 import org.tinylog.Logger;
 
 /**
  * Small function Panel for use in the small driver Cab
  */
-public class SmallDriverCabPanel extends javax.swing.JPanel implements LocomotiveDirectionEventListener, LocomotiveSpeedEventListener, PowerEventListener {
+public class SmallDriverCabPanel extends javax.swing.JPanel implements LocomotiveSelectionChangedListener, LocomotiveDirectionEventListener, LocomotiveSpeedEventListener, PowerEventListener {
 
   private final Map<Integer, JToggleButton> buttons;
   private LocomotiveBean locomotiveBean;
-  private final ExecutorService executor;
+  //private final ExecutorService executor;
   private boolean initButtons = false;
   private boolean disableListener = false;
   private boolean power;
@@ -55,7 +56,7 @@ public class SmallDriverCabPanel extends javax.swing.JPanel implements Locomotiv
 
   public SmallDriverCabPanel() {
     buttons = new HashMap<>();
-    executor = Executors.newCachedThreadPool();
+    //executor = Executors.newCachedThreadPool();
 
     initComponents();
     mapButtons();
@@ -114,10 +115,10 @@ public class SmallDriverCabPanel extends javax.swing.JPanel implements Locomotiv
 
   //@Override
   public void onFunctionChange(LocomotiveFunctionEvent event) {
-    if (this.locomotiveBean != null && this.locomotiveBean.getId().equals(event.getFunctionBean().getLocomotiveId())) {
+    if (locomotiveBean != null && locomotiveBean.getId().equals(event.getFunctionBean().getLocomotiveId())) {
       FunctionBean fb = event.getFunctionBean();
       //this.buttons.get(fb.getNumber()).setSelected(fb.isOn());
-      JToggleButton tbtn = this.buttons.get(fb.getNumber());
+      JToggleButton tbtn = buttons.get(fb.getNumber());
 
       //Temp disable the event handling as this is an external event...
       enableEvent = false;
@@ -130,60 +131,104 @@ public class SmallDriverCabPanel extends javax.swing.JPanel implements Locomotiv
   }
 
   private void resetButtons() {
-    for (JToggleButton btn : this.buttons.values()) {
+    for (JToggleButton btn : buttons.values()) {
       btn.setIcon(null);
       btn.setSelectedIcon(null);
       btn.setText("");
       btn.setEnabled(false);
 
       //btn.setForeground(new java.awt.Color(0, 0, 0));
-      btn.setForeground(new java.awt.Color(204, 204, 204));
-      btn.setBackground(new java.awt.Color(204, 204, 204));
+      btn.setForeground(new Color(204, 204, 204));
+      btn.setBackground(new Color(204, 204, 204));
 
       btn.setSelected(false);
     }
   }
 
-  public void setLocomotiveBean(LocomotiveBean locomotiveBean) {
-    resetButtons();
-    initButtons = true;
-    if (PersistenceFactory.getService() != null && locomotiveBean != null) {
-      this.locomotiveBean = locomotiveBean;
-      Map<Integer, FunctionBean> functions = locomotiveBean.getFunctions();
-
-      Logger.trace("Loc: " + this.locomotiveBean.getName() + " has " + functions.size() + " functions");
-      for (FunctionBean fb : functions.values()) {
-        Integer fnr = fb.getNumber();
-        JToggleButton btn = this.buttons.get(fnr);
-
-        //Logger.trace("Function: " + fb.getNumber() + " Type: " + fb.getFunctionType() + " Value: " + fb.getValue() + " isMomentary: " + fb.isMomentary());
-        if (fb.getInActiveIconImage() != null) {
-          btn.setIcon(new ImageIcon(fb.getInActiveIconImage()));
-        } else {
-          btn.setText("F" + fb.getNumber());
-          //Logger.trace("Missing Icon: " + fb.getInActiveIcon() + " Button Text: " + btn.getText());
-        }
-
-        if (fb.getActiveIconImage() != null) {
-          btn.setSelectedIcon(new ImageIcon(fb.getActiveIconImage()));
-        } else {
-          btn.setText("F" + fb.getNumber());
-          //Logger.trace("Missing Icon: " + fb.getActiveIcon() + " Button Text: " + btn.getText());
-        }
-
-        btn.setActionCommand("F" + fb.getNumber());
-        btn.setEnabled(true);
-
-        boolean isOn = fb.getValue() == 1;
-        if (isOn) {
-          btn.doClick();
-        }
-        //Logger.trace("Button " + btn.getActionCommand() + " selected: " + btn.isSelected());
-
-      }
-      this.buttonsTP.setEnabled(true);
+  @Override
+  public void selectionChanged(Long locomotiveId) {
+    boolean selectionChanged;
+    if (locomotiveBean == null && locomotiveId != null) {
+      selectionChanged = true;
+    } else if (locomotiveId != null && locomotiveBean != null && !locomotiveId.equals(locomotiveBean.getId())) {
+      Logger.trace("LocomotiveId is changing from : " + locomotiveBean.getId() + " to " + locomotiveId);
+      selectionChanged = true;
+    } else {
+      selectionChanged = false;
+      Logger.trace("Selection NOT changed. Current selection: " + locomotiveBean.getId());
     }
-    initButtons = false;
+
+    if (selectionChanged) {
+      Logger.trace("Change selection to LocomotiveId: " + locomotiveId);
+      //Disable listeners!
+      disableListener = true;
+
+      resetButtons();
+      initButtons = true;
+      if (PersistenceFactory.getService() != null) {
+        //Get the locomotive from the persistent layer
+        locomotiveBean = PersistenceFactory.getService().getLocomotive(locomotiveId);
+
+        double max = 100;
+        if (locomotiveBean.getTachoMax() != null) {
+          max = locomotiveBean.getTachoMax();
+        }
+        speedSlider.setMaximum((int) max);
+
+        //Calc speed
+        int velocity = locomotiveBean.getVelocity();
+        int sliderValue = (int) Math.round(max / 1000 * velocity);
+        speedSlider.setValue(sliderValue);
+
+        forwardButton.setSelected(LocomotiveBean.Direction.FORWARDS == locomotiveBean.getDirection());
+        reverseButton.setSelected(LocomotiveBean.Direction.BACKWARDS == locomotiveBean.getDirection());
+
+        Map<Integer, FunctionBean> functions = locomotiveBean.getFunctions();
+
+        Logger.trace("Loc: " + locomotiveBean.getName() + " has " + functions.size() + " functions");
+        for (FunctionBean fb : functions.values()) {
+          Integer fnr = fb.getNumber();
+          JToggleButton btn = this.buttons.get(fnr);
+
+          //Logger.trace("Function: " + fb.getNumber() + " Type: " + fb.getFunctionType() + " Value: " + fb.getValue() + " isMomentary: " + fb.isMomentary());
+          if (fb.getInActiveIconImage() != null) {
+            btn.setIcon(new ImageIcon(fb.getInActiveIconImage()));
+          } else {
+            btn.setText("F" + fb.getNumber());
+            //Logger.trace("Missing Icon: " + fb.getInActiveIcon() + " Button Text: " + btn.getText());
+          }
+
+          if (fb.getActiveIconImage() != null) {
+            btn.setSelectedIcon(new ImageIcon(fb.getActiveIconImage()));
+          } else {
+            btn.setText("F" + fb.getNumber());
+            //Logger.trace("Missing Icon: " + fb.getActiveIcon() + " Button Text: " + btn.getText());
+          }
+
+          btn.setActionCommand("F" + fb.getNumber());
+          btn.setEnabled(true);
+
+          boolean isOn = fb.getValue() == 1;
+          if (isOn) {
+            btn.doClick();
+          }
+          //Logger.trace("Button " + btn.getActionCommand() + " selected: " + btn.isSelected());
+        }
+        buttonsTP.setEnabled(true);
+      }
+      initButtons = false;
+      disableListener = false;
+    }
+  }
+
+  /**
+   *
+   * Sets the LocomotiveBean for this panel. This will update the buttons with the correct icons and states.
+   *
+   * @param locomotiveBean
+   */
+  public void setLocomotiveBean(LocomotiveBean locomotive) {
+    selectionChanged(locomotive.getId());
   }
 
   public LocomotiveBean getLocomotiveBean() {
@@ -207,24 +252,25 @@ public class SmallDriverCabPanel extends javax.swing.JPanel implements Locomotiv
     Logger.trace(evt.getActionCommand() + ": " + (value ? "On" : "Off"));
     Integer functionNumber = Integer.decode(evt.getActionCommand().replace("F", ""));
 
-    FunctionBean fb = this.locomotiveBean.getFunctionBean(functionNumber);
+    FunctionBean fb = locomotiveBean.getFunctionBean(functionNumber);
 
     if (!initButtons && enableEvent) {
       Logger.trace("Function " + fb.getNumber() + " Value: " + fb.isOn() + " Momentary: " + fb.isMomentary());
-      executor.execute(() -> changeFunction(value, functionNumber, locomotiveBean));
+      //executor.execute(() -> changeFunction(value, functionNumber, locomotiveBean));
+      changeFunction(value, functionNumber, locomotiveBean);
     }
   }
 
   private void changeFunction(boolean newValue, Integer functionNumber, LocomotiveBean locomotiveBean) {
-    if (JCS.getJcsCommandStation() != null && this.locomotiveBean != null) {
-      FunctionBean fb = this.locomotiveBean.getFunctionBean(functionNumber);
+    if (JCS.getJcsCommandStation() != null && locomotiveBean != null) {
+      FunctionBean fb = locomotiveBean.getFunctionBean(functionNumber);
       Logger.trace("Function " + fb.getNumber() + " Value: " + fb.isOn() + " new Value: " + newValue + " Momentary: " + fb.isMomentary());
 
       if (JCS.getJcsCommandStation() != null) {
         JCS.getJcsCommandStation().changeLocomotiveFunction(newValue, functionNumber, locomotiveBean);
       }
       if (fb.isMomentary() && newValue) {
-        JToggleButton tb = this.buttons.get(fb.getNumber());
+        JToggleButton tb = buttons.get(fb.getNumber());
         tb.doClick();
       }
     }
@@ -237,6 +283,7 @@ public class SmallDriverCabPanel extends javax.swing.JPanel implements Locomotiv
   // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
   private void initComponents() {
 
+    directionBG = new javax.swing.ButtonGroup();
     jPanel1 = new javax.swing.JPanel();
     jPanel3 = new javax.swing.JPanel();
     speed1Button = new javax.swing.JButton();
@@ -289,10 +336,11 @@ public class SmallDriverCabPanel extends javax.swing.JPanel implements Locomotiv
     filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(30, 0), new java.awt.Dimension(30, 0), new java.awt.Dimension(30, 32767));
     stopButton = new javax.swing.JButton();
 
-    setMaximumSize(new java.awt.Dimension(200, 235));
-    setMinimumSize(new java.awt.Dimension(200, 235));
+    setMaximumSize(new java.awt.Dimension(300, 200));
+    setMinimumSize(new java.awt.Dimension(300, 200));
     setName("Form"); // NOI18N
     setPreferredSize(new java.awt.Dimension(300, 200));
+    setSize(new java.awt.Dimension(300, 200));
     setLayout(new java.awt.BorderLayout());
 
     jPanel1.setName("jPanel1"); // NOI18N
@@ -368,6 +416,11 @@ public class SmallDriverCabPanel extends javax.swing.JPanel implements Locomotiv
     speedSlider.setValue(0);
     speedSlider.setName("speedSlider"); // NOI18N
     speedSlider.setPreferredSize(new java.awt.Dimension(30, 180));
+    speedSlider.addChangeListener(new javax.swing.event.ChangeListener() {
+      public void stateChanged(javax.swing.event.ChangeEvent evt) {
+        speedSliderStateChanged(evt);
+      }
+    });
     jPanel4.add(speedSlider);
 
     jPanel1.add(jPanel4);
@@ -933,11 +986,12 @@ public class SmallDriverCabPanel extends javax.swing.JPanel implements Locomotiv
 
     southPanel.setMinimumSize(new java.awt.Dimension(300, 50));
     southPanel.setName("southPanel"); // NOI18N
-    southPanel.setPreferredSize(new java.awt.Dimension(300, 50));
+    southPanel.setPreferredSize(new java.awt.Dimension(298, 50));
     java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
     flowLayout1.setAlignOnBaseline(true);
     southPanel.setLayout(flowLayout1);
 
+    directionBG.add(reverseButton);
     reverseButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/left-24.png"))); // NOI18N
     reverseButton.setActionCommand("Backwards");
     reverseButton.setName("reverseButton"); // NOI18N
@@ -949,6 +1003,7 @@ public class SmallDriverCabPanel extends javax.swing.JPanel implements Locomotiv
     });
     southPanel.add(reverseButton);
 
+    directionBG.add(forwardButton);
     forwardButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/right-24.png"))); // NOI18N
     forwardButton.setSelected(true);
     forwardButton.setActionCommand("Forwards");
@@ -1109,40 +1164,40 @@ public class SmallDriverCabPanel extends javax.swing.JPanel implements Locomotiv
   }//GEN-LAST:event_f31TBActionPerformed
 
   private void speed1ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_speed1ButtonActionPerformed
-    if (this.locomotiveBean != null) {
+    if (locomotiveBean != null) {
       int tachoMax = locomotiveBean.getTachoMax();
       tachoMax = tachoMax / 5; // 20 %
-      this.speedSlider.setValue(tachoMax);
+      speedSlider.setValue(tachoMax);
     } else {
       Logger.trace(evt.getActionCommand());
     }
   }//GEN-LAST:event_speed1ButtonActionPerformed
 
   private void speed2ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_speed2ButtonActionPerformed
-    if (this.locomotiveBean != null) {
+    if (locomotiveBean != null) {
       int tachoMax = locomotiveBean.getTachoMax();
       tachoMax = (tachoMax / 5) * 2; // 40 %
-      this.speedSlider.setValue(tachoMax);
+      speedSlider.setValue(tachoMax);
     } else {
       Logger.trace(evt.getActionCommand());
     }
   }//GEN-LAST:event_speed2ButtonActionPerformed
 
   private void speed3ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_speed3ButtonActionPerformed
-    if (this.locomotiveBean != null) {
+    if (locomotiveBean != null) {
       int tachoMax = locomotiveBean.getTachoMax();
       tachoMax = (tachoMax / 5) * 3; // 60 %
-      this.speedSlider.setValue(tachoMax);
+      speedSlider.setValue(tachoMax);
     } else {
       Logger.trace(evt.getActionCommand());
     }
   }//GEN-LAST:event_speed3ButtonActionPerformed
 
   private void speed4ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_speed4ButtonActionPerformed
-    if (this.locomotiveBean != null) {
+    if (locomotiveBean != null) {
       int tachoMax = locomotiveBean.getTachoMax();
       tachoMax = (tachoMax / 5) * 4; // 80 %
-      this.speedSlider.setValue(tachoMax);
+      speedSlider.setValue(tachoMax);
     } else {
       Logger.trace(evt.getActionCommand());
     }
@@ -1161,11 +1216,33 @@ public class SmallDriverCabPanel extends javax.swing.JPanel implements Locomotiv
   }//GEN-LAST:event_forwardButtonActionPerformed
 
   private void stopButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stopButtonActionPerformed
-    this.speedSlider.setValue(0);
-    if (this.locomotiveBean == null) {
+    speedSlider.setValue(0);
+    if (locomotiveBean == null) {
       Logger.trace(evt.getActionCommand());
     }
   }//GEN-LAST:event_stopButtonActionPerformed
+
+  private void speedSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_speedSliderStateChanged
+    JSlider slider = (JSlider) evt.getSource();
+    if (!slider.getValueIsAdjusting()) {
+
+      if (!disableListener && locomotiveBean != null) {
+        int max = locomotiveBean.getTachoMax();
+        double value = slider.getValue();
+        //Velocity is always between 0 and 1000
+        int velocity = (int) Math.round(value / max * 1000);
+        //executor.execute(() -> changeVelocity(velocity, locomotiveBean));
+        changeVelocity(velocity, locomotiveBean);
+      }
+    }
+  }//GEN-LAST:event_speedSliderStateChanged
+
+  private void changeVelocity(int newVelocity, LocomotiveBean locomotiveBean) {
+    if (JCS.getJcsCommandStation() != null && locomotiveBean != null && locomotiveBean.getId() != null) {
+      Logger.trace("Changing speeed of " + locomotiveBean + " to: " + newVelocity);
+      JCS.getJcsCommandStation().changeLocomotiveSpeed(newVelocity, locomotiveBean);
+    }
+  }
 
   private void changeDirection(LocomotiveBean.Direction direction) {
     changeDirection(direction, this.locomotiveBean);
@@ -1189,21 +1266,15 @@ public class SmallDriverCabPanel extends javax.swing.JPanel implements Locomotiv
     Logger.trace("Evt: id: " + lb.getId() + " Addr: " + lb.getAddress() + " cid: " + lb.getCommandStationId() + " dir: " + lb.getDirection());
 
     if (event.isEventFor(locomotiveBean)) {
-      Logger.trace(lb.getName() + " direction changed from " + this.locomotiveBean.getDirection() + " to " + lb.getDirection());
+      Logger.trace(lb.getName() + " direction changed from " + locomotiveBean.getDirection() + " to " + lb.getDirection());
 
-      //locomotiveBean.setRichtung(lb.getRichtung());
       locomotiveBean.setDirection(lb.getDirection());
 
+      //Disable the direction buttons so that the change does not retrigger the commandstation
       disableListener = true;
-      if (LocomotiveBean.Direction.BACKWARDS.equals(lb.getDirection())) {
-        this.reverseButton.setSelected(true);
-      } else {
-        this.forwardButton.setSelected(true);
-      }
+      reverseButton.setSelected(LocomotiveBean.Direction.BACKWARDS == lb.getDirection());
+      forwardButton.setSelected(LocomotiveBean.Direction.FORWARDS == lb.getDirection());
       disableListener = false;
-//      if (this.directionListener != null) {
-//        this.directionListener.onDirectionChange(event);
-//      }
     }
   }
 
@@ -1244,12 +1315,9 @@ public class SmallDriverCabPanel extends javax.swing.JPanel implements Locomotiv
 
   @Override
   public void onPowerChange(PowerEvent event) {
-    if (this.locomotiveBean != null) {
-      this.power = event.isPower();
-
-      //this.speedGauge.setUserLedOn(this.power);
-      //this.speedGauge.setLedBlinking(!this.power);
-      Logger.trace("Power is " + this.power);
+    if (locomotiveBean != null) {
+      power = event.isPower();
+      Logger.trace("Power is " + (power ? "On" : "Off"));
     }
   }
 
@@ -1259,31 +1327,30 @@ public class SmallDriverCabPanel extends javax.swing.JPanel implements Locomotiv
     } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
       Logger.error("Can't set the LookAndFeel: " + ex);
     }
+
+    JFrame testFrame = new JFrame("SmallDriverCapPanel Tester");
     java.awt.EventQueue.invokeLater(() -> {
-
-      SmallDriverCabPanel testPanel = new SmallDriverCabPanel();
-      JFrame testFrame = new JFrame("FunctionsPanel Tester");
-
-      testFrame.add(testPanel);
-
       testFrame.addWindowListener(new java.awt.event.WindowAdapter() {
         @Override
         public void windowClosing(java.awt.event.WindowEvent e) {
           System.exit(0);
         }
       });
-      testFrame.pack();
-      testFrame.setLocationRelativeTo(null);
+
+      SmallDriverCabPanel testPanel = new SmallDriverCabPanel();
+
+      testFrame.add(testPanel);
 
       if (JCS.getJcsCommandStation() != null) {
-
-        //LocomotiveBean loc = PersistenceFactory.getService().getLocomotive(49189L);
-        LocomotiveBean loc = PersistenceFactory.getService().getLocomotive(1001L);
+        LocomotiveBean loc = PersistenceFactory.getService().getLocomotive(16417L);
+        //LocomotiveBean loc = PersistenceFactory.getService().getLocomotive(1001L);
         Logger.debug(loc);
 
         testPanel.setLocomotiveBean(loc);
-
       }
+
+      testFrame.pack();
+      testFrame.setLocationRelativeTo(null);
 
       testFrame.setVisible(true);
     });
@@ -1292,6 +1359,7 @@ public class SmallDriverCabPanel extends javax.swing.JPanel implements Locomotiv
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   javax.swing.JTabbedPane buttonsTP;
+  javax.swing.ButtonGroup directionBG;
   javax.swing.JToggleButton f0TB;
   javax.swing.JPanel f0f7Panel;
   javax.swing.JToggleButton f10TB;

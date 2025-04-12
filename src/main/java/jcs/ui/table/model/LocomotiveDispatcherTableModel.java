@@ -28,6 +28,7 @@ import org.tinylog.Logger;
 public class LocomotiveDispatcherTableModel extends AbstractBeanTableModel<Dispatcher> implements StateEventListener {
 
   private static final String[] DISPLAY_COLUMNS = new String[]{"image", "name", "state", "speed"};
+  private static final long serialVersionUID = 5321472215655025458L;
 
   public LocomotiveDispatcherTableModel() {
     super(Dispatcher.class, DISPLAY_COLUMNS);

@@ -19,10 +19,12 @@ import com.twelvemonkeys.image.ImageUtil;
 import java.awt.Component;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.event.RowSorterEvent;
@@ -33,24 +35,28 @@ import jcs.commandStation.autopilot.AutoPilotStatusListener;
 import jcs.commandStation.autopilot.state.Dispatcher;
 import jcs.entities.LocomotiveBean;
 import jcs.ui.DriverCabDialog;
+import jcs.ui.util.LocomotiveSelectionChangedListener;
 import org.tinylog.Logger;
 
 /**
  *
- * @author frans
  */
-public class DispatcherTablePanel extends javax.swing.JPanel implements AutoPilotStatusListener {
+public class DispatcherTablePanel extends JPanel implements AutoPilotStatusListener {
 
-  /**
-   * Creates new form LocomotiveTablePanel
-   */
+  private static final long serialVersionUID = -7052304625809395213L;
+
+  private final List<LocomotiveSelectionChangedListener> locomotiveSelectionChangedListeners;
+
   public DispatcherTablePanel() {
+    locomotiveSelectionChangedListeners = new ArrayList<>();
     initComponents();
 
-    this.dispatcherTable.setDefaultRenderer(Image.class, new LocIconRenderer());
-    this.dispatcherTable.getRowSorter().addRowSorterListener((RowSorterEvent e) -> {
+    dispatcherTable.setDefaultRenderer(Image.class, new LocIconRenderer());
+
+    dispatcherTable.getRowSorter().addRowSorterListener((RowSorterEvent e) -> {
       //Logger.trace(e.getType() + "," + e.getSource().getSortKeys());// Sorting changed
     });
+
     initModel();
   }
 
@@ -67,6 +73,8 @@ public class DispatcherTablePanel extends javax.swing.JPanel implements AutoPilo
   }
 
   private class LocIconRenderer extends DefaultTableCellRenderer {
+
+    private static final long serialVersionUID = -2650118175935042594L;
 
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -117,16 +125,35 @@ public class DispatcherTablePanel extends javax.swing.JPanel implements AutoPilo
   }// </editor-fold>//GEN-END:initComponents
 
   private void dispatcherTableMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_dispatcherTableMouseReleased
-    int row = this.dispatcherTable.getSelectedRow();
+    int row = dispatcherTable.getSelectedRow();
 
     Dispatcher dispatcher = locomotiveDispatcherTableModel.getBeanAt(row);
     if (row >= 0 && dispatcher != null) {
       Logger.trace("Selected " + dispatcher.getName() + " " + evt.getClickCount());
+
       if (evt.getClickCount() == 2) {
         showDriverCabDialog(dispatcher.getLocomotiveBean());
       }
+      fireSelectionChangedListeners(dispatcher);
     }
   }//GEN-LAST:event_dispatcherTableMouseReleased
+
+  private void fireSelectionChangedListeners(Dispatcher dispatcher) {
+    if (dispatcher.getLocomotiveBean().getId() != null) {
+      Long locomotiveId = dispatcher.getLocomotiveBean().getId();
+      for (LocomotiveSelectionChangedListener listener : locomotiveSelectionChangedListeners) {
+        listener.selectionChanged(locomotiveId);
+      }
+    }
+  }
+
+  public void addLocomotiveSelectionChangeListener(LocomotiveSelectionChangedListener listener) {
+    locomotiveSelectionChangedListeners.add(listener);
+  }
+
+  public void removeLocomotiveSelectionChangeListener(LocomotiveSelectionChangedListener listener) {
+    locomotiveSelectionChangedListeners.remove(listener);
+  }
 
   @Override
   public void setVisible(boolean aFlag) {

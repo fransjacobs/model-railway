@@ -19,14 +19,14 @@ import com.twelvemonkeys.image.ImageUtil;
 import java.awt.Component;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.RowSorterEvent;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableRowSorter;
@@ -36,24 +36,24 @@ import jcs.entities.LocomotiveBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.DriverCabDialog;
 import jcs.ui.table.model.LocomotiveBeanTableModel;
+import jcs.ui.util.LocomotiveSelectionChangedListener;
 import org.tinylog.Logger;
 
 /**
  *
- * @author frans
  */
 public class LocomotiveTablePanel extends JPanel implements RefreshEventListener {
 
-  /**
-   * Creates new form LocomotiveTablePanel
-   */
+  private static final long serialVersionUID = 1387464111237136414L;
+
+  private final List<LocomotiveSelectionChangedListener> locomotiveSelectionChangedListeners;
+
   public LocomotiveTablePanel() {
+    locomotiveSelectionChangedListeners = new ArrayList<>();
+
     locomotiveBeanTableModel = new LocomotiveBeanTableModel();
-
     initComponents();
-
     locomotiveTable.setDefaultRenderer(Image.class, new LocIconRenderer());
-
     locomotiveTable.getRowSorter().addRowSorterListener((RowSorterEvent e) -> {
       //Logger.trace(e.getType() + "," + e.getSource().getSortKeys());// Sorting changed
     });
@@ -63,17 +63,7 @@ public class LocomotiveTablePanel extends JPanel implements RefreshEventListener
 
   private void initModel() {
     if (PersistenceFactory.getService() != null) {
-//      List<LocomotiveBean> activeLocos = new ArrayList<>();
-//      List<LocomotiveBean> allLocos = PersistenceFactory.getService().getLocomotives();
-//      for (LocomotiveBean loco : allLocos) {
-//        if (loco.isShow()) {
-//          activeLocos.add(loco);
-//        }
-//      }
-//
-//      Logger.trace("In total there are " + allLocos.size() + " Locomotives of which there are " + activeLocos.size() + " shown");
-//      locomotiveBeanTableModel.setBeans(activeLocos);
-      locomotiveBeanTableModel.refresh();
+      refresh();
     }
   }
 
@@ -89,6 +79,8 @@ public class LocomotiveTablePanel extends JPanel implements RefreshEventListener
   }
 
   private class LocIconRenderer extends DefaultTableCellRenderer {
+
+    private static final long serialVersionUID = 6174920035602771500L;
 
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -139,14 +131,34 @@ public class LocomotiveTablePanel extends JPanel implements RefreshEventListener
   }// </editor-fold>//GEN-END:initComponents
 
   private void locomotiveTableMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_locomotiveTableMouseReleased
-    int row = this.locomotiveTable.getSelectedRow();
+    int row = locomotiveTable.getSelectedRow();
 
     LocomotiveBean loc = locomotiveBeanTableModel.getBeanAt(row);
-    Logger.trace("Selected " + loc.getName() + " " + evt.getClickCount());
+    //Logger.trace("Selected " + loc.getName() + " " + evt.getClickCount());
     if (evt.getClickCount() == 2) {
       showDriverCabDialog(loc);
     }
+
+    fireSelectionChangedListeners(loc);
   }//GEN-LAST:event_locomotiveTableMouseReleased
+
+  private void fireSelectionChangedListeners(LocomotiveBean locomotive) {
+    if (locomotive.getId() != null) {
+      Long locomotiveId = locomotive.getId();
+      Logger.trace("Notify "+locomotiveSelectionChangedListeners.size()+" of selection change to locomotiveId: "+locomotiveId);
+      for (LocomotiveSelectionChangedListener listener : locomotiveSelectionChangedListeners) {
+        listener.selectionChanged(locomotiveId);
+      }
+    }
+  }
+
+  public void addLocomotiveSelectionChangeListener(LocomotiveSelectionChangedListener listener) {
+    locomotiveSelectionChangedListeners.add(listener);
+  }
+
+  public void removeLocomotiveSelectionChangeListener(LocomotiveSelectionChangedListener listener) {
+    locomotiveSelectionChangedListeners.remove(listener);
+  }
 
   private java.awt.Frame getParentFrame() {
     JFrame frame = (JFrame) SwingUtilities.getRoot(this);
@@ -171,37 +183,4 @@ public class LocomotiveTablePanel extends JPanel implements RefreshEventListener
   private javax.swing.JTable locomotiveTable;
   // End of variables declaration//GEN-END:variables
 
-  public static void main(String args[]) {
-    try {
-      String plaf = System.getProperty("jcs.plaf", "com.formdev.flatlaf.FlatLightLaf");
-      if (plaf != null) {
-        UIManager.setLookAndFeel(plaf);
-      } else {
-        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-      }
-    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
-      Logger.error(ex);
-    }
-
-    java.awt.EventQueue.invokeLater(() -> {
-
-      LocomotiveTablePanel testPanel = new LocomotiveTablePanel();
-      JFrame testFrame = new JFrame("LocomotiveTablePanel Tester");
-
-      testFrame.add(testPanel);
-
-      testFrame.addWindowListener(new java.awt.event.WindowAdapter() {
-        @Override
-        public void windowClosing(java.awt.event.WindowEvent e) {
-          System.exit(0);
-        }
-      });
-      testFrame.pack();
-      testFrame.setLocationRelativeTo(null);
-
-      //testPanel.loadLocomotives();
-      testPanel.locomotiveBeanTableModel.refresh();
-      testFrame.setVisible(true);
-    });
-  }
 }

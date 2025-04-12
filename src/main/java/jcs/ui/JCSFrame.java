@@ -120,19 +120,22 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
         //avoid overlap of the red/orange/green buttons and the window title
         //jcsToolBar.add(Box.createHorizontalStrut(70), 0);
       }
-
-      initJCS();
     }
+    initJCS();
     initKeyStrokes();
   }
 
   private void initJCS() {
     if (PersistenceFactory.getService() != null) {
-      setTitle(this.getTitleString());
+      setTitle(getTitleString());
 
       if (JCS.getJcsCommandStation().isConnected()) {
         setControllerProperties();
       }
+
+      //Connect the pannels togetehr for the locomotive selection
+      dispatcherStatusPanel.addLocomotiveSelectionChangeListener(smallDriverCabPanel1);
+
       //Show the default panel
       showOverviewPanel();
       editMode = false;

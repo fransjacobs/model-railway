@@ -18,34 +18,45 @@ package jcs.ui;
 import javax.swing.JPanel;
 import jcs.commandStation.events.RefreshEvent;
 import jcs.commandStation.events.RefreshEventListener;
+import jcs.ui.util.LocomotiveSelectionChangedListener;
 
 /**
  *
  */
 public class DispatcherStatusPanel extends JPanel implements RefreshEventListener {
 
-  /**
-   * Creates new form DispatcherStatusPanel
-   */
+  private static final long serialVersionUID = 6158244271104499799L;
+
   public DispatcherStatusPanel() {
     initComponents();
   }
 
   public void showDispatcherTab() {
-    this.tabsPane.setSelectedIndex(1);
+    tabsPane.setSelectedIndex(1);
   }
 
   public void showLocomotiveTab() {
-    this.tabsPane.setSelectedIndex(0);
+    tabsPane.setSelectedIndex(0);
   }
 
   public void refresh() {
-    this.locomotiveTablePanel.refresh();
+    locomotiveTablePanel.refresh();
   }
 
   @Override
   public void onChange(RefreshEvent event) {
-    this.locomotiveTablePanel.onChange(event);
+    locomotiveTablePanel.onChange(event);
+  }
+
+  public void addLocomotiveSelectionChangeListener(LocomotiveSelectionChangedListener listener) {
+    locomotiveTablePanel.addLocomotiveSelectionChangeListener(listener);
+    dispatcherTablePanel.addLocomotiveSelectionChangeListener(listener);
+
+  }
+
+  public void removeLocomotiveSelectionChangeListener(LocomotiveSelectionChangedListener listener) {
+    locomotiveTablePanel.removeLocomotiveSelectionChangeListener(listener);
+    dispatcherTablePanel.removeLocomotiveSelectionChangeListener(listener);
   }
 
   /**

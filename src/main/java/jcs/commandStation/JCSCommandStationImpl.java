@@ -32,6 +32,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
 import jcs.commandStation.events.AccessoryEvent;
@@ -72,10 +74,10 @@ public class JCSCommandStationImpl implements JCSCommandStation {
   private Map<String, AccessoryController> accessoryControllers;
   private Map<String, FeedbackController> feedbackControllers;
 
-  private final List<SensorEventListener> anonymousSensorListeners;
+  private final List<SensorEventListener> sensorListeners;
 
   private final List<AccessoryEventListener> accessoryEventListeners;
-  private final List<LocomotiveFunctionEventListener> LocomotiveFunctionEventListeners;
+  private final List<LocomotiveFunctionEventListener> locomotiveFunctionEventListeners;
 
   private final List<LocomotiveDirectionEventListener> locomotiveDirectionEventListeners;
   private final List<LocomotiveSpeedEventListener> locomotiveSpeedEventListeners;
@@ -85,17 +87,27 @@ public class JCSCommandStationImpl implements JCSCommandStation {
   private final Set<Protocol> supportedProtocols;
   private CommandStationBean commandStation;
 
+  private final ExecutorService executor;
+
+  private static final String AWT_THREAD = "AWT-EventQueue-0";
+
+  /**
+   * Wrapper around the "real" CommandStation implementation.<br>
+   * Operations to commandStations should not be performed in the EventDispatch thread.<br>
+   * Operations to commandStations are performed in a worker thread to avoid blocking the EventDispatch thread.<br>
+   */
   public JCSCommandStationImpl() {
     this("true".equalsIgnoreCase(System.getProperty("skip.controller.autoconnect", "true")));
   }
 
   private JCSCommandStationImpl(boolean autoConnectController) {
+    executor = Executors.newCachedThreadPool();
     accessoryControllers = new HashMap<>();
     feedbackControllers = new HashMap<>();
 
-    anonymousSensorListeners = new LinkedList<>();
+    sensorListeners = new LinkedList<>();
     accessoryEventListeners = new LinkedList<>();
-    LocomotiveFunctionEventListeners = new LinkedList<>();
+    locomotiveFunctionEventListeners = new LinkedList<>();
     locomotiveDirectionEventListeners = new LinkedList<>();
     locomotiveSpeedEventListeners = new LinkedList<>();
     measurementEventListeners = new LinkedList<>();
@@ -296,11 +308,11 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     }
 
     //Enable command station switching so
-    this.decoderController = null;
-    this.accessoryControllers.clear();
-    this.feedbackControllers.clear();
+    decoderController = null;
+    accessoryControllers.clear();
+    feedbackControllers.clear();
 
-    this.commandStation = null;
+    commandStation = null;
     ControllerFactory.reset();
   }
 
@@ -422,8 +434,10 @@ public class JCSCommandStationImpl implements JCSCommandStation {
   @Override
   public void switchPower(boolean on) {
     //Logger.trace("Switch Power " + (on ? "On" : "Off"));
-    if (decoderController != null) {
+    if (decoderController != null && !AWT_THREAD.equals(Thread.currentThread().getName())) {
       decoderController.power(on);
+    } else {
+      executor.execute(() -> decoderController.power(on));
     }
   }
 
@@ -450,12 +464,14 @@ public class JCSCommandStationImpl implements JCSCommandStation {
         address = locomotive.getId().intValue();
       }
     }
-    if (decoderController != null) {
-      //Set the velocity to zero before changing the direction
-      //Run this in a worker thread...
-
+    if (decoderController != null && !AWT_THREAD.equals(Thread.currentThread().getName())) {
       decoderController.changeVelocity(address, 0, locomotive.getDirection());
       decoderController.changeDirection(address, newDirection);
+    } else {
+      executor.execute(() -> {
+        decoderController.changeVelocity(address, 0, locomotive.getDirection());
+        decoderController.changeDirection(address, newDirection);
+      });
     }
   }
 
@@ -472,8 +488,11 @@ public class JCSCommandStationImpl implements JCSCommandStation {
         address = locomotive.getId().intValue();
       }
     }
-    if (decoderController != null) {
+
+    if (decoderController != null && !AWT_THREAD.equals(Thread.currentThread().getName())) {
       decoderController.changeVelocity(address, newVelocity, locomotive.getDirection());
+    } else {
+      executor.execute(() -> decoderController.changeVelocity(address, newVelocity, locomotive.getDirection()));
     }
   }
 
@@ -490,8 +509,10 @@ public class JCSCommandStationImpl implements JCSCommandStation {
         address = locomotive.getId().intValue();
       }
     }
-    if (decoderController != null) {
+    if (decoderController != null && !AWT_THREAD.equals(Thread.currentThread().getName())) {
       decoderController.changeFunctionValue(address, functionNumber, newValue);
+    } else {
+      executor.execute(() -> decoderController.changeFunctionValue(address, functionNumber, newValue));
     }
   }
 
@@ -522,45 +543,57 @@ public class JCSCommandStationImpl implements JCSCommandStation {
       }
     }
 
-    Logger.trace("Change accessory with address: " + address + ", " + accessory.getName() + " to " + val.getValue());
-    for (AccessoryController ac : accessoryControllers.values()) {
-      ac.switchAccessory(address, protocol.getValue(), val, switchTime);
+    Logger.trace("Changing accessory with address: " + address + ", " + accessory.getName() + " to " + val.getValue());
+    changeAccessory(address, protocol.getValue(), val, switchTime);
+  }
+
+  private void changeAccessory(final Integer address, final String protocol, final AccessoryValue value, final Integer switchTime) {
+    if (!AWT_THREAD.equals(Thread.currentThread().getName())) {
+      for (AccessoryController ac : accessoryControllers.values()) {
+        ac.switchAccessory(address, protocol, value, switchTime);
+      }
+    } else {
+      executor.execute(() -> {
+        for (AccessoryController ac : accessoryControllers.values()) {
+          ac.switchAccessory(address, protocol, value, switchTime);
+        }
+      });
     }
   }
 
   @Override
   public void addSensorEventListener(SensorEventListener listener) {
-    this.anonymousSensorListeners.add(listener);
+    sensorListeners.add(listener);
   }
 
   @Override
   public void removeSensorEventListener(SensorEventListener listener) {
-    this.anonymousSensorListeners.remove(listener);
+    sensorListeners.remove(listener);
   }
 
   @Override
   public void addAccessoryEventListener(AccessoryEventListener listener) {
-    this.accessoryEventListeners.add(listener);
+    accessoryEventListeners.add(listener);
   }
 
   @Override
   public void removeAccessoryEventListener(AccessoryEventListener listener) {
-    this.accessoryEventListeners.remove(listener);
+    accessoryEventListeners.remove(listener);
   }
 
   @Override
   public void addLocomotiveFunctionEventListener(LocomotiveFunctionEventListener listener) {
-    this.LocomotiveFunctionEventListeners.add(listener);
+    locomotiveFunctionEventListeners.add(listener);
   }
 
   @Override
   public void removeLocomotiveFunctionEventListener(LocomotiveFunctionEventListener listener) {
-    this.LocomotiveFunctionEventListeners.remove(listener);
+    locomotiveFunctionEventListeners.remove(listener);
   }
 
   @Override
   public void addLocomotiveDirectionEventListener(LocomotiveDirectionEventListener listener) {
-    this.locomotiveDirectionEventListeners.add(listener);
+    locomotiveDirectionEventListeners.add(listener);
   }
 
   @Override
@@ -570,12 +603,12 @@ public class JCSCommandStationImpl implements JCSCommandStation {
 
   @Override
   public void addLocomotiveSpeedEventListener(LocomotiveSpeedEventListener listener) {
-    this.locomotiveSpeedEventListeners.add(listener);
+    locomotiveSpeedEventListeners.add(listener);
   }
 
   @Override
   public void removeLocomotiveSpeedEventListener(LocomotiveSpeedEventListener listener) {
-    this.locomotiveSpeedEventListeners.remove(listener);
+    locomotiveSpeedEventListeners.remove(listener);
   }
 
   @Override
@@ -687,7 +720,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
       }
 
       //Avoid concurrent modification exceptions
-      List<SensorEventListener> snapshot = new ArrayList<>(commandStation.anonymousSensorListeners);
+      List<SensorEventListener> snapshot = new ArrayList<>(commandStation.sensorListeners);
 
       for (SensorEventListener sl : snapshot) {
         if (sl != null) {
@@ -787,7 +820,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
             PersistenceFactory.getService().persist(dbfb);
             functionEvent.setFunctionBean(dbfb);
           }
-          for (LocomotiveFunctionEventListener fl : trackService.LocomotiveFunctionEventListeners) {
+          for (LocomotiveFunctionEventListener fl : trackService.locomotiveFunctionEventListeners) {
             fl.onFunctionChange(functionEvent);
           }
         }
