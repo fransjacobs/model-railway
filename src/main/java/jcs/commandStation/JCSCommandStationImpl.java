@@ -436,7 +436,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     //Logger.trace("Switch Power " + (on ? "On" : "Off"));
     if (decoderController != null && !AWT_THREAD.equals(Thread.currentThread().getName())) {
       decoderController.power(on);
-    } else {
+    } else if (decoderController != null) {
       executor.execute(() -> decoderController.power(on));
     }
   }
