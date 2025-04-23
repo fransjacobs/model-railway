@@ -374,7 +374,7 @@ public class CanMessage implements MarklinCan {
 
   @Override
   public String toString() {
-    return ByteUtil.toHexString(this.getMessage());
+    return ByteUtil.toHexString(getMessage());
   }
 
   public int getNumberOfMeasurementValues() {

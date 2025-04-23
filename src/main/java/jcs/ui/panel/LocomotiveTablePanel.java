@@ -40,7 +40,7 @@ import jcs.ui.util.LocomotiveSelectionChangedListener;
 import org.tinylog.Logger;
 
 /**
- *
+ * Panel to show locomotives in tabular format 
  */
 public class LocomotiveTablePanel extends JPanel implements RefreshEventListener {
 

@@ -455,15 +455,21 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     Logger.debug("Changing direction to " + newDirection + " for: " + locomotive.getName() + " id: " + locomotive.getId());
 
     int address;
-    if (supportedProtocols.size() == 1) {
-      address = locomotive.getAddress();
+    if ("marklin.cs".equals(locomotive.getCommandStationId()) || "esu-ecos".equals(locomotive.getCommandStationId())) {
+      address = locomotive.getId().intValue();
     } else {
-      if (locomotive.getUid() != null) {
-        address = locomotive.getUid().intValue();
+      //TODO: check this probably not needed anymore
+      if (supportedProtocols.size() == 1) {
+        address = locomotive.getAddress();
       } else {
-        address = locomotive.getId().intValue();
+        if (locomotive.getUid() != null) {
+          address = locomotive.getUid().intValue();
+        } else {
+          address = locomotive.getId().intValue();
+        }
       }
     }
+
     if (decoderController != null && !AWT_THREAD.equals(Thread.currentThread().getName())) {
       decoderController.changeVelocity(address, 0, locomotive.getDirection());
       decoderController.changeDirection(address, newDirection);
@@ -478,14 +484,20 @@ public class JCSCommandStationImpl implements JCSCommandStation {
   @Override
   public void changeLocomotiveSpeed(Integer newVelocity, LocomotiveBean locomotive) {
     Logger.trace("Changing velocity to " + newVelocity + " for " + locomotive.getName());
+
     int address;
-    if (supportedProtocols.size() == 1) {
-      address = locomotive.getAddress();
+    if ("marklin.cs".equals(locomotive.getCommandStationId()) || "esu-ecos".equals(locomotive.getCommandStationId())) {
+      address = locomotive.getId().intValue();
     } else {
-      if (locomotive.getUid() != null) {
-        address = locomotive.getUid().intValue();
+      //TODO: check this probably not needed anymore
+      if (supportedProtocols.size() == 1) {
+        address = locomotive.getAddress();
       } else {
-        address = locomotive.getId().intValue();
+        if (locomotive.getUid() != null) {
+          address = locomotive.getUid().intValue();
+        } else {
+          address = locomotive.getId().intValue();
+        }
       }
     }
 
@@ -500,13 +512,18 @@ public class JCSCommandStationImpl implements JCSCommandStation {
   public void changeLocomotiveFunction(Boolean newValue, Integer functionNumber, LocomotiveBean locomotive) {
     Logger.trace("Changing Function " + functionNumber + " to " + (newValue ? "on" : "off") + " on " + locomotive.getName());
     int address;
-    if (this.supportedProtocols.size() == 1) {
-      address = locomotive.getAddress();
+    if ("marklin.cs".equals(locomotive.getCommandStationId()) || "esu-ecos".equals(locomotive.getCommandStationId())) {
+      address = locomotive.getId().intValue();
     } else {
-      if (locomotive.getUid() != null) {
-        address = locomotive.getUid().intValue();
+      //TODO: check this probably not needed anymore
+      if (supportedProtocols.size() == 1) {
+        address = locomotive.getAddress();
       } else {
-        address = locomotive.getId().intValue();
+        if (locomotive.getUid() != null) {
+          address = locomotive.getUid().intValue();
+        } else {
+          address = locomotive.getId().intValue();
+        }
       }
     }
     if (decoderController != null && !AWT_THREAD.equals(Thread.currentThread().getName())) {
@@ -925,7 +942,11 @@ public class JCSCommandStationImpl implements JCSCommandStation {
             }
           }
         } else {
-          Logger.trace("No loc found for " + lb.toLogString());
+          if ("marklin.cs".equals(lb.getCommandStationId()) || "esu-ecos".equals(lb.getCommandStationId())) {
+            Logger.trace("No loc with id " + lb.getId() + ", " + lb.getCommandStationId());
+          } else {
+            Logger.trace("No loc found for " + lb.toLogString());
+          }
         }
       }
     }

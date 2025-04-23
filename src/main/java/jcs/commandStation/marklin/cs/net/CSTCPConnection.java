@@ -205,7 +205,7 @@ class CSTCPConnection implements CSConnection {
     }
 
     //Capture messages for now to be able to develop the virtual mode
-    Logger.trace("#TX: " + message + " is response " + message.isResponseMessage());
+    Logger.trace("#TX: " + message + (message.isResponseMessage() ? " response msg" : ""));
     if (!message.isResponseMessage()) {
       if (message.getResponses().size() > 1) {
         List<CanMessage> responses = message.getResponses();

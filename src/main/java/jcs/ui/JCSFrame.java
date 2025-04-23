@@ -37,12 +37,10 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -133,8 +131,8 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
         setControllerProperties();
       }
 
-      //Connect the pannels togetehr for the locomotive selection
-      dispatcherStatusPanel.addLocomotiveSelectionChangeListener(smallDriverCabPanel1);
+      //Connect the panels so that they are notified with the locomotive selection
+      dispatcherStatusPanel.addLocomotiveSelectionChangeListener(smallDriverCabPanel);
 
       //Show the default panel
       showOverviewPanel();
@@ -338,9 +336,9 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     commandStationPanel = new CommandStationPanel();
     vncPanel = new VNCPanel();
     leftPanel = new JPanel();
-    jSplitPane1 = new JSplitPane();
+    locoSplitPane = new JSplitPane();
     dispatcherStatusPanel = new DispatcherStatusPanel();
-    smallDriverCabPanel1 = new SmallDriverCabPanel();
+    smallDriverCabPanel = new SmallDriverCabPanel();
     jcsMenuBar = new JMenuBar();
     fileMenu = new JMenu();
     quitMI = new JMenuItem();
@@ -645,19 +643,18 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     leftPanel.setPreferredSize(new Dimension(225, 772));
     leftPanel.setLayout(new BorderLayout(1, 1));
 
-    jSplitPane1.setDividerLocation(500);
-    jSplitPane1.setOrientation(JSplitPane.VERTICAL_SPLIT);
-    jSplitPane1.setToolTipText("");
-    jSplitPane1.setName("jSplitPane1"); // NOI18N
+    locoSplitPane.setDividerLocation(500);
+    locoSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+    locoSplitPane.setToolTipText("");
+    locoSplitPane.setName("locoSplitPane"); // NOI18N
 
     dispatcherStatusPanel.setName("dispatcherStatusPanel"); // NOI18N
-    dispatcherStatusPanel.setPreferredSize(new Dimension(300, 450));
-    jSplitPane1.setLeftComponent(dispatcherStatusPanel);
+    locoSplitPane.setLeftComponent(dispatcherStatusPanel);
 
-    smallDriverCabPanel1.setName("smallDriverCabPanel1"); // NOI18N
-    jSplitPane1.setRightComponent(smallDriverCabPanel1);
+    smallDriverCabPanel.setName("smallDriverCabPanel"); // NOI18N
+    locoSplitPane.setRightComponent(smallDriverCabPanel);
 
-    leftPanel.add(jSplitPane1, BorderLayout.CENTER);
+    leftPanel.add(locoSplitPane, BorderLayout.CENTER);
 
     locoDisplaySP.setLeftComponent(leftPanel);
 
@@ -1209,13 +1206,13 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   private JMenuItem flipTileHorizontallyMI;
   private JMenuItem flipTileVerticallyMI;
   private JMenu helpMenu;
-  private JSplitPane jSplitPane1;
   private JMenuBar jcsMenuBar;
   private JToolBar jcsToolBar;
   private KeyboardSensorPanel keyboardSensorMessagePanel;
   private LayoutPanel layoutPanel;
   private JPanel leftPanel;
   private JSplitPane locoDisplaySP;
+  private JSplitPane locoSplitPane;
   private JPanel mainPanel;
   private LayoutPanel overviewPanel;
   private JToggleButton powerButton;
@@ -1237,7 +1234,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   private JMenuItem showRoutesMI;
   private JMenuItem showSensorMonitor;
   private JButton showVNCBtn;
-  private SmallDriverCabPanel smallDriverCabPanel1;
+  private SmallDriverCabPanel smallDriverCabPanel;
   private JButton startAllLocsBtn;
   private JMenuItem startAllLocsMI;
   private StatusPanel statusPanel;

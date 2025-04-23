@@ -583,9 +583,10 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     if (power && connected) {
       //VelocityChange 0x00 0x09 0x03 0x26 0x06 0x00 0x00 0x40 0x0c 0x00 0x30 0x00 0x00
       //16396
-      CanMessage message = CanMessageFactory.setLocSpeed(locUid, speed, this.csUid);
-      Logger.trace("Ch Velocity: "+message);
+      CanMessage message = CanMessageFactory.setLocSpeed(locUid, speed, csUid);
+      Logger.trace("Ch Velocity for uid: "+locUid+" -> "+message);
       message = sendMessage(message);
+      
       LocomotiveSpeedEvent vme = LocomotiveVelocityMessage.parse(message);
       notifyLocomotiveSpeedEventListeners(vme);
 
@@ -594,10 +595,9 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
         //When in Auto mode try to simulate the first sensor the locomotive is suppose to hit.
         if (AutoPilot.isAutoModeActive() && speed > 0) {
           //simulateDriving(locUid, speed, direction);
-          this.simulator.simulateDriving(locUid, speed, direction);
+          simulator.simulateDriving(locUid, speed, direction);
         }
       }
-
     }
   }
 
