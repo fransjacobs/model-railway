@@ -15,12 +15,15 @@
  */
 package jcs.commandStation.marklin.cs;
 
+import jcs.commandStation.marklin.cs.can.device.CanDevice;
 import jcs.commandStation.marklin.cs.can.parser.FeedbackEventMessage;
 import java.awt.Image;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TransferQueue;
 import java.util.stream.Collectors;
@@ -72,6 +75,7 @@ import jcs.commandStation.autopilot.AutoPilot;
 import jcs.commandStation.autopilot.DriveSimulator;
 import jcs.commandStation.events.DisconnectionEvent;
 import jcs.commandStation.events.DisconnectionEventListener;
+import jcs.commandStation.marklin.cs.can.parser.CanDevices;
 import jcs.commandStation.marklin.cs.can.parser.LocomotiveEmergencyStopMessage;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.Direction;
@@ -98,6 +102,10 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   Map<Integer, ChannelBean> analogChannels;
 
   private DriveSimulator simulator;
+
+  private Long canBootLoaderLastCallMillis;
+  private WatchdogTask watchdogTask;
+  private Timer watchDogTimer;
 
   public MarklinCentralStationImpl(CommandStationBean commandStationBean) {
     this(commandStationBean, false);
@@ -158,14 +166,11 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       }
 
       CSConnection csConnection = CSConnectionFactory.getConnection(virtual);
-      if (csConnection != null) {
-        csConnection.addDisconnectionEventListener(this);
-      }
 
       connection = csConnection;
 
       if (connection != null) {
-        //Wait, if needed until the receiver thread has started
+        //Wait until the receiver thread has started
         long now = System.currentTimeMillis();
         long timeout = now + 1000L;
 
@@ -178,6 +183,8 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
         }
 
         if (connected) {
+          canBootLoaderLastCallMillis = System.currentTimeMillis();
+
           //The eventMessageHandler Thread is in charge to handle all event messages which are send from the CS to JCS
           eventMessageHandler = new EventMessageHandler(connection);
           eventMessageHandler.start();
@@ -209,6 +216,8 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
             Logger.warn("No main Device found yet...");
           }
 
+          csConnection.addDisconnectionEventListener(this);
+          startWatchdog();
           power = isPower();
           JCS.logProgress("Power is " + (power ? "On" : "Off"));
 
@@ -220,9 +229,9 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       }
     }
 
-    if (isCS3()) {
-      getMembers();
-    }
+//    if (isCS3()) {
+//      getMembers();
+//    }
     if (isVirtual()) {
       simulator = new DriveSimulator();
       Logger.info("Marklin Central Station Virtual Mode Enabled!");
@@ -277,13 +286,13 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       }
       String an = d.getArticleNumber();
       if ("60213".equals(an) || "60214".equals(an) || "60215".equals(an) || "60126".equals(an) || "60226".equals(an)) {
-        this.csUid = d.getUidAsInt();
-        this.mainDevice = d;
+        csUid = d.getUidAsInt();
+        mainDevice = d;
         Logger.trace("MainDevice: " + d.getName());
       }
 
       if ("60883".equals(an)) {
-        this.feedbackDevice = d;
+        feedbackDevice = d;
         Logger.trace("FeedbackDevice: " + d.getName());
       }
 
@@ -389,16 +398,13 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     }
   }
 
+//#TX: 0x00 0x30 0x07 0x69 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00   -> Member ping
+//#RX 0: 0x00 0x31 0x37 0x7e 0x08 0x63 0x73 0x45 0x8d 0x02 0x05 0xff 0xff -> Response member CS2-GUI (Master) sw 0x02 0x05 id: 0x63 0x73 0x45 0x8d
+//#RX 1: 0x00 0x31 0x7b 0x79 0x08 0x53 0x38 0x5c 0x41 0x01 0x01 0x00 0x40 -> ? sw 0x01 0x01 id: 0x53 0x38 0x5c 0x41
+//#RX 2: 0x00 0x31 0x03 0x26 0x08 0x63 0x73 0x45 0x8c 0x0c 0x71 0x00 0x50 -> ? sw 0x0c 0x71 id: 0x63 0x73 0x45 0x8c
   void getMembers() {
     CanMessage msg = CanMessageFactory.getMembersPing();
     connection.sendCanMessage(msg);
-
-    if (debug) {
-      Logger.trace(msg);
-      for (CanMessage r : msg.getResponses()) {
-        Logger.trace(r);
-      }
-    }
 
     for (CanMessage r : msg.getResponses()) {
       DeviceBean d = new DeviceBean(r);
@@ -406,27 +412,24 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       if (!devices.containsKey(d.getUidAsInt())) {
         devices.put(d.getUidAsInt(), d);
       }
-      if (debug) {
-        Logger.trace("Found uid: " + d.getUid() + " deviceId: " + d.getIdentifier() + " Device Type: " + d.getDevice());
-      }
+      Logger.trace("Found uid: " + d.getUid() + " deviceId: " + d.getIdentifier() + " Device Type: " + d.getDevice());
     }
-    if (debug) {
-      Logger.trace("Found " + this.devices.size() + " devices");
-    }
+    Logger.trace("Found " + devices.size() + " devices");
+
     while (mainDevice == null) {
-      for (DeviceBean d : this.getDevices()) {
+      for (DeviceBean d : getDevices()) {
         if (!d.isDataComplete()) {
           if (debug) {
             Logger.trace("Requesting more info for uid: " + d.getUid());
           }
           CanMessage updateMessage = sendMessage(CanMessageFactory.statusDataConfig(d.getUidAsInt(), 0));
 
-          if (debug) {
-            Logger.trace(updateMessage);
-            for (CanMessage r : updateMessage.getResponses()) {
-              Logger.trace(r);
-            }
+          //if (debug) {
+          Logger.trace(updateMessage);
+          for (CanMessage r : updateMessage.getResponses()) {
+            Logger.trace(r);
           }
+          //}
           d.updateFromMessage(updateMessage);
           if (debug) {
             if (d.isDataComplete()) {
@@ -438,7 +441,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
         }
       }
 
-      for (DeviceBean d : this.getDevices()) {
+      for (DeviceBean d : getDevices()) {
         if (d.isDataComplete() && ("60213".equals(d.getArticleNumber()) || "60214".equals(d.getArticleNumber()) || "60215".equals(d.getArticleNumber()) || "60126".equals(d.getArticleNumber()) || "60226".equals(d.getArticleNumber()))) {
           csUid = d.getUidAsInt();
           mainDevice = d;
@@ -458,6 +461,130 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
         }
       }
     }
+  }
+
+  //Map<Integer, DeviceBean> devices;
+  void memberPing() {
+    Map<Integer, CanDevice> members = new HashMap<>();
+    CanMessage msg = CanMessageFactory.getMembersPing();
+    connection.sendCanMessage(msg);
+
+    List<CanDevice> canDevices = CanDevices.parse(msg);
+    for (CanDevice d : canDevices) {
+      if (!members.containsKey(d.getUidInt())) {
+        members.put(d.getUidInt(), d);
+      }
+    }
+
+    for (CanDevice device : canDevices) {
+      Logger.trace("Device: " + device);
+    }
+
+    //Lets get some info about these members
+    //for (CanDevice d : members.values()) {
+    for (CanDevice device : canDevices) {
+      //if ("0x6373458c".equals(device.getUid())) {
+      if ("0x53385c41".equals(device.getUid())) {
+        //if (!d.isDataComplete()) {
+        Logger.trace("Query Device data for uid: " + device.getUid());
+
+        CanMessage updateMessage = sendMessage(CanMessageFactory.statusDataConfig(device.getUidInt(), 0));
+        CanDevices.parse(device, updateMessage);
+
+        Logger.trace("Device: " + device);
+
+        int measurementChannels;
+        if (device.getMeasureChannelCount() == null) {
+          measurementChannels = 0;
+        } else {
+          measurementChannels = device.getMeasureChannelCount();
+        }
+        int configChannels;
+        if (device.getConfigChannelCount() == null) {
+          configChannels = 0;
+        } else {
+          configChannels = device.getConfigChannelCount();
+        }
+
+        Logger.trace("Device " + device.getName() + " has " + measurementChannels + " Measurement Channels and " + configChannels + " Config Channels");
+        int channels = measurementChannels + configChannels;
+        if (channels > 0) {
+          for (int index = 1; index <= channels; index++) {
+            updateMessage = sendMessage(CanMessageFactory.statusDataConfig(device.getUidInt(), index));
+            CanDevices.parse(device, updateMessage);
+          }
+        }
+      }
+    }
+//       //   d.updateFromMessage(updateMessage);
+//
+//          Logger.trace("Updated with device info: " + d);
+//
+//          if (d.getMeasureChannels() != null && d.getMeasureChannels() > 0) {
+//            Logger.trace(d.getMeasureChannels() + " Measurement Channels");
+//            //Query the measurement channels
+//            int max = d.getMeasureChannels();
+//            for (int ch = 1; ch <= max; ch++) {
+//              Logger.trace("Query measurment channels for device " + d.getName() + " and measure channel " + ch);
+//              updateMessage = sendMessage(CanMessageFactory.statusDataConfig(d.getUidAsInt(), ch));
+//              d.updateFromMessage(updateMessage);
+//
+//              Logger.trace("# Updated after ch " + ch + " " + d);
+//
+//            }
+//            Logger.trace("Updated " + d);
+//          }
+//
+//          if (d.getConfigChannels() != null && d.getConfigChannels() > 0 && 1==2) {
+//            Logger.trace(d.getConfigChannels() + " Config Channels");
+//            //Get the channels
+//            int max = d.getConfigChannels();
+//            for (int ch = 1; ch < max; ch++) {
+//              Logger.trace("Requesting more info for uid: " + d.getUid() + " and config channel " + ch);
+//
+//              updateMessage = sendMessage(CanMessageFactory.statusDataConfig(d.getUidAsInt(), ch));
+//              if (updateMessage.hasValidResponse()) {
+//                d.updateFromMessage(updateMessage);
+//              } else {
+//                break;
+//              }
+//            }
+//            Logger.trace("Updated " + d);
+//          //}
+//
+//          if (d.isDataComplete()) {
+//            Logger.trace("#Updated: " + d);
+//          } else {
+//            Logger.trace("No data received for Device uid: " + d.getUid());
+//          }
+//
+//        } else {
+//          Logger.trace("Data complete for " + d);
+//
+//        }
+//      }
+//    }
+
+//      for (DeviceBean d : getDevices()) {
+//        if (d.isDataComplete() && ("60213".equals(d.getArticleNumber()) || "60214".equals(d.getArticleNumber()) || "60215".equals(d.getArticleNumber()) || "60126".equals(d.getArticleNumber()) || "60226".equals(d.getArticleNumber()))) {
+//          csUid = d.getUidAsInt();
+//          mainDevice = d;
+//          if (debug) {
+//            Logger.trace("Main Device: " + d);
+//          }
+//          if (System.getProperty("cs.article") == null) {
+//            System.setProperty("cs.article", mainDevice.getArticleNumber());
+//            System.setProperty("cs.serial", mainDevice.getSerial());
+//            System.setProperty("cs.name", mainDevice.getName());
+//            System.setProperty("cs.cs3", (isCS3() ? "true" : "false"));
+//          }
+//        } else {
+//          if (debug) {
+//            Logger.trace(d);
+//          }
+//        }
+//      
+//    }
   }
 
   private void updateDevice(final CanMessage message) {
@@ -494,11 +621,11 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
         //Lets send a ping again
         getMembers();
       } else {
-        if (mainDevice != null && this.mainDevice.isDataComplete()) {
+        if (mainDevice != null && mainDevice.isDataComplete()) {
           if (System.getProperty("cs.article") == null) {
-            System.setProperty("cs.article", this.mainDevice.getArticleNumber());
-            System.setProperty("cs.serial", this.mainDevice.getSerial());
-            System.setProperty("cs.name", this.mainDevice.getName());
+            System.setProperty("cs.article", mainDevice.getArticleNumber());
+            System.setProperty("cs.serial", mainDevice.getSerial());
+            System.setProperty("cs.name", mainDevice.getName());
             System.setProperty("cs.cs3", (isCS3() ? "true" : "false"));
             if (debug) {
               Logger.trace("CS " + (isCS3() ? "3" : "2") + " Device: " + device);
@@ -517,9 +644,9 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   @Override
   public synchronized Map<Integer, ChannelBean> getTrackMeasurements() {
     Logger.trace("Perform measurement...");
-    if (this.connected && this.mainDevice != null) {
+    if (connected && mainDevice != null) {
       //main device
-      int nrOfChannels = this.mainDevice.getAnalogChannels().size();
+      int nrOfChannels = mainDevice.getAnalogChannels().size();
 
       ChannelDataParser parser = new ChannelDataParser();
 
@@ -543,7 +670,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
         }
       }
     }
-    return this.analogChannels;
+    return analogChannels;
   }
 
   /**
@@ -584,9 +711,9 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       //VelocityChange 0x00 0x09 0x03 0x26 0x06 0x00 0x00 0x40 0x0c 0x00 0x30 0x00 0x00
       //16396
       CanMessage message = CanMessageFactory.setLocSpeed(locUid, speed, csUid);
-      Logger.trace("Ch Velocity for uid: "+locUid+" -> "+message);
+      Logger.trace("Ch Velocity for uid: " + locUid + " -> " + message);
       message = sendMessage(message);
-      
+
       LocomotiveSpeedEvent vme = LocomotiveVelocityMessage.parse(message);
       notifyLocomotiveSpeedEventListeners(vme);
 
@@ -795,7 +922,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     }
   }
 
-  //TODO Watchdog and measurements als a kind of data table...
+  //TODO measurements als a kind of data table...
   /**
    * Handle Event Message, which are unsolicited messages from the CS.
    */
@@ -860,7 +987,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
             case CanMessage.STATUS_CONFIG -> {
               if (CanMessage.JCS_UID == uid && CanMessage.DLC_5 == dlc) {
                 Logger.trace("StatusConfig RQ: " + eventMessage);
-                sentJCSInformationMessage();
+                //sentJCSInformationMessage();
               }
             }
             case CanMessage.STATUS_CONFIG_RESP -> {
@@ -887,7 +1014,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
               }
             }
             case CanMessage.SYSTEM_COMMAND -> {
-              Logger.trace("SystemConfigCommand RX: " + eventMessage);
+              //Logger.trace("SystemConfigCommand RX: " + eventMessage);
             }
             case CanMessage.SYSTEM_COMMAND_RESP -> {
               switch (subcmd) {
@@ -929,7 +1056,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
             }
             case CanMessage.LOC_VELOCITY_RESP -> {
               Logger.trace("VelocityChange " + eventMessage);
-              
+
               notifyLocomotiveSpeedEventListeners(LocomotiveVelocityMessage.parse(eventMessage));
             }
             case CanMessage.LOC_DIRECTION -> {
@@ -946,13 +1073,11 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
             case CanMessage.LOC_FUNCTION_RESP -> {
               notifyLocomotiveFunctionEventListeners(LocomotiveFunctionEventParser.parseMessage(eventMessage));
             }
+            case CanMessage.BOOTLOADER_CAN -> {
+              //Update the last time millis. Used for the watchdog timer.
+              canBootLoaderLastCallMillis = System.currentTimeMillis();
+            }
             default -> {
-              if (CanMessage.BOOTLOADER_CAN != 0x36) {
-                //Do not log the bootloader message. it is not used in JCS.
-                if (debug) {
-                  Logger.trace("# " + eventMessage);
-                }
-              }
             }
           }
 
@@ -962,7 +1087,51 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       }
 
       Logger.debug("Stop Event handling");
+    }
+  }
 
+  private void startWatchdog() {
+    long checkInterval = Long.parseLong(System.getProperty("connection.watchdog.interval", "10"));
+    checkInterval = checkInterval * 1000;
+
+    if (checkInterval > 0 && !virtual) {
+      watchdogTask = new WatchdogTask(this);
+      watchDogTimer = new Timer("WatchDogTimer");
+      watchDogTimer.schedule(watchdogTask, 0, checkInterval);
+      Logger.debug("Started Watchdog Timer with an interval of " + checkInterval + "ms");
+    } else {
+      Logger.debug("Skipping Watchdog Timer");
+    }
+  }
+
+  private class WatchdogTask extends TimerTask {
+
+    private final MarklinCentralStationImpl commandStation;
+    private final long checkInterval;
+
+    WatchdogTask(MarklinCentralStationImpl commandStation) {
+      this.commandStation = commandStation;
+      checkInterval = Long.parseLong(System.getProperty("connection.watchdog.interval", "10")) * 1000;
+    }
+
+    @Override
+    public void run() {
+      if (commandStation.isConnected() && !virtual) {
+        Long now = System.currentTimeMillis();
+        long diff = now - commandStation.canBootLoaderLastCallMillis;
+        boolean connectionLost = checkInterval < diff;
+
+        if (connectionLost) {
+          Logger.trace("The last CANBootLoader request is received more than " + (checkInterval / 1000) + "s ago!");
+          DisconnectionEvent de = new DisconnectionEvent("Marklin Central Station");
+          commandStation.onDisconnect(de);
+        }
+      } else {
+        //Try to reconnect
+        if (!virtual && "true".equalsIgnoreCase(System.getProperty("controller.autoconnect", "true"))) {
+          commandStation.connect();
+        }
+      }
     }
   }
 
@@ -988,26 +1157,30 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     csb.setProtocols("DCC,MFX,MM");
     csb.setDefault(true);
     csb.setEnabled(true);
-    csb.setVirtual(true);
+    csb.setVirtual(false);
 
     MarklinCentralStationImpl cs = new MarklinCentralStationImpl(csb, false);
+    cs.debug = true;
+
     Logger.debug((cs.connect() ? "Connected" : "NOT Connected"));
 
     if (cs.isConnected()) {
-      Logger.debug("Power is " + (cs.isPower() ? "ON" : "Off"));
-      cs.power(false);
-      Logger.debug("Power is " + (cs.isPower() ? "ON" : "Off"));
-      cs.power(true);
-
-      Logger.debug("Switch Accessory 2 to Red");
-      //cs.switchAccessory(2, AccessoryValue.RED, 250);
-
-      Logger.debug("Switch Accessory 2 to Green");
+//      Logger.debug("Power is " + (cs.isPower() ? "ON" : "Off"));
+//      cs.power(false);
+//      Logger.debug("Power is " + (cs.isPower() ? "ON" : "Off"));
+//      cs.power(true);
+//
+//      Logger.debug("Switch Accessory 2 to Red");
+//      //cs.switchAccessory(2, AccessoryValue.RED, 250);
+//
+//      Logger.debug("Switch Accessory 2 to Green");
       //cs.switchAccessory(2, AccessoryValue.GREEN, 250);
 
       //cs.getLocomotivesViaCAN();
       //cs.getAccessoriesViaCan();
       //cs.pause(2000);
+      //cs.getMembers();
+      cs.memberPing();
       //Logger.trace("getStatusDataConfig CS3");
       //cs.getStatusDataConfigCS3();
       //cs.pause(2000);
@@ -1099,7 +1272,8 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 //    for (LocomotiveBean loc : locs) {
 //      Logger.trace(loc);
 //    }
-    cs.pause(40000);
+    //cs.pause(40000);
+    cs.pause(20000);
     cs.disconnect();
 //    cs.pause(100L);
     Logger.debug("DONE");

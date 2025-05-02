@@ -52,6 +52,8 @@ public class DeviceBean {
   private String articleNumber;
   private String serial;
   private Integer queryInteval;
+  private Integer measureChannels;
+  private Integer configChannels; 
 
   private String version;
   private Boolean present;
@@ -297,19 +299,27 @@ public class DeviceBean {
       System.arraycopy(data, 6, deva, 0, deva.length);
 
       int uidAsInt = resp.getDeviceUidNumberFromMessage();
-
-      this.uid = "0x" + Integer.toHexString(uidAsInt);
+      uid = "0x" + Integer.toHexString(uidAsInt);
 
       //this.uid = resp.getDeviceUidNumberFromMessage();
       //TODO: Version is not same displayed in the CS
-      this.version = "" + CanMessage.toInt(vera);
+      version = "" + CanMessage.toInt(vera);
       //TODO: in case of a Link S88 it is offset by 1 so device ID + 1
 
       int identifierAsInt = CanMessage.toInt(deva);
-      this.identifier = "0x" + Integer.toHexString(identifierAsInt);
+      identifier = "0x" + Integer.toHexString(identifierAsInt);
       //this.identifier = CanMessage.toInt(deva);
     }
   }
+  
+//Requesting more info for uid: 0x53385c41
+//#TX: 0x00 0x3a 0x7b 0x79 0x05 0x53 0x38 0x5c 0x41 0x00 0x00 0x00 0x00 index is 0 device description
+//#RX 0: 0x00 0x3b 0x03 0x01 0x08 0x00 0x0c 0x00 0x00 0x00 0x00 0x24 0x41  char meetwaarde in device 0x00 0x0c aanta config channels0x00 0x00 U32 serie nr  0x24 0x41 
+//#RX 1: 0x00 0x3b 0x03 0x02 0x08 0x36 0x30 0x38 0x38 0x33 0x00 0x00 0x00
+//#RX 2: 0x00 0x3b 0x03 0x03 0x08 0x4c 0x69 0x6e 0x6b 0x20 0x53 0x38 0x38
+//#RX 3: 0x00 0x3b 0x03 0x04 0x08 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+//#RX 4: 0x00 0x3b 0x3f 0x3c 0x06 0x53 0x38 0x5c 0x41 0x00 0x04 0x00 0x00
+  
 
   public void updateFromMessage(CanMessage message) {
     //Filter the responses
@@ -319,11 +329,6 @@ public class DeviceBean {
         responses.add(resp);
       }
     }
-
-//    Logger.trace(message);
-//    for (CanMessage r : responses) {
-//      Logger.trace(r);
-//    }
     if (!responses.isEmpty()) {
       //The last response has the total response messages
       CanMessage last = responses.get(responses.size() - 1);

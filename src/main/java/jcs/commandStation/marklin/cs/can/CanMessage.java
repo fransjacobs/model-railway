@@ -91,8 +91,25 @@ public class CanMessage implements MarklinCan {
     return val;
   }
 
+  public static int getStringLength(byte[] data) {
+    //A string is terminated with 0x00. Return the lengt before the termination
+    for (int l = 0; l < data.length; l++) {
+      if (data[l] == 0) {
+        //found terminator
+        return l;
+      }
+    }
+    return data.length;
+  }
+
   public static String toString(byte[] data) {
     return new String(data);
+  }
+
+  public static String toString(byte[] data, int length) {
+    byte[] stringData = new byte[length];
+    System.arraycopy(data, 0, stringData, 0, stringData.length);
+    return new String(stringData);
   }
 
   public static final byte toByte(int value) {
@@ -440,6 +457,7 @@ public class CanMessage implements MarklinCan {
    * 0x00 0x00 0x07 0x69 0x04 0x00 0x00 0x00 0x00 0x00 0xab 0x00 0xfc
    *
    * @param message a CAN message with content as in the given String
+   * @return 
    */
   public static CanMessage parse(String message) {
     return parse(message, false);
