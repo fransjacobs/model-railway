@@ -196,13 +196,13 @@ public class CanMessageFactory implements MarklinCan {
    * @param gfpUid the GFP UID
    * @return
    */
-  public static CanMessage systemStatus(int channel, int gfpUid) {
+  public static CanMessage systemStatus(int uid, int channel) {
     byte[] data = new byte[CanMessage.DATA_SIZE];
     byte[] hash;
-    if (gfpUid > 0) {
-      byte[] uid = CanMessage.to4Bytes(gfpUid);
-      System.arraycopy(uid, 0, data, 0, uid.length);
-      hash = CanMessage.generateHash(gfpUid);
+    if (uid > 0) {
+      byte[] uidb = CanMessage.to4Bytes(uid);
+      System.arraycopy(uidb, 0, data, 0, uidb.length);
+      hash = CanMessage.generateHash(uid);
     } else {
       hash = MAGIC_HASH;
     }

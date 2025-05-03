@@ -15,12 +15,12 @@
  */
 package jcs.commandStation.marklin.cs.can.device;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import jcs.commandStation.marklin.cs.can.CanMessage;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 /**
  * A CanDevice is a Device inside or connected to the Marklin Central Station<br>
@@ -52,6 +52,7 @@ public class CanDevice {
 //  Gerätebezeichnung, \0 Terminiert
   private String uid;
   private String version;
+  private String hwVersion;
   private String identifier;
   private Integer measureChannelCount;
   private Integer configChannelCount;
@@ -59,16 +60,6 @@ public class CanDevice {
   private String articleNumber;
   private String name;
 
-//  private String typeName;
-//  private String type;
-//  private Integer queryInteval;
-//  private Boolean present;
-//  private Integer available;
-//  private String config;
-//  private Boolean ready;
-//  private String path;
-//  private Boolean mounted;
-//  private final List<CSChannel> channels;
   private final Map<Integer, MeasuringChannel> measuringChannels;
   private final Map<Integer, ConfigChannel> configChannels;
 
@@ -84,9 +75,6 @@ public class CanDevice {
   public CanDevice(String json) {
     measuringChannels = new HashMap<>();
     configChannels = new HashMap<>();
-    if (json != null) {
-      parse(json);
-    }
   }
 
   /**
@@ -103,16 +91,23 @@ public class CanDevice {
     return uid;
   }
 
-  public void setUid(String uid) {
-    this.uid = uid;
-  }
-
   public Integer getUidInt() {
     String ui = uid.replace("0x", "");
     return Integer.parseUnsignedInt(ui, 16);
   }
 
+  public void setUid(String uid) {
+    this.uid = uid;
+  }
+
+  public void setUid(Integer uid) {
+    this.uid = "0x" + uid;
+  }
+
   public String getName() {
+    if (name == null && this.identifier != null && this.identifier.equals("0xffff")) {
+      return getDeviceType();
+    }
     return name;
   }
 
@@ -149,6 +144,10 @@ public class CanDevice {
     this.serial = serial;
   }
 
+  public void setSerial(Integer serial) {
+    this.serial = serial.toString();
+  }
+
   public Integer getMeasureChannelCount() {
     return measureChannelCount;
   }
@@ -173,37 +172,12 @@ public class CanDevice {
     this.version = version;
   }
 
-  private void parse(String json) {
-    if (json == null) {
-      return;
-    }
-    JSONObject device = new JSONObject(json);
+  public String getHwVersion() {
+    return hwVersion;
+  }
 
-    this.uid = device.optString("_uid");
-    this.name = device.optString("_name");
-    //this.typeName = device.optString("_typname");
-    this.identifier = device.optString("_kennung");
-    //this.type = device.optString("_typ");
-    this.articleNumber = device.optString("_artikelnr");
-    this.serial = device.optString("_seriennr");
-    //this.queryInteval = device.optInt("_queryInterval");
-
-    JSONObject versionObj = device.optJSONObject("_version");
-    if (versionObj != null) {
-      String major = versionObj.optString("major");
-      String minor = versionObj.optString("minor");
-      this.version = (major != null ? major : "") + (major != null ? "." : "") + (minor != null ? minor : "");
-    }
-
-    JSONArray channelsJA = device.optJSONArray("_kanal");
-    if (channelsJA != null) {
-      for (int i = 0; i < channelsJA.length(); i++) {
-        JSONObject kanal = channelsJA.getJSONObject(i);
-
-        MeasuringChannel cb = new MeasuringChannel(kanal.toString());
-        this.measuringChannels.put(cb.getNumber(), cb);
-      }
-    }
+  public void setHwVersion(String HwVersion) {
+    this.hwVersion = HwVersion;
   }
 
   public String getDeviceType() {
@@ -237,6 +211,10 @@ public class CanDevice {
     measuringChannels.put(measuringChannel.getNumber(), measuringChannel);
   }
 
+  public List<MeasuringChannel> getMeasuringChannels() {
+    return new ArrayList<>(measuringChannels.values());
+  }
+
   public void addConfigChannel(ConfigChannel configChannel) {
     configChannels.put(configChannel.getNumber(), configChannel);
   }
@@ -245,28 +223,10 @@ public class CanDevice {
     return configChannels.get(number);
   }
 
-//  public int getBusLength(Integer busNr) {
-//    if (this.isFeedbackDevice()) {
-//      CSChannel cb = this.sensorBuses.get(busNr);
-//      if (cb != null) {
-//        if (busNr == 0) {
-//          return 1;
-//        } else {
-//          return cb.getValue();
-//        }
-//      } else {
-//        return 0;
-//      }
-//    } else {
-//      return -1;
-//    }
-//  }
-//  public Integer getLinkS88ContactIdOffset(int busNr) {
-//    return (busNr - 1) * 1000;
-//  }
-//  public boolean isFeedbackDevice() {
-//    return "Link S88".equals(typeName);
-//  }
+  public List<ConfigChannel> getConfigChannels() {
+    return new ArrayList<>(configChannels.values());
+  }
+
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
@@ -276,6 +236,8 @@ public class CanDevice {
     }
     if (name != null) {
       sb.append(", name=").append(name);
+    } else if (getName() != null) {
+      sb.append(", derivedname=").append(getName());
     }
     if (identifier != null) {
       sb.append(", identifier=").append(identifier);
@@ -295,6 +257,15 @@ public class CanDevice {
     if (version != null) {
       sb.append(", version=").append(version);
     }
+    if (hwVersion != null) {
+      sb.append(", hwVersion=").append(hwVersion);
+    }
+    if (!measuringChannels.isEmpty()) {
+      sb.append(", measuringChannels=").append(measuringChannels);
+    }
+    if (!configChannels.isEmpty()) {
+      sb.append(", configChannels=").append(configChannels);
+    }
     sb.append("}");
     return sb.toString();
   }
@@ -304,6 +275,7 @@ public class CanDevice {
     int hash = 7;
     hash = 79 * hash + Objects.hashCode(this.uid);
     hash = 79 * hash + Objects.hashCode(this.version);
+    hash = 79 * hash + Objects.hashCode(this.hwVersion);
     hash = 79 * hash + Objects.hashCode(this.identifier);
     hash = 79 * hash + Objects.hashCode(this.measureChannelCount);
     hash = 79 * hash + Objects.hashCode(this.configChannelCount);
@@ -333,6 +305,9 @@ public class CanDevice {
     if (!Objects.equals(this.version, other.version)) {
       return false;
     }
+    if (!Objects.equals(this.hwVersion, other.hwVersion)) {
+      return false;
+    }
     if (!Objects.equals(this.identifier, other.identifier)) {
       return false;
     }
@@ -348,12 +323,12 @@ public class CanDevice {
     if (!Objects.equals(this.configChannelCount, other.configChannelCount)) {
       return false;
     }
-//    if (!Objects.equals(this.measuringChannels, other.measuringChannels)) {
-//      return false;
-//    }
-//    if (!Objects.equals(this.configChannels, other.configChannels)) {
-//      return false;
-//    }
+    if (!Objects.equals(this.measuringChannels, other.measuringChannels)) {
+      return false;
+    }
+    if (!Objects.equals(this.configChannels, other.configChannels)) {
+      return false;
+    }
     return Objects.equals(this.name, other.name);
   }
 

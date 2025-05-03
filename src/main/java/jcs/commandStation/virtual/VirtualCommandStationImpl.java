@@ -17,7 +17,6 @@ package jcs.commandStation.virtual;
 
 import jcs.commandStation.autopilot.DriveSimulator;
 import java.awt.Image;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import jcs.JCS;
@@ -41,12 +40,10 @@ import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.ChannelBean;
 import jcs.entities.CommandStationBean;
-import jcs.commandStation.entities.DeviceBean;
 import jcs.entities.FeedbackModuleBean;
 import jcs.commandStation.entities.InfoBean;
 import jcs.entities.LocomotiveBean;
 import jcs.util.NetworkUtil;
-import jcs.util.VersionInfo;
 import org.tinylog.Logger;
 
 /**
@@ -55,7 +52,7 @@ import org.tinylog.Logger;
  */
 public class VirtualCommandStationImpl extends AbstractController implements DecoderController, AccessoryController, FeedbackController {
 
-  private DeviceBean mainDevice;
+  //private DeviceBean mainDevice;
   private InfoBean infoBean;
 
   private DriveSimulator simulator;
@@ -82,13 +79,13 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   public synchronized boolean connect() {
     this.connected = true;
 
-    mainDevice = new DeviceBean();
-    mainDevice.setArticleNumber("JCS Virtual CS");
-    mainDevice.setVersion(VersionInfo.getVersion());
-
-    mainDevice.setSerial("1");
-    mainDevice.setIdentifier(this.commandStationBean.getId());
-    mainDevice.setName(this.commandStationBean.getDescription());
+//    mainDevice = new DeviceBean();
+//    mainDevice.setArticleNumber("JCS Virtual CS");
+//    mainDevice.setVersion(VersionInfo.getVersion());
+//
+//    mainDevice.setSerial("1");
+//    mainDevice.setIdentifier(this.commandStationBean.getId());
+//    mainDevice.setName(this.commandStationBean.getDescription());
 
     infoBean = new InfoBean();
     infoBean.setProductName(commandStationBean.getDescription());
@@ -104,7 +101,7 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   public void disconnect() {
     this.connected = false;
     this.infoBean = null;
-    this.mainDevice = null;
+    //this.mainDevice = null;
   }
 
   @Override
@@ -117,19 +114,19 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
     return this.infoBean;
   }
 
-  @Override
-  public DeviceBean getDevice() {
-    return this.mainDevice;
-  }
+//  @Override
+//  public DeviceBean getDevice() {
+//    return this.mainDevice;
+//  }
 
-  @Override
-  public List<DeviceBean> getDevices() {
-    List<DeviceBean> devices = new ArrayList<>();
-    if (mainDevice != null) {
-      devices.add(this.mainDevice);
-    }
-    return devices;
-  }
+//  @Override
+//  public List<DeviceBean> getDevices() {
+//    List<DeviceBean> devices = new ArrayList<>();
+//    if (mainDevice != null) {
+//      devices.add(this.mainDevice);
+//    }
+//    return devices;
+//  }
 
   @Override
   public String getIp() {
@@ -318,10 +315,10 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
-  @Override
-  public DeviceBean getFeedbackDevice() {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
+//  @Override
+//  public DeviceBean getFeedbackDevice() {
+//    throw new UnsupportedOperationException("Not supported yet.");
+//  }
 
   @Override
   public List<FeedbackModuleBean> getFeedbackModules() {

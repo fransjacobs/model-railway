@@ -32,12 +32,17 @@ public class InfoBean extends CommandStationBean {
   private String hostname;
   private String gfpUid;
   private String guiUid;
+  private boolean supportMeasurements;
 
   public InfoBean() {
 
   }
 
   public InfoBean(CommandStationBean commandStationBean) {
+    copyInto(commandStationBean);
+  }
+
+  public final void copyInto(CommandStationBean commandStationBean) {
     this.id = commandStationBean.getId();
     this.description = commandStationBean.getDescription();
     this.shortName = commandStationBean.getShortName();
@@ -138,6 +143,15 @@ public class InfoBean extends CommandStationBean {
 
   public void setGuiUid(String guiUid) {
     this.guiUid = guiUid;
+  }
+
+  @Transient
+  public boolean isSupportMeasurements() {
+    return supportMeasurements;
+  }
+
+  public void setSupportMeasurements(boolean supportMeasurements) {
+    this.supportMeasurements = supportMeasurements;
   }
 
   @Override

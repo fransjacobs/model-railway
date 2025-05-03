@@ -393,39 +393,34 @@ public class JCSCommandStationImpl implements JCSCommandStation {
 
   @Override
   public InfoBean getCommandStationInfo() {
-    if (this.decoderController != null && this.decoderController.getDevice() != null) {
-      return this.decoderController.getCommandStationInfo();
-    } else {
-      return null;
-    }
-  }
-
-  //@Override
-  public String getCommandStationName() {
     if (decoderController != null) {
-      if (decoderController.getDevice() != null) {
-        return decoderController.getDevice().getName();
-      } else {
-        return decoderController.getCommandStationBean().getDescription();
-      }
+      return decoderController.getCommandStationInfo();
     } else {
       return null;
     }
   }
 
-  //@Override
+  public String getCommandStationName() {
+    if (decoderController != null && decoderController.getCommandStationInfo() != null) {
+      return decoderController.getCommandStationInfo().getProductName();
+    } else if (decoderController != null && decoderController.getCommandStationBean() != null) {
+      return decoderController.getCommandStationBean().getDescription();
+    } else {
+      return null;
+    }
+  }
+
   public String getCommandStationSerialNumber() {
-    if (decoderController != null && decoderController.getDevice() != null) {
-      return decoderController.getDevice().getSerial();
+    if (decoderController != null && decoderController.getCommandStationInfo() != null) {
+      return decoderController.getCommandStationInfo().getSerialNumber();
     } else {
       return null;
     }
   }
 
-  //@Override
   public String getCommandStationArticleNumber() {
-    if (decoderController != null && decoderController.getDevice() != null) {
-      return decoderController.getDevice().getArticleNumber();
+    if (decoderController != null && decoderController.getCommandStationInfo() != null) {
+      return decoderController.getCommandStationInfo().getArticleNumber();
     } else {
       return null;
     }

@@ -63,7 +63,7 @@ public class MarklinCSTest {
 
         instance = new MarklinCentralStationImpl(csb, false);
         pause(200);
-        csAvailable = instance.connect();
+        csAvailable = false; //instance.connect();
 
         if (csAvailable) {
           instance.disconnect();

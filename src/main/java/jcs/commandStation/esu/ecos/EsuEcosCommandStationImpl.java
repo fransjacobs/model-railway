@@ -268,7 +268,7 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
   @Override
   public InfoBean getCommandStationInfo() {
-    InfoBean ib = new InfoBean(this.commandStationBean);
+    InfoBean ib = new InfoBean(commandStationBean);
     if (this.ecosManager != null) {
 
       ib.setArticleNumber(ecosManager.getName().replace(this.ecosManager.getCommandStationType() + "-", ""));
@@ -289,28 +289,26 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
   }
 
   //TODO: is the device in this form it is now really necessary?
-  @Override
-  public DeviceBean getDevice() {
-    DeviceBean d = new DeviceBean();
-    if (ecosManager != null) {
-      d.setName(ecosManager.getName());
-      d.setVersion(ecosManager.getHardwareVersion());
-      d.setTypeName(ecosManager.getCommandStationType());
-      d.setSerial(ecosManager.getSerialNumber());
-    } else {
-      d.setName("Not Connected");
-    }
-    return d;
-  }
-
+//  @Override
+//  public DeviceBean getDevice() {
+//    DeviceBean d = new DeviceBean();
+//    if (ecosManager != null) {
+//      d.setName(ecosManager.getName());
+//      d.setVersion(ecosManager.getHardwareVersion());
+//      d.setTypeName(ecosManager.getCommandStationType());
+//      d.setSerial(ecosManager.getSerialNumber());
+//    } else {
+//      d.setName("Not Connected");
+//    }
+//    return d;
+//  }
   //TODO: is the device in this form it is now really necessary?
-  @Override
-  public List<DeviceBean> getDevices() {
-    List<DeviceBean> devices = new ArrayList<>();
-    devices.add(getDevice());
-    return devices;
-  }
-
+//  @Override
+//  public List<DeviceBean> getDevices() {
+//    List<DeviceBean> devices = new ArrayList<>();
+//    devices.add(getDevice());
+//    return devices;
+//  }
   @Override
   public String getIp() {
     if (this.connection != null && this.connection.isConnected()) {
@@ -556,25 +554,24 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     return connection;
   }
 
-  @Override
-  public DeviceBean getFeedbackDevice() {
-    DeviceBean db = new DeviceBean();
-    db.setArticleNumber(this.ecosManager.getName());
-    db.setIdentifier("0x0");
-    db.getBusLength(this.feedbackManager.getSize());
-    db.setVersion(this.ecosManager.getApplicationVersion());
-    db.setSerial(this.ecosManager.getSerialNumber());
-    db.setTypeName("Link S88");
-
-    ChannelBean cb = new ChannelBean();
-    cb.setName(DeviceBean.BUS0);
-    cb.setNumber(0);
-
-    db.addSensorBus(0, cb);
-
-    return db;
-  }
-
+//  @Override
+//  public DeviceBean getFeedbackDevice() {
+//    DeviceBean db = new DeviceBean();
+//    db.setArticleNumber(this.ecosManager.getName());
+//    db.setIdentifier("0x0");
+//    db.getBusLength(this.feedbackManager.getSize());
+//    db.setVersion(this.ecosManager.getApplicationVersion());
+//    db.setSerial(this.ecosManager.getSerialNumber());
+//    db.setTypeName("Link S88");
+//
+//    ChannelBean cb = new ChannelBean();
+//    cb.setName(DeviceBean.BUS0);
+//    cb.setNumber(0);
+//
+//    db.addSensorBus(0, cb);
+//
+//    return db;
+//  }
   @Override
   public List<FeedbackModuleBean> getFeedbackModules() {
     List<FeedbackModuleBean> feedbackModules = new ArrayList<>(this.feedbackManager.getModules().values());

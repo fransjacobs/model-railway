@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Frans Jacobs.
+ * Copyright 2025 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,24 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation.marklin.cs2;
+package jcs.commandStation.marklin.parser;
 
 import jcs.commandStation.entities.InfoBean;
+import jcs.commandStation.marklin.cs.can.device.CanDevice;
 import org.json.JSONObject;
 
 /**
- * Parse an InfoBean from Marklin CS2 file or CS 3 JSON.
+ * Parse an InfoBean from Marklin CS2/3 file.
  */
-public class InfoBeanParser {
+public class GeraetParser {
 
-  public static InfoBean parseFile(String file) {
-    if (file == null) {
+  /**
+   * The quickest method to obtain basic information of the Central Station is to query the "geraet" file via the http interface.
+   *
+   * @param commandStationBean
+   * @param geraetFile
+   * @return
+   */
+  public static CanDevice parseFile(String geraetFile) {
+    if (geraetFile == null) {
       return null;
     }
 
-    InfoBean ib = new InfoBean();
+    CanDevice gfp = new CanDevice();
+    //InfoBean ib = new InfoBean();
+    //ib.copyInto(commandStationBean);
 
-    String[] lines = file.split("\n");
+    String[] lines = geraetFile.split("\n");
     String minor = "";
     String major = "";
     for (String line : lines) {
@@ -52,50 +62,56 @@ public class InfoBeanParser {
           minor = value;
         }
         case ".sernum" -> {
-          //this.serialNumber = value;
-          ib.setSerialNumber(value);
+          //ib.setSerialNumber(value);
+          gfp.setSerial(value);
         }
         case ".gfpuid" -> {
-          //this.gfpUid = value;
-          ib.setGfpUid(value);
+          //ib.setGfpUid(value);
+          gfp.setUid(value);
         }
         case ".guiuid" -> {
-          //this.guiUid = value;
-          ib.setGuiUid(value);
+          //ib.setGuiUid(value);
         }
         case ".hardvers" -> {
-          //this.hardwareVersion = value;
-          ib.setHardwareVersion(value);
+          //ib.setHardwareVersion(value);
+          gfp.setHwVersion(value);
         }
         case ".articleno" -> {
-          //this.articleNumber = value;
-          ib.setArticleNumber(value);
+          //ib.setArticleNumber(value);
+          gfp.setArticleNumber(value);
         }
         case ".produkt" -> {
-          //this.productName = value;
-          ib.setProductName(value);
+          //ib.setProductName(value);
+          gfp.setName(value);
         }
       }
     }
 
     String softwareVersion = (major != null ? major : "") + (major != null ? "." : "") + (minor != null ? minor : "");
-    ib.setSoftwareVersion(softwareVersion);
+    //ib.setSoftwareVersion(softwareVersion);
+    gfp.setVersion(softwareVersion);
+
+    if (gfp.getSerial().length() < 5) {
+      gfp.setSerial("0" + gfp.getSerial());
+    }
 
     String shortName;
-    //String sn = ib.getSerialNumber();
-    if (ib.getProductName() != null && ib.getProductName().contains("Central Station 3")) {
+    if (gfp.getName() != null && gfp.getName().contains("Central Station 3")) {
       shortName = "CS3";
     } else {
       shortName = "CS2";
     }
-    if (ib.getSerialNumber().length() < 5) {
-      ib.setSerialNumber("0" + ib.getSerialNumber());
-    }
-    ib.setHostname(shortName + "-" + ib.getSerialNumber());
-
-    return ib;
+    
+    gfp.setIdentifier("0x00");
+    return gfp;
   }
 
+  /**
+   * The CS 3 has JSON files accessible via the web interface which contains lots of info about the CS
+   *
+   * @param json
+   * @return
+   */
   public static InfoBean parseJson(String json) {
     if (json == null) {
       return null;

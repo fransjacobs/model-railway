@@ -38,7 +38,7 @@ public class CanDevices {
         devices.add(device);
       }
     }
-    Logger.trace("Found " + devices.size() + " CANDevices");
+    
     return devices;
   }
 
@@ -123,6 +123,15 @@ public class CanDevices {
     }
   }
 
+  
+//Anzahl der Messwerte im Gerät.
+//Anzahl der Konfigurationskanäle
+//frei.
+//Seriennummer CS2.
+//8 Byte Artikelnummer.
+//Gerätebezeichnung, \0 Terminiert  
+  
+  
   /**
    * In case the index equals zero (0) the responses contain a CAN Device Description.
    *
@@ -143,6 +152,14 @@ public class CanDevices {
             int configChannels = Byte.toUnsignedInt(data[1]);
             canDevice.setMeasureChannelCount(measureChannels);
             canDevice.setConfigChannelCount(configChannels);
+            
+            byte[] free = new byte[2];
+            System.arraycopy(data, 2, free, 0, free.length);
+            
+            byte[] sn = new byte[4];
+            System.arraycopy(data, 4, sn, 0, sn.length);
+            int serial = CanMessage.toInt(sn);
+            canDevice.setSerial(serial);
           } else {
             Logger.trace("Invalid DLC " + msg.getDlc() + " Package " + packageNr + " " + msg);
           }
@@ -344,9 +361,9 @@ public class CanDevices {
               //Last message in this response
               if (!stringDataList.isEmpty()) {
                 List<String> strings = splitIntoStrings(stringDataList);
-                for (String s : strings) {
-                  Logger.trace(s);
-                }
+                //for (String s : strings) {
+                //  Logger.trace(s);
+                //}
                 int choicesCount = 0;
                 if (channel.getChoicesCount() != null) {
                   choicesCount = channel.getChoicesCount();
@@ -358,7 +375,7 @@ public class CanDevices {
                 if (choicesCount > 0) {
                   //next are the choices
                   for (int j = 1; j <= choicesCount; j++) {
-                    if (strings.size() >= j) {
+                    if (strings.size() > j) {
                       channel.addChoice(strings.get(j));
                     }
                   }

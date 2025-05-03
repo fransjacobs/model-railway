@@ -22,11 +22,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TransferQueue;
-import java.util.stream.Collectors;
 import jcs.JCS;
 import jcs.commandStation.AbstractController;
 import jcs.commandStation.AccessoryController;
@@ -52,20 +53,16 @@ import jcs.commandStation.marklin.cs.can.parser.SystemStatus;
 import jcs.commandStation.marklin.cs.net.CSConnection;
 import jcs.commandStation.marklin.cs.net.CSConnectionFactory;
 import jcs.commandStation.marklin.cs2.AccessoryBeanParser;
-import jcs.commandStation.marklin.cs2.ChannelDataParser;
 import jcs.commandStation.marklin.cs2.LocomotiveBeanParser;
-import jcs.commandStation.marklin.cs3.DeviceJSONParser;
 import jcs.commandStation.marklin.cs3.FunctionSvgToPngConverter;
 import jcs.commandStation.marklin.cs3.LocomotiveBeanJSONParser;
 import jcs.entities.AccessoryBean;
 import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.ChannelBean;
 import jcs.entities.CommandStationBean;
-import jcs.commandStation.entities.DeviceBean;
 import jcs.commandStation.entities.InfoBean;
 import jcs.commandStation.marklin.cs.can.parser.AccessoryMessage;
 import jcs.entities.FeedbackModuleBean;
-import jcs.commandStation.marklin.cs2.InfoBeanParser;
 import jcs.commandStation.marklin.cs2.LocomotiveDirectionEventParser;
 import jcs.commandStation.marklin.cs2.LocomotiveFunctionEventParser;
 import jcs.commandStation.marklin.cs.can.parser.LocomotiveVelocityMessage;
@@ -73,8 +70,12 @@ import jcs.commandStation.marklin.cs2.PowerEventParser;
 import jcs.commandStation.VirtualConnection;
 import jcs.commandStation.autopilot.AutoPilot;
 import jcs.commandStation.autopilot.DriveSimulator;
+import jcs.commandStation.entities.MeasuredChannels;
+import jcs.commandStation.entities.MeasurementBean;
 import jcs.commandStation.events.DisconnectionEvent;
 import jcs.commandStation.events.DisconnectionEventListener;
+import jcs.commandStation.marklin.cs.can.device.ConfigChannel;
+import jcs.commandStation.marklin.cs.can.device.MeasuringChannel;
 import jcs.commandStation.marklin.cs.can.parser.CanDevices;
 import jcs.commandStation.marklin.cs.can.parser.LocomotiveEmergencyStopMessage;
 import jcs.entities.LocomotiveBean;
@@ -83,6 +84,8 @@ import jcs.entities.SensorBean;
 import jcs.util.RunUtil;
 import org.tinylog.Logger;
 import jcs.commandStation.marklin.cs.net.CSHTTPConnection;
+import jcs.commandStation.marklin.parser.GeraetParser;
+import jcs.commandStation.marklin.parser.SystemStatusMessage;
 
 /**
  *
@@ -93,13 +96,10 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   private CSConnection connection;
 
   private InfoBean infoBean;
-  private final Map<Integer, DeviceBean> devices;
-  private DeviceBean mainDevice;
-  private DeviceBean feedbackDevice;
+  private Map<Integer, CanDevice> canDevices;
+
   private int csUid;
   private EventMessageHandler eventMessageHandler;
-
-  Map<Integer, ChannelBean> analogChannels;
 
   private DriveSimulator simulator;
 
@@ -107,14 +107,16 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   private WatchdogTask watchdogTask;
   private Timer watchDogTimer;
 
+  private SortedMap<Long, MeasuredChannels> measuredValues;
+
   public MarklinCentralStationImpl(CommandStationBean commandStationBean) {
     this(commandStationBean, false);
   }
 
   public MarklinCentralStationImpl(CommandStationBean commandStationBean, boolean autoConnect) {
     super(autoConnect, commandStationBean);
-    devices = new HashMap<>();
-    analogChannels = new HashMap<>();
+    canDevices = new HashMap<>();
+    measuredValues = new ConcurrentSkipListMap<>();
 
     if (commandStationBean != null) {
       if (autoConnect) {
@@ -130,14 +132,9 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     return csUid;
   }
 
-  private boolean isCS3(String articleNumber) {
-    return "60216".equals(articleNumber) || "60226".equals(articleNumber);
-  }
-
-  public boolean isCS3() {
-    if (mainDevice != null) {
-      String articleNumber = mainDevice.getArticleNumber();
-      return "60216".equals(articleNumber) || "60226".equals(articleNumber);
+  private boolean isCS3() {
+    if (infoBean != null && infoBean.getArticleNumber() != null) {
+      return "60216".equals(infoBean.getArticleNumber()) || "60226".equals(infoBean.getArticleNumber());
     } else {
       return false;
     }
@@ -185,53 +182,32 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
         if (connected) {
           canBootLoaderLastCallMillis = System.currentTimeMillis();
 
+          JCS.logProgress("Obtaining Device information...");
+          CanDevice gfp = getGFP();
+          csUid = Integer.parseUnsignedInt(gfp.getUid(), 16);
+
+          canDevices.put(gfp.getUidInt(), gfp);
+
+          obtainDevices();
+          infoBean = createInfoBean(canDevices);
+
           //The eventMessageHandler Thread is in charge to handle all event messages which are send from the CS to JCS
           eventMessageHandler = new EventMessageHandler(connection);
           eventMessageHandler.start();
 
-          JCS.logProgress("Obtaining Device information...");
-          infoBean = getCSInfo();
-
-          //request all members on the Marklin CAN bus to give a response
-          long start = System.currentTimeMillis();
-          now = System.currentTimeMillis();
-          timeout = now + 30000L;
-
-          if (isCS3(infoBean.getArticleNumber())) {
-            Logger.trace("Connected to CS3");
-            getAppDevicesCs3();
-          } else {
-            Logger.trace("Connected to CS2");
-            getMembers();
-            while (mainDevice == null && mainDevice.getName() == null && mainDevice.getArticleNumber() == null && now < timeout) {
-              pause(100);
-              now = System.currentTimeMillis();
-            }
-          }
-
-          if (mainDevice != null) {
-            Logger.trace("Found " + mainDevice.getName() + ", " + mainDevice.getArticleNumber() + " SerialNumber: " + mainDevice.getSerial() + " in " + (now - start) + " ms");
-            JCS.logProgress("Connected with " + infoBean.getProductName());
-          } else {
-            Logger.warn("No main Device found yet...");
-          }
+          Logger.trace("Connected to " + infoBean.getProductName() + ", " + infoBean.getArticleNumber() + " SerialNumber: " + infoBean.getSerialNumber());
 
           csConnection.addDisconnectionEventListener(this);
           startWatchdog();
           power = isPower();
           JCS.logProgress("Power is " + (power ? "On" : "Off"));
-
         }
-        Logger.trace("Connected: " + connected + " Default Accessory SwitchTime: " + defaultSwitchTime);
       } else {
         Logger.warn("Can't connect with Central Station!");
         JCS.logProgress("Can't connect with Central Station!");
       }
     }
 
-//    if (isCS3()) {
-//      getMembers();
-//    }
     if (isVirtual()) {
       simulator = new DriveSimulator();
       Logger.info("Marklin Central Station Virtual Mode Enabled!");
@@ -244,25 +220,160 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   //The Central station has a "geraet.vrs" file which can be retrieved via HTTP.
   //Based on the info in this file it is quicker to know whether the CS is a version 2 or 3.
   //In case of a CS-3 the information can be retrieved via JSON else use CAN
-  private InfoBean getCSInfo() {
+  CanDevice getGFP() {
     CSHTTPConnection httpCon = CSConnectionFactory.getHTTPConnection(virtual);
     String geraet = httpCon.getInfoFile();
-    InfoBean ib = InfoBeanParser.parseFile(geraet);
+    CanDevice gfp = GeraetParser.parseFile(geraet);
+    csUid = Integer.parseUnsignedInt(gfp.getUid(), 16);
 
-    //CS3?    
-    if ("60126".equals(ib.getArticleNumber()) || "60226".equals(ib.getArticleNumber())) {
-      String json = httpCon.getInfoJSON();
-      ib = InfoBeanParser.parseJson(json);
-      httpCon.setCs3(true);
+//    //CS3?    
+//    if ("60126".equals(ib.getArticleNumber()) || "60226".equals(ib.getArticleNumber())) {
+//      String json = httpCon.getInfoJSON();
+//      ib = GeraetParser.parseJson(json);
+//      httpCon.setCs3(true);
+//    }
+//    if (ib.getIpAddress() == null) {
+//      ib.setIpAddress(connection.getControllerAddress().getHostAddress());
+//    }
+    return gfp;
+  }
+
+  InfoBean createInfoBean(Map<Integer, CanDevice> canDevices) {
+    InfoBean ib = new InfoBean(commandStationBean);
+    ib.setIpAddress(connection.getControllerAddress().getHostAddress());
+
+    for (CanDevice d : canDevices.values()) {
+      Logger.trace("Checking device: " + d);
+      String name = d.getName();
+      if (name == null) {
+        name = "null";
+      }
+      switch (name) {
+        case "Central Station 3" -> {
+          ib.setGfpUid(d.getUid());
+          String uid = d.getUid();
+          uid = uid.replace("0x", "");
+          //csUid = Integer.parseUnsignedInt(uid, 16);
+          Logger.trace("GFP uid: " + d.getUid() + " -> " + csUid);
+
+          ib.setArticleNumber(d.getArticleNumber());
+          ib.setProductName(d.getName());
+          ib.setSerialNumber(d.getSerial());
+          ib.setHardwareVersion(d.getVersion());
+          ib.setSupportMeasurements(d.getMeasureChannelCount() > 0);
+
+          //TODO: Only CS 2 and CS3 plus...
+          //ib.setFeedbackBus0ModuleCount(0);
+          //ib.setFeedbackSupport(true);
+          //Is the System property still needed?
+          //if (System.getProperty("cs.article") == null) {
+          //System.setProperty("cs.article", mainDevice.getArticleNumber());
+          //System.setProperty("cs.serial", mainDevice.getSerial());
+          //System.setProperty("cs.name", mainDevice.getName());
+          //System.setProperty("cs.cs3", (isCS3() ? "true" : "false"));
+          //}
+        }
+        case "Link S88" -> {
+          ib.setFeedbackSupport(true);
+          ConfigChannel bus1 = d.getConfigChannel(2);
+          ConfigChannel bus2 = d.getConfigChannel(3);
+          ConfigChannel bus3 = d.getConfigChannel(4);
+
+          ib.setFeedbackBus1ModuleCount(bus1.getActualValue());
+          ib.setFeedbackBus2ModuleCount(bus2.getActualValue());
+          ib.setFeedbackBus3ModuleCount(bus3.getActualValue());
+        }
+        case "CS2/3-GUI (Master)" -> {
+          ib.setSoftwareVersion(d.getVersion());
+        }
+        default -> {
+          Logger.info("A yet unknown CAN Device " + d);
+        }
+      }
     }
-
-    csUid = Integer.parseUnsignedInt(ib.getGfpUid(), 16);
-
-    if (ib.getIpAddress() == null) {
-      ib.setIpAddress(connection.getControllerAddress().getHostAddress());
-    }
-
     return ib;
+  }
+
+  /**
+   * Obtain information about the connected CAN Device in the Central Station
+   */
+  void obtainDevices() {
+    //Map<Integer, CanDevice> members = new HashMap<>();
+    CanMessage msg = CanMessageFactory.getMembersPing();
+    connection.sendCanMessage(msg);
+
+    List<CanDevice> devices = CanDevices.parse(msg);
+    Logger.trace("Found " + devices.size() + " CANDevices");
+    for (CanDevice d : devices) {
+      if (!canDevices.containsKey(d.getUidInt())) {
+        canDevices.put(d.getUidInt(), d);
+      } else {
+        CanDevice ed = canDevices.get(d.getUidInt());
+        if (d.getSerial() != null) {
+          ed.setSerial(d.getSerial());
+        }
+        if (d.getVersion() != null) {
+          ed.setVersion(d.getVersion());
+        }
+        if (d.getIdentifier() != null) {
+          ed.setIdentifier(d.getIdentifier());
+        }
+        if (d.getMeasureChannelCount() != null) {
+          ed.setMeasureChannelCount(d.getMeasureChannelCount());
+        }
+        if (d.getConfigChannelCount() != null) {
+          ed.setConfigChannelCount(d.getConfigChannelCount());
+        }
+        if (d.getArticleNumber() != null) {
+          ed.setArticleNumber(d.getArticleNumber());
+        }
+        if (d.getName() != null) {
+          ed.setName(d.getName());
+        }
+        Logger.trace("Updated: " + ed);
+      }
+    }
+
+    //Lets get some info about these members
+    for (CanDevice device : canDevices.values()) {
+      Logger.trace("Obtaining data for device " + device);
+      CanMessage updateMessage = sendMessage(CanMessageFactory.statusDataConfig(device.getUidInt(), 0));
+      if (updateMessage.hasValidResponse()) {
+        CanDevices.parse(device, updateMessage);
+
+        int measurementChannels;
+        if (device.getMeasureChannelCount() == null) {
+          measurementChannels = 0;
+        } else {
+          measurementChannels = device.getMeasureChannelCount();
+        }
+        int configChannels;
+        if (device.getConfigChannelCount() == null) {
+          configChannels = 0;
+        } else {
+          configChannels = device.getConfigChannelCount();
+        }
+
+        int channels = measurementChannels + configChannels;
+        if (channels > 0) {
+          Logger.trace("Quering " + channels + " channels for device " + device);
+          for (int index = 1; index <= channels; index++) {
+            Logger.trace("Query channel " + index);
+            updateMessage = sendMessage(CanMessageFactory.statusDataConfig(device.getUidInt(), index));
+            CanDevices.parse(device, updateMessage);
+            
+            if (index <= measurementChannels) {
+              Logger.trace("M#" + index + "; " + device.getMeasuringChannel(index));
+            } else {
+              int configChannelNumber = index - measurementChannels; 
+              Logger.trace("C#" + configChannelNumber + "; " + device.getConfigChannel(configChannelNumber));
+            }
+          }
+        }
+      } else {
+        Logger.trace("No response data in query for " + device);
+      }
+    }
   }
 
   /**
@@ -272,52 +383,36 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
    * Most important is the GFP which is the heart of the CS 3 most CAN Commands need the GFP UID.<br>
    * This data can also be obtained using the CAN Member PING command, but The JSON gives a little more detail.
    */
-  private void getAppDevicesCs3() {
-    CSHTTPConnection httpCon = CSConnectionFactory.getHTTPConnection(virtual);
-
-    String devJson = httpCon.getDevicesJSON();
-    List<DeviceBean> devs = DeviceJSONParser.parse(devJson);
-    //Update the devices
-    for (DeviceBean d : devs) {
-      if (devices.containsKey(d.getUidAsInt())) {
-        devices.put(d.getUidAsInt(), d);
-      } else {
-        devices.put(d.getUidAsInt(), d);
-      }
-      String an = d.getArticleNumber();
-      if ("60213".equals(an) || "60214".equals(an) || "60215".equals(an) || "60126".equals(an) || "60226".equals(an)) {
-        csUid = d.getUidAsInt();
-        mainDevice = d;
-        Logger.trace("MainDevice: " + d.getName());
-      }
-
-      if ("60883".equals(an)) {
-        feedbackDevice = d;
-        Logger.trace("FeedbackDevice: " + d.getName());
-      }
-
-    }
-    Logger.trace("Found " + devices.size() + " devices");
-  }
-
-  @Override
-  public DeviceBean getDevice() {
-    return this.mainDevice;
-  }
-
-  @Override
-  public List<DeviceBean> getDevices() {
-    return this.devices.values().stream().collect(Collectors.toList());
-  }
-
+//  private void getAppDevicesCs3() {
+//    CSHTTPConnection httpCon = CSConnectionFactory.getHTTPConnection(virtual);
+//
+//    String devJson = httpCon.getDevicesJSON();
+//    List<DeviceBean> devs = DeviceJSONParser.parse(devJson);
+//    //Update the devices
+//    for (DeviceBean d : devs) {
+//      if (devices.containsKey(d.getUidAsInt())) {
+//        devices.put(d.getUidAsInt(), d);
+//      } else {
+//        devices.put(d.getUidAsInt(), d);
+//      }
+//      String an = d.getArticleNumber();
+//      if ("60213".equals(an) || "60214".equals(an) || "60215".equals(an) || "60126".equals(an) || "60226".equals(an)) {
+//        csUid = d.getUidAsInt();
+//        mainDevice = d;
+//        Logger.trace("MainDevice: " + d.getName());
+//      }
+//
+//      if ("60883".equals(an)) {
+//        feedbackDevice = d;
+//        Logger.trace("FeedbackDevice: " + d.getName());
+//      }
+//
+//    }
+//    Logger.trace("Found " + devices.size() + " devices");
+//  }
   @Override
   public InfoBean getCommandStationInfo() {
     return infoBean;
-  }
-
-  @Override
-  public DeviceBean getFeedbackDevice() {
-    return this.feedbackDevice;
   }
 
   //TODO!
@@ -398,279 +493,66 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     }
   }
 
-//#TX: 0x00 0x30 0x07 0x69 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00   -> Member ping
-//#RX 0: 0x00 0x31 0x37 0x7e 0x08 0x63 0x73 0x45 0x8d 0x02 0x05 0xff 0xff -> Response member CS2-GUI (Master) sw 0x02 0x05 id: 0x63 0x73 0x45 0x8d
-//#RX 1: 0x00 0x31 0x7b 0x79 0x08 0x53 0x38 0x5c 0x41 0x01 0x01 0x00 0x40 -> ? sw 0x01 0x01 id: 0x53 0x38 0x5c 0x41
-//#RX 2: 0x00 0x31 0x03 0x26 0x08 0x63 0x73 0x45 0x8c 0x0c 0x71 0x00 0x50 -> ? sw 0x0c 0x71 id: 0x63 0x73 0x45 0x8c
-  void getMembers() {
-    CanMessage msg = CanMessageFactory.getMembersPing();
-    connection.sendCanMessage(msg);
-
-    for (CanMessage r : msg.getResponses()) {
-      DeviceBean d = new DeviceBean(r);
-
-      if (!devices.containsKey(d.getUidAsInt())) {
-        devices.put(d.getUidAsInt(), d);
-      }
-      Logger.trace("Found uid: " + d.getUid() + " deviceId: " + d.getIdentifier() + " Device Type: " + d.getDevice());
-    }
-    Logger.trace("Found " + devices.size() + " devices");
-
-    while (mainDevice == null) {
-      for (DeviceBean d : getDevices()) {
-        if (!d.isDataComplete()) {
-          if (debug) {
-            Logger.trace("Requesting more info for uid: " + d.getUid());
-          }
-          CanMessage updateMessage = sendMessage(CanMessageFactory.statusDataConfig(d.getUidAsInt(), 0));
-
-          //if (debug) {
-          Logger.trace(updateMessage);
-          for (CanMessage r : updateMessage.getResponses()) {
-            Logger.trace(r);
-          }
-          //}
-          d.updateFromMessage(updateMessage);
-          if (debug) {
-            if (d.isDataComplete()) {
-              Logger.trace("Updated: " + d);
-            } else {
-              Logger.trace("No data received for Device uid: " + d.getUid());
-            }
-          }
-        }
-      }
-
-      for (DeviceBean d : getDevices()) {
-        if (d.isDataComplete() && ("60213".equals(d.getArticleNumber()) || "60214".equals(d.getArticleNumber()) || "60215".equals(d.getArticleNumber()) || "60126".equals(d.getArticleNumber()) || "60226".equals(d.getArticleNumber()))) {
-          csUid = d.getUidAsInt();
-          mainDevice = d;
-          if (debug) {
-            Logger.trace("Main Device: " + d);
-          }
-          if (System.getProperty("cs.article") == null) {
-            System.setProperty("cs.article", mainDevice.getArticleNumber());
-            System.setProperty("cs.serial", mainDevice.getSerial());
-            System.setProperty("cs.name", mainDevice.getName());
-            System.setProperty("cs.cs3", (isCS3() ? "true" : "false"));
-          }
-        } else {
-          if (debug) {
-            Logger.trace(d);
-          }
-        }
-      }
-    }
-  }
-
-  //Map<Integer, DeviceBean> devices;
-  void memberPing() {
-    Map<Integer, CanDevice> members = new HashMap<>();
-    CanMessage msg = CanMessageFactory.getMembersPing();
-    connection.sendCanMessage(msg);
-
-    List<CanDevice> canDevices = CanDevices.parse(msg);
-    for (CanDevice d : canDevices) {
-      if (!members.containsKey(d.getUidInt())) {
-        members.put(d.getUidInt(), d);
-      }
-    }
-
-    for (CanDevice device : canDevices) {
-      Logger.trace("Device: " + device);
-    }
-
-    //Lets get some info about these members
-    //for (CanDevice d : members.values()) {
-    for (CanDevice device : canDevices) {
-      //if ("0x6373458c".equals(device.getUid())) {
-      if ("0x53385c41".equals(device.getUid())) {
-        //if (!d.isDataComplete()) {
-        Logger.trace("Query Device data for uid: " + device.getUid());
-
-        CanMessage updateMessage = sendMessage(CanMessageFactory.statusDataConfig(device.getUidInt(), 0));
-        CanDevices.parse(device, updateMessage);
-
-        Logger.trace("Device: " + device);
-
-        int measurementChannels;
-        if (device.getMeasureChannelCount() == null) {
-          measurementChannels = 0;
-        } else {
-          measurementChannels = device.getMeasureChannelCount();
-        }
-        int configChannels;
-        if (device.getConfigChannelCount() == null) {
-          configChannels = 0;
-        } else {
-          configChannels = device.getConfigChannelCount();
-        }
-
-        Logger.trace("Device " + device.getName() + " has " + measurementChannels + " Measurement Channels and " + configChannels + " Config Channels");
-        int channels = measurementChannels + configChannels;
-        if (channels > 0) {
-          for (int index = 1; index <= channels; index++) {
-            updateMessage = sendMessage(CanMessageFactory.statusDataConfig(device.getUidInt(), index));
-            CanDevices.parse(device, updateMessage);
-          }
-        }
-      }
-    }
-//       //   d.updateFromMessage(updateMessage);
-//
-//          Logger.trace("Updated with device info: " + d);
-//
-//          if (d.getMeasureChannels() != null && d.getMeasureChannels() > 0) {
-//            Logger.trace(d.getMeasureChannels() + " Measurement Channels");
-//            //Query the measurement channels
-//            int max = d.getMeasureChannels();
-//            for (int ch = 1; ch <= max; ch++) {
-//              Logger.trace("Query measurment channels for device " + d.getName() + " and measure channel " + ch);
-//              updateMessage = sendMessage(CanMessageFactory.statusDataConfig(d.getUidAsInt(), ch));
-//              d.updateFromMessage(updateMessage);
-//
-//              Logger.trace("# Updated after ch " + ch + " " + d);
-//
-//            }
-//            Logger.trace("Updated " + d);
-//          }
-//
-//          if (d.getConfigChannels() != null && d.getConfigChannels() > 0 && 1==2) {
-//            Logger.trace(d.getConfigChannels() + " Config Channels");
-//            //Get the channels
-//            int max = d.getConfigChannels();
-//            for (int ch = 1; ch < max; ch++) {
-//              Logger.trace("Requesting more info for uid: " + d.getUid() + " and config channel " + ch);
-//
-//              updateMessage = sendMessage(CanMessageFactory.statusDataConfig(d.getUidAsInt(), ch));
-//              if (updateMessage.hasValidResponse()) {
-//                d.updateFromMessage(updateMessage);
-//              } else {
-//                break;
-//              }
-//            }
-//            Logger.trace("Updated " + d);
-//          //}
-//
-//          if (d.isDataComplete()) {
-//            Logger.trace("#Updated: " + d);
-//          } else {
-//            Logger.trace("No data received for Device uid: " + d.getUid());
-//          }
-//
-//        } else {
-//          Logger.trace("Data complete for " + d);
-//
-//        }
-//      }
-//    }
-
-//      for (DeviceBean d : getDevices()) {
-//        if (d.isDataComplete() && ("60213".equals(d.getArticleNumber()) || "60214".equals(d.getArticleNumber()) || "60215".equals(d.getArticleNumber()) || "60126".equals(d.getArticleNumber()) || "60226".equals(d.getArticleNumber()))) {
-//          csUid = d.getUidAsInt();
-//          mainDevice = d;
-//          if (debug) {
-//            Logger.trace("Main Device: " + d);
-//          }
-//          if (System.getProperty("cs.article") == null) {
-//            System.setProperty("cs.article", mainDevice.getArticleNumber());
-//            System.setProperty("cs.serial", mainDevice.getSerial());
-//            System.setProperty("cs.name", mainDevice.getName());
-//            System.setProperty("cs.cs3", (isCS3() ? "true" : "false"));
-//          }
-//        } else {
-//          if (debug) {
-//            Logger.trace(d);
-//          }
-//        }
-//      
-//    }
-  }
-
-  private void updateDevice(final CanMessage message) {
-    if (CanMessage.PING_RESP == message.getCommand()) {
-      int uid = message.getDeviceUidNumberFromMessage();
-
-      DeviceBean device;
-      if (devices.containsKey(uid)) {
-        device = devices.get(uid);
-      } else {
-        device = new DeviceBean(message);
-        devices.put(device.getUidAsInt(), device);
-      }
-
-      if (!device.isDataComplete()) {
-        CanMessage msg = sendMessage(CanMessageFactory.statusDataConfig(device.getUidAsInt(), 0));
-        device.updateFromMessage(msg);
-        if (debug) {
-          Logger.trace("Updated: " + device);
-        }
-        //Can the main device be set from the avaliable data
-        for (DeviceBean d : devices.values()) {
-          if (d.isDataComplete() && ("60214".equals(d.getArticleNumber()) || "60226".equals(d.getArticleNumber()) || "60126".equals(d.getArticleNumber()))) {
-            csUid = d.getUidAsInt();
-            mainDevice = d;
-            if (debug) {
-              Logger.trace("Main Device: " + d);
-            }
-          }
-        }
-      }
-
-      if (mainDevice == null) {
-        //Lets send a ping again
-        getMembers();
-      } else {
-        if (mainDevice != null && mainDevice.isDataComplete()) {
-          if (System.getProperty("cs.article") == null) {
-            System.setProperty("cs.article", mainDevice.getArticleNumber());
-            System.setProperty("cs.serial", mainDevice.getSerial());
-            System.setProperty("cs.name", mainDevice.getName());
-            System.setProperty("cs.cs3", (isCS3() ? "true" : "false"));
-            if (debug) {
-              Logger.trace("CS " + (isCS3() ? "3" : "2") + " Device: " + device);
-            }
-          }
-        }
-      }
-    }
-  }
-
   @Override
   public boolean isSupportTrackMeasurements() {
     return true;
   }
 
+  void performMeasurements() {
+    //The measurable channels are in the GFP. 
+    CanDevice gfp = canDevices.get(csUid);
+    if (gfp != null) {
+      List<MeasuringChannel> channels = gfp.getMeasuringChannels();
+
+      Logger.trace("Take a measurment on " + channels.size() + " channels");
+
+      MeasuredChannels measuredChannels = new MeasuredChannels(System.currentTimeMillis());
+      for (MeasuringChannel channel : channels) {
+        int channelNumber = channel.getNumber();
+
+        CanMessage message = sendMessage(CanMessageFactory.systemStatus(csUid, channelNumber));
+
+        MeasurementBean measurement = SystemStatusMessage.parse(channel, message);
+        measuredChannels.addMeasurement(measurement);
+        Logger.trace(measurement);
+      }
+      Logger.trace("Measurement: " + measuredChannels);
+    } else {
+      Logger.warn("No measurable channels avalaible");
+    }
+  }
+
   @Override
   public synchronized Map<Integer, ChannelBean> getTrackMeasurements() {
-    Logger.trace("Perform measurement...");
-    if (connected && mainDevice != null) {
-      //main device
-      int nrOfChannels = mainDevice.getAnalogChannels().size();
-
-      ChannelDataParser parser = new ChannelDataParser();
-
-      if (this.analogChannels.isEmpty()) {
-        //No channels configured so let do this first
-        for (int c = 1; c <= nrOfChannels; c++) {
-          Logger.trace("Quering config for channel " + c);
-          CanMessage message = sendMessage(CanMessageFactory.statusDataConfig(csUid, c));
-
-          ChannelBean ch = parser.parseConfigMessage(message);
-          analogChannels.put(c, ch);
-        }
-      }
-
-      for (int c = 1; c <= nrOfChannels; c++) {
-        ChannelBean ch = this.analogChannels.get(c);
-        if (ch != null) {
-          CanMessage message = sendMessage(CanMessageFactory.systemStatus(c, csUid));
-          ch = parser.parseUpdateMessage(message, ch);
-          analogChannels.put(c, ch);
-        }
-      }
-    }
-    return analogChannels;
+//    Logger.trace("Perform measurement...");
+//    if (connected && mainDevice != null) {
+//      //main device
+//      int nrOfChannels = mainDevice.getAnalogChannels().size();
+//
+//      ChannelDataParser parser = new ChannelDataParser();
+//
+//      if (this.analogChannels.isEmpty()) {
+//        //No channels configured so let do this first
+//        for (int c = 1; c <= nrOfChannels; c++) {
+//          Logger.trace("Quering config for channel " + c);
+//          CanMessage message = sendMessage(CanMessageFactory.statusDataConfig(csUid, c));
+//
+//          ChannelBean ch = parser.parseConfigMessage(message);
+//          analogChannels.put(c, ch);
+//        }
+//      }
+//
+//      for (int c = 1; c <= nrOfChannels; c++) {
+//        ChannelBean ch = this.analogChannels.get(c);
+//        if (ch != null) {
+//          CanMessage message = sendMessage(CanMessageFactory.systemStatus(c, csUid));
+//          ch = parser.parseUpdateMessage(message, ch);
+//          analogChannels.put(c, ch);
+//        }
+//      }
+//    }
+//    return analogChannels;
+    return null;
   }
 
   /**
@@ -697,9 +579,6 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       Logger.trace("Change direction to " + direction + " CS val " + direction.getMarklinValue());
       CanMessage message = sendMessage(CanMessageFactory.setDirection(locUid, direction.getMarklinValue(), this.csUid));
       //query velocity of give a not halt
-      //DirectionChange# 0x00 0x0a 0x37 0x7e 0x05 0x00 0x00 0x40 0x0c 0x01 0x00 0x00 0x00
-      //BR 216 059-6 Speed changed from 218 to 0
-      //DirectionChange 0x00 0x0b 0x03 0x26 0x05 0x00 0x00 0x40 0x0c 0x01 0x00 0x00 0x00
       LocomotiveDirectionEvent dme = LocomotiveDirectionEventParser.parseMessage(message);
       notifyLocomotiveDirectionEventListeners(dme);
     }
@@ -970,18 +849,16 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
           switch (command) {
             case CanMessage.PING_REQ -> {
               //Lets do this the when we know all of the CS...
-              if (mainDevice != null) {
-                if (CanMessage.DLC_0 == dlc) {
-                  //Logger.trace("Answering Ping RQ: " + eventMessage);
-                  sendJCSUIDMessage();
-                }
+              if (CanMessage.DLC_0 == dlc) {
+                //Logger.trace("Answering Ping RQ: " + eventMessage);
+                //sendJCSUIDMessage();
               }
             }
             case CanMessage.PING_RESP -> {
               if (CanMessage.DLC_8 == dlc) {
                 //Logger.trace("Ping Response RX: " + eventMessage);
 
-                updateDevice(eventMessage);
+                //updateDevice(eventMessage);
               }
             }
             case CanMessage.STATUS_CONFIG -> {
@@ -992,6 +869,8 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
             }
             case CanMessage.STATUS_CONFIG_RESP -> {
               Logger.trace("StatusConfigResponse RX: " + eventMessage);
+              //add to an list of resposne check
+
             }
             case CanMessage.S88_EVENT_RESPONSE -> {
               if (CanMessage.DLC_8 == dlc) {
@@ -1180,7 +1059,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       //cs.getAccessoriesViaCan();
       //cs.pause(2000);
       //cs.getMembers();
-      cs.memberPing();
+      //cs.memberPing();
       //Logger.trace("getStatusDataConfig CS3");
       //cs.getStatusDataConfigCS3();
       //cs.pause(2000);
@@ -1210,6 +1089,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 //      Logger.debug("Channel 3: " + cs.channelData3.getChannel().getHumanValue() + " " + cs.channelData3.getChannel().getUnit());
 //      Logger.debug("Channel 4: " + cs.channelData4.getChannel().getHumanValue() + " " + cs.channelData4.getChannel().getUnit());
       //cs.getSystemStatus(1);
+      cs.performMeasurements();
 //
 //            Logger.debug("Channel 4....");
 //            cs.getSystemStatus(4);

@@ -17,28 +17,12 @@ package jcs.commandStation.marklin.cs.can.device;
 
 import java.util.Objects;
 import org.json.JSONObject;
-import org.tinylog.Logger;
 
 /**
  * Represents a Measurement Channel in the Marklin Central Station
  */
 public class MeasuringChannel {
 
-//  Abfragekanalnummer
-//Potenz des Messwerts
-//Farbe Bereich 1
-//Farbe Bereich 2
-//Farbe Bereich 3
-//  Farbe Bereich 4
-// Nullpunkt
-// Ende Bereich 1
-// Ende Bereich 2
-// Ende Bereich 3
-// Ende Bereich 4
-// Messwertbezeichnung
-// Bezeichnung Start
-// Bezeichnung Ende
-// Einheit
   private Integer number;
   private Integer scale;
   private Integer colorGreen;
