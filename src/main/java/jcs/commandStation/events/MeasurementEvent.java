@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 frans.
+ * Copyright 2025 frans.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,30 +15,37 @@
  */
 package jcs.commandStation.events;
 
-import jcs.entities.ChannelBean;
+import jcs.commandStation.entities.MeasuredChannels;
+import jcs.commandStation.entities.MeasurementBean;
 
 /**
- *
- * @author frans
+ * Signals the lastMeasurment(s)
  */
 public class MeasurementEvent {
 
-  private final ChannelBean measurementChannel;
+  private final MeasuredChannels measuredChannels;
 
-  public MeasurementEvent(ChannelBean measurementChannel) {
-    this.measurementChannel = measurementChannel;
+  public MeasurementEvent(MeasuredChannels measuredChannels) {
+    this.measuredChannels = measuredChannels;
   }
 
-  public ChannelBean getMeasurementChannel() {
-    return measurementChannel;
+  public MeasuredChannels getMeasuredChannels() {
+    return measuredChannels;
   }
 
-  public Integer getCannel() {
-    return this.measurementChannel.getNumber();
+  public MeasurementBean getMain() {
+    return measuredChannels.getMain();
   }
 
-  public String getFormattedValue() {
-    return this.measurementChannel.getHumanValue() + " " + this.measurementChannel.getUnit();
+  public MeasurementBean getProg() {
+    return measuredChannels.getProg();
   }
 
+  public MeasurementBean getVolt() {
+    return measuredChannels.getVolt();
+  }
+
+  public MeasurementBean getTemp() {
+    return measuredChannels.getTemp();
+  }
 }

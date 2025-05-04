@@ -28,7 +28,7 @@ import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TransferQueue;
 import jcs.commandStation.esu.ecos.EcosMessage;
-import jcs.commandStation.events.DisconnectionEvent;
+import jcs.commandStation.events.ConnectionEvent;
 import org.tinylog.Logger;
 
 /**
@@ -144,7 +144,7 @@ class EcosTCPConnection implements EcosConnection {
     } catch (IOException | InterruptedException ex) {
       Logger.error(ex);
       String msg = "Host " + ecosAddress.getHostName();
-      DisconnectionEvent de = new DisconnectionEvent(msg);
+      ConnectionEvent de = new ConnectionEvent(msg,false);
 
       messageReceiver.messageListener.onDisconnect(de);
       messageReceiver.quit();
@@ -266,7 +266,7 @@ class EcosTCPConnection implements EcosConnection {
         } catch (SocketException se) {
           Logger.error(se.getMessage());
           String msg = "Host " + ecosAddress.getHostName();
-          DisconnectionEvent de = new DisconnectionEvent(msg);
+          ConnectionEvent de = new ConnectionEvent(msg, false);
           this.messageListener.onDisconnect(de);
           quit();
         } catch (IOException | InterruptedException ex) {

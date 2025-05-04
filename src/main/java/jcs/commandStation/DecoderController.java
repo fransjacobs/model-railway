@@ -21,6 +21,7 @@ import java.util.Map;
 import jcs.commandStation.events.LocomotiveDirectionEventListener;
 import jcs.commandStation.events.LocomotiveFunctionEventListener;
 import jcs.commandStation.events.LocomotiveSpeedEventListener;
+import jcs.commandStation.events.MeasurementEventListener;
 import jcs.commandStation.events.PowerEventListener;
 import jcs.entities.ChannelBean;
 import jcs.entities.LocomotiveBean;
@@ -54,8 +55,6 @@ public interface DecoderController extends GenericController {
 
   void removeLocomotiveSpeedEventListener(LocomotiveSpeedEventListener listener);
 
-  //List<LocomotiveSpeedEventListener> getLocomotiveSpeedEventListeners();
-
   List<LocomotiveBean> getLocomotives();
 
   Image getLocomotiveImage(String icon);
@@ -65,4 +64,9 @@ public interface DecoderController extends GenericController {
   boolean isSupportTrackMeasurements();
 
   Map<Integer, ChannelBean> getTrackMeasurements();
+
+  void addMeasurementEventListener(MeasurementEventListener listener);
+
+  void removeMeasurementEventListener(MeasurementEventListener listener);
+
 }

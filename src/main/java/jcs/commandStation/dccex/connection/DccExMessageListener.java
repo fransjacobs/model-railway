@@ -16,7 +16,7 @@
 package jcs.commandStation.dccex.connection;
 
 import jcs.commandStation.dccex.DccExMessage;
-import jcs.commandStation.events.DisconnectionEvent;
+import jcs.commandStation.events.ConnectionEvent;
 
 /**
  *
@@ -26,6 +26,6 @@ public interface DccExMessageListener {
 
   void onMessage(DccExMessage message);
 
-  void onDisconnect(DisconnectionEvent event);
+  void onDisconnect(ConnectionEvent event);
 
 }

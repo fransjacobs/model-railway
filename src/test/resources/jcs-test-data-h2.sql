@@ -1,12 +1,15 @@
-delete from blocks;
-delete from jcs_properties;
-delete from locomotive_functions;
-delete from locomotives;
 delete from route_elements;
 delete from routes;
+delete from blocks;
 delete from tiles;
+
+commit;
+
+delete from locomotive_functions;
+delete from locomotives;
 delete from sensors;
 delete from accessories;
+delete from jcs_properties;
 
 commit;
 

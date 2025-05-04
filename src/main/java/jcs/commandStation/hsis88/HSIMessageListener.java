@@ -15,7 +15,7 @@
  */
 package jcs.commandStation.hsis88;
 
-import jcs.commandStation.events.DisconnectionEvent;
+import jcs.commandStation.events.ConnectionEvent;
 
 /**
  *
@@ -25,6 +25,6 @@ public interface HSIMessageListener {
 
   void onMessage(HSIMessage message);
 
-  void onDisconnect(DisconnectionEvent event);
+  void onDisconnect(ConnectionEvent event);
 
 }

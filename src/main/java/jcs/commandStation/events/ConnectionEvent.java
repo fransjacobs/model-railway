@@ -16,19 +16,24 @@
 package jcs.commandStation.events;
 
 /**
- *
- * @author frans
+ * Event to signal Connection and Disconnection
  */
-public class DisconnectionEvent {
+public class ConnectionEvent {
 
   private final String source;
+  private final boolean connected;
 
-  public DisconnectionEvent(String source) {
+  public ConnectionEvent(String source, boolean connected) {
     this.source = source;
+    this.connected = connected;
   }
 
   public String getSource() {
     return source;
+  }
+
+  public boolean isConnected() {
+    return connected;
   }
 
 }

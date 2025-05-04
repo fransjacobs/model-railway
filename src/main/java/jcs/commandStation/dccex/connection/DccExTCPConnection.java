@@ -27,7 +27,7 @@ import java.net.SocketException;
 import jcs.commandStation.dccex.DccExConnection;
 import jcs.commandStation.dccex.DccExMessage;
 import jcs.commandStation.dccex.DccExMessageFactory;
-import jcs.commandStation.events.DisconnectionEvent;
+import jcs.commandStation.events.ConnectionEvent;
 import org.tinylog.Logger;
 
 /**
@@ -126,7 +126,7 @@ class DccExTCPConnection implements DccExConnection {
     } catch (IOException ex) {
       Logger.error(ex);
       String msg = "Host " + dccExAddress.getHostName();
-      DisconnectionEvent de = new DisconnectionEvent(msg);
+      ConnectionEvent de = new ConnectionEvent(msg, false);
 
       messageReceiver.messageListener.onDisconnect(de);
       messageReceiver.quit();
@@ -216,7 +216,7 @@ class DccExTCPConnection implements DccExConnection {
         } catch (SocketException se) {
           Logger.error(se.getMessage());
           String msg = "Host " + dccExAddress.getHostName();
-          DisconnectionEvent de = new DisconnectionEvent(msg);
+          ConnectionEvent de = new ConnectionEvent(msg, false);
           this.messageListener.onDisconnect(de);
           quit();
         } catch (IOException ioe) {

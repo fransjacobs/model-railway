@@ -23,8 +23,7 @@ import java.util.concurrent.Executors;
 import jcs.JCS;
 import jcs.commandStation.AbstractController;
 import jcs.commandStation.FeedbackController;
-import jcs.commandStation.events.DisconnectionEvent;
-import jcs.commandStation.events.DisconnectionEventListener;
+import jcs.commandStation.events.ConnectionEvent;
 import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
 import static jcs.commandStation.hsis88.HSIConnection.COMMAND_VERSION;
@@ -36,6 +35,7 @@ import jcs.commandStation.VirtualConnection;
 import jcs.entities.SensorBean;
 import jcs.util.RunUtil;
 import org.tinylog.Logger;
+import jcs.commandStation.events.ConnectionEventListener;
 
 /**
  *
@@ -201,9 +201,9 @@ public class HSIImpl extends AbstractController implements FeedbackController {
     Logger.trace("Disconnected");
   }
 
-  private void fireAllDisconnectionEventListeners(final DisconnectionEvent disconnectionEvent) {
-    for (DisconnectionEventListener listener : this.disconnectionEventListeners) {
-      listener.onDisconnect(disconnectionEvent);
+  private void fireAllDisconnectionEventListeners(final ConnectionEvent disconnectionEvent) {
+    for (ConnectionEventListener listener : this.connectionEventListeners) {
+      listener.onConnectionChange(disconnectionEvent);
     }
     disconnect();
   }
@@ -236,7 +236,7 @@ public class HSIImpl extends AbstractController implements FeedbackController {
     }
 
     @Override
-    public void onDisconnect(DisconnectionEvent event) {
+    public void onDisconnect(ConnectionEvent event) {
       this.hsiImpl.fireAllDisconnectionEventListeners(event);
     }
   }

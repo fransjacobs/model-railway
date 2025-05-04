@@ -32,8 +32,10 @@ public class SystemStatusMessage {
   }
 
   public static MeasurementBean parse(MeasuringChannel channel, CanMessage systemStatusmessage) {
+    return parse(channel, systemStatusmessage, System.currentTimeMillis());
+  }
 
-    Logger.trace(systemStatusmessage);
+  public static MeasurementBean parse(MeasuringChannel channel, CanMessage systemStatusmessage, long measurementMillis) {
 
     MeasurementBean measurement = null;
     if (systemStatusmessage.getCommand() == CanMessage.SYSTEM_COMMAND && systemStatusmessage.getSubCommand() == CanMessage.SYSTEM_SUB_STATUS) {
@@ -51,7 +53,7 @@ public class SystemStatusMessage {
           int measuredValue = CanMessage.toInt(new byte[]{data[6], data[7]});
 
           Double displayValue = calculateDisplayValue(measuredValue, channel);
-          measurement = new MeasurementBean(channelNumber, channel.getName(), System.currentTimeMillis(), measuredValue, channel.getUnit(), displayValue);
+          measurement = new MeasurementBean(channelNumber, channel.getName(), measurementMillis, measuredValue, channel.getUnit(), displayValue);
         }
         default ->
           Logger.error("Invalid DLC " + response.getDlc() + " response " + response);

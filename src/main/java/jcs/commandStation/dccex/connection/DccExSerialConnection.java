@@ -29,7 +29,7 @@ import jcs.commandStation.dccex.DccExConnection;
 import static jcs.commandStation.dccex.DccExConnection.MESSAGE_DELIMITER;
 import jcs.commandStation.dccex.DccExMessage;
 import jcs.commandStation.dccex.DccExMessageFactory;
-import jcs.commandStation.events.DisconnectionEvent;
+import jcs.commandStation.events.ConnectionEvent;
 import org.tinylog.Logger;
 
 /**
@@ -157,7 +157,7 @@ class DccExSerialConnection implements DccExConnection {
       Logger.trace("Port " + commPort.getSystemPortName() + " is Disconnected");
 
       String msg = commPort.getDescriptivePortName() + " [" + commPort.getSystemPortName() + "]";
-      DisconnectionEvent de = new DisconnectionEvent(msg);
+      ConnectionEvent de = new ConnectionEvent(msg, false);
 
       for (DccExMessageListener listener : dccExListeners) {
         listener.onDisconnect(de);

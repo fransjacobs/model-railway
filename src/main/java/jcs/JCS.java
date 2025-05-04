@@ -31,8 +31,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
@@ -42,7 +40,6 @@ import jcs.commandStation.JCSCommandStation;
 import jcs.commandStation.JCSCommandStationImpl;
 import jcs.commandStation.events.PowerEvent;
 import jcs.commandStation.events.PowerEventListener;
-import jcs.commandStation.events.RefreshEventListener;
 import jcs.persistence.PersistenceFactory;
 import jcs.persistence.PersistenceService;
 import jcs.persistence.util.H2DatabaseUtil;
@@ -72,10 +69,10 @@ public class JCS extends Thread {
 
   private static UICallback uiCallback;
 
-  private final List<RefreshEventListener> refreshEventListeners;
+  //private final List<RefreshEventListener> refreshEventListeners;
 
   private JCS() {
-    refreshEventListeners = new ArrayList<>();
+    //refreshEventListeners = new ArrayList<>();
   }
 
   public static void logProgress(String message) {

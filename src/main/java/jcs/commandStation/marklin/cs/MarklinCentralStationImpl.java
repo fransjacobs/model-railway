@@ -18,6 +18,7 @@ package jcs.commandStation.marklin.cs;
 import jcs.commandStation.marklin.cs.can.device.CanDevice;
 import jcs.commandStation.marklin.cs.can.parser.FeedbackEventMessage;
 import java.awt.Image;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -72,8 +73,7 @@ import jcs.commandStation.autopilot.AutoPilot;
 import jcs.commandStation.autopilot.DriveSimulator;
 import jcs.commandStation.entities.MeasuredChannels;
 import jcs.commandStation.entities.MeasurementBean;
-import jcs.commandStation.events.DisconnectionEvent;
-import jcs.commandStation.events.DisconnectionEventListener;
+import jcs.commandStation.events.ConnectionEvent;
 import jcs.commandStation.marklin.cs.can.device.ConfigChannel;
 import jcs.commandStation.marklin.cs.can.device.MeasuringChannel;
 import jcs.commandStation.marklin.cs.can.parser.CanDevices;
@@ -86,12 +86,13 @@ import org.tinylog.Logger;
 import jcs.commandStation.marklin.cs.net.CSHTTPConnection;
 import jcs.commandStation.marklin.parser.GeraetParser;
 import jcs.commandStation.marklin.parser.SystemStatusMessage;
+import jcs.commandStation.events.ConnectionEventListener;
 
 /**
  *
  * @author Frans Jacobs
  */
-public class MarklinCentralStationImpl extends AbstractController implements DecoderController, AccessoryController, FeedbackController, DisconnectionEventListener {
+public class MarklinCentralStationImpl extends AbstractController implements DecoderController, AccessoryController, FeedbackController, ConnectionEventListener {
 
   private CSConnection connection;
 
@@ -106,6 +107,9 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   private Long canBootLoaderLastCallMillis;
   private WatchdogTask watchdogTask;
   private Timer watchDogTimer;
+
+  private MeasurementTask measurementTask;
+  private Timer measurementTimer;
 
   private SortedMap<Long, MeasuredChannels> measuredValues;
 
@@ -361,11 +365,11 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
             Logger.trace("Query channel " + index);
             updateMessage = sendMessage(CanMessageFactory.statusDataConfig(device.getUidInt(), index));
             CanDevices.parse(device, updateMessage);
-            
+
             if (index <= measurementChannels) {
               Logger.trace("M#" + index + "; " + device.getMeasuringChannel(index));
             } else {
-              int configChannelNumber = index - measurementChannels; 
+              int configChannelNumber = index - measurementChannels;
               Logger.trace("C#" + configChannelNumber + "; " + device.getConfigChannel(configChannelNumber));
             }
           }
@@ -484,18 +488,24 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   }
 
   @Override
-  public void onDisconnect(DisconnectionEvent event) {
+  public void onConnectionChange(ConnectionEvent event) {
     String s = event.getSource();
-    disconnect();
+    boolean con = event.isConnected();
+    if (con) {
+      Logger.trace(s + " has re-connected");
+    } else {
+      disconnect();
+    }
 
-    for (DisconnectionEventListener listener : disconnectionEventListeners) {
-      listener.onDisconnect(event);
+    for (ConnectionEventListener listener : connectionEventListeners) {
+      listener.onConnectionChange(event);
     }
   }
 
   @Override
   public boolean isSupportTrackMeasurements() {
-    return true;
+    CanDevice gfp = canDevices.get(csUid);
+    return gfp.getMeasureChannelCount() > 0;
   }
 
   void performMeasurements() {
@@ -506,20 +516,33 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 
       Logger.trace("Take a measurment on " + channels.size() + " channels");
 
-      MeasuredChannels measuredChannels = new MeasuredChannels(System.currentTimeMillis());
+      long now = System.currentTimeMillis();
+      MeasuredChannels measuredChannels = new MeasuredChannels(now);
       for (MeasuringChannel channel : channels) {
         int channelNumber = channel.getNumber();
 
         CanMessage message = sendMessage(CanMessageFactory.systemStatus(csUid, channelNumber));
-
-        MeasurementBean measurement = SystemStatusMessage.parse(channel, message);
+        MeasurementBean measurement = SystemStatusMessage.parse(channel, message, now);
         measuredChannels.addMeasurement(measurement);
-        Logger.trace(measurement);
+        //Logger.trace(measurement);
+        measuredValues.putLast(now, measuredChannels);
+        if (measuredValues.size() > 100) {
+          long first = measuredValues.firstKey();
+          measuredValues.remove(first);
+        }
       }
       Logger.trace("Measurement: " + measuredChannels);
     } else {
       Logger.warn("No measurable channels avalaible");
     }
+  }
+
+  public List<MeasuredChannels> getMeasurements() {
+    return new ArrayList<>(measuredValues.values());
+  }
+
+  public MeasuredChannels getLastMeasurment() {
+    return measuredValues.firstEntry().getValue();
   }
 
   @Override
@@ -1002,14 +1025,48 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 
         if (connectionLost) {
           Logger.trace("The last CANBootLoader request is received more than " + (checkInterval / 1000) + "s ago!");
-          DisconnectionEvent de = new DisconnectionEvent("Marklin Central Station");
-          commandStation.onDisconnect(de);
+          ConnectionEvent de = new ConnectionEvent("Marklin Central Station", false);
+          commandStation.onConnectionChange(de);
         }
       } else {
         //Try to reconnect
         if (!virtual && "true".equalsIgnoreCase(System.getProperty("controller.autoconnect", "true"))) {
-          commandStation.connect();
+          boolean con = commandStation.connect();
+          if (con) {
+            ConnectionEvent de = new ConnectionEvent("Marklin Central Station", true);
+            commandStation.onConnectionChange(de);
+          }
         }
+      }
+    }
+  }
+
+  private void startMeasurements() {
+    long measureInterval = Long.parseLong(System.getProperty("measurement.interval", "5"));
+    measureInterval = measureInterval * 1000;
+
+    if (measureInterval > 0 && !virtual) {
+      measurementTask = new MeasurementTask(this);
+      measurementTimer = new Timer("WatchDogTimer");
+      measurementTimer.schedule(watchdogTask, 0, measureInterval);
+      Logger.debug("Started Measurement Timer with an interval of " + measureInterval + "ms");
+    } else {
+      Logger.debug("Skipping Measurement Timer");
+    }
+  }
+
+  private class MeasurementTask extends TimerTask {
+
+    private final MarklinCentralStationImpl commandStation;
+
+    MeasurementTask(MarklinCentralStationImpl commandStation) {
+      this.commandStation = commandStation;
+    }
+
+    @Override
+    public void run() {
+      if (commandStation.isConnected() && !virtual) {
+        commandStation.performMeasurements();
       }
     }
   }

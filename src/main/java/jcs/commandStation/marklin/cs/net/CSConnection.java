@@ -17,8 +17,8 @@ package jcs.commandStation.marklin.cs.net;
 
 import java.net.InetAddress;
 import java.util.concurrent.TransferQueue;
-import jcs.commandStation.events.DisconnectionEventListener;
 import jcs.commandStation.marklin.cs.can.CanMessage;
+import jcs.commandStation.events.ConnectionEventListener;
 
 public interface CSConnection extends AutoCloseable {
 
@@ -36,7 +36,7 @@ public interface CSConnection extends AutoCloseable {
 
   TransferQueue<CanMessage> getEventQueue();
   
-  void addDisconnectionEventListener(DisconnectionEventListener listener);
+  void addDisconnectionEventListener(ConnectionEventListener listener);
 
 
 }

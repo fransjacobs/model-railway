@@ -18,7 +18,6 @@ package jcs.commandStation;
 import java.awt.Image;
 import java.util.List;
 import jcs.commandStation.events.AccessoryEventListener;
-import jcs.commandStation.events.DisconnectionEventListener;
 import jcs.commandStation.events.LocomotiveDirectionEventListener;
 import jcs.commandStation.events.LocomotiveFunctionEventListener;
 import jcs.commandStation.events.LocomotiveSpeedEventListener;
@@ -30,6 +29,7 @@ import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.CommandStationBean;
 import jcs.commandStation.entities.InfoBean;
 import jcs.entities.LocomotiveBean;
+import jcs.commandStation.events.ConnectionEventListener;
 
 /**
  * The Track repository contain all track item which are used on the Track This can be Locomotives, Turnouts, Signals, etc There For future use the implementation of the Repository could be changed to
@@ -53,7 +53,7 @@ public interface JCSCommandStation {
 
   boolean isVirtual();
 
-  void addDisconnectionEventListener(DisconnectionEventListener listener);
+  void addDisconnectionEventListener(ConnectionEventListener listener);
 
   void addPowerEventListener(PowerEventListener listener);
 

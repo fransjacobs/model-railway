@@ -38,8 +38,7 @@ import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
 import jcs.commandStation.events.AccessoryEvent;
 import jcs.commandStation.events.AccessoryEventListener;
-import jcs.commandStation.events.DisconnectionEvent;
-import jcs.commandStation.events.DisconnectionEventListener;
+import jcs.commandStation.events.ConnectionEvent;
 import jcs.commandStation.events.LocomotiveDirectionEvent;
 import jcs.commandStation.events.LocomotiveDirectionEventListener;
 import jcs.commandStation.events.LocomotiveFunctionEvent;
@@ -64,6 +63,7 @@ import jcs.entities.LocomotiveBean.Direction;
 import jcs.entities.SensorBean;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
+import jcs.commandStation.events.ConnectionEventListener;
 
 /**
  * The JCSCommandStation is the layer between the UI, engines and Command stations
@@ -82,8 +82,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
   private final List<LocomotiveDirectionEventListener> locomotiveDirectionEventListeners;
   private final List<LocomotiveSpeedEventListener> locomotiveSpeedEventListeners;
 
-  private final List<MeasurementEventListener> measurementEventListeners;
-
+  //private final List<MeasurementEventListener> measurementEventListeners;
   private final Set<Protocol> supportedProtocols;
   private CommandStationBean commandStation;
 
@@ -110,7 +109,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     locomotiveFunctionEventListeners = new LinkedList<>();
     locomotiveDirectionEventListeners = new LinkedList<>();
     locomotiveSpeedEventListeners = new LinkedList<>();
-    measurementEventListeners = new LinkedList<>();
+    //measurementEventListeners = new LinkedList<>();
     supportedProtocols = new HashSet<>();
 
     try {
@@ -224,7 +223,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     Logger.trace("Connected Controllers:  Decoder: " + (decoderControllerConnected ? "Yes" : "No") + " Accessory: " + accessoryCntrConnected + " Feedback: " + feedbackCntrConnected);
 
     if (decoderControllerConnected && !allreadyConnected && decoderController != null) {
-      decoderController.addDisconnectionEventListener(new DisconnectionListener(this));
+      decoderController.addConnectionEventListener(new DisconnectionListener(this));
 
       decoderController.addLocomotiveFunctionEventListener(new LocomotiveFunctionChangeEventListener(this));
       decoderController.addLocomotiveDirectionEventListener(new LocomotiveDirectionChangeEventListener(this));
@@ -232,29 +231,29 @@ public class JCSCommandStationImpl implements JCSCommandStation {
 
       supportedProtocols.addAll(decoderController.getCommandStationBean().getSupportedProtocols());
 
-      if (decoderController.isSupportTrackMeasurements()) {
-        //Start the measurements background task
-        long measureInterval = Long.parseLong(System.getProperty("track.measurements.interval", "5"));
-        measureInterval = measureInterval * 1000;
-
-        if (measureInterval > 0) {
-          TrackMeasurementTask measurementTask = new TrackMeasurementTask(this);
-          Timer timer = new Timer("Timer");
-          timer.schedule(measurementTask, 0, measureInterval);
-          Logger.debug("Started Track measurements with an interval of " + measureInterval + "s");
-        } else {
-          Logger.debug("Skipping Track measurements");
-        }
-      } else {
-        Logger.debug("Track measurements are not supported");
-      }
+//      if (decoderController.isSupportTrackMeasurements()) {
+//        //Start the measurements background task
+//        long measureInterval = Long.parseLong(System.getProperty("track.measurements.interval", "5"));
+//        measureInterval = measureInterval * 1000;
+//
+//        if (measureInterval > 0) {
+//          TrackMeasurementTask measurementTask = new TrackMeasurementTask(this);
+//          Timer timer = new Timer("Timer");
+//          timer.schedule(measurementTask, 0, measureInterval);
+//          Logger.debug("Started Track measurements with an interval of " + measureInterval + "s");
+//        } else {
+//          Logger.debug("Skipping Track measurements");
+//        }
+//      } else {
+//        Logger.debug("Track measurements are not supported");
+//      }
     }
 
     if (accessoryCntrConnected > 0 && !allreadyConnected) {
       for (AccessoryController ac : accessoryControllers.values()) {
         if (ac.isConnected()) {
           ac.addAccessoryEventListener(new AccessoryChangeEventListener(this));
-          ac.addDisconnectionEventListener(new DisconnectionListener(this));
+          ac.addConnectionEventListener(new DisconnectionListener(this));
         }
       }
     }
@@ -263,7 +262,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
       for (FeedbackController fc : feedbackControllers.values()) {
         if (fc.isConnected()) {
           fc.addSensorEventListener(new SensorChangeEventListener(this));
-          fc.addDisconnectionEventListener(new DisconnectionListener(this));
+          fc.addConnectionEventListener(new DisconnectionListener(this));
         }
       }
     }
@@ -624,19 +623,19 @@ public class JCSCommandStationImpl implements JCSCommandStation {
   }
 
   @Override
-  public void addDisconnectionEventListener(DisconnectionEventListener listener) {
+  public void addDisconnectionEventListener(ConnectionEventListener listener) {
     if (decoderController != null) {
-      decoderController.addDisconnectionEventListener(listener);
+      decoderController.addConnectionEventListener(listener);
     }
     for (AccessoryController ac : accessoryControllers.values()) {
       if (ac != decoderController) {
-        ac.addDisconnectionEventListener(listener);
+        ac.addConnectionEventListener(listener);
       }
     }
 
     for (FeedbackController fc : feedbackControllers.values()) {
       if (fc != decoderController) {
-        fc.addDisconnectionEventListener(listener);
+        fc.addConnectionEventListener(listener);
       }
     }
   }
@@ -657,12 +656,16 @@ public class JCSCommandStationImpl implements JCSCommandStation {
 
   @Override
   public void addMeasurementEventListener(MeasurementEventListener listener) {
-    measurementEventListeners.add(listener);
+    if (decoderController != null && decoderController.isSupportTrackMeasurements()) {
+      decoderController.addMeasurementEventListener(listener);
+    }
   }
 
   @Override
   public void removeMeasurementListener(MeasurementEventListener listener) {
-    measurementEventListeners.remove(listener);
+    if (decoderController != null && decoderController.isSupportTrackMeasurements()) {
+      decoderController.removeMeasurementEventListener(listener);
+    }
   }
 
   @Override
@@ -680,36 +683,35 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     return feedbackControllers.values().stream().collect(Collectors.toList());
   }
 
-  private class TrackMeasurementTask extends TimerTask {
-
-    private final JCSCommandStationImpl Controller;
-    private boolean debuglog = false;
-
-    TrackMeasurementTask(JCSCommandStationImpl Controller) {
-      this.Controller = Controller;
-      this.debuglog = System.getProperty("debug.measurements", "false").equalsIgnoreCase("true");
-    }
-
-    @Override
-    public void run() {
-      if (this.Controller != null && this.Controller.decoderController != null) {
-        Map<Integer, ChannelBean> measurements = this.Controller.decoderController.getTrackMeasurements();
-        for (ChannelBean ch : measurements.values()) {
-
-          if (ch != null && ch.isChanged()) {
-            MeasurementEvent me = new MeasurementEvent(ch);
-            if (debuglog) {
-              Logger.trace("Changed Channel " + ch.getNumber() + ", " + ch.getName() + ": " + ch.getHumanValue() + " " + ch.getUnit());
-            }
-            for (MeasurementEventListener mel : this.Controller.measurementEventListeners) {
-              mel.onMeasurement(me);
-            }
-          }
-        }
-      }
-    }
-  }
-
+//  private class TrackMeasurementTask extends TimerTask {
+//
+//    private final JCSCommandStationImpl Controller;
+//    private boolean debuglog = false;
+//
+//    TrackMeasurementTask(JCSCommandStationImpl Controller) {
+//      this.Controller = Controller;
+//      this.debuglog = System.getProperty("debug.measurements", "false").equalsIgnoreCase("true");
+//    }
+//
+//    @Override
+//    public void run() {
+//      if (this.Controller != null && this.Controller.decoderController != null) {
+//        Map<Integer, ChannelBean> measurements = this.Controller.decoderController.getTrackMeasurements();
+//        for (ChannelBean ch : measurements.values()) {
+//
+//          if (ch != null && ch.isChanged()) {
+//            MeasurementEvent me = new MeasurementEvent(ch);
+//            if (debuglog) {
+//              Logger.trace("Changed Channel " + ch.getNumber() + ", " + ch.getName() + ": " + ch.getHumanValue() + " " + ch.getUnit());
+//            }
+//            for (MeasurementEventListener mel : this.Controller.measurementEventListeners) {
+//              mel.onMeasurement(me);
+//            }
+//          }
+//        }
+//      }
+//    }
+//  }
   private class SensorChangeEventListener implements SensorEventListener {
 
     private final JCSCommandStationImpl commandStation;
@@ -947,7 +949,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     }
   }
 
-  private class DisconnectionListener implements DisconnectionEventListener {
+  private class DisconnectionListener implements ConnectionEventListener {
 
     private final JCSCommandStationImpl jcsCommandStationImpl;
 
@@ -956,7 +958,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     }
 
     @Override
-    public void onDisconnect(DisconnectionEvent event) {
+    public void onConnectionChange(ConnectionEvent event) {
       Logger.trace(event.getSource() + " is Disconnected!");
       jcsCommandStationImpl.disconnect();
     }

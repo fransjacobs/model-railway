@@ -19,7 +19,7 @@ package jcs.commandStation.events;
  *
  * @author frans
  */
-public interface DisconnectionEventListener {
+public interface ConnectionEventListener {
 
-  void onDisconnect(DisconnectionEvent event);
+  void onConnectionChange(ConnectionEvent event);
 }

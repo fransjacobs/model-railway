@@ -26,10 +26,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TransferQueue;
-import jcs.commandStation.events.DisconnectionEvent;
-import jcs.commandStation.events.DisconnectionEventListener;
+import jcs.commandStation.events.ConnectionEvent;
 import jcs.commandStation.marklin.cs.can.CanMessage;
 import org.tinylog.Logger;
+import jcs.commandStation.events.ConnectionEventListener;
 
 /**
  *
@@ -43,7 +43,7 @@ class CSTCPConnection implements CSConnection {
   private DataOutputStream dos;
 
   private ClientMessageReceiver messageReceiver;
-  private final List<DisconnectionEventListener> disconnectionEventListeners;
+  private final List<ConnectionEventListener> disconnectionEventListeners;
 
   private static final long SHORT_TIMEOUT = 1000L;
   private static final long LONG_TIMEOUT = 5000L;
@@ -85,7 +85,7 @@ class CSTCPConnection implements CSConnection {
   }
 
   @Override
-  public void addDisconnectionEventListener(DisconnectionEventListener listener) {
+  public void addDisconnectionEventListener(ConnectionEventListener listener) {
     this.disconnectionEventListeners.add(listener);
   }
 
@@ -300,9 +300,9 @@ class CSTCPConnection implements CSConnection {
         } catch (SocketException se) {
           if (!quit) {
             String msg = "Host " + centralStationAddress.getHostName();
-            DisconnectionEvent de = new DisconnectionEvent(msg);
-            for (DisconnectionEventListener listener : disconnectionEventListeners) {
-              listener.onDisconnect(de);
+            ConnectionEvent de = new ConnectionEvent(msg, false);
+            for (ConnectionEventListener listener : disconnectionEventListeners) {
+              listener.onConnectionChange(de);
             }
           }
 

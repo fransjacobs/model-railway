@@ -56,8 +56,7 @@ import javax.swing.WindowConstants;
 import javax.swing.border.LineBorder;
 import jcs.JCS;
 import jcs.commandStation.autopilot.AutoPilot;
-import jcs.commandStation.events.DisconnectionEvent;
-import jcs.commandStation.events.DisconnectionEventListener;
+import jcs.commandStation.events.ConnectionEvent;
 import jcs.commandStation.events.PowerEvent;
 import jcs.commandStation.entities.InfoBean;
 import jcs.persistence.PersistenceFactory;
@@ -76,12 +75,13 @@ import jcs.util.RunUtil;
 import jcs.util.SerialPortUtil;
 import jcs.util.VersionInfo;
 import org.tinylog.Logger;
+import jcs.commandStation.events.ConnectionEventListener;
 
 /**
  *
  * @author frans
  */
-public class JCSFrame extends JFrame implements UICallback, DisconnectionEventListener {
+public class JCSFrame extends JFrame implements UICallback, ConnectionEventListener {
 
   private static final long serialVersionUID = -5800900684173242844L;
 
@@ -1143,11 +1143,17 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   }
 
   @Override
-  public void onDisconnect(DisconnectionEvent event) {
-    JOptionPane.showMessageDialog(this, "CommandStation " + event.getSource() + " is disconnected.", "Disconnection error", JOptionPane.ERROR_MESSAGE);
-    connectMI.setText("Connect");
-    connectButton.setSelected(false);
-    showVNCBtn.setEnabled(false);
+  public void onConnectionChange(ConnectionEvent event) {
+    if (event.isConnected()) {
+      connectMI.setText("DisConnect");
+      connectButton.setSelected(true);
+      showVNCBtn.setEnabled(true);
+    } else {
+      JOptionPane.showMessageDialog(this, "CommandStation " + event.getSource() + " is disconnected.", "Disconnection error", JOptionPane.ERROR_MESSAGE);
+      connectMI.setText("Connect");
+      connectButton.setSelected(false);
+      showVNCBtn.setEnabled(false);
+    }
   }
 
   @Override

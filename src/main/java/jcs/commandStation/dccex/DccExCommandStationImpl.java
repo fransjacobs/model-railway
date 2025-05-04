@@ -16,7 +16,6 @@
 package jcs.commandStation.dccex;
 
 import java.awt.Image;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,8 +30,7 @@ import jcs.commandStation.dccex.events.CabEvent;
 import jcs.commandStation.dccex.events.DccExMeasurementEvent;
 import jcs.commandStation.events.AccessoryEvent;
 import jcs.commandStation.events.AccessoryEventListener;
-import jcs.commandStation.events.DisconnectionEvent;
-import jcs.commandStation.events.DisconnectionEventListener;
+import jcs.commandStation.events.ConnectionEvent;
 import jcs.commandStation.events.LocomotiveDirectionEvent;
 import jcs.commandStation.events.LocomotiveDirectionEventListener;
 import jcs.commandStation.events.LocomotiveFunctionEvent;
@@ -54,6 +52,7 @@ import jcs.entities.LocomotiveBean.Direction;
 import jcs.util.KeyValuePair;
 import jcs.util.SerialPortUtil;
 import org.tinylog.Logger;
+import jcs.commandStation.events.ConnectionEventListener;
 
 public class DccExCommandStationImpl extends AbstractController implements DecoderController, AccessoryController {
 
@@ -421,9 +420,9 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
     return this.measurementChannels;
   }
 
-  private void fireAllDisconnectionEventListeners(final DisconnectionEvent disconnectionEvent) {
-    for (DisconnectionEventListener listener : this.disconnectionEventListeners) {
-      listener.onDisconnect(disconnectionEvent);
+  private void fireAllDisconnectionEventListeners(final ConnectionEvent disconnectionEvent) {
+    for (ConnectionEventListener listener : this.connectionEventListeners) {
+      listener.onConnectionChange(disconnectionEvent);
     }
     disconnect();
   }
@@ -675,7 +674,7 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
     }
 
     @Override
-    public void onDisconnect(DisconnectionEvent event) {
+    public void onDisconnect(ConnectionEvent event) {
       this.commandStation.fireAllDisconnectionEventListeners(event);
     }
 

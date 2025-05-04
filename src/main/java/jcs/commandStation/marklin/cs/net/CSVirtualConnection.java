@@ -22,13 +22,13 @@ import java.util.List;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TransferQueue;
 import jcs.commandStation.VirtualConnection;
-import jcs.commandStation.events.DisconnectionEvent;
-import jcs.commandStation.events.DisconnectionEventListener;
+import jcs.commandStation.events.ConnectionEvent;
 import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.marklin.cs.can.CanMessage;
 import jcs.commandStation.marklin.cs.can.CanMessageFactory;
 import jcs.commandStation.marklin.cs.can.parser.SystemStatus;
 import org.tinylog.Logger;
+import jcs.commandStation.events.ConnectionEventListener;
 
 /**
  * Virtual Marklin CS Connection
@@ -42,7 +42,7 @@ class CSVirtualConnection implements CSConnection, VirtualConnection {
   private final InetAddress centralStationAddress;
 
   private PeriodicCSMessageSender periodicMessageSender;
-  private final List<DisconnectionEventListener> disconnectionEventListeners;
+  private final List<ConnectionEventListener> disconnectionEventListeners;
 
   private final TransferQueue<CanMessage> eventQueue;
 
@@ -92,7 +92,7 @@ class CSVirtualConnection implements CSConnection, VirtualConnection {
   }
 
   @Override
-  public void addDisconnectionEventListener(DisconnectionEventListener listener) {
+  public void addDisconnectionEventListener(ConnectionEventListener listener) {
     this.disconnectionEventListeners.add(listener);
   }
 
@@ -217,9 +217,7 @@ class CSVirtualConnection implements CSConnection, VirtualConnection {
 //RX: 0x00 0x16 0x37 0x7e 0x06 0x00 0x00 0x38 0x01 0x00 0x00 0x00 0x00
 //RX: 0x00 0x16 0x37 0x7e 0x06 0x00 0x00 0x38 0x01 0x01 0x01 0x00 0x00
 //RX: 0x00 0x16 0x37 0x7e 0x06 0x00 0x00 0x38 0x01 0x01 0x00 0x00 0x00        
-        
-        
-        
+
       }
       case CanMessage.LOC_VELOCITY -> {
         message.addResponse(CanMessage.parse(message.toString(), true));
@@ -294,9 +292,9 @@ class CSVirtualConnection implements CSConnection, VirtualConnection {
       }
 
       String msg = "Host " + centralStationAddress.getHostName();
-      DisconnectionEvent de = new DisconnectionEvent(msg);
-      for (DisconnectionEventListener listener : disconnectionEventListeners) {
-        listener.onDisconnect(de);
+      ConnectionEvent de = new ConnectionEvent(msg, false);
+      for (ConnectionEventListener listener : disconnectionEventListeners) {
+        listener.onConnectionChange(de);
       }
 
       Logger.trace("Stop sending");

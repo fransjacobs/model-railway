@@ -48,18 +48,18 @@ public class StatusPanel extends javax.swing.JPanel implements MeasurementEventL
   @Override
   public void onMeasurement(MeasurementEvent event) {
 
-    switch (event.getCannel()) {
-      case 1:
-        this.currentLbl.setText(event.getFormattedValue());
-        break;
-      case 3:
-        this.voltageLbl.setText(event.getFormattedValue());
-        break;
-      case 4:
-        this.tempLbl.setText(event.getFormattedValue());
-      default:
-        break;
-    }
+//    switch (event.getCannel()) {
+//      case 1:
+//        this.currentLbl.setText(event.getFormattedValue());
+//        break;
+//      case 3:
+//        this.voltageLbl.setText(event.getFormattedValue());
+//        break;
+//      case 4:
+//        this.tempLbl.setText(event.getFormattedValue());
+//      default:
+//        break;
+//    }
 
   }
 

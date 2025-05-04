@@ -121,7 +121,7 @@ public class MeasurementBean {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("CanDevice{");
+    sb.append("MeasurementBean{");
     if (channelNumber != null) {
       sb.append("channelNumber=").append(channelNumber);
     }
