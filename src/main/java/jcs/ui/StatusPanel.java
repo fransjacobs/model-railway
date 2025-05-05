@@ -48,19 +48,23 @@ public class StatusPanel extends javax.swing.JPanel implements MeasurementEventL
   @Override
   public void onMeasurement(MeasurementEvent event) {
 
-//    switch (event.getCannel()) {
-//      case 1:
-//        this.currentLbl.setText(event.getFormattedValue());
-//        break;
-//      case 3:
-//        this.voltageLbl.setText(event.getFormattedValue());
-//        break;
-//      case 4:
-//        this.tempLbl.setText(event.getFormattedValue());
-//      default:
-//        break;
-//    }
+    if (event.getMain() != null) {
+      this.currentLbl.setText(event.getMain().getDisplayValue() + " " + event.getMain().getUnit());
+    } else {
+      this.currentLbl.setText("-");
+    }
 
+    if (event.getVolt() != null) {
+      this.voltageLbl.setText(event.getVolt().getDisplayValue() + " " + event.getVolt().getUnit());
+    } else {
+      this.voltageLbl.setText("-");
+    }
+
+    if (event.getTemp() != null) {
+      this.tempLbl.setText(event.getTemp().getDisplayValue() + " " + event.getTemp().getUnit());
+    } else {
+      this.tempLbl.setText("-");
+    }
   }
 
   /**

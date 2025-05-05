@@ -329,64 +329,64 @@ public class CSHTTPConnectionImpl implements CSHTTPConnection {
   public void close() throws Exception {
   }
 
-  public static void main(String[] args) throws Exception {
-    boolean cs3 = true;
-
-    InetAddress inetAddr;
-    if (cs3) {
-      inetAddr = InetAddress.getByName("192.168.178.180");
-    } else {
-      inetAddr = InetAddress.getByName("192.168.178.86");
-    }
-    CSHTTPConnectionImpl hc = new CSHTTPConnectionImpl(inetAddr);
-    hc.setCs3(cs3);
-
-    String serial;
-    if (cs3) {
-      serial = "2374";
-    } else {
-      serial = "13344";
-    }
-
-//    Path fPath = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + "zfunctions");
-//    if (!Files.exists(fPath)) {
-//      Files.createDirectories(fPath);
-//      Logger.trace("Created new directory " + fPath);
+//  public static void main(String[] args) throws Exception {
+//    boolean cs3 = true;
+//
+//    InetAddress inetAddr;
+//    if (cs3) {
+//      inetAddr = InetAddress.getByName("192.168.178.180");
+//    } else {
+//      inetAddr = InetAddress.getByName("192.168.178.86");
+//    }
+//    CSHTTPConnectionImpl hc = new CSHTTPConnectionImpl(inetAddr);
+//    hc.setCs3(cs3);
+//
+//    String serial;
+//    if (cs3) {
+//      serial = "2374";
+//    } else {
+//      serial = "13344";
 //    }
 //
-//    Path aPath = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + "zaccessories");
-//    if (!Files.exists(aPath)) {
-//      Files.createDirectories(aPath);
-//      Logger.trace("Created new directory " + aPath);
-//    }
-    Path info = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "info.json");
-    String json = hc.getInfoJSON();
-    Files.writeString(info, json);
-
-    Path devices = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "devices.json");
-    json = hc.getDevicesJSON();
-    Files.writeString(devices, json);
-
-    Path locomotives = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "locomotives.json");
-    json = hc.getLocomotivesJSON();
-    Files.writeString(locomotives, json);
-
-    Path accessories = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "mags.json");
-    json = hc.getAccessoriesJSON();
-    Files.writeString(accessories, json);
-
-    Path fcticons = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "fcticons.json");
-    json = hc.getFunctionsSvgJSON();
-    Files.writeString(fcticons, json);
-
-    Path magicons = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "magicons.json");
-    json = hc.getAccessoriesSvgJSON();
-    Files.writeString(magicons, json);
-
-    Path accessoryFile = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "magnetartikel.cs2");
-    String file = hc.getAccessoriesFile();
-    Logger.trace(file);
-    Files.writeString(accessoryFile, file);
-
-  }
+////    Path fPath = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + "zfunctions");
+////    if (!Files.exists(fPath)) {
+////      Files.createDirectories(fPath);
+////      Logger.trace("Created new directory " + fPath);
+////    }
+////
+////    Path aPath = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + "zaccessories");
+////    if (!Files.exists(aPath)) {
+////      Files.createDirectories(aPath);
+////      Logger.trace("Created new directory " + aPath);
+////    }
+//    Path info = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "info.json");
+//    String json = hc.getInfoJSON();
+//    Files.writeString(info, json);
+//
+//    Path devices = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "devices.json");
+//    json = hc.getDevicesJSON();
+//    Files.writeString(devices, json);
+//
+//    Path locomotives = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "locomotives.json");
+//    json = hc.getLocomotivesJSON();
+//    Files.writeString(locomotives, json);
+//
+//    Path accessories = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "mags.json");
+//    json = hc.getAccessoriesJSON();
+//    Files.writeString(accessories, json);
+//
+//    Path fcticons = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "fcticons.json");
+//    json = hc.getFunctionsSvgJSON();
+//    Files.writeString(fcticons, json);
+//
+//    Path magicons = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "magicons.json");
+//    json = hc.getAccessoriesSvgJSON();
+//    Files.writeString(magicons, json);
+//
+//    Path accessoryFile = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "magnetartikel.cs2");
+//    String file = hc.getAccessoriesFile();
+//    Logger.trace(file);
+//    Files.writeString(accessoryFile, file);
+//
+//  }
 }

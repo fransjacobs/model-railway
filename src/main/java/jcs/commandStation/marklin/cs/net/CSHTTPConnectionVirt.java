@@ -24,6 +24,7 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.UnknownHostException;
 import javax.imageio.IIOException;
 import javax.imageio.ImageIO;
 import org.tinylog.Logger;
@@ -45,8 +46,7 @@ public class CSHTTPConnectionVirt implements CSHTTPConnection {
   private final static String MAGNETARTIKEL = "magnetartikel.cs2";
   private final static String ACCESSORIES_URL = "/app/api/mags";
 
-  private final static String DEVICE = "geraet.vrs";
-
+  //private final static String DEVICE = "geraet.vrs";
   private final static String IMAGE_FOLDER_CS3 = "/app/assets/lok/";
   private final static String IMAGE_FOLDER_CS2 = "/icons/";
   private final static String FUNCTION_IMAGE_FOLDER = "/fcticons/";
@@ -54,8 +54,11 @@ public class CSHTTPConnectionVirt implements CSHTTPConnection {
   private final static String FUNCTION_SVG_URL = "/images/svgSprites/fcticons.json";
   private final static String ACCESSORIES_SVG_URL = "/images/svgSprites/magicons.json";
 
-  private final static String CS3_INFO_JSON = "/app/api/info";
-  private final static String DEVICES = "/app/api/devs";
+  //private final static String CS3_INFO_JSON = "/app/api/info";
+  //private final static String DEVICES = "/app/api/devs";
+  public CSHTTPConnectionVirt() throws UnknownHostException {
+    this(InetAddress.getLocalHost());
+  }
 
   public CSHTTPConnectionVirt(InetAddress csAddress) {
     this.csAddress = csAddress;
@@ -231,7 +234,7 @@ public class CSHTTPConnectionVirt implements CSHTTPConnection {
     json.append("\"_queryInterval\": \"5\",");
     json.append("\"_version\": {");
     json.append("\"major\": \"77\"");
-    json.append("},");    
+    json.append("},");
     json.append("\"_kanal\": [],");
     json.append("\"_ready\": true,");
     json.append("\"path\": \"/media/usb1\",");
@@ -405,7 +408,7 @@ public class CSHTTPConnectionVirt implements CSHTTPConnection {
     json.append("\"farbeGelb\": \"240\",");
     json.append("\"farbeGruen\": \"48\",");
     json.append("\"farbeMax\": \"192\",");
-    json.append("\"farbeRot\": \"22\",");
+    json.append("\"farbeRot\": \"224\",");
     json.append("\"name\": \"MAIN\",");
     json.append("\"nr\": \"1\",");
     json.append("\"potenz\": \"253\",");

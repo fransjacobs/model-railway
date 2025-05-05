@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation.marklin.cs.can.parser;
+package jcs.commandStation.marklin.parser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,9 +28,9 @@ import org.junit.Test;
 /**
  *
  */
-public class CanDevicesTest {
+public class CanDeviceParserTest {
 
-  public CanDevicesTest() {
+  public CanDeviceParserTest() {
   }
 
   private CanMessage getMemberPing() {
@@ -65,7 +65,7 @@ public class CanDevicesTest {
     gfp.setVersion("12.113");
     expResult.add(gfp);
 
-    List<CanDevice> result = CanDevices.parse(memberPingmessage);
+    List<CanDevice> result = CanDeviceParser.parse(memberPingmessage);
 
     assertEquals(expResult, result);
   }
@@ -100,7 +100,7 @@ public class CanDevicesTest {
     expResult.setConfigChannelCount(2);
     expResult.setSerial(2374);
 
-    CanDevices.parse(canDevice, statusConfigmessage);
+    CanDeviceParser.parse(canDevice, statusConfigmessage);
     CanDevice result = canDevice;
     assertEquals(expResult, result);
   }
@@ -129,7 +129,7 @@ public class CanDevicesTest {
     canDevice.setConfigChannelCount(2);
 
     CanMessage statusConfigmessage = getStatusDataConfigGFPIndex1();
-    CanDevices.parse(canDevice, statusConfigmessage);
+    CanDeviceParser.parse(canDevice, statusConfigmessage);
 
     CanDevice expDeviceResult = new CanDevice();
     expDeviceResult.setUid("0x6373458c");
@@ -196,7 +196,7 @@ public class CanDevicesTest {
     expResult.setVersion("1.1");
     expResult.setSerial(9281);
 
-    CanDevices.parse(canDevice, statusConfigmessage);
+    CanDeviceParser.parse(canDevice, statusConfigmessage);
     CanDevice result = canDevice;
     assertEquals(expResult, result);
   }
@@ -246,7 +246,7 @@ public class CanDevicesTest {
     expResult.addChoice("Tastaturmatrix");
 
     expResultDev.addConfigChannel(expResult);
-    CanDevices.parse(canDevice, statusConfigmessage);
+    CanDeviceParser.parse(canDevice, statusConfigmessage);
 
     CanDevice resultDev = canDevice;
     
@@ -306,7 +306,7 @@ public class CanDevicesTest {
     expResult.setEndName("31");
 
     expResultDev.addConfigChannel(expResult);
-    CanDevices.parse(canDevice, statusConfigmessage);
+    CanDeviceParser.parse(canDevice, statusConfigmessage);
 
     CanDevice resultDev = canDevice;
     assertEquals(expResultDev, resultDev);

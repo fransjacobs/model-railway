@@ -70,7 +70,7 @@ public class GeraetParser {
           gfp.setUid(value);
         }
         case ".guiuid" -> {
-          //ib.setGuiUid(value);
+          gfp.setGuiUid(value);
         }
         case ".hardvers" -> {
           //ib.setHardwareVersion(value);
@@ -101,7 +101,7 @@ public class GeraetParser {
     } else {
       shortName = "CS2";
     }
-    
+
     gfp.setIdentifier("0x00");
     return gfp;
   }

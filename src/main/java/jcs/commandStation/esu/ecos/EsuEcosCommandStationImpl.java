@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TransferQueue;
 import jcs.JCS;
@@ -36,9 +35,7 @@ import jcs.commandStation.events.PowerEvent;
 import jcs.commandStation.events.PowerEventListener;
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.AccessoryBean;
-import jcs.entities.ChannelBean;
 import jcs.entities.CommandStationBean;
-import jcs.commandStation.entities.DeviceBean;
 import jcs.entities.FeedbackModuleBean;
 import jcs.commandStation.entities.InfoBean;
 import jcs.commandStation.esu.ecos.net.EcosHTTPConnection;
@@ -474,24 +471,6 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     return false;
   }
 
-  @Override
-  public Map<Integer, ChannelBean> getTrackMeasurements() {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-//  @Override
-//  public void switchAccessory(Integer address, AccessoryBean.AccessoryValue value) {
-//    switchAccessory(address, value, defaultSwitchTime);
-//  }
-//  @Override
-//  public void switchAccessory(Integer address, AccessoryBean.AccessoryValue value, Integer switchTime) {
-//    AccessoryBean ab = accessoryManager.getAccessory(address);
-//    if (ab != null) {
-//      switchAccessory(ab.getId(), value);
-//    } else {
-//      Logger.warn("Accessory with address " + address + " does not exist for the Ecos");
-//    }
-//  }
   @Override
   public void switchAccessory(Integer address, String protocol, AccessoryBean.AccessoryValue value, Integer switchTime) {
     Logger.trace("Using Address " + address + " to find the AccessoryId...");

@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import jcs.commandStation.marklin.cs.can.CanMessage;
 
 /**
  * A CanDevice is a Device inside or connected to the Marklin Central Station<br>
@@ -31,16 +30,14 @@ import jcs.commandStation.marklin.cs.can.CanMessage;
  */
 public class CanDevice {
 
-  public static final String MAIN = "MAIN";
-  public static final String PROG = "PROG";
-  public static final String VOLT = "VOLT";
-  public static final String TEMP = "TEMP";
-
-  public static final String BUS0 = "Auswertung 1 - 16";
-  public static final String BUS1 = "Bus 1 (RJ45-1)";
-  public static final String BUS2 = "Bus 2 (RJ45-2)";
-  public static final String BUS3 = "Bus 3 (6-Polig)";
-
+//  public static final String MAIN = "MAIN";
+//  public static final String PROG = "PROG";
+//  public static final String VOLT = "VOLT";
+//  public static final String TEMP = "TEMP";
+//  public static final String BUS0 = "Auswertung 1 - 16";
+//  public static final String BUS1 = "Bus 1 (RJ45-1)";
+//  public static final String BUS2 = "Bus 2 (RJ45-2)";
+//  public static final String BUS3 = "Bus 3 (6-Polig)";
 //  Absender Geräte UID
 //  SW-Versionsnummer
 //  Gerätekennung
@@ -51,6 +48,7 @@ public class CanDevice {
 //  8 Byte Artikelnummer.
 //  Gerätebezeichnung, \0 Terminiert
   private String uid;
+  private String guiUid;
   private String version;
   private String hwVersion;
   private String identifier;
@@ -64,25 +62,6 @@ public class CanDevice {
   private final Map<Integer, ConfigChannel> configChannels;
 
   public CanDevice() {
-    this((String) null);
-  }
-
-  /**
-   * Constructor for CS 3 JSON
-   *
-   * @param json
-   */
-  public CanDevice(String json) {
-    measuringChannels = new HashMap<>();
-    configChannels = new HashMap<>();
-  }
-
-  /**
-   * Constructor for CAN
-   *
-   * @param message
-   */
-  public CanDevice(CanMessage message) {
     measuringChannels = new HashMap<>();
     configChannels = new HashMap<>();
   }
@@ -102,6 +81,19 @@ public class CanDevice {
 
   public void setUid(Integer uid) {
     this.uid = "0x" + uid;
+  }
+
+  public String getGuiUid() {
+    return guiUid;
+  }
+
+  public Integer getGuiUidInt() {
+    String ui = guiUid.replace("0x", "");
+    return Integer.parseUnsignedInt(ui, 16);
+  }
+
+  public void setGuiUid(String guiUid) {
+    this.guiUid = guiUid;
   }
 
   public String getName() {

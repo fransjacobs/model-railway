@@ -30,8 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -45,14 +43,12 @@ import jcs.commandStation.events.LocomotiveFunctionEvent;
 import jcs.commandStation.events.LocomotiveFunctionEventListener;
 import jcs.commandStation.events.LocomotiveSpeedEvent;
 import jcs.commandStation.events.LocomotiveSpeedEventListener;
-import jcs.commandStation.events.MeasurementEvent;
 import jcs.commandStation.events.MeasurementEventListener;
 import jcs.commandStation.events.PowerEventListener;
 import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.AccessoryBean.AccessoryValue;
-import jcs.entities.ChannelBean;
 import jcs.entities.CommandStationBean;
 import jcs.entities.CommandStationBean.Protocol;
 import jcs.entities.FunctionBean;
@@ -82,7 +78,6 @@ public class JCSCommandStationImpl implements JCSCommandStation {
   private final List<LocomotiveDirectionEventListener> locomotiveDirectionEventListeners;
   private final List<LocomotiveSpeedEventListener> locomotiveSpeedEventListeners;
 
-  //private final List<MeasurementEventListener> measurementEventListeners;
   private final Set<Protocol> supportedProtocols;
   private CommandStationBean commandStation;
 
@@ -109,7 +104,6 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     locomotiveFunctionEventListeners = new LinkedList<>();
     locomotiveDirectionEventListeners = new LinkedList<>();
     locomotiveSpeedEventListeners = new LinkedList<>();
-    //measurementEventListeners = new LinkedList<>();
     supportedProtocols = new HashSet<>();
 
     try {
@@ -223,7 +217,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     Logger.trace("Connected Controllers:  Decoder: " + (decoderControllerConnected ? "Yes" : "No") + " Accessory: " + accessoryCntrConnected + " Feedback: " + feedbackCntrConnected);
 
     if (decoderControllerConnected && !allreadyConnected && decoderController != null) {
-      decoderController.addConnectionEventListener(new DisconnectionListener(this));
+      decoderController.addConnectionEventListener(new ConnectionListener(this));
 
       decoderController.addLocomotiveFunctionEventListener(new LocomotiveFunctionChangeEventListener(this));
       decoderController.addLocomotiveDirectionEventListener(new LocomotiveDirectionChangeEventListener(this));
@@ -253,7 +247,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
       for (AccessoryController ac : accessoryControllers.values()) {
         if (ac.isConnected()) {
           ac.addAccessoryEventListener(new AccessoryChangeEventListener(this));
-          ac.addConnectionEventListener(new DisconnectionListener(this));
+          ac.addConnectionEventListener(new ConnectionListener(this));
         }
       }
     }
@@ -262,7 +256,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
       for (FeedbackController fc : feedbackControllers.values()) {
         if (fc.isConnected()) {
           fc.addSensorEventListener(new SensorChangeEventListener(this));
-          fc.addConnectionEventListener(new DisconnectionListener(this));
+          fc.addConnectionEventListener(new ConnectionListener(this));
         }
       }
     }
@@ -949,18 +943,22 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     }
   }
 
-  private class DisconnectionListener implements ConnectionEventListener {
+  private class ConnectionListener implements ConnectionEventListener {
 
     private final JCSCommandStationImpl jcsCommandStationImpl;
 
-    DisconnectionListener(JCSCommandStationImpl jcsCommandStationImpl) {
+    ConnectionListener(JCSCommandStationImpl jcsCommandStationImpl) {
       this.jcsCommandStationImpl = jcsCommandStationImpl;
     }
 
     @Override
     public void onConnectionChange(ConnectionEvent event) {
-      Logger.trace(event.getSource() + " is Disconnected!");
-      jcsCommandStationImpl.disconnect();
+      if (event.isConnected()) {
+        Logger.trace(event.getSource() + " has re-connected!");
+      } else {
+        Logger.trace(event.getSource() + " is Disconnected!");
+        //jcsCommandStationImpl.disconnect();
+      }
     }
   }
 

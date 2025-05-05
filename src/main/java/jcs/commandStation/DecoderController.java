@@ -17,13 +17,11 @@ package jcs.commandStation;
 
 import java.awt.Image;
 import java.util.List;
-import java.util.Map;
 import jcs.commandStation.events.LocomotiveDirectionEventListener;
 import jcs.commandStation.events.LocomotiveFunctionEventListener;
 import jcs.commandStation.events.LocomotiveSpeedEventListener;
 import jcs.commandStation.events.MeasurementEventListener;
 import jcs.commandStation.events.PowerEventListener;
-import jcs.entities.ChannelBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.Direction;
 
@@ -62,8 +60,6 @@ public interface DecoderController extends GenericController {
   Image getLocomotiveFunctionImage(String icon);
 
   boolean isSupportTrackMeasurements();
-
-  Map<Integer, ChannelBean> getTrackMeasurements();
 
   void addMeasurementEventListener(MeasurementEventListener listener);
 

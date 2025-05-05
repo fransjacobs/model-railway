@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation.marklin.cs.can.parser;
+package jcs.commandStation.marklin.parser;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -28,17 +28,22 @@ import org.tinylog.Logger;
  * Parse the CS CAN Bus devices from the <br>
  * "Softwarestand Anfrage / Teilnehmer Ping" and "Statusdaten Konfiguration" messages
  */
-public class CanDevices {
+public class CanDeviceParser {
 
   public static List<CanDevice> parse(CanMessage memberPingmessage) {
     List<CanDevice> devices = new ArrayList<>();
-    for (CanMessage response : memberPingmessage.getResponses()) {
+    List<CanMessage> responses = memberPingmessage.getResponses();
+    if (responses.isEmpty() && memberPingmessage.isResponseMessage()) {
+      responses.add(memberPingmessage);
+    }
+
+    for (CanMessage response : responses) {
       CanDevice device = parseResponse(response);
       if (device != null) {
         devices.add(device);
       }
     }
-    
+
     return devices;
   }
 
@@ -123,15 +128,6 @@ public class CanDevices {
     }
   }
 
-  
-//Anzahl der Messwerte im Gerät.
-//Anzahl der Konfigurationskanäle
-//frei.
-//Seriennummer CS2.
-//8 Byte Artikelnummer.
-//Gerätebezeichnung, \0 Terminiert  
-  
-  
   /**
    * In case the index equals zero (0) the responses contain a CAN Device Description.
    *
@@ -152,10 +148,10 @@ public class CanDevices {
             int configChannels = Byte.toUnsignedInt(data[1]);
             canDevice.setMeasureChannelCount(measureChannels);
             canDevice.setConfigChannelCount(configChannels);
-            
+
             byte[] free = new byte[2];
             System.arraycopy(data, 2, free, 0, free.length);
-            
+
             byte[] sn = new byte[4];
             System.arraycopy(data, 4, sn, 0, sn.length);
             int serial = CanMessage.toInt(sn);

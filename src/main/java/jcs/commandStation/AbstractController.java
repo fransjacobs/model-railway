@@ -45,7 +45,7 @@ public abstract class AbstractController implements GenericController {
 
   protected final List<ConnectionEventListener> connectionEventListeners;
 
-  private final List<MeasurementEventListener> measurementEventListeners;
+  protected final List<MeasurementEventListener> measurementEventListeners;
 
   protected ExecutorService executor;
 

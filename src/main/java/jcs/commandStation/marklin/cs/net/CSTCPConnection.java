@@ -162,7 +162,7 @@ class CSTCPConnection implements CSConnection {
       dos.write(bytes);
       dos.flush();
     } catch (IOException ex) {
-      Logger.error(ex);
+      Logger.error(ex.getMessage());
     }
 
     if (CanMessage.PING_RESP != message.getCommand()) {
@@ -187,6 +187,11 @@ class CSTCPConnection implements CSConnection {
     if (callback != null) {
       //Wait for the response
       boolean responseComplete = callback.isResponseComplete();
+
+      //the CS somtime is slow with replies, whic could lead to missing responses.
+      //Just wait a 10 milliseconds to be sure
+      pause();
+
       while (!responseComplete && now < timeout) {
         responseComplete = callback.isResponseComplete();
         now = System.currentTimeMillis();
@@ -233,6 +238,13 @@ class CSTCPConnection implements CSConnection {
   @Override
   public boolean isConnected() {
     return messageReceiver != null && messageReceiver.isRunning();
+  }
+
+  private void pause() {
+    try {
+      Thread.sleep(10);
+    } catch (InterruptedException ex) {
+    }
   }
 
   private class ClientMessageReceiver extends Thread {
@@ -292,6 +304,7 @@ class CSTCPConnection implements CSConnection {
           //Logger.trace("RX: "+rx +"; "+ din.available());
           if (this.callBack != null && this.callBack.isSubscribedfor(cmd)) {
             this.callBack.addResponse(rx, din.available());
+
           } else {
             eventQueue.offer(rx);
             //Logger.trace("Enqueued: " + rx + " QueueSize: " + eventQueue.size());

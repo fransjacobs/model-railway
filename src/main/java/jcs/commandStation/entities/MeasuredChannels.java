@@ -37,13 +37,13 @@ public class MeasuredChannels {
   public MeasuredChannels(long measurementTime) {
     this.measurementTime = measurementTime;
   }
-  
+
   public long getMeasurementTime() {
     return measurementTime;
   }
 
   public void addMeasurement(MeasurementBean measurement) {
-    switch(measurement.getName()) {
+    switch (measurement.getName()) {
       case "MAIN" ->
         this.main = measurement;
       case "PROG" ->
@@ -53,10 +53,10 @@ public class MeasuredChannels {
       case "TEMP" ->
         this.temp = measurement;
       default ->
-        Logger.error("Unknown measurement "+measurement);
+        Logger.error("Unknown measurement " + measurement);
     }
   }
-  
+
   public MeasurementBean getMain() {
     return main;
   }
@@ -113,7 +113,36 @@ public class MeasuredChannels {
 
   @Override
   public String toString() {
-    return "MeasuredChanels{" + "measurementTime=" + new Date(measurementTime) + ", main=" + main.getDisplayValue() + " " + main.getUnit() + ", prog=" + prog.getDisplayValue() + " " + prog.getUnit() + ", volt=" + volt.getDisplayValue() + " " + volt.getUnit() + ", temp=" + temp.getDisplayValue() + " " + temp.getUnit() + "}";
+    StringBuilder sb = new StringBuilder();
+    sb.append("MeasuredChanels{measurementTime=");
+    sb.append(new Date(measurementTime));
+    if (main != null) {
+      sb.append(", MAIN=");
+      sb.append(main.getDisplayValue());
+      sb.append(" ");
+      sb.append(main.getUnit());
+    }
+    if (prog != null) {
+      sb.append(", PROG=");
+      sb.append(prog.getDisplayValue());
+      sb.append(" ");
+      sb.append(prog.getUnit());
+    }
+    if (volt != null) {
+      sb.append(", VOLT=");
+      sb.append(volt.getDisplayValue());
+      sb.append(" ");
+      sb.append(volt.getUnit());
+    }
+    if (temp != null) {
+      sb.append(", TEMP=");
+      sb.append(temp.getDisplayValue());
+      sb.append(" ");
+      sb.append(temp.getUnit());
+    }
+    sb.append("}");
+
+    return sb.toString();
   }
 
 }

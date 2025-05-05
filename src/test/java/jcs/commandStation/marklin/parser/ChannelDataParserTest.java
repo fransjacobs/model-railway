@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation.marklin.cs3.can.parser;
+package jcs.commandStation.marklin.parser;
 
 import jcs.entities.ChannelBean;
 import jcs.commandStation.marklin.cs.can.CanMessage;

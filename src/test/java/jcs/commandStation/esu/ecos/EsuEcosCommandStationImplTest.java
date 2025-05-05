@@ -15,12 +15,9 @@
  */
 package jcs.commandStation.esu.ecos;
 
-import java.util.ArrayList;
 import java.util.List;
-import jcs.commandStation.entities.DeviceBean;
 import jcs.commandStation.entities.InfoBean;
 import jcs.entities.AccessoryBean;
-import jcs.entities.ChannelBean;
 import jcs.entities.CommandStationBean;
 import jcs.entities.FeedbackModuleBean;
 import jcs.entities.LocomotiveBean;

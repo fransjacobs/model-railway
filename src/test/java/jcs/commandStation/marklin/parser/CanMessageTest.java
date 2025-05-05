@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation.marklin.cs.can;
+package jcs.commandStation.marklin.parser;
 
+import jcs.commandStation.marklin.cs.can.CanMessage;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -25,7 +26,6 @@ import org.junit.Test;
 
 /**
  *
- * @author Frans Jacobs <frans.jacobs@gmail.com>
  */
 public class CanMessageTest {
 

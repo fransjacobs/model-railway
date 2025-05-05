@@ -22,7 +22,7 @@
         <packaging>jar</packaging>
         <exec.mainClass>jcs.JCS</exec.mainClass>
         <maven.compiler.release>21</maven.compiler.release>
-        <maven.test.skip>true</maven.test.skip>
+        <!--maven.test.skip>true</maven.test.skip-->
     </properties>
     <dependencies>
         <dependency>
@@ -295,7 +295,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.2</version>
                 <configuration>
-                    <testFailureIgnore>true</testFailureIgnore>
+                    <testFailureIgnore>false</testFailureIgnore>
                     <argLine>-Dfile.encoding=UTF-8</argLine>
                     <configurationParameters>
                         junit.jupiter.execution.parallel.enabled=false

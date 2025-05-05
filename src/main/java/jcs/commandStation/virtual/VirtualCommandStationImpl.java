@@ -18,7 +18,6 @@ package jcs.commandStation.virtual;
 import jcs.commandStation.autopilot.DriveSimulator;
 import java.awt.Image;
 import java.util.List;
-import java.util.Map;
 import jcs.JCS;
 import jcs.commandStation.AbstractController;
 import jcs.commandStation.AccessoryController;
@@ -38,7 +37,6 @@ import jcs.commandStation.events.PowerEventListener;
 import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.AccessoryBean;
-import jcs.entities.ChannelBean;
 import jcs.entities.CommandStationBean;
 import jcs.entities.FeedbackModuleBean;
 import jcs.commandStation.entities.InfoBean;
@@ -257,10 +255,6 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
     return false;
   }
 
-  @Override
-  public Map<Integer, ChannelBean> getTrackMeasurements() {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
 
 //  @Override
 //  public void switchAccessory(Integer address, AccessoryBean.AccessoryValue value) {
