@@ -210,7 +210,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.13.0</version>
                 <configuration>
-                    <compilerArgs>--enable-preview</compilerArgs>
+                    <!--compilerArgs>- -enable-preview,-Xlint:unchecked,-verbose</compilerArgs-->
+                    <compilerArgs>--enable-preview,-verbose</compilerArgs>
                     <release>21</release>
                     <showDeprecation>true</showDeprecation>
                 </configuration>
@@ -239,6 +240,7 @@
                 <version>3.3.1</version>
                 <configuration>
                     <encoding>UTF-8</encoding>
+                    <propertiesEncoding>${project.build.sourceEncoding}</propertiesEncoding>
                     <nonFilteredFileExtensions>
                         <nonFilteredFileExtension>db:encryptable</nonFilteredFileExtension>
                         <nonFilteredFileExtension>db</nonFilteredFileExtension>

@@ -89,6 +89,8 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     }
 
     List<CommandStationBean> commandStations = PersistenceFactory.getService().getCommandStations();
+    CommandStationBean[] cmdSts = new CommandStationBean[commandStations.size()];
+    commandStations.toArray(cmdSts);
 
     if (selectedCommandStation == null) {
       selectedCommandStation = new CommandStationBean();
@@ -96,7 +98,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
       commandStations.add(selectedCommandStation);
     }
 
-    commandStationComboBoxModel = new DefaultComboBoxModel(commandStations.toArray());
+    commandStationComboBoxModel = new DefaultComboBoxModel<CommandStationBean>(cmdSts);
     commandStationComboBoxModel.setSelectedItem(selectedCommandStation);
     commandStationComboBox.setModel(commandStationComboBoxModel);
 
@@ -106,7 +108,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
       ports[i] = comPorts[i].getSystemPortName();
     }
 
-    serialPortComboBoxModel = new DefaultComboBoxModel(ports);
+    serialPortComboBoxModel = new DefaultComboBoxModel<>(ports);
     this.serialPortCB.setModel(serialPortComboBoxModel);
 
     setFieldValues();
@@ -1174,7 +1176,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     this.selectedCommandStation.setId("new.cs");
     this.selectedCommandStation.setConnectionType(ConnectionType.NETWORK);
 
-    ((DefaultComboBoxModel) commandStationComboBoxModel).addElement(selectedCommandStation);
+    ((DefaultComboBoxModel<CommandStationBean>) commandStationComboBoxModel).addElement(selectedCommandStation);
     this.commandStationComboBoxModel.setSelectedItem(selectedCommandStation);
     setFieldValues();
   }//GEN-LAST:event_newBtnActionPerformed
@@ -1280,7 +1282,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     for (int i = 0; i < comPorts.length; i++) {
       ports[i] = comPorts[i].getSystemPortName();
     }
-    serialPortComboBoxModel = new DefaultComboBoxModel(ports);
+    serialPortComboBoxModel = new DefaultComboBoxModel<>(ports);
     serialPortCB.setModel(serialPortComboBoxModel);
 
     String portName = selectedCommandStation.getSerialPort();

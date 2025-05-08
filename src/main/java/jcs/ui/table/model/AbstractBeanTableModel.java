@@ -29,15 +29,17 @@ import org.tinylog.Logger;
  */
 public abstract class AbstractBeanTableModel<T> extends AbstractTableModel {
 
+  private static final long serialVersionUID = 1606361017089479085L;
+
   protected List<T> beans;
-  protected EntityInfo beanInfo;
+  protected EntityInfo<T> beanInfo;
 
   public AbstractBeanTableModel(Class T) {
     this(T, null);
   }
 
   public AbstractBeanTableModel(Class T, String[] displayColumnNames) {
-    beanInfo = new EntityInfo(T, displayColumnNames, true);
+    beanInfo = new EntityInfo<>(T, displayColumnNames, true);
   }
 
   public List<T> getBeans() {
@@ -48,7 +50,7 @@ public abstract class AbstractBeanTableModel<T> extends AbstractTableModel {
     if (beans != null && !beans.isEmpty()) {
       this.beans = beans;
     } else {
-      this.beans = Collections.EMPTY_LIST;
+      this.beans = Collections.<T>emptyList();
     }
     this.fireTableDataChanged();
   }
@@ -156,8 +158,7 @@ public abstract class AbstractBeanTableModel<T> extends AbstractTableModel {
   }
 
   /**
-   * Returns <code>true</code> if the specified cell can be modified, and <code>false</code> otherwise. For this implementation, the
-   * method always returns <code>true</code>.
+   * Returns <code>true</code> if the specified cell can be modified, and <code>false</code> otherwise. For this implementation, the method always returns <code>true</code>.
    *
    * @param row the row index.
    * @param column the column index.

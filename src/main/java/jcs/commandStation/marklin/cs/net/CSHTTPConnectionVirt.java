@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
@@ -85,7 +86,7 @@ public class CSHTTPConnectionVirt implements CSHTTPConnection {
   public String getLocomotivesFile() {
     StringBuilder locs = new StringBuilder();
     try {
-      URL cs = new URL(HTTP + csAddress.getHostAddress() + CONFIG + LOCOMOTIVE);
+      URL cs = URI.create(HTTP + csAddress.getHostAddress() + CONFIG + LOCOMOTIVE).toURL();
       URLConnection lc = cs.openConnection();
       try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
         String inputLine;
@@ -106,7 +107,7 @@ public class CSHTTPConnectionVirt implements CSHTTPConnection {
   public String getLocomotivesJSON() {
     StringBuilder loks = new StringBuilder();
     try {
-      URL url = new URL(HTTP + csAddress.getHostAddress() + LOCOMOTIVE_JSON);
+      URL url = URI.create(HTTP + csAddress.getHostAddress() + LOCOMOTIVE_JSON).toURL();
       URLConnection lc = url.openConnection();
       try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
         String inputLine;
@@ -127,7 +128,7 @@ public class CSHTTPConnectionVirt implements CSHTTPConnection {
   public String getAccessoriesFile() {
     StringBuilder locs = new StringBuilder();
     try {
-      URL url = new URL(HTTP + csAddress.getHostAddress() + CONFIG + MAGNETARTIKEL);
+      URL url = URI.create(HTTP + csAddress.getHostAddress() + CONFIG + MAGNETARTIKEL).toURL();
       URLConnection lc = url.openConnection();
       try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
         String inputLine;
@@ -148,7 +149,7 @@ public class CSHTTPConnectionVirt implements CSHTTPConnection {
   public String getFunctionsSvgJSON() {
     StringBuilder json = new StringBuilder();
     try {
-      URL url = new URL(HTTP + csAddress.getHostAddress() + FUNCTION_SVG_URL);
+      URL url = URI.create(HTTP + csAddress.getHostAddress() + FUNCTION_SVG_URL).toURL();
       URLConnection lc = url.openConnection();
       try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
         String inputLine;
@@ -169,7 +170,7 @@ public class CSHTTPConnectionVirt implements CSHTTPConnection {
   public String getAccessoriesSvgJSON() {
     StringBuilder json = new StringBuilder();
     try {
-      URL url = new URL(HTTP + csAddress.getHostAddress() + ACCESSORIES_SVG_URL);
+      URL url = URI.create(HTTP + csAddress.getHostAddress() + ACCESSORIES_SVG_URL).toURL();
       URLConnection lc = url.openConnection();
       try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
         String inputLine;
@@ -190,7 +191,7 @@ public class CSHTTPConnectionVirt implements CSHTTPConnection {
   public String getAccessoriesJSON() {
     StringBuilder json = new StringBuilder();
     try {
-      URL url = new URL(HTTP + csAddress.getHostAddress() + ACCESSORIES_URL);
+      URL url = URI.create(HTTP + csAddress.getHostAddress() + ACCESSORIES_URL).toURL();
       URLConnection lc = url.openConnection();
       try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
         String inputLine;
@@ -549,9 +550,9 @@ public class CSHTTPConnectionVirt implements CSHTTPConnection {
     try {
       URL url;
       if (cs3) {
-        url = new URL(fixURL(HTTP + csAddress.getHostAddress() + IMAGE_FOLDER_CS3 + imageName + ".png"));
+        url = URI.create(fixURL(HTTP + csAddress.getHostAddress() + IMAGE_FOLDER_CS3 + imageName + ".png")).toURL();
       } else {
-        url = new URL(fixURL(HTTP + csAddress.getHostAddress() + IMAGE_FOLDER_CS2 + imageName + ".png"));
+        url = URI.create(fixURL(HTTP + csAddress.getHostAddress() + IMAGE_FOLDER_CS2 + imageName + ".png")).toURL();
       }
 
       Logger.trace("image URL: " + url);
@@ -570,7 +571,7 @@ public class CSHTTPConnectionVirt implements CSHTTPConnection {
     String iurl = fixURL(HTTP + csAddress.getHostAddress() + FUNCTION_IMAGE_FOLDER + imageName + ".png");
 
     try {
-      URL url = new URL(iurl);
+      URL url = URI.create(iurl).toURL();
       image = ImageIO.read(url);
     } catch (IIOException iio) {
       //Image not avalable

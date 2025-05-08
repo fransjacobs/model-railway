@@ -86,6 +86,7 @@ public abstract class Tile extends JComponent { // implements ChangeListener
 
   public static final String MODEL_CHANGED_PROPERTY = "model";
 //  public static final String CONTENT_AREA_FILLED_CHANGED_PROPERTY = "contentAreaFilled";
+  private static final long serialVersionUID = -8117888635518142366L;
 
   /**
    * The data model that determines the Tile state.
@@ -650,7 +651,7 @@ public abstract class Tile extends JComponent { // implements ChangeListener
   public abstract Map<Orientation, Point> getEdgePoints();
 
   Set<Point> getAltPoints(Point center) {
-    return Collections.EMPTY_SET;
+    return Collections.<Point>emptySet();
   }
 
   public Set<Point> getAllPoints() {
@@ -699,8 +700,7 @@ public abstract class Tile extends JComponent { // implements ChangeListener
     }
   }
 
-  @Override
-  public void move(int newX, int newY) {
+  public void moveTile(int newX, int newY) {
     Point cs = LayoutUtil.snapToGrid(newX, newY);
     setCenter(cs);
   }
@@ -730,7 +730,7 @@ public abstract class Tile extends JComponent { // implements ChangeListener
   }
 
   public Set<Point> getAltPoints() {
-    return Collections.EMPTY_SET;
+    return Collections.<Point>emptySet();
   }
 
   public int getCenterX() {

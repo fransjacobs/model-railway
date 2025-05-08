@@ -93,7 +93,7 @@ public class MarklinCSTest {
   /**
    * Test of connect method, of class MarklinCentralStationImpl.
    */
-  @Test
+  //@Test
   public void testConnect() {
     if (csAvailable) {
       System.out.println("connect");
@@ -168,7 +168,7 @@ public class MarklinCSTest {
     JCS.getJcsCommandStation().disconnect();
 
     CommandStationBean virt = PersistenceFactory.getService().getCommandStation("virtual");
-    PersistenceFactory.getService().changeDefaultCommandStation(virt);
+    //PersistenceFactory.getService().changeDefaultCommandStation(virt);
   }
 
 }

@@ -74,13 +74,13 @@ public class PersistenceServiceTest {
 
   @BeforeClass
   public static void setUpClass() throws Exception {
-//    System.setProperty("persistenceService", "jcs.persistence.H2PersistenceService");
-//    PersistenceTestHelper.createDatabaseUsers();
-//    PersistenceTestHelper.createDatabase();
-//    PersistenceTestHelper.getInstance().insertTestData();
-//    CommandStationBean csb = new CommandStationBean();
-//    csb.setId("marklin.cs");
-    //PersistenceFactory.getService().changeDefaultCommandStation(csb);
+    System.setProperty("persistenceService", "jcs.persistence.TestH2PersistenceService");
+    PersistenceTestHelper.createDatabaseUsers();
+    PersistenceTestHelper.createDatabase();
+    PersistenceTestHelper.getInstance().insertTestData();
+    CommandStationBean csb = new CommandStationBean();
+    csb.setId("marklin.cs");
+    PersistenceFactory.getService().changeDefaultCommandStation(csb);
     Logger.info("####### PersistenceService Test Start....");
   }
 

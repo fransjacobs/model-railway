@@ -18,16 +18,13 @@ package jcs.commandStation.marklin.cs.net;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import javax.imageio.IIOException;
 import javax.imageio.ImageIO;
 import org.tinylog.Logger;
@@ -92,7 +89,7 @@ public class CSHTTPConnectionImpl implements CSHTTPConnection {
   public String getLocomotivesFile() {
     StringBuilder locs = new StringBuilder();
     try {
-      URL cs = new URL(HTTP + csAddress.getHostAddress() + CONFIG + LOCOMOTIVE);
+      URL cs = URI.create(HTTP + csAddress.getHostAddress() + CONFIG + LOCOMOTIVE).toURL();
       URLConnection lc = cs.openConnection();
       try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
         String inputLine;
@@ -113,7 +110,7 @@ public class CSHTTPConnectionImpl implements CSHTTPConnection {
   public String getLocomotivesJSON() {
     StringBuilder loks = new StringBuilder();
     try {
-      URL url = new URL(HTTP + csAddress.getHostAddress() + LOCOMOTIVE_JSON);
+      URL url = URI.create(HTTP + csAddress.getHostAddress() + LOCOMOTIVE_JSON).toURL();
       URLConnection lc = url.openConnection();
       try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
         String inputLine;
@@ -134,7 +131,7 @@ public class CSHTTPConnectionImpl implements CSHTTPConnection {
   public String getAccessoriesFile() {
     StringBuilder locs = new StringBuilder();
     try {
-      URL url = new URL(HTTP + csAddress.getHostAddress() + CONFIG + MAGNETARTIKEL);
+      URL url = URI.create(HTTP + csAddress.getHostAddress() + CONFIG + MAGNETARTIKEL).toURL();
       URLConnection lc = url.openConnection();
       try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
         String inputLine;
@@ -155,7 +152,7 @@ public class CSHTTPConnectionImpl implements CSHTTPConnection {
   public String getFunctionsSvgJSON() {
     StringBuilder json = new StringBuilder();
     try {
-      URL url = new URL(HTTP + csAddress.getHostAddress() + FUNCTION_SVG_URL);
+      URL url = URI.create(HTTP + csAddress.getHostAddress() + FUNCTION_SVG_URL).toURL();
       URLConnection lc = url.openConnection();
       try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
         String inputLine;
@@ -176,7 +173,7 @@ public class CSHTTPConnectionImpl implements CSHTTPConnection {
   public String getAccessoriesSvgJSON() {
     StringBuilder json = new StringBuilder();
     try {
-      URL url = new URL(HTTP + csAddress.getHostAddress() + ACCESSORIES_SVG_URL);
+      URL url = URI.create(HTTP + csAddress.getHostAddress() + ACCESSORIES_SVG_URL).toURL();
       URLConnection lc = url.openConnection();
       try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
         String inputLine;
@@ -197,7 +194,7 @@ public class CSHTTPConnectionImpl implements CSHTTPConnection {
   public String getAccessoriesJSON() {
     StringBuilder json = new StringBuilder();
     try {
-      URL url = new URL(HTTP + csAddress.getHostAddress() + ACCESSORIES_URL);
+      URL url = URI.create(HTTP + csAddress.getHostAddress() + ACCESSORIES_URL).toURL();
       URLConnection lc = url.openConnection();
       try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
         String inputLine;
@@ -219,7 +216,7 @@ public class CSHTTPConnectionImpl implements CSHTTPConnection {
     StringBuilder device = new StringBuilder();
     if (this.csAddress != null && csAddress.getHostAddress() != null) {
       try {
-        URL url = new URL(HTTP + csAddress.getHostAddress() + DEVICES);
+        URL url = URI.create(HTTP + csAddress.getHostAddress() + DEVICES).toURL();
         URLConnection lc = url.openConnection();
         try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
           String inputLine;
@@ -243,7 +240,7 @@ public class CSHTTPConnectionImpl implements CSHTTPConnection {
   public String getInfoFile() {
     StringBuilder device = new StringBuilder();
     try {
-      URL url = new URL(HTTP + csAddress.getHostAddress() + CONFIG + DEVICE);
+      URL url = URI.create(HTTP + csAddress.getHostAddress() + CONFIG + DEVICE).toURL();
       URLConnection lc = url.openConnection();
       try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
         String inputLine;
@@ -265,7 +262,7 @@ public class CSHTTPConnectionImpl implements CSHTTPConnection {
     StringBuilder device = new StringBuilder();
     if (this.csAddress != null && csAddress.getHostAddress() != null) {
       try {
-        URL url = new URL(HTTP + csAddress.getHostAddress() + CS3_INFO_JSON);
+        URL url = URI.create(HTTP + csAddress.getHostAddress() + CS3_INFO_JSON).toURL();
         URLConnection lc = url.openConnection();
         try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
           String inputLine;
@@ -291,9 +288,9 @@ public class CSHTTPConnectionImpl implements CSHTTPConnection {
     try {
       URL url;
       if (cs3) {
-        url = new URL(fixURL(HTTP + csAddress.getHostAddress() + IMAGE_FOLDER_CS3 + imageName + ".png"));
+        url = URI.create(fixURL(HTTP + csAddress.getHostAddress() + IMAGE_FOLDER_CS3 + imageName + ".png")).toURL();
       } else {
-        url = new URL(fixURL(HTTP + csAddress.getHostAddress() + IMAGE_FOLDER_CS2 + imageName + ".png"));
+        url = URI.create(fixURL(HTTP + csAddress.getHostAddress() + IMAGE_FOLDER_CS2 + imageName + ".png")).toURL();
       }
 
       Logger.trace("image URL: " + url);
@@ -312,7 +309,7 @@ public class CSHTTPConnectionImpl implements CSHTTPConnection {
     String iurl = fixURL(HTTP + csAddress.getHostAddress() + FUNCTION_IMAGE_FOLDER + imageName + ".png");
 
     try {
-      URL url = new URL(iurl);
+      URL url = URI.create(iurl).toURL();
       image = ImageIO.read(url);
     } catch (IIOException iio) {
       //Image not avalable
@@ -329,64 +326,4 @@ public class CSHTTPConnectionImpl implements CSHTTPConnection {
   public void close() throws Exception {
   }
 
-//  public static void main(String[] args) throws Exception {
-//    boolean cs3 = true;
-//
-//    InetAddress inetAddr;
-//    if (cs3) {
-//      inetAddr = InetAddress.getByName("192.168.178.180");
-//    } else {
-//      inetAddr = InetAddress.getByName("192.168.178.86");
-//    }
-//    CSHTTPConnectionImpl hc = new CSHTTPConnectionImpl(inetAddr);
-//    hc.setCs3(cs3);
-//
-//    String serial;
-//    if (cs3) {
-//      serial = "2374";
-//    } else {
-//      serial = "13344";
-//    }
-//
-////    Path fPath = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + "zfunctions");
-////    if (!Files.exists(fPath)) {
-////      Files.createDirectories(fPath);
-////      Logger.trace("Created new directory " + fPath);
-////    }
-////
-////    Path aPath = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + "zaccessories");
-////    if (!Files.exists(aPath)) {
-////      Files.createDirectories(aPath);
-////      Logger.trace("Created new directory " + aPath);
-////    }
-//    Path info = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "info.json");
-//    String json = hc.getInfoJSON();
-//    Files.writeString(info, json);
-//
-//    Path devices = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "devices.json");
-//    json = hc.getDevicesJSON();
-//    Files.writeString(devices, json);
-//
-//    Path locomotives = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "locomotives.json");
-//    json = hc.getLocomotivesJSON();
-//    Files.writeString(locomotives, json);
-//
-//    Path accessories = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "mags.json");
-//    json = hc.getAccessoriesJSON();
-//    Files.writeString(accessories, json);
-//
-//    Path fcticons = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "fcticons.json");
-//    json = hc.getFunctionsSvgJSON();
-//    Files.writeString(fcticons, json);
-//
-//    Path magicons = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "magicons.json");
-//    json = hc.getAccessoriesSvgJSON();
-//    Files.writeString(magicons, json);
-//
-//    Path accessoryFile = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "magnetartikel.cs2");
-//    String file = hc.getAccessoriesFile();
-//    Logger.trace(file);
-//    Files.writeString(accessoryFile, file);
-//
-//  }
 }
