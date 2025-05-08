@@ -210,8 +210,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.13.0</version>
                 <configuration>
-                    <!--compilerArgs>- -enable-preview,-Xlint:unchecked,-verbose</compilerArgs-->
-                    <compilerArgs>--enable-preview,-verbose</compilerArgs>
+                    <!--compilerArgs>-Xlint:unchecked,-verbose</compilerArgs-->
+                    <compilerArgs>-verbose</compilerArgs>
                     <release>21</release>
                     <showDeprecation>true</showDeprecation>
                 </configuration>

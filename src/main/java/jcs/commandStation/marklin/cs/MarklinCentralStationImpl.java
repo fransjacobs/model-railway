@@ -454,23 +454,27 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     if (links88 != null) {
       nodeId = links88.getIdentifierInt() + 1;
       for (ConfigChannel cc : links88.getConfigChannels()) {
-        if (cc.getChoiceDescription().contains("Bus 1")) {
+        //if (cc.getChoiceDescription().contains("Bus 1 (RJ45-1)")) {
+        if (cc.getNumber() == 2) {
           bus1Len = cc.getActualValue();
         }
-        if (cc.getChoiceDescription().contains("Bus 2")) {
+        //if (cc.getChoiceDescription().contains("Bus 2 RJ45-2)")) {
+        if (cc.getNumber() == 3) {
           bus2Len = cc.getActualValue();
         }
-        if (cc.getChoiceDescription().contains("Bus 3")) {
+        //if (cc.getChoiceDescription().contains("Bus 3 (6-Polig)")) {
+        if (cc.getNumber() == 4) {
           bus3Len = cc.getActualValue();
         }
-
       }
+      Logger.trace("nodeId: " + nodeId + ", bus1Len: " + bus1Len + ", bus2Len: " + bus2Len + ", bus3Len: " + bus3Len);
 
       //Link S88 has 16 sensors starting from 0
       //Bus 1 offset 1000, Bus 2 offset 2000 and Bus 3 offset 3000
       FeedbackModuleBean l = new FeedbackModuleBean();
       l.setAddressOffset(0);
       l.setModuleNumber(0);
+      l.setPortCount(16);
       l.setIdentifier(nodeId);
       feedbackModules.add(l);
 
@@ -478,21 +482,24 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
         FeedbackModuleBean b1 = new FeedbackModuleBean();
         b1.setAddressOffset(1000);
         b1.setModuleNumber(i);
-        l.setIdentifier(nodeId);
+        b1.setPortCount(16);
+        b1.setIdentifier(nodeId);
         feedbackModules.add(b1);
       }
       for (int i = 0; i < bus2Len; i++) {
         FeedbackModuleBean b2 = new FeedbackModuleBean();
         b2.setAddressOffset(2000);
         b2.setModuleNumber(i);
-        l.setIdentifier(nodeId);
+        b2.setPortCount(16);
+        b2.setIdentifier(nodeId);
         feedbackModules.add(b2);
       }
       for (int i = 0; i < bus3Len; i++) {
         FeedbackModuleBean b3 = new FeedbackModuleBean();
         b3.setAddressOffset(3000);
         b3.setModuleNumber(i);
-        l.setIdentifier(nodeId);
+        b3.setPortCount(16);
+        b3.setIdentifier(nodeId);
         feedbackModules.add(b3);
       }
 
@@ -732,11 +739,11 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     }
   }
 
-  private void sendJCSUIDMessage() {
+  void sendJCSUIDMessage() {
     sendMessage(CanMessageFactory.getMemberPingResponse(CanMessage.JCS_UID, 1, CanMessage.JCS_DEVICE_ID));
   }
 
-  private void sentJCSInformationMessage() {
+  void sentJCSInformationMessage() {
     List<CanMessage> messages = getStatusDataConfigResponse(CanMessage.JCS_SERIAL, 0, 0, "JCS", "Java Central Station", CanMessage.JCS_UID);
     for (CanMessage msg : messages) {
       sendMessage(msg);
@@ -1186,6 +1193,12 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 //
 //      Logger.debug("Switch Accessory 2 to Green");
       //cs.switchAccessory(2, AccessoryValue.GREEN, 250);
+      List<FeedbackModuleBean> fbml = cs.getFeedbackModules();
+      for (FeedbackModuleBean fbm : fbml) {
+        Logger.trace(fbm);
+        Logger.trace("p-1 "+fbm.getSensor(0).getId());
+        Logger.trace("p-15 "+fbm.getSensor(15).getId());
+      }
 
       //cs.getLocomotivesViaCAN();
       //cs.getAccessoriesViaCan();
@@ -1210,64 +1223,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       //Logger.debug("Power is " + (cs.isPower() ? "ON" : "Off"));
       //cs3.sendJCSInfo();
       //SystemConfiguration data
-//      Map<Integer, ChannelBean> measurements = cs.getTrackMeasurements();
-//      for (ChannelBean ch : measurements.values()) {
-//        if (ch != null) {
-//          Logger.trace("Channel " + ch.getNumber() + ": " + ch.getHumanValue() + " " + ch.getUnit());
-//        }
-//      }
-//      Logger.debug("Channel 1: " + cs.channelData1.getChannel().getHumanValue() + " " + cs.channelData1.getChannel().getUnit());
-//      Logger.debug("Channel 2: " + cs.channelData2.getChannel().getHumanValue() + " " + cs.channelData2.getChannel().getUnit());
-//      Logger.debug("Channel 3: " + cs.channelData3.getChannel().getHumanValue() + " " + cs.channelData3.getChannel().getUnit());
-//      Logger.debug("Channel 4: " + cs.channelData4.getChannel().getHumanValue() + " " + cs.channelData4.getChannel().getUnit());
-      //cs.getSystemStatus(1);
-      cs.performMeasurements();
-//
-//            Logger.debug("Channel 4....");
-//            cs.getSystemStatus(4);
-//Now get the systemstatus for all devices
-//First the status data config must be called to get the channels
-      //cs3.getSystemStatus()
-      //            SystemStatus ss = cs.getSystemStatus();
-      //            Logger.debug("1: "+ss);
-      //
-      //
-      //            ss = cs.power(true);
-      //            Logger.debug("3: "+ss);
-      //
-      //            cs.pause(1000);
-      //            ss = cs.power(false);
-      //            Logger.debug("4: "+ss);
-      //            List<SensorMessageEvent> sml = cs.querySensors(48);
-      //            for (SensorEvent sme : sml) {
-      //                Sensor s = new Sensor(sme.getContactId(), sme.isNewValue() ? 1 : 0, sme.isOldValue() ? 1 : 0, sme.getDeviceIdBytes(), sme.getMillis(), new Date());
-      //                Logger.debug(s.toLogString());
-      //            }
-      //List<AccessoryBean> asl = cs.getAccessoryStatuses();
-      //for (AccessoryStatus as : asl) {
-      //    Logger.debug(as.toString());
-      //}
-      //            for (int i = 0; i < 30; i++) {
-      //                cs.sendIdle();
-      //                pause(500);
-      //            }
-      //            Logger.debug("Sending  member ping\n");
-      //            List<PingResponse> prl = cs.membersPing();
-      //            //Logger.info("Query direction of loc 12");
-      //            //DirectionInfo info = cs.getDirectionMarkin(12, DecoderType.MM);
-      //            Logger.debug("got " + prl.size() + " responses");
-      //            for (PingResponseParser device : prl) {
-      //                Logger.debug(device);
-      //            }
-      //            List<SensorMessageEvent> sel = cs.querySensors(48);
-      //
-      //            for (SensorEvent se : sel) {
-      //                Logger.debug(se.toString());
-      //            }
-      //            FeedbackModule fm2 = new FeedbackModule(2);
-      //            cs.queryAllPorts(fm2);
-      //            Logger.debug(fm2.toLogString());
-      //cs2.querySensor(1);
+//      cs.performMeasurements();
     }
 
     //PingResponse pr2 = cs.memberPing();

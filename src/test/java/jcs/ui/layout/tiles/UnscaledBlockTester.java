@@ -156,6 +156,7 @@ public class UnscaledBlockTester extends JFrame { //implements PropertyChangeLis
     departureSideCB = new javax.swing.JComboBox<>();
     reverseArrivalCB = new javax.swing.JCheckBox();
     showLocCB = new javax.swing.JCheckBox();
+    jLabel1 = new javax.swing.JLabel();
     backwardsRB = new javax.swing.JRadioButton();
     forwardsRB = new javax.swing.JRadioButton();
     showCenterCB = new javax.swing.JCheckBox();
@@ -222,13 +223,17 @@ public class UnscaledBlockTester extends JFrame { //implements PropertyChangeLis
     });
     nPanel.add(reverseArrivalCB);
 
-    showLocCB.setLabel("Show Locomotive");
+    showLocCB.setText("");
     showLocCB.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         showLocCBActionPerformed(evt);
       }
     });
     nPanel.add(showLocCB);
+
+    jLabel1.setLabelFor(showLocCB);
+    jLabel1.setText("Show Locomotive");
+    nPanel.add(jLabel1);
 
     locDirectionBG.add(backwardsRB);
     backwardsRB.setText("Backwards");
@@ -421,6 +426,7 @@ public class UnscaledBlockTester extends JFrame { //implements PropertyChangeLis
   private javax.swing.JComboBox<String> departureSideCB;
   private javax.swing.JRadioButton forwardsRB;
   private javax.swing.JLabel incomingSuffix;
+  private javax.swing.JLabel jLabel1;
   private javax.swing.ButtonGroup locDirectionBG;
   private javax.swing.JPanel nPanel;
   private javax.swing.JComboBox<Orientation> orientationCB;
