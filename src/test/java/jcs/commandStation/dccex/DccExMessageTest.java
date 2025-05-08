@@ -15,7 +15,6 @@
  */
 package jcs.commandStation.dccex;
 
-import jcs.commandStation.dccex.DccExMessage;
 import org.junit.After;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
@@ -28,6 +27,7 @@ import org.junit.Test;
 public class DccExMessageTest {
 
   public DccExMessageTest() {
+    System.setProperty("persistenceService", "jcs.persistence.TestH2PersistenceService");
   }
 
   @Before

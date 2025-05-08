@@ -36,7 +36,7 @@ public class MarklinCSTest {
 
   //controller.skip.init
   public MarklinCSTest() {
-
+    System.setProperty("persistenceService", "jcs.persistence.TestH2PersistenceService");
     //JCS.getJcsCommandStation().disconnect();
     //When running in a batch the default command station could be different..
     //CommandStationBean marklinCs = PersistenceFactory.getService().getCommandStation("marklin.cs");

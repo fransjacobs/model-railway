@@ -966,7 +966,7 @@ public class LayoutPanel extends JPanel {
 
     @Override
     public void onPowerChange(PowerEvent event) {
-      Logger.info("Track Power is " + (event.isPower() ? "on" : "off"));
+      //Logger.info("Track Power is " + (event.isPower() ? "on" : "off"));
 
       if (!event.isPower() && autoPilotBtn.isSelected()) {
         autoPilotBtn.doClick();

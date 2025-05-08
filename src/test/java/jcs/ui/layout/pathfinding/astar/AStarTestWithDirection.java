@@ -34,7 +34,7 @@ public class AStarTestWithDirection {
   private final PersistenceTestHelper testHelper;
 
   public AStarTestWithDirection() {
-    System.setProperty("persistenceService", "jcs.persistence.H2PersistenceService");
+    System.setProperty("persistenceService", "jcs.persistence.TestH2PersistenceService");
     testHelper = PersistenceTestHelper.getInstance();
   }
 

@@ -946,12 +946,13 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     int result = JOptionPane.showConfirmDialog(this, "Are you sure you want to exit JCS?", "Exit JCS", JOptionPane.YES_NO_OPTION);
     if (result == JOptionPane.YES_OPTION) {
       setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-      setVisible(false);
-      dispose();
 
       //Disconnect Command stations
       JCS.getJcsCommandStation().switchPower(false);
       JCS.getJcsCommandStation().disconnect();
+
+      setVisible(false);
+      dispose();
 
       //Force close ports
       SerialPortUtil.closeAllPorts();

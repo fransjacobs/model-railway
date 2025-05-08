@@ -43,7 +43,7 @@ public class EsuEcosCommandStationImplTest {
 
   public EsuEcosCommandStationImplTest() {
     System.setProperty("message.debug", "true");
-    System.setProperty("persistenceService", "jcs.persistence.H2PersistenceService");
+    System.setProperty("persistenceService", "jcs.persistence.TestH2PersistenceService");
     System.setProperty("connection.always.virtual", "true");
     testHelper = PersistenceTestHelper.getInstance();
 
@@ -68,6 +68,7 @@ public class EsuEcosCommandStationImplTest {
   }
 
   private CommandStationBean getEcosAsDefaultCommandStationBean() {
+
     CommandStationBean ecosCommandStationBean = PersistenceFactory.getService().getDefaultCommandStation();
 
     if (ecosCommandStationBean == null) {
@@ -162,7 +163,6 @@ public class EsuEcosCommandStationImplTest {
 //      assertEquals(expResult, result);
 //    }
 //  }
-
   /**
    * Test of getDevices method, of class EsuEcosCommandStationImpl.
    */
@@ -185,7 +185,6 @@ public class EsuEcosCommandStationImplTest {
 //      assertEquals(expResult, result);
 //    }
 //  }
-
   /**
    * Test of getIp method, of class EsuEcosCommandStationImpl.
    */
@@ -410,7 +409,6 @@ public class EsuEcosCommandStationImplTest {
 //      assertEquals(expResult, result);
 //    }
 //  }
-
   /**
    * Test of getFeedbackModules method, of class EsuEcosCommandStationImpl.
    */

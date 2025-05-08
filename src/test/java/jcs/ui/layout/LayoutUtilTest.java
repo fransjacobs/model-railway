@@ -30,7 +30,7 @@ public class LayoutUtilTest {
 
   public LayoutUtilTest() {
     System.setProperty("trackServiceSkipControllerInit", "true");
-
+    System.setProperty("persistenceService", "jcs.persistence.TestH2PersistenceService");
   }
 
   /**

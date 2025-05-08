@@ -38,16 +38,16 @@ import org.tinylog.Logger;
 
 public class H2DatabaseUtil {
 
-  protected static final String JCS_DB_NAME = "jcs-db";
+  public static final String JCS_DB_NAME = "jcs-db";
 
-  protected static final String SCHEMA = ";SCHEMA=jcs";
-  protected static final String DB_MODE = ";AUTO_SERVER=TRUE;DATABASE_TO_LOWER=TRUE";
+  public static final String SCHEMA = ";SCHEMA=jcs";
+  public static final String DB_MODE = ";AUTO_SERVER=TRUE;DATABASE_TO_LOWER=TRUE";
 
   protected static final String ADMIN_USER = "SA";
   protected static final String ADMIN_PWD = "jcs";
   protected static final String JCS_USER = "jcs";
   protected static final String JCS_PWD = "repo";
-  protected static final String JDBC_PRE = "jdbc:h2:";
+  public static final String JDBC_PRE = "jdbc:h2:";
 
   protected static final String DB_CREATE_DDL = "jcs-db.sql";
 

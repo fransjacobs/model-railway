@@ -159,6 +159,15 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     connect();
   }
 
+  CanDevice getCanDevice(String name) {
+    for (CanDevice d : canDevices.values()) {
+      if (name.equals(d.getName())) {
+        return d;
+      }
+    }
+    return null;
+  }
+
   @Override
   public final synchronized boolean connect() {
     if (!connected) {
@@ -432,12 +441,71 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     return infoBean;
   }
 
-  //TODO!
   @Override
   public List<FeedbackModuleBean> getFeedbackModules() {
-    return null;
+    //Feedbackmodules can be queried from the Link S88 if avalable.
+    //In case of a CS 3 Plus or CS 2 there should be a node "0" which could have max 32 S88 modules.
+    //TODO: Test with CS-3Plus and CS2.
+    //Link S88
+    List<FeedbackModuleBean> feedbackModules = new ArrayList<>();
+
+    CanDevice links88 = getCanDevice("Link S88");
+    int bus1Len = 0, bus2Len = 0, bus3Len = 0, nodeId = 0;
+    if (links88 != null) {
+      nodeId = links88.getIdentifierInt() + 1;
+      for (ConfigChannel cc : links88.getConfigChannels()) {
+        if (cc.getChoiceDescription().contains("Bus 1")) {
+          bus1Len = cc.getActualValue();
+        }
+        if (cc.getChoiceDescription().contains("Bus 2")) {
+          bus2Len = cc.getActualValue();
+        }
+        if (cc.getChoiceDescription().contains("Bus 3")) {
+          bus3Len = cc.getActualValue();
+        }
+
+      }
+
+      //Link S88 has 16 sensors starting from 0
+      //Bus 1 offset 1000, Bus 2 offset 2000 and Bus 3 offset 3000
+      FeedbackModuleBean l = new FeedbackModuleBean();
+      l.setAddressOffset(0);
+      l.setModuleNumber(0);
+      l.setIdentifier(nodeId);
+      feedbackModules.add(l);
+
+      for (int i = 0; i < bus1Len; i++) {
+        FeedbackModuleBean b1 = new FeedbackModuleBean();
+        b1.setAddressOffset(1000);
+        b1.setModuleNumber(i);
+        l.setIdentifier(nodeId);
+        feedbackModules.add(b1);
+      }
+      for (int i = 0; i < bus2Len; i++) {
+        FeedbackModuleBean b2 = new FeedbackModuleBean();
+        b2.setAddressOffset(2000);
+        b2.setModuleNumber(i);
+        l.setIdentifier(nodeId);
+        feedbackModules.add(b2);
+      }
+      for (int i = 0; i < bus3Len; i++) {
+        FeedbackModuleBean b3 = new FeedbackModuleBean();
+        b3.setAddressOffset(3000);
+        b3.setModuleNumber(i);
+        l.setIdentifier(nodeId);
+        feedbackModules.add(b3);
+      }
+
+    }
+
+    return feedbackModules;
   }
 
+//  @Override
+//  public List<FeedbackModuleBean> getFeedbackModules() {
+//    List<FeedbackModuleBean> feedbackModules = new ArrayList<>(this.feedbackManager.getModules().values());
+//    return feedbackModules;
+//  }
   /**
    * Query the System Status
    *
@@ -478,7 +546,16 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 
   @Override
   public void disconnect() {
-    //Signal listeners that there are no measurments
+    Logger.trace("Start disconnecting...");
+    //Stop all schedules
+    measurementTimer.cancel();
+    watchDogTimer.cancel();
+    //Stop Threads
+    if (executor != null) {
+      executor.shutdown();
+    }
+
+    //Signal listeners that there are no measurements
     MeasuredChannels measuredChannels = new MeasuredChannels(System.currentTimeMillis());
     MeasurementEvent me = new MeasurementEvent(measuredChannels);
     for (MeasurementEventListener listener : measurementEventListeners) {
@@ -490,13 +567,11 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
         if (eventMessageHandler != null) {
           eventMessageHandler.quit();
         }
+        eventMessageHandler.join(2000);
         connection.close();
         connected = false;
       }
 
-      if (executor != null) {
-        executor.shutdown();
-      }
       executor = null;
       connection = null;
 

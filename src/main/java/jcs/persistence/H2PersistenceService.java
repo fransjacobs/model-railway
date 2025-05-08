@@ -46,30 +46,36 @@ import org.tinylog.Logger;
 
 public class H2PersistenceService implements PersistenceService {
 
-  private Database database;
+  protected Database database;
 
-  private final HashMap<String, Image> imageCache;
-  private final HashMap<String, Image> functionImageCache;
-  private final PropertyChangeSupport changeSupport;
+  protected final HashMap<String, Image> imageCache;
+  protected final HashMap<String, Image> functionImageCache;
+  protected final PropertyChangeSupport changeSupport;
 
   public H2PersistenceService() {
-    connect();
+    initConnect();
     imageCache = new HashMap<>();
     functionImageCache = new HashMap<>();
     changeSupport = new PropertyChangeSupport(this);
     setJCSPropertiesAsSystemProperties();
   }
 
-  private void connect() {
+  private void initConnect() {
+    connect();
+  }
+
+  protected void connect() {
     Logger.debug("Connecting to: " + System.getProperty("norm.jdbcUrl") + " with db user: " + System.getProperty("norm.user"));
     database = new Database();
     database.setSqlMaker(new H2SqlMaker());
   }
 
+  @Override
   public void addPropertyChangeListener(PropertyChangeListener listener) {
     changeSupport.addPropertyChangeListener(listener);
   }
 
+  @Override
   public void removePropertyChangeListener(PropertyChangeListener listener) {
     changeSupport.removePropertyChangeListener(listener);
   }
@@ -848,7 +854,7 @@ public class H2PersistenceService implements PersistenceService {
     changeSupport.firePropertyChange("data.routes.deleted", null, null);
   }
 
-  private void setJCSPropertiesAsSystemProperties() {
+  protected void setJCSPropertiesAsSystemProperties() {
     List<JCSPropertyBean> props = getProperties();
     props.forEach(p -> {
       System.setProperty(p.getKey(), p.getValue());

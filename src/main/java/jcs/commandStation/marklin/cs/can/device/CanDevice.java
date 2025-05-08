@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import jcs.util.ByteUtil;
 
 /**
  * A CanDevice is a Device inside or connected to the Marklin Central Station<br>
@@ -30,23 +31,6 @@ import java.util.Objects;
  */
 public class CanDevice {
 
-//  public static final String MAIN = "MAIN";
-//  public static final String PROG = "PROG";
-//  public static final String VOLT = "VOLT";
-//  public static final String TEMP = "TEMP";
-//  public static final String BUS0 = "Auswertung 1 - 16";
-//  public static final String BUS1 = "Bus 1 (RJ45-1)";
-//  public static final String BUS2 = "Bus 2 (RJ45-2)";
-//  public static final String BUS3 = "Bus 3 (6-Polig)";
-//  Absender Geräte UID
-//  SW-Versionsnummer
-//  Gerätekennung
-//  Anzahl der Messwerte im Gerät.
-//  Anzahl der Konfigurationskanäle
-//  frei.
-//  Seriennummer CS2.
-//  8 Byte Artikelnummer.
-//  Gerätebezeichnung, \0 Terminiert
   private String uid;
   private String guiUid;
   private String version;
@@ -113,6 +97,10 @@ public class CanDevice {
 
   public void setIdentifier(String identifier) {
     this.identifier = identifier;
+  }
+
+  public void setIdentifier(Integer identifier) {
+    this.identifier = ByteUtil.toHexString(identifier);
   }
 
   public Integer getIdentifierInt() {

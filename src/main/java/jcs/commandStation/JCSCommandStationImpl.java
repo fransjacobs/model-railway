@@ -304,7 +304,6 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     decoderController = null;
     accessoryControllers.clear();
     feedbackControllers.clear();
-
     commandStation = null;
     ControllerFactory.reset();
   }

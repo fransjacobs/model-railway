@@ -34,6 +34,7 @@ import org.junit.Test;
 public class TileTest {
 
   public TileTest() {
+    System.setProperty("persistenceService", "jcs.persistence.TestH2PersistenceService");
   }
 
   @Test

@@ -50,7 +50,7 @@ public class StateMachineStepByStepTest {
   private Dispatcher dispatcher;
 
   public StateMachineStepByStepTest() {
-    System.setProperty("persistenceService", "jcs.persistence.H2PersistenceService");
+    System.setProperty("persistenceService", "jcs.persistence.TestH2PersistenceService");
     //Switch the Virtual Simulator OFF as it will interfeare with this step test
     System.setProperty("do.not.simulate.virtual.drive", "true");
     System.setProperty("state.machine.stepTest", "true");

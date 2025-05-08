@@ -28,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class FeedbackManagerTest {
 
   public FeedbackManagerTest() {
+    System.setProperty("persistenceService", "jcs.persistence.TestH2PersistenceService");
   }
 
   @BeforeEach

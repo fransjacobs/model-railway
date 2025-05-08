@@ -55,7 +55,18 @@ public class CanDeviceJSONParser {
     CanDevice d = new CanDevice();
     d.setUid(jo.optString("_uid"));
     d.setName(jo.optString("_name"));
-    d.setIdentifier(jo.optString("_kennung"));
+
+    //Links S88 JSON appears to have 1 more, CAN bus is zero base and has 1 less.
+    //To come to the same node id as can subtract 1
+    if (LINK_S88.equals(jo.optString("_name"))) {
+      String id = jo.optString("_kennung");
+      id = id.replaceAll("0x", "");
+      int idi = Integer.parseUnsignedInt(id, 16);
+      d.setIdentifier(idi - 1);
+    } else {
+      d.setIdentifier(jo.optString("_kennung"));
+    }
+
     d.setArticleNumber(jo.optString("_artikelnr"));
     d.setSerial(jo.optString("_seriennr"));
 

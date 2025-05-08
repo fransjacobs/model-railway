@@ -60,7 +60,7 @@ public class AutoPilotTest {
   private List<SensorEvent> sensorHandlerEvents;
 
   public AutoPilotTest() {
-    System.setProperty("persistenceService", "jcs.persistence.H2PersistenceService");
+    System.setProperty("persistenceService", "jcs.persistence.TestH2PersistenceService");
     System.setProperty("do.not.simulate.virtual.drive", "true");
     System.setProperty("state.machine.stepTest", "false");
     testHelper = PersistenceTestHelper.getInstance();

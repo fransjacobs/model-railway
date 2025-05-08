@@ -33,7 +33,7 @@ public class AStarSwitchLeftSouth {
   private final PersistenceTestHelper testHelper;
 
   public AStarSwitchLeftSouth() {
-    System.setProperty("persistenceService", "jcs.persistence.H2PersistenceService");
+    System.setProperty("persistenceService", "jcs.persistence.TestH2PersistenceService");
     testHelper = PersistenceTestHelper.getInstance();
   }
 
