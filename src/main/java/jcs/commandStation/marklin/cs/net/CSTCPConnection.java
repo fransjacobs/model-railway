@@ -188,9 +188,11 @@ class CSTCPConnection implements CSConnection {
       //Wait for the response
       boolean responseComplete = callback.isResponseComplete();
 
-      //the CS somtime is slow with replies, whic could lead to missing responses.
-      //Just wait a 10 milliseconds to be sure
-      pause();
+      //When querying the CS CAN Bus sometimes the responses have a little delay. This could sometimes lead to missing responses.
+      //Therefor just wait for 10 milliseconds to be sure with queries where this has been observed...
+      if (message.getCommand() == CanMessage.STATUS_CONFIG || message.getCommand() == CanMessage.PING_REQ) {
+        pause10Millis();
+      }
 
       while (!responseComplete && now < timeout) {
         responseComplete = callback.isResponseComplete();
@@ -240,7 +242,7 @@ class CSTCPConnection implements CSConnection {
     return messageReceiver != null && messageReceiver.isRunning();
   }
 
-  private void pause() {
+  private void pause10Millis() {
     try {
       Thread.sleep(10);
     } catch (InterruptedException ex) {
