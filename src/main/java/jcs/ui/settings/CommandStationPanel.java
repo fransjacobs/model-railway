@@ -1506,25 +1506,25 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
                       Logger.trace(feedbackController.getCommandStationInfo().getProductName() + " Supports Feedback");
                       //String id = fbDevice.getIdentifier();
 
-                      int node = Integer.parseInt(id.replace("0x", ""), 16);
-                      firePropertyChange("node", selectedCommandStation.getFeedbackModuleIdentifier(), node);
-
-                      Integer channelCount = fbDevice.getSensorBuses().size();
-                      firePropertyChange("channels", selectedCommandStation.getFeedbackChannelCount(), channelCount);
-
-                      Integer bus0 = fbDevice.getBusLength(0);
-                      firePropertyChange("bus0", selectedCommandStation.getFeedbackBus0ModuleCount(), bus0);
-
-                      Integer bus1 = fbDevice.getBusLength(1);
-                      firePropertyChange("bus1", selectedCommandStation.getFeedbackBus1ModuleCount(), bus1);
-
-                      Integer bus2 = fbDevice.getBusLength(2);
-                      firePropertyChange("bus2", selectedCommandStation.getFeedbackBus2ModuleCount(), bus2);
-
-                      Integer bus3 = fbDevice.getBusLength(3);
-                      firePropertyChange("bus3", selectedCommandStation.getFeedbackBus3ModuleCount(), bus3);
-
-                      Logger.trace("ID: " + id + " Node: " + node + " Bus 0: " + bus0 + " Bus 1: " + bus1 + " Bus 2: " + bus2 + " Bus 3: " + bus3);
+//                      int node = Integer.parseInt(id.replace("0x", ""), 16);
+//                      firePropertyChange("node", selectedCommandStation.getFeedbackModuleIdentifier(), node);
+//
+//                      Integer channelCount = fbDevice.getSensorBuses().size();
+//                      firePropertyChange("channels", selectedCommandStation.getFeedbackChannelCount(), channelCount);
+//
+//                      Integer bus0 = fbDevice.getBusLength(0);
+//                      firePropertyChange("bus0", selectedCommandStation.getFeedbackBus0ModuleCount(), bus0);
+//
+//                      Integer bus1 = fbDevice.getBusLength(1);
+//                      firePropertyChange("bus1", selectedCommandStation.getFeedbackBus1ModuleCount(), bus1);
+//
+//                      Integer bus2 = fbDevice.getBusLength(2);
+//                      firePropertyChange("bus2", selectedCommandStation.getFeedbackBus2ModuleCount(), bus2);
+//
+//                      Integer bus3 = fbDevice.getBusLength(3);
+//                      firePropertyChange("bus3", selectedCommandStation.getFeedbackBus3ModuleCount(), bus3);
+//
+//                      Logger.trace("ID: " + id + " Node: " + node + " Bus 0: " + bus0 + " Bus 1: " + bus1 + " Bus 2: " + bus2 + " Bus 3: " + bus3);
                     }
                   }
                 } catch (RuntimeException e) {
