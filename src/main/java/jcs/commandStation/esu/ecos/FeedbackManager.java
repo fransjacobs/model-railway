@@ -31,6 +31,8 @@ class FeedbackManager {
 
   public static final int ID = Ecos.FEEDBACK_MANAGER_ID;
   public static final int S88_OFFSET = 100;
+  public static final int DEFAULT_S88_PORT_COUNT = 16;
+  
 
   private final EsuEcosCommandStationImpl ecosCommandStation;
   private final Map<Integer, FeedbackModuleBean> modules;
@@ -58,6 +60,7 @@ class FeedbackManager {
         feedbackModule.setId(objectId);
         feedbackModule.setAddressOffset(S88_OFFSET);
         feedbackModule.setModuleNumber(objectId - S88_OFFSET);
+        feedbackModule.setPortCount(DEFAULT_S88_PORT_COUNT);
       }
 
       if (values.containsKey(Ecos.PORTS)) {

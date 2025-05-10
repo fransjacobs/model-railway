@@ -661,7 +661,7 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     System.setProperty("message.debug", "true");
     //Discover the ECoS using mdns
     InetAddress ecosAddr = EcosConnectionFactory.discoverEcos();
-    String ip = ecosAddr.getHostAddress();
+   String ip = ecosAddr.getHostAddress();
 
     if (1 == 1) {
       CommandStationBean csb = new CommandStationBean();
@@ -785,6 +785,13 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 //         //reply = cs.connection.sendMessage(new EcosMessage("help(65000,attribute)"));
 //        //Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
 //        
+        List<FeedbackModuleBean> fbml = cs.getFeedbackModules();
+        for (FeedbackModuleBean fbm : fbml) {
+          Logger.trace(fbm);
+          Logger.trace("p-1 " + fbm.getSensor(0).getId());
+          Logger.trace("p-15 " + fbm.getSensor(15).getId());
+        }
+
 //        
 //        reply = cs.connection.sendMessage(new EcosMessage("request(65000,volt"));
 //        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());

@@ -477,6 +477,21 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       l.setPortCount(16);
       l.setIdentifier(nodeId);
       feedbackModules.add(l);
+      
+      
+      
+       if (bus0len != null) {
+      for (int i = 0; i < (bus0len * 16); i++) {
+        SensorBean sb = new SensorBean();
+        sb.setDeviceId(deviceId);
+        sb.setContactId((i + 1));
+        sb.setName("B0-S-" + (i + 1));
+        String id = sb.getId();
+        sensorBeans.put(id, sb);
+      }
+    }
+      
+      
 
       for (int i = 0; i < bus1Len; i++) {
         FeedbackModuleBean b1 = new FeedbackModuleBean();
