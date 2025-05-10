@@ -234,7 +234,7 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     for (int i = 0; i < feedbackManager.getSize(); i++) {
       int moduleId = i + FeedbackManager.S88_OFFSET;
       //reply = 
-      connection.sendMessage(EcosMessageFactory.getFeedbackModuleInfo(moduleId));
+      //connection.sendMessage(EcosMessageFactory.getFeedbackModuleInfo(moduleId));
 
       //TODO: Start of day...
       //feedbackManager.update(reply);
@@ -709,6 +709,13 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 //
 //        cs.pause(1000);
 //
+        List<FeedbackModuleBean> feedbackModules = cs.getFeedbackModules();
+        Logger.trace("There are "+feedbackModules+" Feedback Modules");
+        for(FeedbackModuleBean fm : feedbackModules) {
+          Logger.trace("Module id: "+fm.getId()+" nr: "+fm.getModuleNumber()+" ports: "+fm.getPortCount());
+          Logger.trace("Module id: "+fm.getId()+" S 1 id:"+fm.getSensor(0).getId()+" cid: "+fm.getSensor(0).getContactId()+" did: "+fm.getSensor(0).getDeviceId());
+          Logger.trace("Module id: "+fm.getId()+" S 15 id:"+fm.getSensor(15).getId()+" cid: "+fm.getSensor(15).getContactId()+" did: "+fm.getSensor(15).getDeviceId());
+        }
 //        power = cs.power(true);
 //        Logger.trace("4 Power is " + (power ? "On" : "Off"));
         //EcosMessage reply = cs.connection.sendMessage(new EcosMessage("queryObjects(26)"));

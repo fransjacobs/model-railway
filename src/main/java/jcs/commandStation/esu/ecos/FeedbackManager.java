@@ -31,8 +31,7 @@ class FeedbackManager {
 
   public static final int ID = Ecos.FEEDBACK_MANAGER_ID;
   public static final int S88_OFFSET = 100;
-  public static final int DEFAULT_S88_PORT_COUNT = 16;
-  
+  public static final int S88_DEFAULT_PORT_COUNT = 16;
 
   private final EsuEcosCommandStationImpl ecosCommandStation;
   private final Map<Integer, FeedbackModuleBean> modules;
@@ -60,7 +59,9 @@ class FeedbackManager {
         feedbackModule.setId(objectId);
         feedbackModule.setAddressOffset(S88_OFFSET);
         feedbackModule.setModuleNumber(objectId - S88_OFFSET);
-        feedbackModule.setPortCount(DEFAULT_S88_PORT_COUNT);
+        //ESU ECoS has 1 bus
+        feedbackModule.setIdentifier(0);
+        feedbackModule.setPortCount(16);
       }
 
       if (values.containsKey(Ecos.PORTS)) {
@@ -93,11 +94,12 @@ class FeedbackManager {
             FeedbackModuleBean fbmb = new FeedbackModuleBean();
             fbmb.setAddressOffset(S88_OFFSET);
             fbmb.setModuleNumber(i);
-            fbmb.setId(S88_OFFSET+i);
+            fbmb.setId(S88_OFFSET + i);
+            fbmb.setPortCount(S88_DEFAULT_PORT_COUNT);
+            fbmb.setIdentifier(0);
             this.modules.put(fbmb.getId(), fbmb);
           }
         }
-
       }
       changedSensors = Collections.EMPTY_LIST;
     }

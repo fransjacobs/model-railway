@@ -91,8 +91,7 @@ import jcs.commandStation.events.MeasurementEventListener;
 import jcs.commandStation.marklin.parser.CanDeviceJSONParser;
 
 /**
- *
- * @author Frans Jacobs
+ * Command Station Implementation for Marklin CS-2/3
  */
 public class MarklinCentralStationImpl extends AbstractController implements DecoderController, AccessoryController, FeedbackController, ConnectionEventListener {
 
@@ -138,7 +137,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     return csUid;
   }
 
-  private boolean isCS3() {
+  boolean isCS3() {
     if (infoBean != null && infoBean.getArticleNumber() != null) {
       return "60216".equals(infoBean.getArticleNumber()) || "60226".equals(infoBean.getArticleNumber());
     } else {
@@ -448,21 +447,17 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     //TODO: Test with CS-3Plus and CS2.
     //Link S88
     List<FeedbackModuleBean> feedbackModules = new ArrayList<>();
-
     CanDevice links88 = getCanDevice("Link S88");
     int bus1Len = 0, bus2Len = 0, bus3Len = 0, nodeId = 0;
     if (links88 != null) {
       nodeId = links88.getIdentifierInt() + 1;
       for (ConfigChannel cc : links88.getConfigChannels()) {
-        //if (cc.getChoiceDescription().contains("Bus 1 (RJ45-1)")) {
         if (cc.getNumber() == 2) {
           bus1Len = cc.getActualValue();
         }
-        //if (cc.getChoiceDescription().contains("Bus 2 RJ45-2)")) {
         if (cc.getNumber() == 3) {
           bus2Len = cc.getActualValue();
         }
-        //if (cc.getChoiceDescription().contains("Bus 3 (6-Polig)")) {
         if (cc.getNumber() == 4) {
           bus3Len = cc.getActualValue();
         }
@@ -472,6 +467,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       //Link S88 has 16 sensors starting from 0
       //Bus 1 offset 1000, Bus 2 offset 2000 and Bus 3 offset 3000
       FeedbackModuleBean l = new FeedbackModuleBean();
+      l.setId(0);
       l.setAddressOffset(0);
       l.setModuleNumber(0);
       l.setPortCount(16);
@@ -493,6 +489,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 
       for (int i = 0; i < bus1Len; i++) {
         FeedbackModuleBean b1 = new FeedbackModuleBean();
+        b1.setId(1000+i);
         b1.setAddressOffset(1000);
         b1.setModuleNumber(i);
         b1.setPortCount(16);
@@ -501,6 +498,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       }
       for (int i = 0; i < bus2Len; i++) {
         FeedbackModuleBean b2 = new FeedbackModuleBean();
+        b2.setId(2000+i);
         b2.setAddressOffset(2000);
         b2.setModuleNumber(i);
         b2.setPortCount(16);
@@ -509,6 +507,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       }
       for (int i = 0; i < bus3Len; i++) {
         FeedbackModuleBean b3 = new FeedbackModuleBean();
+        b3.setId(3000+i);
         b3.setAddressOffset(3000);
         b3.setModuleNumber(i);
         b3.setPortCount(16);
@@ -909,7 +908,6 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     }
   }
 
-  //TODO measurements als a kind of data table...
   /**
    * Handle Event Message, which are unsolicited messages from the CS.
    */
@@ -1206,12 +1204,13 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 //
 //      Logger.debug("Switch Accessory 2 to Green");
       //cs.switchAccessory(2, AccessoryValue.GREEN, 250);
-      List<FeedbackModuleBean> fbml = cs.getFeedbackModules();
-      for (FeedbackModuleBean fbm : fbml) {
-        Logger.trace(fbm);
-        Logger.trace("p-1 "+fbm.getSensor(0).getId());
-        Logger.trace("p-15 "+fbm.getSensor(15).getId());
-      }
+        List<FeedbackModuleBean> feedbackModules = cs.getFeedbackModules();
+        Logger.trace("There are "+feedbackModules+" Feedback Modules");
+        for(FeedbackModuleBean fm : feedbackModules) {
+          Logger.trace("Module id: "+fm.getId()+" nr: "+fm.getModuleNumber()+" ports: "+fm.getPortCount());
+          Logger.trace("Module id: "+fm.getId()+" S 1 id:"+fm.getSensor(0).getId()+" cid: "+fm.getSensor(0).getContactId()+" did: "+fm.getSensor(0).getDeviceId());
+          Logger.trace("Module id: "+fm.getId()+" S 15 id:"+fm.getSensor(15).getId()+" cid: "+fm.getSensor(15).getContactId()+" did: "+fm.getSensor(15).getDeviceId());
+        }
 
       //cs.getLocomotivesViaCAN();
       //cs.getAccessoriesViaCan();

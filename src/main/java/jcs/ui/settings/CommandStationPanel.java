@@ -1461,62 +1461,70 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
       } else {
         switch (selectedCommandStation.getConnectionType()) {
           case NETWORK -> {
+            boolean canConnect = false;
             try {
               String ip = selectedCommandStation.getIpAddress();
               setProgress(10);
               DecoderController commandStation = createCommandStation(selectedCommandStation);
-              boolean canConnect = false;
               setProgress(20);
+
               if (ip == null && selectedCommandStation.isIpAutoConfiguration()) {
                 //Try to obtain the ip through auto configuration
-                canConnect = commandStation.connect();
+                //A connection could be there...
+                canConnect = commandStation.isConnected();
                 if (canConnect) {
-                  firePropertyChange("ipAddress", "", commandStation.getIp());
+                  Logger.trace("allready connected");
+                } else {
+                  //try to connected  
+                  canConnect = commandStation.connect();
                 }
                 setProgress(30);
-
               } else {
                 if (Ping.IsReachable(ip)) {
                   setProgress(10);
-                  canConnect = commandStation.connect();
-                  setProgress(20);
+                  canConnect = commandStation.isConnected();
+                  if (canConnect) {
+                    Logger.trace("allready connected");
+                  } else {
+                    canConnect = commandStation.connect();
+                    setProgress(20);
+                  }
                 }
               }
               if (canConnect) {
-                //Let obtain some data fail safe
+                firePropertyChange("ipAddress", "", commandStation.getIp());
+                //Lets obtain some data fail safe
                 try {
                   String sn = commandStation.getCommandStationInfo().getSerialNumber();
                   firePropertyChange("serial", "", sn);
                   setProgress(50);
 
                   if (commandStation instanceof FeedbackController feedbackController) {
-                    //DeviceBean fbDevice = feedbackController.getFeedbackDevice();
-
                     List<FeedbackModuleBean> feedbackModules = feedbackController.getFeedbackModules();
 
                     if (!feedbackModules.isEmpty()) {
                       Logger.trace(feedbackController.getCommandStationInfo().getProductName() + " Supports Feedback");
                       //String id = fbDevice.getIdentifier();
 
-//                      int node = Integer.parseInt(id.replace("0x", ""), 16);
-//                      firePropertyChange("node", selectedCommandStation.getFeedbackModuleIdentifier(), node);
-//
-//                      Integer channelCount = fbDevice.getSensorBuses().size();
-//                      firePropertyChange("channels", selectedCommandStation.getFeedbackChannelCount(), channelCount);
-//
-//                      Integer bus0 = fbDevice.getBusLength(0);
-//                      firePropertyChange("bus0", selectedCommandStation.getFeedbackBus0ModuleCount(), bus0);
-//
-//                      Integer bus1 = fbDevice.getBusLength(1);
-//                      firePropertyChange("bus1", selectedCommandStation.getFeedbackBus1ModuleCount(), bus1);
-//
-//                      Integer bus2 = fbDevice.getBusLength(2);
-//                      firePropertyChange("bus2", selectedCommandStation.getFeedbackBus2ModuleCount(), bus2);
-//
-//                      Integer bus3 = fbDevice.getBusLength(3);
-//                      firePropertyChange("bus3", selectedCommandStation.getFeedbackBus3ModuleCount(), bus3);
-//
-//                      Logger.trace("ID: " + id + " Node: " + node + " Bus 0: " + bus0 + " Bus 1: " + bus1 + " Bus 2: " + bus2 + " Bus 3: " + bus3);
+                      int node = Integer.parseInt(id.replace("0x", ""), 16);
+                      firePropertyChange("node", selectedCommandStation.getFeedbackModuleIdentifier(), node);
+
+                      Integer channelCount = fbDevice.getSensorBuses().size();
+                      firePropertyChange("channels", selectedCommandStation.getFeedbackChannelCount(), channelCount);
+
+                      Integer bus0 = fbDevice.getBusLength(0);
+                      firePropertyChange("bus0", selectedCommandStation.getFeedbackBus0ModuleCount(), bus0);
+
+                      Integer bus1 = fbDevice.getBusLength(1);
+                      firePropertyChange("bus1", selectedCommandStation.getFeedbackBus1ModuleCount(), bus1);
+
+                      Integer bus2 = fbDevice.getBusLength(2);
+                      firePropertyChange("bus2", selectedCommandStation.getFeedbackBus2ModuleCount(), bus2);
+
+                      Integer bus3 = fbDevice.getBusLength(3);
+                      firePropertyChange("bus3", selectedCommandStation.getFeedbackBus3ModuleCount(), bus3);
+
+                      Logger.trace("ID: " + id + " Node: " + node + " Bus 0: " + bus0 + " Bus 1: " + bus1 + " Bus 2: " + bus2 + " Bus 3: " + bus3);
                     }
                   }
                 } catch (RuntimeException e) {
@@ -1541,6 +1549,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
               setProgress(100);
             }
           }
+
           case SERIAL -> {
             String commPort = selectedCommandStation.getSerialPort();
             setProgress(10);

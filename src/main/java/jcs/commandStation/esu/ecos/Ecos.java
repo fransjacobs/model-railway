@@ -97,4 +97,5 @@ public interface Ecos {
   public static final String VARIANT = "variant";
   public static final String MSG = "msg";
 
+  
 }
