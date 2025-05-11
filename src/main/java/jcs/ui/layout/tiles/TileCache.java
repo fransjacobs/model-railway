@@ -80,7 +80,7 @@ public class TileCache {
   private TileCache() {
   }
 
-  private static int nextIdSeq(String id) {
+  public static int getIdSeq(String id) {
     String idnr = id.substring(3);
     int idSeq = Integer.parseInt(idnr);
     return idSeq;
@@ -153,21 +153,21 @@ public class TileCache {
     switch (tileType) {
       case STRAIGHT -> {
         tile = new Straight(tileBean);
-        straightIdSeq = maxIdSeq(straightIdSeq, nextIdSeq(tileBean.getId()));
+        straightIdSeq = maxIdSeq(straightIdSeq, getIdSeq(tileBean.getId()));
       }
       case CROSSING -> {
         tile = new Crossing(tileBean);
-        crossingIdSeq = maxIdSeq(crossingIdSeq, nextIdSeq(tileBean.getId()));
+        crossingIdSeq = maxIdSeq(crossingIdSeq, getIdSeq(tileBean.getId()));
       }
       case CURVED -> {
         tile = new Curved(tileBean);
-        curvedIdSeq = maxIdSeq(curvedIdSeq, nextIdSeq(tileBean.getId()));
+        curvedIdSeq = maxIdSeq(curvedIdSeq, getIdSeq(tileBean.getId()));
       }
       case SWITCH -> {
         tile = new Switch(tileBean);
         tile.setAccessoryBean(tileBean.getAccessoryBean());
 
-        switchIdSeq = maxIdSeq(switchIdSeq, nextIdSeq(tileBean.getId()));
+        switchIdSeq = maxIdSeq(switchIdSeq, getIdSeq(tileBean.getId()));
         if (showValues && tileBean.getAccessoryBean() != null) {
           tile.setAccessoryValue((tileBean.getAccessoryBean()).getAccessoryValue());
         }
@@ -177,7 +177,7 @@ public class TileCache {
         tile = new Cross(tileBean);
         tile.setAccessoryBean(tileBean.getAccessoryBean());
 
-        crossIdSeq = maxIdSeq(crossIdSeq, nextIdSeq(tileBean.getId()));
+        crossIdSeq = maxIdSeq(crossIdSeq, getIdSeq(tileBean.getId()));
         if (showValues && tileBean.getAccessoryBean() != null) {
           tile.setAccessoryValue((tileBean.getAccessoryBean()).getAccessoryValue());
         }
@@ -187,7 +187,7 @@ public class TileCache {
         tile = new Signal(tileBean);
         tile.setAccessoryBean(tileBean.getAccessoryBean());
 
-        signalIdSeq = maxIdSeq(signalIdSeq, nextIdSeq(tileBean.getId()));
+        signalIdSeq = maxIdSeq(signalIdSeq, getIdSeq(tileBean.getId()));
         if (showValues && tileBean.getAccessoryBean() != null) {
           ((Signal) tile).setSignalValue(((AccessoryBean) tileBean.getAccessoryBean()).getSignalValue());
         }
@@ -196,7 +196,7 @@ public class TileCache {
       case SENSOR -> {
         tile = new Sensor(tileBean);
         tile.setSensorBean(tileBean.getSensorBean());
-        sensorIdSeq = maxIdSeq(sensorIdSeq, nextIdSeq(tileBean.getId()));
+        sensorIdSeq = maxIdSeq(sensorIdSeq, getIdSeq(tileBean.getId()));
 
         if (showValues && tileBean.getSensorBean() != null) {
           ((Sensor) tile).setActive(((SensorBean) tileBean.getSensorBean()).isActive());
@@ -206,15 +206,15 @@ public class TileCache {
       case BLOCK -> {
         tile = new Block(tileBean);
         tile.setBlockBean(tileBean.getBlockBean());
-        blockIdSeq = maxIdSeq(blockIdSeq, nextIdSeq(tileBean.getId()));
+        blockIdSeq = maxIdSeq(blockIdSeq, getIdSeq(tileBean.getId()));
       }
       case STRAIGHT_DIR -> {
         tile = new StraightDirection(tileBean);
-        straightDirectionIdSeq = maxIdSeq(straightDirectionIdSeq, nextIdSeq(tileBean.getId()));
+        straightDirectionIdSeq = maxIdSeq(straightDirectionIdSeq, getIdSeq(tileBean.getId()));
       }
       case END -> {
         tile = new End(tileBean);
-        endIdSeq = maxIdSeq(endIdSeq, nextIdSeq(tileBean.getId()));
+        endIdSeq = maxIdSeq(endIdSeq, getIdSeq(tileBean.getId()));
       }
       default ->
         Logger.warn("Unknown Tile Type " + tileType);

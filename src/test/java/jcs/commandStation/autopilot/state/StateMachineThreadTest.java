@@ -186,11 +186,11 @@ public class StateMachineThreadTest {
     Logger.trace("Prepared layout");
   }
 
-  private void toggleSensorInDirect(String sensorId) {
+  private void toggleSensorInDirect(Integer sensorId) {
     this.executor.execute(() -> toggleSensorDirect(sensorId));
   }
 
-  private void toggleSensorDirect(String sensorId) {
+  private void toggleSensorDirect(Integer sensorId) {
     SensorBean sensor = ps.getSensor(sensorId);
     toggleSensorDirect(sensor);
   }
@@ -338,10 +338,10 @@ public class StateMachineThreadTest {
     //Block 4, destination block should be reserved for DHG to come
     assertEquals(NS_DHG_6505, block4.getLocomotiveId());
 
-    String occupancySensorId = dhgDisp.getOccupationSensorId();
-    String exitSensorId = dhgDisp.getExitSensorId();
-    String enterSensorId = dhgDisp.getEnterSensorId();
-    String inSensorId = dhgDisp.getInSensorId();
+    Integer occupancySensorId = dhgDisp.getOccupationSensorId();
+    Integer exitSensorId = dhgDisp.getExitSensorId();
+    Integer enterSensorId = dhgDisp.getEnterSensorId();
+    Integer inSensorId = dhgDisp.getInSensorId();
 
     assertNotNull(occupancySensorId);
     assertNotNull(exitSensorId);
@@ -374,7 +374,7 @@ public class StateMachineThreadTest {
     assertEquals(LocomotiveBean.Direction.FORWARDS, dhgDisp.getLocomotiveBean().getDirection());
 
     //Should be waiting for the enter sensor
-    String waitForId = dhgDisp.getWaitingForSensorId();
+    Integer waitForId = dhgDisp.getWaitingForSensorId();
     assertEquals(enterSensorId, waitForId);
 
     //Now lets Toggle the enter sensor
@@ -650,10 +650,10 @@ public class StateMachineThreadTest {
     assertEquals("[bk-1-]->[bk-4+]", routeId);
     assertTrue(dispatcher.getRouteBean().isLocked());
 
-    String occupancySensorId = dispatcher.getOccupationSensorId();
-    String exitSensorId = dispatcher.getExitSensorId();
-    String enterSensorId = dispatcher.getEnterSensorId();
-    String inSensorId = dispatcher.getInSensorId();
+    Integer occupancySensorId = dispatcher.getOccupationSensorId();
+    Integer exitSensorId = dispatcher.getExitSensorId();
+    Integer enterSensorId = dispatcher.getEnterSensorId();
+    Integer inSensorId = dispatcher.getInSensorId();
 
     assertNotNull(occupancySensorId);
     assertNotNull(exitSensorId);
@@ -674,7 +674,7 @@ public class StateMachineThreadTest {
     now = System.currentTimeMillis();
     timeout = now + 100000;
     //Must be sure the the enter sensor is registered
-    String waitingForSensorId = dispatcher.getWaitingForSensorId();
+    Integer waitingForSensorId = dispatcher.getWaitingForSensorId();
     while (!enterSensorId.equals(waitingForSensorId) && timeout > now) {
       pause(1);
       waitingForSensorId = dispatcher.getWaitingForSensorId();

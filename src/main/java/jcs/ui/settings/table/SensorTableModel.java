@@ -15,7 +15,6 @@
  */
 package jcs.ui.settings.table;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,6 +30,8 @@ import jcs.persistence.PersistenceFactory;
  * @author frans
  */
 public class SensorTableModel extends BeanTableModel<SensorBean> implements SensorEventListener {
+
+  private static final long serialVersionUID = -5544147259543750662L;
 
   private final Map<Integer, SensorBean> sensorBeanCache;
 
@@ -120,7 +121,7 @@ public class SensorTableModel extends BeanTableModel<SensorBean> implements Sens
   public Class<?> getColumnClass(int columnIndex) {
     return switch (columnIndex) {
       case 0 ->
-        BigDecimal.class;
+        Integer.class;
       case 1 ->
         String.class;
       case 2 ->
@@ -142,7 +143,7 @@ public class SensorTableModel extends BeanTableModel<SensorBean> implements Sens
   void setColumnValue(SensorBean sensor, int column, Object value) {
     switch (column) {
       case 0 ->
-        sensor.setId((String) value);
+        sensor.setId((Integer) value);
       case 1 ->
         sensor.setName((String) value);
       case 2 ->
@@ -174,7 +175,7 @@ public class SensorTableModel extends BeanTableModel<SensorBean> implements Sens
     int row = -1;
 
     if (bean != null && bean.getId() != null) {
-      String id = bean.getId();
+      Integer id = bean.getId();
       int rowCount = beans.size();
 
       for (int i = 0; i < rowCount; i++) {

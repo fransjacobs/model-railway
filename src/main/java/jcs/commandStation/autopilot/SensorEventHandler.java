@@ -25,5 +25,5 @@ public interface SensorEventHandler {
 
   void handleEvent(SensorEvent event);
 
-  String getSensorId();
+  Integer getSensorId();
 }

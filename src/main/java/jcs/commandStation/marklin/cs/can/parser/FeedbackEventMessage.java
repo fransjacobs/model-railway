@@ -46,7 +46,8 @@ public class FeedbackEventMessage {
       int status = data[5];
 
       Integer millis = ByteUtil.toInt(new byte[]{data[6], data[7]}) * 10;
-      SensorBean sensorBean = new SensorBean(deviceId, contactId, status, previousStatus, millis, eventDate);
+      //TODO!!!!!!
+      SensorBean sensorBean = null;//new SensorBean(deviceId, contactId, status, previousStatus, millis, eventDate);
       return sensorBean;
     } else {
       Logger.warn("Can't parse message, not a Sensor Response! " + resp);

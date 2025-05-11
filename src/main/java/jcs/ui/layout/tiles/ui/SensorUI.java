@@ -99,7 +99,7 @@ public class SensorUI extends StraightUI implements MouseListener, MouseMotionLi
         sb.setLastUpdated(new Date());
         SensorEvent sae = new SensorEvent(sb);
         TileCache.enqueTileAction(sae);
-        //Logger.trace("Changing Tile "+tile.getId()+" Sensor "+sb.getId()+" to "+sb.isActive()+"...");
+        //Logger.trace("Changing Tile "+tile.getIdString()+" Sensor "+sb.getIdString()+" to "+sb.isActive()+"...");
       }
     } else {
       redispatchToParent(e);

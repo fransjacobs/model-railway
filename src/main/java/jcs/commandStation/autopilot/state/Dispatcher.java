@@ -50,16 +50,16 @@ public class Dispatcher {
   private String departureBlockId;
   private String destinationBlockId;
 
-  private String waitingForSensorId;
+  private Integer waitingForSensorId;
   //Enter Sensor of the destination
-  private String enterSensorId;
+  private Integer enterSensorId;
   //In Sensor of the destination
-  private String inSensorId;
+  private Integer inSensorId;
 
   //The Occupation sensor of the departure 
-  private String occupationSensorId;
+  private Integer occupationSensorId;
   //The exit of the departure
-  private String exitSensorId;
+  private Integer exitSensorId;
 
   private final List<StateEventListener> stateEventListeners;
 
@@ -213,52 +213,52 @@ public class Dispatcher {
     }
   }
 
-  void setWaitForSensorid(String sensorId) {
+  void setWaitForSensorid(Integer sensorId) {
     this.waitingForSensorId = sensorId;
   }
 
-  public String getWaitingForSensorId() {
+  public Integer getWaitingForSensorId() {
     return waitingForSensorId;
   }
 
-  public String getEnterSensorId() {
+  public Integer getEnterSensorId() {
     return enterSensorId;
   }
 
-  void setEnterSensorId(String enterSensorId) {
+  void setEnterSensorId(Integer enterSensorId) {
     this.enterSensorId = enterSensorId;
   }
 
-  public String getInSensorId() {
+  public Integer getInSensorId() {
     return inSensorId;
   }
 
-  void setInSensorId(String inSensorId) {
+  void setInSensorId(Integer inSensorId) {
     this.inSensorId = inSensorId;
   }
 
-  public String getOccupationSensorId() {
+  public Integer getOccupationSensorId() {
     return occupationSensorId;
   }
 
-  void setOccupationSensorId(String occupationSensorId) {
+  void setOccupationSensorId(Integer occupationSensorId) {
     this.occupationSensorId = occupationSensorId;
   }
 
-  public String getExitSensorId() {
+  public Integer getExitSensorId() {
     return exitSensorId;
   }
 
-  void setExitSensorId(String exitSensorId) {
+  void setExitSensorId(Integer exitSensorId) {
     this.exitSensorId = exitSensorId;
   }
 
   void clearDepartureIgnoreEventHandlers() {
     if (departureBlockId != null) {
       BlockBean departureBlock = getDepartureBlock();
-      String minSensorId = departureBlock.getMinSensorId();
+      Integer minSensorId = departureBlock.getMinSensorId();
       AutoPilot.removeHandler(minSensorId);
-      String plusSensorId = departureBlock.getPlusSensorId();
+      Integer plusSensorId = departureBlock.getPlusSensorId();
       AutoPilot.removeHandler(plusSensorId);
     }
   }
@@ -266,31 +266,31 @@ public class Dispatcher {
   public void onIgnoreEvent(SensorEvent event) {
     //Only in Simulator mode
     if (JCS.getJcsCommandStation().getCommandStationBean().isVirtual()) {
-      if (this.waitingForSensorId != null && this.waitingForSensorId.equals(event.getId())) {
+      if (this.waitingForSensorId != null && this.waitingForSensorId.equals(event.getSensorId())) {
         if (event.isActive()) {
           this.waitingForSensorId = null;
         }
       }
 
-      if (this.enterSensorId != null && this.enterSensorId.equals(event.getId())) {
+      if (this.enterSensorId != null && this.enterSensorId.equals(event.getSensorId())) {
         if (!event.isActive()) {
           this.enterSensorId = null;
         }
       }
 
-      if (this.inSensorId != null && this.inSensorId.equals(event.getId())) {
+      if (this.inSensorId != null && this.inSensorId.equals(event.getSensorId())) {
         if (!event.isActive()) {
           this.inSensorId = null;
         }
       }
 
-      if (this.exitSensorId != null && this.exitSensorId.equals(event.getId())) {
+      if (this.exitSensorId != null && this.exitSensorId.equals(event.getSensorId())) {
         if (!event.isActive()) {
           this.exitSensorId = null;
         }
       }
     }
-    //Logger.trace("Event for a ignored listener: " + event.getId() + " Changed: " + event.isChanged() + ", active: " + event.getSensorBean().isActive());
+    //Logger.trace("Event for a ignored listener: " + event.getIdString() + " Changed: " + event.isChanged() + ", active: " + event.getSensorBean().isActive());
   }
 
   synchronized void switchAccessory(AccessoryBean accessory, AccessoryValue value) {

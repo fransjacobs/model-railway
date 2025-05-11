@@ -52,8 +52,8 @@ class FeedbackManager {
 
     if (ID != objectId) {
       FeedbackModuleBean feedbackModule;
-      if (this.modules.containsKey(objectId)) {
-        feedbackModule = this.modules.get(objectId);
+      if (modules.containsKey(objectId)) {
+        feedbackModule = modules.get(objectId);
       } else {
         feedbackModule = new FeedbackModuleBean();
         feedbackModule.setId(objectId);
@@ -61,7 +61,6 @@ class FeedbackManager {
         feedbackModule.setModuleNumber(objectId - S88_OFFSET);
         //ESU ECoS has 1 bus
         feedbackModule.setIdentifier(0);
-        feedbackModule.setPortCount(16);
       }
 
       if (values.containsKey(Ecos.PORTS)) {
@@ -70,19 +69,21 @@ class FeedbackManager {
           int ports = Integer.parseInt(vports);
           feedbackModule.setPortCount(ports);
         }
+      } else {
+        feedbackModule.setPortCount(S88_DEFAULT_PORT_COUNT);
       }
 
       if (values.containsKey(Ecos.STATE)) {
         String state = values.get(Ecos.STATE).toString();
         updatePorts(state, feedbackModule);
       }
-      this.modules.put(objectId, feedbackModule);
+      modules.put(objectId, feedbackModule);
       changedSensors = feedbackModule.getChangedSensors();
 
       if (event) {
-        if (this.ecosCommandStation != null) {
+        if (ecosCommandStation != null) {
           for (SensorEvent sensorEvent : changedSensors) {
-            this.ecosCommandStation.fireSensorEventListeners(sensorEvent);
+            ecosCommandStation.fireSensorEventListeners(sensorEvent);
           }
         }
       }
@@ -97,7 +98,7 @@ class FeedbackManager {
             fbmb.setId(S88_OFFSET + i);
             fbmb.setPortCount(S88_DEFAULT_PORT_COUNT);
             fbmb.setIdentifier(0);
-            this.modules.put(fbmb.getId(), fbmb);
+            modules.put(fbmb.getId(), fbmb);
           }
         }
       }

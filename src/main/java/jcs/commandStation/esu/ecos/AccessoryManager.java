@@ -242,7 +242,7 @@ class AccessoryManager implements AccessoryEventListener {
   @Override
   public void onAccessoryChange(AccessoryEvent accessoryEvent) {
     AccessoryBean ab = accessoryEvent.getAccessoryBean();
-    String id = accessoryEvent.getId();
+    String id = accessoryEvent.getIdString();
     if (!this.accessories.containsKey(id)) {
       id = findId(ab.getAddress());
     }

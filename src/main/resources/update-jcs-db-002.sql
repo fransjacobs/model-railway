@@ -9,5 +9,17 @@ insert into command_stations(id, description, short_name, class_name, connect_vi
 values('esu-ecos', 'ESU ECoS', 'ECoS', 'jcs.commandStation.esu.ecos.EsuEcosCommandStationImpl', 'NETWORK', null, null, 15471, true, true, true, true, true, true, true, true, 'DCC,MFX,MM', true, true, '1', 'NETWORK', '0', 0, 0, 0, 0, 0, true);
 commit;
 
+update blocks set plus_sensor_id = null, min_sensor_id = null;
+update tiles set sensor_id = null;
+
+delete from sensors;
+commit;
+
+alter table sensors alter id integer;
+alter table sensors add node_id integer;
+alter table tiles alter sensor_id integer;
+alter table blocks alter plus_sensor_id integer;
+alter table blocks alter min_sensor_id integer;
+
 update jcs_version set db_version = '0.0.3', app_version = '0.0.3';
 commit;

@@ -277,7 +277,7 @@ public class StateMachineStepByStepTest {
     assertEquals("StartState", stateMachine.getDispatcherStateName());
 
     //Now lets Toggle the enter sensor
-    String enterSensorId = dispatcher.getEnterSensorId();
+    Integer enterSensorId = dispatcher.getEnterSensorId();
     assertEquals("0-0013", enterSensorId);
     //Check if the enterSensor is registered a a "knownEvent" else we get a Ghost!
     assertTrue(AutoPilot.isSensorHandlerRegistered(enterSensorId));
@@ -311,7 +311,7 @@ public class StateMachineStepByStepTest {
     assertEquals("EnterBlockState", stateMachine.getDispatcherStateName());
 
     //Now lets Toggle the in sensor
-    String inSensorId = dispatcher.getInSensorId();
+    Integer inSensorId = dispatcher.getInSensorId();
     assertEquals("0-0012", inSensorId);
     //Check if the inSensor is registered a a "knownEvent" else we get a Ghost!
     assertTrue(AutoPilot.isSensorHandlerRegistered(inSensorId));
@@ -443,10 +443,10 @@ public class StateMachineStepByStepTest {
 
     assertTrue(JCS.getJcsCommandStation().isPowerOn());
 
-    String occupancySensorId = dispatcher.getOccupationSensorId();
-    String exitSensorId = dispatcher.getExitSensorId();
-    String enterSensorId = dispatcher.getEnterSensorId();
-    String inSensorId = dispatcher.getInSensorId();
+    Integer occupancySensorId = dispatcher.getOccupationSensorId();
+    Integer exitSensorId = dispatcher.getExitSensorId();
+    Integer enterSensorId = dispatcher.getEnterSensorId();
+    Integer inSensorId = dispatcher.getInSensorId();
 
     assertNotNull(occupancySensorId);
     assertNotNull(exitSensorId);
@@ -800,7 +800,7 @@ public class StateMachineStepByStepTest {
     //Now lets Toggle and 'unexpected' sensor, which should cause a Ghost!
     assertTrue(JCS.getJcsCommandStation().isPowerOn());
 
-    String inSensorId = dispatcher.getInSensorId();
+    Integer inSensorId = dispatcher.getInSensorId();
     assertNotEquals("0-0013", inSensorId);
 
     //Check if the enterSensor is registered a a "knownEvent" else we get a Ghost!

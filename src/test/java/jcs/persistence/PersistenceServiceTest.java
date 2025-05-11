@@ -16,6 +16,7 @@
 package jcs.persistence;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import jcs.entities.AccessoryBean;
@@ -101,9 +102,10 @@ public class PersistenceServiceTest {
     jcsPropertyList.add(p10);
     jcsPropertyList.add(p11);
 
-    SensorBean s1 = new SensorBean("65-1", "M1", 65, 1, 0, 0, 0, null);
+    SensorBean s1 = new SensorBean(1, "M1", 0, 1, 65, 0, 0, 0, null);
+
     sensors.add(s1);
-    SensorBean s2 = new SensorBean("65-2", "M2", 65, 2, 1, 1, 0, null);
+    SensorBean s2 = new SensorBean(2, "M2", 0, 2, 65, 1, 1, 0, null);
     sensors.add(s2);
 
     LocomotiveBean loco2 = new LocomotiveBean(2L, "BR 81 002", 2L, 2, "DB BR 81 008", "mm_prg", 120, 1, 0, 0, false, true, true);
@@ -210,9 +212,9 @@ public class PersistenceServiceTest {
     tiles.add(ct2);
     TileBean ct5 = new TileBean("ct-5", TileBean.TileType.CURVED, Orientation.SOUTH, Direction.CENTER, 180, 380, null, null, null);
     tiles.add(ct5);
-    TileBean se5 = new TileBean("se-5", TileBean.TileType.SENSOR, Orientation.NORTH, Direction.CENTER, 340, 380, null, null, "65-2");
+    TileBean se5 = new TileBean("se-5", TileBean.TileType.SENSOR, Orientation.NORTH, Direction.CENTER, 340, 380, null, null, 2);
     tiles.add(se5);
-    TileBean se6 = new TileBean("se-6", TileBean.TileType.SENSOR, Orientation.WEST, Direction.CENTER, 500, 380, null, null, "65-1");
+    TileBean se6 = new TileBean("se-6", TileBean.TileType.SENSOR, Orientation.WEST, Direction.CENTER, 500, 380, null, null, 1);
     tiles.add(se6);
     TileBean si3 = new TileBean("si-3", TileBean.TileType.SIGNAL, Orientation.EAST, Direction.CENTER, 300, 140, null, "15", null);
     tiles.add(si3);
@@ -349,7 +351,7 @@ public class PersistenceServiceTest {
   @Order(6)
   public void testGetSensorString() {
     System.out.println("getSensorString");
-    String id = "65-1";
+    Integer id = 1;
     PersistenceService instance = PersistenceFactory.getService();
     SensorBean expResult = sensors.get(0);
     SensorBean result = instance.getSensor(id);
@@ -378,7 +380,7 @@ public class PersistenceServiceTest {
   @Order(8)
   public void testPersistSensorBean() {
     System.out.println("persistSensorBean");
-    SensorBean sensor = new SensorBean("M1P3", 65, 3, 0, 1, 0, null);
+    SensorBean sensor = new SensorBean(3, "M1P3", 0, 3, 65, 0, 1, 0, null);
     PersistenceService instance = PersistenceFactory.getService();
 
     SensorBean result = instance.persist(sensor);
@@ -392,7 +394,7 @@ public class PersistenceServiceTest {
     result = instance.persist(sensor);
     assertEquals(sensor, result);
 
-    s3 = instance.getSensor("65-0003");
+    s3 = instance.getSensor(3);
     assertEquals(sensor, s3);
   }
 
@@ -403,7 +405,8 @@ public class PersistenceServiceTest {
   @Order(9)
   public void testRemoveSensorBean() {
     System.out.println("removeSensorBean");
-    SensorBean sensor = new SensorBean("M1P4", 65, 4, 0, 1, 0, null);
+    SensorBean sensor = new SensorBean(4, "M1P4", 1, 4, 65, 0, 1, 0, null);
+
     PersistenceService instance = PersistenceFactory.getService();
 
     SensorBean result = instance.persist(sensor);

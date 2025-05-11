@@ -63,7 +63,7 @@ public class AccessoryEvent implements JCSActionEvent {
   }
 
   @Override
-  public String getId() {
+  public String getIdString() {
     return accessoryBean.getId();
   }
 

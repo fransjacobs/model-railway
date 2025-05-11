@@ -32,7 +32,7 @@ class StartState extends DispatcherState implements SensorEventListener {
 
   private boolean locomotiveStarted = false;
   private boolean canAdvanceToNextState = false;
-  private String enterSensorId;
+  private Integer enterSensorId;
   private Dispatcher dispatcher;
 
   @Override
@@ -42,8 +42,8 @@ class StartState extends DispatcherState implements SensorEventListener {
       BlockBean departureBlock = dispatcher.getDepartureBlock();
       BlockBean destinationBlock = dispatcher.getDestinationBlock();
 
-      String occupancySensorId = dispatcher.getOccupationSensorId();
-      String exitSensorId = dispatcher.getExitSensorId();
+      Integer occupancySensorId = dispatcher.getOccupationSensorId();
+      Integer exitSensorId = dispatcher.getExitSensorId();
 
       //Register them both to ignore event form these sensors.
       ExpectedSensorEventHandler osh = new ExpectedSensorEventHandler(occupancySensorId, dispatcher);
@@ -112,10 +112,10 @@ class StartState extends DispatcherState implements SensorEventListener {
 
   @Override
   public void onSensorChange(SensorEvent sensorEvent) {
-    if (enterSensorId.equals(sensorEvent.getId())) {
+    if (enterSensorId.equals(sensorEvent.getSensorId())) {
       if (sensorEvent.isActive()) {
         canAdvanceToNextState = true;
-        Logger.trace("Enter Event from Sensor " + sensorEvent.getId());
+        Logger.trace("Enter Event from Sensor " + sensorEvent.getIdString());
         synchronized (this) {
           this.notifyAll();
         }

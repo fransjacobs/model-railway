@@ -329,7 +329,7 @@ public class AutoPilotTest {
       return;
     }
     System.out.println("isSensorRegistered");
-    String sensorId = "0-0001";
+    Integer sensorId = 1;
     //AutoPilot instance = AutoPilot.getInstance();
     assertFalse(AutoPilot.isAutoModeActive());
 
@@ -432,7 +432,7 @@ public class AutoPilotTest {
 
     //Toggle a sensor, as the automode is on a Ghost should appear
     //Now lets Toggle the enter sensor
-    SensorBean s2 = ps.getSensor("0-0002");
+    SensorBean s2 = ps.getSensor(2);
     toggleSensorDirect(s2);
 
     assertFalse(JCS.getJcsCommandStation().isPowerOn());
@@ -585,23 +585,23 @@ public class AutoPilotTest {
 
   private class TestSensorHandler implements SensorEventHandler {
 
-    private final String sensorId;
+    private final Integer sensorId;
     private final AutoPilotTest autoPilotTest;
 
-    TestSensorHandler(String sensorId, AutoPilotTest autoPilotTest) {
+    TestSensorHandler(Integer sensorId, AutoPilotTest autoPilotTest) {
       this.sensorId = sensorId;
       this.autoPilotTest = autoPilotTest;
     }
 
     @Override
     public void handleEvent(SensorEvent event) {
-      if (this.sensorId.equals(event.getId())) {
+      if (this.sensorId.equals(event.getIdString())) {
         this.autoPilotTest.sensorHandlerEvents.add(event);
       }
     }
 
     @Override
-    public String getSensorId() {
+    public Integer getSensorId() {
       return sensorId;
     }
 

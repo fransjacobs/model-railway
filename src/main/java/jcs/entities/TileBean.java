@@ -22,7 +22,6 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import java.awt.Point;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -33,7 +32,7 @@ import jcs.entities.AccessoryBean.SignalType;
 
 @Table(name = "tiles", indexes = {
   @Index(name = "tile_x_y", columnList = "x, y", unique = true)})
-public class TileBean implements Serializable, Comparable {
+public class TileBean implements Comparable {
 
   protected String id;
   protected Integer x;
@@ -43,7 +42,7 @@ public class TileBean implements Serializable, Comparable {
   protected String tileDirection;
   protected String signalAccessoryType;
   protected String accessoryId;
-  protected String sensorId;
+  protected Integer sensorId;
 
   protected List<TileBean> neighbours;
 
@@ -60,11 +59,11 @@ public class TileBean implements Serializable, Comparable {
     this(id, tileType, orientation, direction, x, y, null, null, null);
   }
 
-  public TileBean(String id, TileType tileType, Orientation orientation, Direction direction, Point center, SignalType signalType, String accessoryId, String sensorId) {
+  public TileBean(String id, TileType tileType, Orientation orientation, Direction direction, Point center, SignalType signalType, String accessoryId, Integer sensorId) {
     this(id, tileType, orientation, direction, center.x, center.y, signalType, null, sensorId);
   }
 
-  public TileBean(String id, TileType tileType, Orientation orientation, Direction direction, Integer x, Integer y, SignalType signalType, String accessoryId, String sensorId) {
+  public TileBean(String id, TileType tileType, Orientation orientation, Direction direction, Integer x, Integer y, SignalType signalType, String accessoryId, Integer sensorId) {
     this.id = id;
     this.setTileType(tileType);
     this.tileOrientation = orientation.getOrientation();
@@ -208,11 +207,11 @@ public class TileBean implements Serializable, Comparable {
   }
 
   @Column(name = "sensor_id")
-  public String getSensorId() {
+  public Integer getSensorId() {
     return sensorId;
   }
 
-  public void setSensorId(String sensorId) {
+  public void setSensorId(Integer sensorId) {
     this.sensorId = sensorId;
   }
 

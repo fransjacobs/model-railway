@@ -53,7 +53,7 @@ public final class AutoPilot {
 
   private static CommandStationBean commandStationBean;
 
-  private static final Map<String, SensorEventHandler> sensorHandlers = new HashMap<>();
+  private static final Map<Integer, SensorEventHandler> sensorHandlers = new HashMap<>();
   private static final Map<String, Dispatcher> dispatchers = new HashMap<>();
 
   //Need a list to be able to unregister
@@ -457,9 +457,9 @@ public final class AutoPilot {
   }
 
   private static void handleGhost(SensorEvent event) {
-    Logger.trace("Check for possible Ghost! @ Sensor " + event.getId());
+    Logger.trace("Check for possible Ghost! @ Sensor " + event.getIdString());
     List<BlockBean> blocks = PersistenceFactory.getService().getBlocks();
-    String sensorId = event.getId();
+    Integer sensorId = event.getSensorId();
     for (BlockBean block : blocks) {
       Tile tile = TileCache.findTile(block.getTileId());
 
@@ -487,13 +487,13 @@ public final class AutoPilot {
 
   static void handleSensorEvent(SensorEvent event) {
     if (event.isChanged()) {
-      SensorEventHandler sh = sensorHandlers.get(event.getId());
-      Boolean registered = sh != null;  //sensorHandlers.containsKey(event.getId());
-      Logger.trace((registered ? "Registered " : "") + event.getId() + " has changed " + event.isChanged());
+      SensorEventHandler sh = sensorHandlers.get(event.getIdString());
+      Boolean registered = sh != null;  //sensorHandlers.containsKey(event.getIdString());
+      Logger.trace((registered ? "Registered " : "") + event.getIdString() + " has changed " + event.isChanged());
 
       if (sh != null) {
         //there is a handler registered for this id, pass the event through
-        //SensorEventHandler sh = sensorHandlers.get(event.getId());
+        //SensorEventHandler sh = sensorHandlers.get(event.getIdString());
         sh.handleEvent(event);
       } else {
         //sensor is not registered and thus not expected!
@@ -508,11 +508,11 @@ public final class AutoPilot {
     sensorHandlers.put(handler.getSensorId(), handler);
   }
 
-  public static boolean isSensorHandlerRegistered(String sensorId) {
+  public static boolean isSensorHandlerRegistered(Integer sensorId) {
     return sensorHandlers.containsKey(sensorId);
   }
 
-  public static synchronized void removeHandler(String sensorId) {
+  public static synchronized void removeHandler(Integer sensorId) {
     sensorHandlers.remove(sensorId);
   }
 
@@ -567,7 +567,7 @@ public final class AutoPilot {
       List<SensorBean> sensors = PersistenceFactory.getService().getAssignedSensors();
       int cnt = 0;
       for (SensorBean sb : sensors) {
-        String key = sb.getId();
+        Integer key = sb.getId();
         if (!sensorHandlers.containsKey(key)) {
           SensorListener seh = new SensorListener(key);
           sensorListeners.add(seh);
@@ -672,15 +672,15 @@ public final class AutoPilot {
 
   private static class SensorListener implements SensorEventListener {
 
-    private final String sensorId;
+    private final Integer sensorId;
 
-    SensorListener(String sensorId) {
+    SensorListener(Integer sensorId) {
       this.sensorId = sensorId;
     }
 
     @Override
     public void onSensorChange(SensorEvent event) {
-      if (sensorId.equals(event.getId())) {
+      if (sensorId.equals(event.getIdString())) {
         AutoPilot.handleSensorEvent(event);
       }
     }

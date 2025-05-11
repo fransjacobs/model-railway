@@ -38,22 +38,26 @@ public class SensorEvent implements JCSActionEvent {
     return sensorBean;
   }
 
+  public Integer getSensorId() {
+    return sensorBean.getId();
+  }
+
   @Override
-  public String getId() {
-    if (sensorBean.getId() != null) {
-      return sensorBean.getId();
-    } else {
-      //TODO: Number format? check with both CS 3 and HSI 88 life sensors
-      Integer deviceId = sensorBean.getDeviceId();
-      Integer contactId = sensorBean.getContactId();
-      String cn = ((contactId) > 9 ? "" : "0");
-      if (cn.length() == 2) {
-        cn = "00" + cn;
-      } else if (cn.length() == 3) {
-        cn = "0" + cn;
-      }
-      return deviceId + "-" + cn;
-    }
+  public String getIdString() {
+//    if (sensorBean.getIdString() != null) {
+    return sensorBean.getId().toString();
+//    } else {
+//      //TODO: Number format? check with both CS 3 and HSI 88 life sensors
+//      Integer deviceId = sensorBean.getDeviceId();
+//      Integer contactId = sensorBean.getContactId();
+//      String cn = ((contactId) > 9 ? "" : "0");
+//      if (cn.length() == 2) {
+//        cn = "00" + cn;
+//      } else if (cn.length() == 3) {
+//        cn = "0" + cn;
+//      }
+//      return deviceId + "-" + cn;
+//    }
   }
 
   public Integer getDeviceId() {
@@ -76,7 +80,7 @@ public class SensorEvent implements JCSActionEvent {
 
   @Override
   public String toString() {
-    return "SensorEvent{" + "id=" + getId() + ", active=" + (isActive() ? "1" : "0") + "}";
+    return "SensorEvent{" + "id=" + getIdString() + ", active=" + (isActive() ? "1" : "0") + "}";
   }
 
 }

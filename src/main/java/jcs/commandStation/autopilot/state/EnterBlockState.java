@@ -31,7 +31,7 @@ class EnterBlockState extends DispatcherState implements SensorEventListener {
 
   private boolean locomotiveBraking = false;
   private boolean canAdvanceToNextState = false;
-  private String inSensorId;
+  private Integer inSensorId;
 
   @Override
   DispatcherState execute(Dispatcher dispatcher) {
@@ -66,7 +66,7 @@ class EnterBlockState extends DispatcherState implements SensorEventListener {
 
       PersistenceFactory.getService().persist(departureBlock);
       PersistenceFactory.getService().persist(destinationBlock);
-      
+
       dispatcher.showBlockState(departureBlock);
       dispatcher.showRoute(route, Color.magenta);
       dispatcher.showBlockState(destinationBlock);
@@ -102,10 +102,10 @@ class EnterBlockState extends DispatcherState implements SensorEventListener {
 
   @Override
   public void onSensorChange(SensorEvent sensorEvent) {
-    if (this.inSensorId.equals(sensorEvent.getId())) {
+    if (this.inSensorId.equals(sensorEvent.getSensorId())) {
       if (sensorEvent.isActive()) {
         this.canAdvanceToNextState = true;
-        Logger.trace("In Event from Sensor " + sensorEvent.getId());
+        Logger.trace("In Event from Sensor " + sensorEvent.getIdString());
         synchronized (this) {
           this.notifyAll();
         }

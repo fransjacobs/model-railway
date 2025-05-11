@@ -140,7 +140,7 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public SensorBean getSensor(String id) {
+  public SensorBean getSensor(Integer id) {
     SensorBean sensor = database.where("id=?", id).first(SensorBean.class);
     return sensor;
   }
@@ -173,8 +173,9 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
+  @Deprecated
   public List<SensorBean> generateSensorBeans(Integer deviceId, Integer bus0len, Integer bus1len, Integer bus2len, Integer bus3len) {
-    Map<String, SensorBean> sensorBeans = new HashMap<>();
+    Map<Integer, SensorBean> sensorBeans = new HashMap<>();
 
     if (bus0len != null) {
       for (int i = 0; i < (bus0len * 16); i++) {
@@ -182,7 +183,7 @@ public class H2PersistenceService implements PersistenceService {
         sb.setDeviceId(deviceId);
         sb.setContactId((i + 1));
         sb.setName("B0-S-" + (i + 1));
-        String id = sb.getId();
+        Integer id = sb.getId();
         sensorBeans.put(id, sb);
       }
     }
@@ -193,7 +194,7 @@ public class H2PersistenceService implements PersistenceService {
         sb.setDeviceId(deviceId);
         sb.setContactId((i + 1001));
         sb.setName("B1-S-" + (i + 1001));
-        String id = sb.getId();
+        Integer id = sb.getId();
         sensorBeans.put(id, sb);
       }
     }
@@ -204,7 +205,7 @@ public class H2PersistenceService implements PersistenceService {
         sb.setDeviceId(deviceId);
         sb.setContactId((i + 2001));
         sb.setName("B2-S-" + (i + 2001));
-        String id = sb.getId();
+        Integer id = sb.getId();
         sensorBeans.put(id, sb);
       }
     }
@@ -214,7 +215,7 @@ public class H2PersistenceService implements PersistenceService {
         SensorBean sb = new SensorBean();
         sb.setContactId((i + 3001));
         sb.setName("B3-S-" + (i + 3001));
-        String id = sb.getId();
+        Integer id = sb.getId();
         sensorBeans.put(id, sb);
       }
     }

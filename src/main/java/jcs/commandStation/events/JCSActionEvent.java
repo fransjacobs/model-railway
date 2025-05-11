@@ -25,6 +25,6 @@ public interface JCSActionEvent {
    *
    * @return the id of the Object which requires an action
    */
-  String getId();
+  String getIdString();
 
 }

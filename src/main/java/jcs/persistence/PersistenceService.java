@@ -100,7 +100,7 @@ public interface PersistenceService {
    * @param id The ID of the SensorBean to retrieve.
    * @return The SensorBean, or null if not found.
    */
-  SensorBean getSensor(String id);
+  SensorBean getSensor(Integer id);
 
   /**
    * Retrieves a SensorBean by device and contact ID.
@@ -136,6 +136,7 @@ public interface PersistenceService {
    * @param bus3len Length of bus 3.
    * @return A List of generated SensorBeans.
    */
+  @Deprecated
   List<SensorBean> generateSensorBeans(Integer deviceId, Integer bus0len, Integer bus1len, Integer bus2len, Integer bus3len);
 
   // Locomotive

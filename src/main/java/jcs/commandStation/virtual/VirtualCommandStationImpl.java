@@ -82,7 +82,7 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
 //    mainDevice.setVersion(VersionInfo.getVersion());
 //
 //    mainDevice.setSerial("1");
-//    mainDevice.setIdentifier(this.commandStationBean.getId());
+//    mainDevice.setIdentifier(this.commandStationBean.getIdString());
 //    mainDevice.setName(this.commandStationBean.getDescription());
 
     infoBean = new InfoBean();
@@ -300,7 +300,7 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   private void fireAllAccessoryEventListeners(final AccessoryEvent accessoryEvent) {
     for (AccessoryEventListener listener : this.accessoryEventListeners) {
       listener.onAccessoryChange(accessoryEvent);
-      Logger.trace("Fired accessory listener " + accessoryEvent.getId());
+      Logger.trace("Fired accessory listener " + accessoryEvent.getIdString());
     }
   }
 

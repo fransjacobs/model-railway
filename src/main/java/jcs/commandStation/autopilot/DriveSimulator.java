@@ -51,22 +51,22 @@ public class DriveSimulator {
     if (dispatcher.isLocomotiveAutomodeOn()) {
       Logger.trace("Try to simulate the next sensor of " + dispatcher.getName());
 
-      String occupationSensorId = dispatcher.getOccupationSensorId();
+      Integer occupationSensorId = dispatcher.getOccupationSensorId();
       if (occupationSensorId != null) {
         //Start a timer which execute a worker thread which fires the sensor
         scheduledExecutor.schedule(() -> setSensorValue(occupationSensorId, false), 500, TimeUnit.MILLISECONDS);
       }
 
-      String exitSensorId = dispatcher.getExitSensorId();
+      Integer exitSensorId = dispatcher.getExitSensorId();
       if (exitSensorId != null) {
         //Start a time which execute a worker thread which fires the sensor
         scheduledExecutor.schedule(() -> setSensorValue(exitSensorId, false), 1500, TimeUnit.MILLISECONDS);
       }
 
-      String enterSensorId = dispatcher.getEnterSensorId();
-      String inSensorId = dispatcher.getInSensorId();
+      Integer enterSensorId = dispatcher.getEnterSensorId();
+      Integer inSensorId = dispatcher.getInSensorId();
 
-      String sensorId = dispatcher.getWaitingForSensorId();
+      Integer sensorId = dispatcher.getWaitingForSensorId();
 
       int time = 5000;
       if (sensorId != null && sensorId.equals(enterSensorId)) {
@@ -86,7 +86,7 @@ public class DriveSimulator {
     }
   }
 
-  private void setSensorValue(String sensorId, boolean active) {
+  private void setSensorValue(Integer sensorId, boolean active) {
     SensorBean sensor = PersistenceFactory.getService().getSensor(sensorId);
     sensor.setActive(active);
     SensorEvent sensorEvent = new SensorEvent(sensor);

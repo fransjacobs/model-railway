@@ -17,8 +17,6 @@ package jcs.entities;
 
 import java.util.List;
 import jcs.commandStation.events.SensorEvent;
-import jcs.entities.FeedbackModuleBean;
-import jcs.entities.SensorBean;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,179 +39,194 @@ public class FeedbackModuleBeanTest {
   public void tearDown() {
   }
 
-  //@Test
+  @Test
   public void testGetId() {
     System.out.println("getId");
     FeedbackModuleBean instance = new FeedbackModuleBean();
-    Integer expResult = null;
+    instance.setId(0);
+    Integer expResult = 0;
+
     Integer result = instance.getId();
     assertEquals(expResult, result);
-    fail("The test case is a prototype.");
   }
 
-  //@Test
-  public void testSetId() {
-    System.out.println("setId");
-    Integer id = null;
-    FeedbackModuleBean instance = new FeedbackModuleBean();
-    instance.setId(id);
-    fail("The test case is a prototype.");
-  }
-
-  //@Test
+  @Test
   public void testGetModuleNumber() {
     System.out.println("getModuleNumber");
     FeedbackModuleBean instance = new FeedbackModuleBean();
-    Integer expResult = null;
+    instance.setId(0);
+    instance.setModuleNumber(0);
+    Integer expResult = 0;
     Integer result = instance.getModuleNumber();
     assertEquals(expResult, result);
-    fail("The test case is a prototype.");
   }
 
-  //@Test
-  public void testSetModuleNumber() {
-    System.out.println("setModuleNumber");
-    Integer moduleNumber = null;
-    FeedbackModuleBean instance = new FeedbackModuleBean();
-    instance.setModuleNumber(moduleNumber);
-    fail("The test case is a prototype.");
-  }
-
-  //@Test
+  @Test
   public void testGetPortCount() {
     System.out.println("getPortCount");
     FeedbackModuleBean instance = new FeedbackModuleBean();
-    Integer expResult = null;
+    instance.setId(0);
+    instance.setModuleNumber(0);
+    instance.setPortCount(16);
+    Integer expResult = 16;
     Integer result = instance.getPortCount();
     assertEquals(expResult, result);
-    fail("The test case is a prototype.");
-  }
-
-  //@Test
-  public void testSetPortCount() {
-    System.out.println("setPortCount");
-    Integer portCount = null;
-    FeedbackModuleBean instance = new FeedbackModuleBean();
-    instance.setPortCount(portCount);
-    fail("The test case is a prototype.");
   }
 
   //@Test
   public void testGetAddressOffset() {
     System.out.println("getAddressOffset");
     FeedbackModuleBean instance = new FeedbackModuleBean();
-    Integer expResult = null;
+    instance.setId(0);
+    instance.setModuleNumber(0);
+    instance.setPortCount(16);
+    instance.setAddressOffset(1000);
+    Integer expResult = 1000;
     Integer result = instance.getAddressOffset();
     assertEquals(expResult, result);
-    fail("The test case is a prototype.");
   }
 
-  //@Test
-  public void testSetAddressOffset() {
-    System.out.println("setAddressOffset");
-    Integer addressOffset = null;
-    FeedbackModuleBean instance = new FeedbackModuleBean();
-    instance.setAddressOffset(addressOffset);
-    fail("The test case is a prototype.");
-  }
-
-  //@Test
+  @Test
   public void testGetIdentifier() {
     System.out.println("getIdentifier");
     FeedbackModuleBean instance = new FeedbackModuleBean();
-    Integer expResult = null;
+    instance.setId(0);
+    instance.setModuleNumber(0);
+    instance.setPortCount(16);
+    instance.setAddressOffset(1000);
+    instance.setIdentifier(65);
+    Integer expResult = 65;
     Integer result = instance.getIdentifier();
     assertEquals(expResult, result);
-    fail("The test case is a prototype.");
   }
 
-  //@Test
-  public void testSetIdentifier() {
-    System.out.println("setIdentifier");
-    Integer identifier = null;
-    FeedbackModuleBean instance = new FeedbackModuleBean();
-    instance.setIdentifier(identifier);
-    fail("The test case is a prototype.");
-  }
-
-  //@Test
+  @Test
   public void testGetPorts() {
     System.out.println("getPorts");
     FeedbackModuleBean instance = new FeedbackModuleBean();
-    int[] expResult = null;
+    instance.setId(0);
+    instance.setModuleNumber(0);
+    instance.setPortCount(16);
+    instance.setAddressOffset(1000);
+    instance.setIdentifier(65);
+
+    int[] expResult = new int[16];
+    for (int i = 0; i < expResult.length; i++) {
+      expResult[i] = 0;
+    }
+
     int[] result = instance.getPorts();
     assertArrayEquals(expResult, result);
-    fail("The test case is a prototype.");
   }
 
-  //@Test
-  public void testSetPorts() {
-    System.out.println("setPorts");
-    int[] ports = null;
-    FeedbackModuleBean instance = new FeedbackModuleBean();
-    instance.setPorts(ports);
-    fail("The test case is a prototype.");
-  }
-
-  //@Test
+  @Test
   public void testSetPortValue() {
     System.out.println("setPortValue");
-    int port = 0;
-    boolean active = false;
+    int port = 3;
+    boolean active = true;
     FeedbackModuleBean instance = new FeedbackModuleBean();
+    instance.setId(0);
+    instance.setModuleNumber(0);
+    instance.setPortCount(16);
+    instance.setAddressOffset(1000);
+    instance.setIdentifier(65);
+
     instance.setPortValue(port, active);
-    fail("The test case is a prototype.");
+
+    int[] expResult = new int[16];
+    expResult[3] = 1;
+
+    int[] result = instance.getPorts();
+    assertArrayEquals(expResult, result);
   }
 
-  //@Test
+  @Test
+  public void testIsPort() {
+    System.out.println("isPort");
+    int port = 6;
+    FeedbackModuleBean instance = new FeedbackModuleBean();
+    instance.setId(0);
+    instance.setModuleNumber(0);
+    instance.setPortCount(16);
+    instance.setAddressOffset(1000);
+    instance.setIdentifier(65);
+
+    instance.setPortValue(port, true);
+
+    boolean expResult = true;
+    boolean result = instance.isPort(port);
+    assertEquals(expResult, result);
+  }
+
+  @Test
   public void testGetAccumulatedPortsValue() {
     System.out.println("getAccumulatedPortsValue");
     FeedbackModuleBean instance = new FeedbackModuleBean();
-    int expResult = 0;
+    instance.setId(0);
+    instance.setModuleNumber(0);
+    instance.setPortCount(16);
+    instance.setAddressOffset(1000);
+    instance.setIdentifier(65);
+
+    instance.setPortValue(0, true);
+    instance.setPortValue(1, true);
+ 
+    int expResult = 3;
     int result = instance.getAccumulatedPortsValue();
     assertEquals(expResult, result);
-    fail("The test case is a prototype.");
   }
 
-  //@Test
+  @Test
   public void testGetPrevPorts() {
     System.out.println("getPrevPorts");
     FeedbackModuleBean instance = new FeedbackModuleBean();
-    int[] expResult = null;
-    int[] result = instance.getPrevPorts();
+    instance.setId(0);
+    instance.setModuleNumber(0);
+    instance.setPortCount(16);
+    instance.setAddressOffset(1000);
+    instance.setIdentifier(65);
+
+    instance.setPortValue(5, true);
+
+    int[] expResult = new int[16];
+    int[] expPrevResult = new int[16];
+    
+    expResult[5] = 1;
+
+    int[] result = instance.getPorts();
+    
     assertArrayEquals(expResult, result);
-    fail("The test case is a prototype.");
+    result = instance.getPrevPorts();
+    assertArrayEquals(expPrevResult, result);
+ 
+    instance.setPortValue(5, false);
+    expResult[5] = 0;
+    expPrevResult[5] = 1;
+    result = instance.getPorts();
+    assertArrayEquals(expResult, result);
+    result = instance.getPrevPorts();
+    assertArrayEquals(expPrevResult, result);
   }
 
-  //@Test
-  public void testSetPrevPorts() {
-    System.out.println("setPrevPorts");
-    int[] prevPorts = null;
-    FeedbackModuleBean instance = new FeedbackModuleBean();
-    instance.setPrevPorts(prevPorts);
-    fail("The test case is a prototype.");
-  }
-
-  //@Test
+  @Test
   public void testGetSensor() {
     System.out.println("getSensor");
-    int port = 0;
+    int port = 1;
     FeedbackModuleBean instance = new FeedbackModuleBean();
-    SensorBean expResult = null;
+    instance.setId(0);
+    instance.setModuleNumber(0);
+    instance.setPortCount(16);
+    instance.setAddressOffset(1000);
+    instance.setIdentifier(65);
+    
+    SensorBean expResult = new SensorBean();
+   // expResult.setId("65-1001");
+    expResult.setContactId(1);
+    expResult.setDeviceId(65);
+    expResult.setName("B1-1001");
+    
     SensorBean result = instance.getSensor(port);
     assertEquals(expResult, result);
-    fail("The test case is a prototype.");
-  }
-
-  //@Test
-  public void testIsPort() {
-    System.out.println("isPort");
-    int port = 0;
-    FeedbackModuleBean instance = new FeedbackModuleBean();
-    boolean expResult = false;
-    boolean result = instance.isPort(port);
-    assertEquals(expResult, result);
-    fail("The test case is a prototype.");
   }
 
   //@Test

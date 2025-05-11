@@ -39,6 +39,8 @@ import org.tinylog.Logger;
  */
 public class BlockDialog extends javax.swing.JDialog {
 
+  private static final long serialVersionUID = 6278388475191663591L;
+
   private final Block block;
   private final LayoutCanvas layoutCanvas;
 
@@ -61,9 +63,9 @@ public class BlockDialog extends javax.swing.JDialog {
     postInit();
   }
 
-  private Set<String> getLinkedSensorIds() {
+  private Set<Integer> getLinkedSensorIds() {
     List<BlockBean> blocks = PersistenceFactory.getService().getBlocks();
-    Set<String> linkedSensorIds = new HashSet<>();
+    Set<Integer> linkedSensorIds = new HashSet<>();
     for (BlockBean bb : blocks) {
       if (bb.getPlusSensorId() != null) {
         linkedSensorIds.add(bb.getPlusSensorId());
@@ -85,7 +87,7 @@ public class BlockDialog extends javax.swing.JDialog {
       List<SensorBean> allSensors = PersistenceFactory.getService().getSensors();
       List<SensorBean> freeSensors = new ArrayList<>();
       // filter the list, remove sensors which are already linked to other blocks.
-      Set<String> linkedSensorIds = getLinkedSensorIds();
+      Set<Integer> linkedSensorIds = getLinkedSensorIds();
 
       for (SensorBean sb : allSensors) {
         if (!linkedSensorIds.contains(sb.getId())) {

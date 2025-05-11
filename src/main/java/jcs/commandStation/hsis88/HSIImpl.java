@@ -278,7 +278,8 @@ public class HSIImpl extends AbstractController implements FeedbackController {
             //Logger.trace("U: " + sb.toLogString());
           }
         } else {
-          sb = new SensorBean(0, key, contacts[i]);
+          //TODO: !!!!!!!
+          sb = null; //new SensorBean(0, key, contacts[i]);
           this.sensors.put(sb.getContactId(), sb);
 
           SensorEvent se = new SensorEvent(sb);

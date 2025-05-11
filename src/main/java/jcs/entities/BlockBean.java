@@ -31,8 +31,8 @@ public class BlockBean {
   private String id;
   private String tileId;
   private String description;
-  private String plusSensorId;
-  private String minSensorId;
+  private Integer plusSensorId;
+  private Integer minSensorId;
   private String plusSignalId;
   private String minSignalId;
   private Long locomotiveId;
@@ -110,11 +110,11 @@ public class BlockBean {
   }
 
   @Column(name = "plus_sensor_id")
-  public String getPlusSensorId() {
+  public Integer getPlusSensorId() {
     return plusSensorId;
   }
 
-  public void setPlusSensorId(String plusSensorId) {
+  public void setPlusSensorId(Integer plusSensorId) {
     this.plusSensorId = plusSensorId;
   }
 
@@ -133,11 +133,11 @@ public class BlockBean {
   }
 
   @Column(name = "min_sensor_id")
-  public String getMinSensorId() {
+  public Integer getMinSensorId() {
     return minSensorId;
   }
 
-  public void setMinSensorId(String minSensorId) {
+  public void setMinSensorId(Integer minSensorId) {
     this.minSensorId = minSensorId;
   }
 

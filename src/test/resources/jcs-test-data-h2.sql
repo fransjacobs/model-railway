@@ -24,8 +24,8 @@ insert into jcs_properties(p_key,p_value) values
 commit;
 
 insert into sensors (id,name,device_id,contact_id,status,previous_status,millis,last_updated) values
-	 ('65-1', 'M1',65,1,0,0,0,NULL),
-	 ('65-2', 'M2',65,2,1,1,0,NULL);
+	 (1, 'M1',65,1,0,0,0,NULL),
+	 (2, 'M2',65,2,1,1,0,NULL);
 	
 commit;
 

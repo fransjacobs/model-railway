@@ -26,7 +26,6 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -72,7 +71,7 @@ import org.tinylog.Logger;
  * which have an influence on the screen are in the TileModel.<br>
  * All Drawing code is in the TileUI.
  */
-public abstract class Tile extends JComponent { // implements ChangeListener
+public abstract class Tile extends JComponent {
 
   public static final int GRID = 20;
   public static final int DEFAULT_WIDTH = GRID * 2;
@@ -101,13 +100,11 @@ public abstract class Tile extends JComponent { // implements ChangeListener
 
   protected TileType tileType;
   protected String accessoryId;
-  protected String sensorId;
+  protected Integer sensorId;
 
-  //protected AccessoryValue accessoryValue;
   protected AccessoryValue routeValue;
 
   protected SignalType signalType;
-  //protected AccessoryBean.SignalValue signalValue;
 
   protected TileBean tileBean;
   protected AccessoryBean accessoryBean;
@@ -408,11 +405,11 @@ public abstract class Tile extends JComponent { // implements ChangeListener
     }
   }
 
-  public String getSensorId() {
+  public Integer getSensorId() {
     return sensorId;
   }
 
-  public void setSensorId(String sensorId) {
+  public void setSensorId(Integer sensorId) {
     this.sensorId = sensorId;
   }
 
@@ -930,7 +927,7 @@ public abstract class Tile extends JComponent { // implements ChangeListener
     return handler;
   }
 
-  class Handler implements ActionListener, ChangeListener, Serializable {
+  class Handler implements ActionListener, ChangeListener {
 
     @Override
     public void stateChanged(ChangeEvent e) {
@@ -987,14 +984,4 @@ public abstract class Tile extends JComponent { // implements ChangeListener
       return new Rectangle(tileX - renderWidth / 2, tileY - renderHeight / 2, renderWidth, renderHeight);
     }
   }
-
-//  @Override
-//  protected void paintComponent(Graphics g) {
-//    if (Logger.isTraceEnabled()) {
-//      long started = System.currentTimeMillis();
-//      super.paintComponent(g);
-//      long now = System.currentTimeMillis();
-//      Logger.trace(id + " Duration: " + (now - started) + " ms. Cp: " + xyToString() + " O: " + model.getTileOrienation());
-//    }
-//  }
 }

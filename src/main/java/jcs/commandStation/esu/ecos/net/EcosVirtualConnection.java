@@ -178,7 +178,7 @@ class EcosVirtualConnection implements EcosConnection, VirtualConnection {
       default -> {
         //Interpret the message
         //Logger.trace(msg);
-        //Logger.trace(message.getId() + ": " + message.getCommand());
+        //Logger.trace(message.getIdString() + ": " + message.getCommand());
         String cmd = message.getCommand();
         String id = message.getId();
         int objId = message.getObjectId();
@@ -425,7 +425,7 @@ class EcosVirtualConnection implements EcosConnection, VirtualConnection {
   public void sendEvent(SensorEvent sensorEvent) {
     Logger.trace("Device: " + sensorEvent.getDeviceId() + " contact: " + sensorEvent.getContactId() + " -> " + sensorEvent.isActive());
     FeedbackModuleBean fbm = getFeedbackModule(100 + sensorEvent.getDeviceId());
-    //Logger.trace(fbm.getId()+" nr: "+fbm.getModuleNumber() + " Current ports: " + fbm.portToString());
+    //Logger.trace(fbm.getIdString()+" nr: "+fbm.getModuleNumber() + " Current ports: " + fbm.portToString());
     int port = sensorEvent.getContactId() - 1;
     fbm.setPortValue(port, sensorEvent.isActive());
     //Logger.trace(100 + fbm.getModuleNumber() + " changed ports: " + fbm.portToString());

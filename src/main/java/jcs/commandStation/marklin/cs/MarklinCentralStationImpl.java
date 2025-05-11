@@ -480,7 +480,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 //        sb.setDeviceId(deviceId);
 //        sb.setContactId((i + 1));
 //        sb.setName("B0-S-" + (i + 1));
-//        String id = sb.getId();
+//        String id = sb.getIdString();
 //        sensorBeans.put(id, sb);
 //      }
 //    }
