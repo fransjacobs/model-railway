@@ -16,7 +16,6 @@
 package jcs.persistence;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import jcs.entities.AccessoryBean;
@@ -102,10 +101,10 @@ public class PersistenceServiceTest {
     jcsPropertyList.add(p10);
     jcsPropertyList.add(p11);
 
-    SensorBean s1 = new SensorBean(1, "M1", 0, 1, 65, 0, 0, 0, null);
+    SensorBean s1 = new SensorBean(1, "M1", 65, 1, null, 0, 0, 0);
 
     sensors.add(s1);
-    SensorBean s2 = new SensorBean(2, "M2", 0, 2, 65, 1, 1, 0, null);
+    SensorBean s2 = new SensorBean(2, "M2", 65, 2, null, 1, 1, 0);
     sensors.add(s2);
 
     LocomotiveBean loco2 = new LocomotiveBean(2L, "BR 81 002", 2L, 2, "DB BR 81 008", "mm_prg", 120, 1, 0, 0, false, true, true);
@@ -340,7 +339,6 @@ public class PersistenceServiceTest {
     PersistenceService instance = PersistenceFactory.getService();
     List<SensorBean> expResult = this.sensors;
     List<SensorBean> result = instance.getSensors();
-
     assertEquals(expResult, result);
   }
 
@@ -380,14 +378,16 @@ public class PersistenceServiceTest {
   @Order(8)
   public void testPersistSensorBean() {
     System.out.println("persistSensorBean");
-    SensorBean sensor = new SensorBean(3, "M1P3", 0, 3, 65, 0, 1, 0, null);
+    SensorBean sensor = new SensorBean(3, "M1P3", 0, 3, 65, 0, 1, 0);
+
     PersistenceService instance = PersistenceFactory.getService();
 
     SensorBean result = instance.persist(sensor);
 
     assertEquals(sensor, result);
 
-    SensorBean s3 = instance.getSensor(65, 3);
+    SensorBean s3 = instance.getSensor(0, 3);
+
     assertEquals(sensor, s3);
 
     sensor.setStatus(1);
@@ -405,7 +405,7 @@ public class PersistenceServiceTest {
   @Order(9)
   public void testRemoveSensorBean() {
     System.out.println("removeSensorBean");
-    SensorBean sensor = new SensorBean(4, "M1P4", 1, 4, 65, 0, 1, 0, null);
+    SensorBean sensor = new SensorBean(4, "M1P4", 1, 4, 65, 0, 1, 0);
 
     PersistenceService instance = PersistenceFactory.getService();
 
@@ -413,7 +413,7 @@ public class PersistenceServiceTest {
 
     assertEquals(sensor, result);
 
-    SensorBean s3 = instance.getSensor(65, 4);
+    SensorBean s3 = instance.getSensor(1, 4);
     assertEquals(sensor, s3);
 
     instance.remove(sensor);
@@ -985,6 +985,9 @@ public class PersistenceServiceTest {
     PersistenceService instance = PersistenceFactory.getService();
     BlockBean expResult = this.blocks.get(0);
     BlockBean result = instance.getBlock(id);
+
+    //expected:<BlockBean{id=bk-1, tileId=bk-1, description=Block 1, status=null, arrivalSuffix=null, plusSensorId=null, minSensorId=null, plusSignalId=null, minSignalId=null, locomotiveId=null}> 
+    //but was:<null>
     assertEquals(expResult, result);
   }
 

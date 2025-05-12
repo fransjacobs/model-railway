@@ -35,30 +35,26 @@ public class SensorBean {
   private Integer status;
   private Integer previousStatus;
   private Integer millis;
-  private Date lastUpdated;
+  private Long lastUpdated;
   private Integer nodeId;
 
   public SensorBean() {
-    this(null,null, null, null, null, null, null, null, null);
+    this(null, null, null, null, null, null);
   }
 
-
-  public SensorBean(Integer id, Integer deviceId, Integer contactId, Integer nodeId, Integer status) {
-    this(id, null, deviceId, contactId, nodeId, status, null, null, null);
+  public SensorBean(Integer id, Integer deviceId, Integer contactId, Integer nodeId, Integer status, Integer previousStatus) {
+    this(id, null, deviceId, contactId, nodeId, status, previousStatus, (Integer) null, (Long) null);
   }
 
-//  public SensorBean(Integer deviceId, Integer contactId, Integer status, Integer previousStatus, Integer millis, Date lastUpdated) {
-//    this(null, null, deviceId, contactId, status, previousStatus, millis, lastUpdated);
-//  }
+  public SensorBean(Integer id, String name, Integer deviceId, Integer contactId, Integer nodeId, Integer status, Integer previousStatus, Integer millis) {
+    this(id, name, deviceId, contactId, nodeId, status, previousStatus, millis, (Long) null);
+  }
 
-//  public SensorBean(Integer id, String name, Integer deviceId, Integer contactId, Integer nodeId) {
-//    this(id, name, deviceId, contactId, null,null, null, null, null);
-//  }
-
-//  public SensorBean(String name, Integer deviceId, Integer contactId, Integer status, Integer previousStatus, Integer millis, Date lastUpdated) {
-//    this(null, name, deviceId, contactId, status, previousStatus, millis, lastUpdated);
-//  }
   public SensorBean(Integer id, String name, Integer deviceId, Integer contactId, Integer nodeId, Integer status, Integer previousStatus, Integer millis, Date lastUpdated) {
+    this(id, name, deviceId, contactId, nodeId, status, previousStatus, millis, (lastUpdated != null ? lastUpdated.getTime() : null));
+  }
+
+  public SensorBean(Integer id, String name, Integer deviceId, Integer contactId, Integer nodeId, Integer status, Integer previousStatus, Integer millis, Long lastUpdated) {
     this.id = id;
     this.name = name;
     this.status = status;
@@ -69,18 +65,29 @@ public class SensorBean {
     this.millis = millis;
     this.lastUpdated = lastUpdated;
 
-    if (name == null && deviceId != null && contactId != null) {
+    if (name == null) {
+      this.name = generateName();
+    }
+  }
+
+  private String generateName() {
+    if (deviceId != null && contactId != null && nodeId != null) {
+
+      String dn = deviceId.toString();
+      int dnl = dn.length();
+      for (int x = 0; x < 2 - dnl; x++) {
+        dn = "0" + dn;
+      }
+
       String cn = contactId.toString();
       int cnl = cn.length();
       for (int x = 0; x < 4 - cnl; x++) {
         cn = "0" + cn;
       }
-      String dn = deviceId.toString();
-      int dnl = dn.length();
-      for (int x = 0; x < 2 - cnl; x++) {
-        dn = "0" + dn;
-      }
-      this.name = dn + "-" + cn;
+
+      return dn + "-" + cn;
+    } else {
+      return null;
     }
   }
 
@@ -96,6 +103,9 @@ public class SensorBean {
 
   @Column(name = "name", length = 255, nullable = false)
   public String getName() {
+    if (name == null) {
+      name = generateName();
+    }
     return name;
   }
 
@@ -154,19 +164,17 @@ public class SensorBean {
       status = 0;
     }
     previousStatus = status;
-    Date lastChanged = lastUpdated;
+    Long lastChanged = lastUpdated;
     if (lastChanged == null) {
-      lastChanged = new Date();
+      lastChanged = System.currentTimeMillis();
     }
     if (status == 0) {
       status = 1;
     } else {
       status = 0;
     }
-    lastUpdated = new Date();
-    long prev = lastChanged.getTime();
-    long now = lastUpdated.getTime();
-    Long m = (now - prev) / 10;
+    lastUpdated = System.currentTimeMillis();
+    Long m = (lastUpdated - lastChanged) / 10;
     this.millis = m.intValue();
   }
 
@@ -179,18 +187,33 @@ public class SensorBean {
     this.millis = millis;
   }
 
+  @Transient
+  public Long getLastUpdatedMillis() {
+    return this.lastUpdated;
+  }
+
+  public void setLastUpdatedMillis(Long updatedOn) {
+    this.lastUpdated = updatedOn;
+  }
+
   @Column(name = "last_updated")
   public Date getLastUpdated() {
-    return lastUpdated;
+    if (lastUpdated != null) {
+      return new Date(lastUpdated);
+    } else {
+      return null;
+    }
   }
 
   public void setLastUpdated(Date updatedOn) {
-    Date prevUpdated = lastUpdated;
-    lastUpdated = updatedOn;
+    Long prevUpdated = lastUpdated;
+    if (updatedOn != null) {
+      lastUpdated = updatedOn.getTime();
+    }
 
     if (lastUpdated != null && prevUpdated != null) {
-      Long m = (updatedOn.getTime() - prevUpdated.getTime()) / 10;
-      this.millis = m.intValue();
+      Long m = (lastUpdated - prevUpdated) / 10;
+      millis = m.intValue();
     }
   }
 
@@ -313,7 +336,8 @@ public class SensorBean {
 
   @Override
   public String toString() {
-    return name;
+    //return name;
+    return toLogString();
   }
 
   public String toLogString() {

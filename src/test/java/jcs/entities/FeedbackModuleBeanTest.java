@@ -73,7 +73,7 @@ public class FeedbackModuleBeanTest {
     assertEquals(expResult, result);
   }
 
-  //@Test
+  @Test
   public void testGetAddressOffset() {
     System.out.println("getAddressOffset");
     FeedbackModuleBean instance = new FeedbackModuleBean();
@@ -170,7 +170,7 @@ public class FeedbackModuleBeanTest {
 
     instance.setPortValue(0, true);
     instance.setPortValue(1, true);
- 
+
     int expResult = 3;
     int result = instance.getAccumulatedPortsValue();
     assertEquals(expResult, result);
@@ -190,15 +190,15 @@ public class FeedbackModuleBeanTest {
 
     int[] expResult = new int[16];
     int[] expPrevResult = new int[16];
-    
+
     expResult[5] = 1;
 
     int[] result = instance.getPorts();
-    
+
     assertArrayEquals(expResult, result);
     result = instance.getPrevPorts();
     assertArrayEquals(expPrevResult, result);
- 
+
     instance.setPortValue(5, false);
     expResult[5] = 0;
     expPrevResult[5] = 1;
@@ -218,17 +218,54 @@ public class FeedbackModuleBeanTest {
     instance.setPortCount(16);
     instance.setAddressOffset(1000);
     instance.setIdentifier(65);
-    
+
     SensorBean expResult = new SensorBean();
-   // expResult.setId("65-1001");
+    expResult.setId(1001);
+
     expResult.setContactId(1);
-    expResult.setDeviceId(65);
-    expResult.setName("B1-1001");
-    
+    expResult.setDeviceId(0);
+    expResult.setNodeId(65);
+    expResult.setStatus(0);
+    expResult.setPreviousStatus(0);
+    expResult.setName("00-0001");
+
     SensorBean result = instance.getSensor(port);
     assertEquals(expResult, result);
+
+//expected: <SensorBean{id=1001, name=65-1001, deviceId=0, contactId=1, nodeId=65, status=null, previousStatus=null, millis=null, lastUpdated=null}>
+// but was: <SensorBean{id=1001, name=00-0001, deviceId=0, contactId=1, nodeId=65, status=0, previousStatus=0, millis=null, lastUpdated=null}>
   }
 
+  @Test
+  public void testGetSensorEsu() {
+    System.out.println("getSensorEsu");
+    int port = 5;
+    FeedbackModuleBean instance = new FeedbackModuleBean();
+    instance.setId(101);
+    instance.setModuleNumber(1);
+    instance.setPortCount(16);
+    instance.setAddressOffset(0);
+    instance.setIdentifier(101);
+    instance.setPortValue(5, true);
+
+    SensorBean expResult = new SensorBean();
+    expResult.setId(21);
+
+    expResult.setContactId(5);
+    expResult.setDeviceId(1);
+    expResult.setNodeId(101);
+    expResult.setStatus(1);
+    expResult.setPreviousStatus(0);
+    expResult.setName("01-0005");
+
+    SensorBean result = instance.getSensor(port);
+    assertEquals(expResult, result);
+
+//expected: <SensorBean{id=19, name=01-0005, deviceId=1, contactId=5, nodeId=101, status=1, previousStatus=0, millis=null, lastUpdated=null}> 
+// but was: <SensorBean{id=21, name=01-0005, deviceId=1, contactId=5, nodeId=101, status=0, previousStatus=0, millis=null, lastUpdated=null}>
+  }
+  
+  
   //@Test
   public void testGetChangedSensors() {
     System.out.println("getChangedSensors");

@@ -17,7 +17,6 @@ package jcs.commandStation.marklin.cs.can.parser;
 
 import java.util.Date;
 import jcs.commandStation.marklin.cs.can.CanMessage;
-import jcs.commandStation.marklin.cs.can.CanMessage;
 import jcs.entities.SensorBean;
 import jcs.util.ByteUtil;
 import org.tinylog.Logger;
@@ -39,20 +38,20 @@ public class FeedbackEventMessage {
     if (resp.isResponseMessage() && CanMessage.S88_EVENT_RESPONSE == resp.getCommand()) {
       byte[] data = resp.getData();
 
-      Integer deviceId = ByteUtil.toInt(new byte[]{data[0], data[1]});
+      Integer identifier = ByteUtil.toInt(new byte[]{data[0], data[1]});
       Integer contactId = ByteUtil.toInt(new byte[]{data[2], data[3]});
 
       int previousStatus = data[4];
       int status = data[5];
 
       Integer millis = ByteUtil.toInt(new byte[]{data[6], data[7]}) * 10;
-      //TODO!!!!!!
-      SensorBean sensorBean = null;//new SensorBean(deviceId, contactId, status, previousStatus, millis, eventDate);
+
+      SensorBean sensorBean = new SensorBean(contactId, null, contactId, contactId, identifier, status, previousStatus, millis, System.currentTimeMillis());
       return sensorBean;
     } else {
       Logger.warn("Can't parse message, not a Sensor Response! " + resp);
       return null;
     }
   }
-   
+
 }

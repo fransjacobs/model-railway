@@ -158,47 +158,59 @@ public class FeedbackModuleBean {
 //        return contactId + port;
   //    }  
   public SensorBean getSensor(int port) {
-    int node = identifier;
-    int pcnt = portCount;
-    int modnr = this.moduleNumber;
+    //Marklin addressOffset is 0, 1000, 2000 or 3000
+    //Sensor address is addressOffset + moduleNumber * portCount + port
+    //ESU 1st feedbackmodule start a 100 this has portCount sensors. 100 has sensors 0 - 15.
+    // 2nd Module is 101 which has sensors 16 - 31 - the node can be setto d the module id address ofset is 0
+    //Sensor address is addressOffset(0) + moduleNumber * portCount + port
+    
+    int sid = addressOffset + moduleNumber * portCount + port;
+    int status = ports[port];
+    int prevStatus = prevPorts[port];
 
-    int sensorId = addressOffset + moduleNumber + port;
-    int contactId = port;
-
-    //contactid moet doornummer van device is de node of nodg een veld in de sensor table toeveoegen
-    SensorBean sb = new SensorBean(sensorId, moduleNumber, contactId, identifier, ports[port]);
-    //id of a sensor is deviceid + contactid 
-    //device is moduelnr
-    //contact --
-    //dit lukt bij esu want maar 1 bus..
-    //niet bi marklin want 4 bussen of zeggen bus 1 device 0 en conatct 1000
-    //                                                     1    conatct 1016 etc
-    // bus 0                                               0 en conatct 0 - 15
-    // bsu 2                                               0 ense 2000 ---
-    //dus voor id de address offset er bij tellen dus
-    //modulenr + contactnr
-    //this.moduleNumber;
-
-    //Marklin:
-    //node in case of Link S88 else 0 when cs self
-    //when 0 - 15 then Link s88 self so address offset should be 0 module id 0
-    //when 1000 (bus 1) address offset 1000 module nr 0 - 31 sensor is module nr * 16 + port + offset
-    //sensor is is offset + module nr * 16 + port
-    // module number * 16 + port + address offset
-    // address depends on the BUS as ther are 4 busses with differen address offsets        
-    //contact id of the module (0- 15) has to be added to the (bus) adressoffset to get the sensor address so bus 1 is 1000
-    //ESU 
-    // node is 0
-    //id is the ojbetc id isstart with 100
-    //module number is id - offset (100) set by the esu
-    // sensor id offset + module nr + module nr * 16 + port 
-    //contact id is the module id * 16 +port ie 0 1st module, 1 2nd mod 16+0 is contact 1 on 2ndmod
-    // 
-    //second device is 101 so these then id's 16 = 31 addres offset is 100
-    // is module number + 16 + address offset
+    SensorBean sb = new SensorBean(sid, moduleNumber, port, identifier, status, prevStatus);
     return sb;
   }
 
+//  here are [FeedbackModuleBean{id=100, moduleNumber=0, portCount=16, addressOffset=100, identifier=0}, FeedbackModuleBean{id=101, moduleNumber=1, portCount=16, addressOffset=100, identifier=0}, FeedbackModuleBean{id=102, moduleNumber=2, portCount=16, addressOffset=100, identifier=0}] Feedback Modules
+//TRACE	2025-05-12 21:05:57.782 [main] EsuEcosCommandStationImpl.main(): Module id: 100 nr: 0 ports: 16
+//TRACE	2025-05-12 21:05:57.784 [main] EsuEcosCommandStationImpl.main(): Module id: 100 S 1 id:100 cid: 0 did: 0
+//TRACE	2025-05-12 21:05:57.785 [main] EsuEcosCommandStationImpl.main(): Module id: 100 S 15 id:115 cid: 15 did: 0
+//TRACE	2025-05-12 21:05:57.785 [main] EsuEcosCommandStationImpl.main(): Module id: 101 nr: 1 ports: 16
+//TRACE	2025-05-12 21:05:57.785 [main] EsuEcosCommandStationImpl.main(): Module id: 101 S 1 id:116 cid: 0 did: 1
+//TRACE	2025-05-12 21:05:57.785 [main] EsuEcosCommandStationImpl.main(): Module id: 101 S 15 id:131 cid: 15 did: 1
+//TRACE	2025-05-12 21:05:57.785 [main] EsuEcosCommandStationImpl.main(): Module id: 102 nr: 2 ports: 16
+//TRACE	2025-05-12 21:05:57.785 [main] EsuEcosCommandStationImpl.main(): Module id: 102 S 1 id:132 cid: 0 did: 2
+//TRACE	2025-05-12 21:05:57.785 [main] EsuEcosCommandStationImpl.main(): Module id: 102 S 15 id:147 cid: 15 did: 2
+//  
+  
+  
+  
+//TRACE	2025-05-12 21:08:01.425 [main] MarklinCentralStationImpl.getFeedbackModules(): nodeId: 65, bus1Len: 2, bus2Len: 2, bus3Len: 1
+//TRACE	2025-05-12 21:08:01.429 [main] MarklinCentralStationImpl.main(): There are [FeedbackModuleBean{id=0, moduleNumber=0, portCount=16, addressOffset=0, identifier=65}, FeedbackModuleBean{id=1000, moduleNumber=0, portCount=16, addressOffset=1000, identifier=65}, FeedbackModuleBean{id=1001, moduleNumber=1, portCount=16, addressOffset=1000, identifier=65}, FeedbackModuleBean{id=2000, moduleNumber=0, portCount=16, addressOffset=2000, identifier=65}, FeedbackModuleBean{id=2001, moduleNumber=1, portCount=16, addressOffset=2000, identifier=65}, FeedbackModuleBean{id=3000, moduleNumber=0, portCount=16, addressOffset=3000, identifier=65}] Feedback Modules
+//TRACE	2025-05-12 21:08:01.429 [main] MarklinCentralStationImpl.main(): Module id: 0 nr: 0 ports: 16
+//TRACE	2025-05-12 21:08:01.432 [main] MarklinCentralStationImpl.main(): Module id: 0 S 1 id:0 cid: 0 did: 0
+//TRACE	2025-05-12 21:08:01.432 [main] MarklinCentralStationImpl.main(): Module id: 0 S 15 id:15 cid: 15 did: 0
+//TRACE	2025-05-12 21:08:01.432 [main] MarklinCentralStationImpl.main(): Module id: 1000 nr: 0 ports: 16
+//TRACE	2025-05-12 21:08:01.432 [main] MarklinCentralStationImpl.main(): Module id: 1000 S 1 id:1000 cid: 0 did: 0
+//TRACE	2025-05-12 21:08:01.432 [main] MarklinCentralStationImpl.main(): Module id: 1000 S 15 id:1015 cid: 15 did: 0
+//TRACE	2025-05-12 21:08:01.432 [main] MarklinCentralStationImpl.main(): Module id: 1001 nr: 1 ports: 16
+//TRACE	2025-05-12 21:08:01.432 [main] MarklinCentralStationImpl.main(): Module id: 1001 S 1 id:1016 cid: 0 did: 1
+//TRACE	2025-05-12 21:08:01.432 [main] MarklinCentralStationImpl.main(): Module id: 1001 S 15 id:1031 cid: 15 did: 1
+//TRACE	2025-05-12 21:08:01.432 [main] MarklinCentralStationImpl.main(): Module id: 2000 nr: 0 ports: 16
+//TRACE	2025-05-12 21:08:01.432 [main] MarklinCentralStationImpl.main(): Module id: 2000 S 1 id:2000 cid: 0 did: 0
+//TRACE	2025-05-12 21:08:01.432 [main] MarklinCentralStationImpl.main(): Module id: 2000 S 15 id:2015 cid: 15 did: 0
+//TRACE	2025-05-12 21:08:01.433 [main] MarklinCentralStationImpl.main(): Module id: 2001 nr: 1 ports: 16
+//TRACE	2025-05-12 21:08:01.433 [main] MarklinCentralStationImpl.main(): Module id: 2001 S 1 id:2016 cid: 0 did: 1
+//TRACE	2025-05-12 21:08:01.433 [main] MarklinCentralStationImpl.main(): Module id: 2001 S 15 id:2031 cid: 15 did: 1
+//TRACE	2025-05-12 21:08:01.433 [main] MarklinCentralStationImpl.main(): Module id: 3000 nr: 0 ports: 16
+//TRACE	2025-05-12 21:08:01.433 [main] MarklinCentralStationImpl.main(): Module id: 3000 S 1 id:3000 cid: 0 did: 0
+//TRACE	2025-05-12 21:08:01.433 [main] MarklinCentralStationImpl.main(): Module id: 3000 S 15 id:3015 cid: 15 did: 0
+
+  
+  
+  
+  
   public List<SensorEvent> getChangedSensors() {
     List<SensorEvent> changedSensors = new ArrayList<>(ports.length);
 

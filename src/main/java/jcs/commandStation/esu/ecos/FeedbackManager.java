@@ -149,6 +149,6 @@ class FeedbackManager {
   }
 
   public FeedbackModuleBean getFeedbackModule(int id) {
-    return this.modules.get(id);
+    return modules.get(id);
   }
 }
