@@ -120,6 +120,14 @@ public interface PersistenceService {
   SensorBean persist(SensorBean sensor);
 
   /**
+   * Persists a list of SensorBeans
+   *
+   * @param sensors a list of SensorBeans top persist
+   * @return the persisted list
+   */
+  List<SensorBean> persistSensorBeans(List<SensorBean> sensors);
+
+  /**
    * Removes a SensorBean.
    *
    * @param sensor The SensorBean to remove.
@@ -127,17 +135,11 @@ public interface PersistenceService {
   void remove(SensorBean sensor);
 
   /**
-   * Generates a list of SensorBeans based on bus lengths.
+   * Removes all SensorBean from de persistent store.<br>
    *
-   * @param deviceId The device ID.
-   * @param bus0len Length of bus 0.
-   * @param bus1len Length of bus 1.
-   * @param bus2len Length of bus 2.
-   * @param bus3len Length of bus 3.
-   * @return A List of generated SensorBeans.
+   * Also references to BlockBeans and TileBeans are removed
    */
-  @Deprecated
-  List<SensorBean> generateSensorBeans(Integer deviceId, Integer bus0len, Integer bus1len, Integer bus2len, Integer bus3len);
+  void removeAllSensors();
 
   // Locomotive
   /**
@@ -370,7 +372,7 @@ public interface PersistenceService {
    *
    * @param tiles The list of TileBeans to persist.
    */
-  void persist(List<TileBean> tiles);
+  List<TileBean> persist(List<TileBean> tiles);
 
   /**
    * Removes a TileBean.

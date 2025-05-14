@@ -115,7 +115,7 @@ class StartState extends DispatcherState implements SensorEventListener {
     if (enterSensorId.equals(sensorEvent.getSensorId())) {
       if (sensorEvent.isActive()) {
         canAdvanceToNextState = true;
-        Logger.trace("Enter Event from Sensor " + sensorEvent.getIdString());
+        Logger.trace("Enter Event from Sensor " + sensorEvent.getSensorId());
         synchronized (this) {
           this.notifyAll();
         }

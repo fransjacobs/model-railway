@@ -42,22 +42,10 @@ public class SensorEvent implements JCSActionEvent {
     return sensorBean.getId();
   }
 
+  @Deprecated
   @Override
   public String getIdString() {
-//    if (sensorBean.getIdString() != null) {
     return sensorBean.getId().toString();
-//    } else {
-//      //TODO: Number format? check with both CS 3 and HSI 88 life sensors
-//      Integer deviceId = sensorBean.getDeviceId();
-//      Integer contactId = sensorBean.getContactId();
-//      String cn = ((contactId) > 9 ? "" : "0");
-//      if (cn.length() == 2) {
-//        cn = "00" + cn;
-//      } else if (cn.length() == 3) {
-//        cn = "0" + cn;
-//      }
-//      return deviceId + "-" + cn;
-//    }
   }
 
   public Integer getDeviceId() {

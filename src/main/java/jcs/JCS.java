@@ -37,7 +37,6 @@ import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import jcs.commandStation.JCSCommandStation;
-import jcs.commandStation.JCSCommandStationImpl;
 import jcs.commandStation.events.PowerEvent;
 import jcs.commandStation.events.PowerEventListener;
 import jcs.persistence.PersistenceFactory;
@@ -97,7 +96,7 @@ public class JCS extends Thread {
   public static JCSCommandStation getJcsCommandStation() {
     if (jcsCommandStation == null) {
       if (getPersistenceService() != null) {
-        jcsCommandStation = new JCSCommandStationImpl();
+        jcsCommandStation = new JCSCommandStation();
       } else {
         Logger.error("Can't obtain the persistent store!");
       }

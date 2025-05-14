@@ -1370,13 +1370,15 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
   }//GEN-LAST:event_virtualCBActionPerformed
 
   private void recreateSensors() {
-    int deviceId = Integer.parseInt(this.selectedCommandStation.getFeedbackModuleIdentifier());
-    Integer bus0 = this.selectedCommandStation.getFeedbackBus0ModuleCount();
-    Integer bus1 = this.selectedCommandStation.getFeedbackBus1ModuleCount();
-    Integer bus2 = this.selectedCommandStation.getFeedbackBus2ModuleCount();
-    Integer bus3 = this.selectedCommandStation.getFeedbackBus3ModuleCount();
 
-    PersistenceFactory.getService().generateSensorBeans(deviceId, bus0, bus1, bus2, bus3);
+    if (selectedCommandStation.isFeedbackSupport()) {
+      List<FeedbackModuleBean> feedbackModules = ((FeedbackController) selectedCommandStation).getFeedbackModules();
+      PersistenceFactory.getService().removeAllSensors();
+
+      for (FeedbackModuleBean fm : feedbackModules) {
+        PersistenceFactory.getService().persistSensorBeans(fm.getSensors());
+      }
+    }
   }
 
   @Override

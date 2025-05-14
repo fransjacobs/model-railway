@@ -442,7 +442,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 
   @Override
   public List<FeedbackModuleBean> getFeedbackModules() {
-    //Feedbackmodules can be queried from the Link S88 if avalable.
+    //Feedbackmodules can be queried from the Link S88 if available.
     //In case of a CS 3 Plus or CS 2 there should be a node "0" which could have max 32 S88 modules.
     //TODO: Test with CS-3Plus and CS2.
     //Link S88
@@ -468,32 +468,23 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       //Bus 1 offset 1000, Bus 2 offset 2000 and Bus 3 offset 3000
       FeedbackModuleBean l = new FeedbackModuleBean();
       l.setId(0);
+      
       l.setAddressOffset(0);
       l.setModuleNumber(0);
       l.setPortCount(16);
       l.setIdentifier(nodeId);
+      l.setBusNumber(0);
       feedbackModules.add(l);
             
-//       if (bus0len != null) {
-//      for (int i = 0; i < (bus0len * 16); i++) {
-//        SensorBean sb = new SensorBean();
-//        sb.setDeviceId(deviceId);
-//        sb.setContactId((i + 1));
-//        sb.setName("B0-S-" + (i + 1));
-//        String id = sb.getIdString();
-//        sensorBeans.put(id, sb);
-//      }
-//    }
-      
-      
-
       for (int i = 0; i < bus1Len; i++) {
         FeedbackModuleBean b1 = new FeedbackModuleBean();
+        //Use the offset plus module nr as the id
         b1.setId(1000+i);
         b1.setAddressOffset(1000);
         b1.setModuleNumber(i);
         b1.setPortCount(16);
         b1.setIdentifier(nodeId);
+        b1.setBusNumber(1);
         feedbackModules.add(b1);
       }
       for (int i = 0; i < bus2Len; i++) {
@@ -503,6 +494,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
         b2.setModuleNumber(i);
         b2.setPortCount(16);
         b2.setIdentifier(nodeId);
+        b2.setBusNumber(2);
         feedbackModules.add(b2);
       }
       for (int i = 0; i < bus3Len; i++) {
@@ -512,19 +504,14 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
         b3.setModuleNumber(i);
         b3.setPortCount(16);
         b3.setIdentifier(nodeId);
+        b3.setBusNumber(3);
         feedbackModules.add(b3);
       }
-
     }
 
     return feedbackModules;
   }
 
-//  @Override
-//  public List<FeedbackModuleBean> getFeedbackModules() {
-//    List<FeedbackModuleBean> feedbackModules = new ArrayList<>(this.feedbackManager.getModules().values());
-//    return feedbackModules;
-//  }
   /**
    * Query the System Status
    *
@@ -1207,9 +1194,9 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
         List<FeedbackModuleBean> feedbackModules = cs.getFeedbackModules();
         Logger.trace("There are "+feedbackModules+" Feedback Modules");
         for(FeedbackModuleBean fm : feedbackModules) {
-          Logger.trace("Module id: "+fm.getId()+" nr: "+fm.getModuleNumber()+" ports: "+fm.getPortCount());
-          Logger.trace("Module id: "+fm.getId()+" S 1 id:"+fm.getSensor(0).getId()+" cid: "+fm.getSensor(0).getContactId()+" did: "+fm.getSensor(0).getDeviceId());
-          Logger.trace("Module id: "+fm.getId()+" S 15 id:"+fm.getSensor(15).getId()+" cid: "+fm.getSensor(15).getContactId()+" did: "+fm.getSensor(15).getDeviceId());
+          Logger.trace("Module id: "+fm.getId()+" Module nr: "+fm.getModuleNumber()+" ports: "+fm.getPortCount()+" NodeId: "+fm.getIdentifier()+" BusNr: "+fm.getBusNumber());
+          Logger.trace("FBModule id: "+fm.getId()+" S 1 id:"+fm.getSensor(0).getId()+" contactId: "+fm.getSensor(0).getContactId()+" ModuleNr: "+fm.getSensor(0).getDeviceId()+" Name "+fm.getSensor(0).getName());
+          Logger.trace("FBModule id: "+fm.getId()+" S 15 id:"+fm.getSensor(15).getId()+" contactId: "+fm.getSensor(15).getContactId()+" ModuleNr: "+fm.getSensor(15).getDeviceId()+" Name "+fm.getSensor(15).getName());
         }
 
       //cs.getLocomotivesViaCAN();

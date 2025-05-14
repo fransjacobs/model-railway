@@ -105,7 +105,7 @@ class EnterBlockState extends DispatcherState implements SensorEventListener {
     if (this.inSensorId.equals(sensorEvent.getSensorId())) {
       if (sensorEvent.isActive()) {
         this.canAdvanceToNextState = true;
-        Logger.trace("In Event from Sensor " + sensorEvent.getIdString());
+        Logger.trace("In Event from Sensor " + sensorEvent.getSensorId());
         synchronized (this) {
           this.notifyAll();
         }

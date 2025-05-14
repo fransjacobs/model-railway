@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import javax.imageio.ImageIO;
 import jcs.entities.AccessoryBean;
@@ -57,11 +56,15 @@ public class H2PersistenceService implements PersistenceService {
     imageCache = new HashMap<>();
     functionImageCache = new HashMap<>();
     changeSupport = new PropertyChangeSupport(this);
-    setJCSPropertiesAsSystemProperties();
+    postInit();
   }
 
   private void initConnect() {
     connect();
+  }
+
+  private void postInit() {
+    setJCSPropertiesAsSystemProperties();
   }
 
   protected void connect() {
@@ -160,6 +163,12 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
+  public List<SensorBean> persistSensorBeans(List<SensorBean> sensors) {
+    sensors.forEach(s -> persist(s));
+    return sensors;
+  }
+
+  @Override
   public void remove(SensorBean sensor) {
     // First ensure the linked tile records are decoupled
     database.sql("update tiles set sensor_id = null where sensor_id = ?", sensor.getId()).execute();
@@ -173,66 +182,15 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  @Deprecated
-  public List<SensorBean> generateSensorBeans(Integer deviceId, Integer bus0len, Integer bus1len, Integer bus2len, Integer bus3len) {
-    Map<Integer, SensorBean> sensorBeans = new HashMap<>();
+  public void removeAllSensors() {
+    // First ensure the linked tile records are decoupled
+    database.sql("update tiles set sensor_id = null").execute();
+    // Also update the blocks
+    database.sql("update blocks set min_sensor_id = null").execute();
+    database.sql("update blocks set plus_sensor_id = null").execute();
 
-    if (bus0len != null) {
-      for (int i = 0; i < (bus0len * 16); i++) {
-        SensorBean sb = new SensorBean();
-        sb.setDeviceId(deviceId);
-        sb.setContactId((i + 1));
-        sb.setName("B0-S-" + (i + 1));
-        Integer id = sb.getId();
-        sensorBeans.put(id, sb);
-      }
-    }
-
-    if (bus1len != null) {
-      for (int i = 0; i < (bus1len * 16); i++) {
-        SensorBean sb = new SensorBean();
-        sb.setDeviceId(deviceId);
-        sb.setContactId((i + 1001));
-        sb.setName("B1-S-" + (i + 1001));
-        Integer id = sb.getId();
-        sensorBeans.put(id, sb);
-      }
-    }
-
-    if (bus2len != null) {
-      for (int i = 0; i < (bus2len * 16); i++) {
-        SensorBean sb = new SensorBean();
-        sb.setDeviceId(deviceId);
-        sb.setContactId((i + 2001));
-        sb.setName("B2-S-" + (i + 2001));
-        Integer id = sb.getId();
-        sensorBeans.put(id, sb);
-      }
-    }
-
-    if (bus3len != null) {
-      for (int i = 0; i < (bus3len * 16); i++) {
-        SensorBean sb = new SensorBean();
-        sb.setContactId((i + 3001));
-        sb.setName("B3-S-" + (i + 3001));
-        Integer id = sb.getId();
-        sensorBeans.put(id, sb);
-      }
-    }
-
-    List<SensorBean> existing = getSensors();
-    for (SensorBean sb : existing) {
-      if (!sensorBeans.containsKey(sb.getId())) {
-        Logger.trace("Removing " + sb);
-        remove(sb);
-      }
-    }
-
-    for (SensorBean sb : sensorBeans.values()) {
-      persist(sb);
-    }
-
-    return getSensors();
+    int rows = database.sql("delete from sensors").execute().getRowsAffected();
+    Logger.trace("All " + rows + " Sensors deleted");
   }
 
   @Override
@@ -672,8 +630,8 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public synchronized void persist(List<TileBean> tiles) {
-    List<TileBean> dbTiles = this.getTileBeans();
+  public synchronized List<TileBean> persist(List<TileBean> tiles) {
+    List<TileBean> dbTiles = getTileBeans();
     Set<String> newTileIds = new HashSet<>();
     for (TileBean tb : tiles) {
       newTileIds.add(tb.getId());
@@ -692,12 +650,13 @@ public class H2PersistenceService implements PersistenceService {
     }
 
     for (TileBean tb : tilesToRemove) {
-      this.remove(tb);
+      remove(tb);
     }
 
     for (TileBean tb : tiles) {
       persist(tb);
     }
+    return tiles;
   }
 
   private RouteElementBean addRelatedObjects(RouteElementBean routeElementBean) {

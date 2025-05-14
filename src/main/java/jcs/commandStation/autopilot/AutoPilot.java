@@ -457,7 +457,7 @@ public final class AutoPilot {
   }
 
   private static void handleGhost(SensorEvent event) {
-    Logger.trace("Check for possible Ghost! @ Sensor " + event.getIdString());
+    Logger.trace("Check for possible Ghost! @ Sensor " + event.getSensorId());
     List<BlockBean> blocks = PersistenceFactory.getService().getBlocks();
     Integer sensorId = event.getSensorId();
     for (BlockBean block : blocks) {
@@ -487,13 +487,13 @@ public final class AutoPilot {
 
   static void handleSensorEvent(SensorEvent event) {
     if (event.isChanged()) {
-      SensorEventHandler sh = sensorHandlers.get(event.getIdString());
-      Boolean registered = sh != null;  //sensorHandlers.containsKey(event.getIdString());
-      Logger.trace((registered ? "Registered " : "") + event.getIdString() + " has changed " + event.isChanged());
+      SensorEventHandler sh = sensorHandlers.get(event.getSensorId());
+      Boolean registered = sh != null;
+      
+      Logger.trace((registered ? "Registered " : "") + event.getSensorId() + " has changed " + event.isChanged());
 
       if (sh != null) {
         //there is a handler registered for this id, pass the event through
-        //SensorEventHandler sh = sensorHandlers.get(event.getIdString());
         sh.handleEvent(event);
       } else {
         //sensor is not registered and thus not expected!
@@ -680,7 +680,7 @@ public final class AutoPilot {
 
     @Override
     public void onSensorChange(SensorEvent event) {
-      if (sensorId.equals(event.getIdString())) {
+      if (sensorId.equals(event.getSensorId())) {
         AutoPilot.handleSensorEvent(event);
       }
     }

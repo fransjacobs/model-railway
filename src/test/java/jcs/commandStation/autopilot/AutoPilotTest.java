@@ -595,7 +595,7 @@ public class AutoPilotTest {
 
     @Override
     public void handleEvent(SensorEvent event) {
-      if (this.sensorId.equals(event.getIdString())) {
+      if (this.sensorId.equals(event.getSensorId())) {
         this.autoPilotTest.sensorHandlerEvents.add(event);
       }
     }

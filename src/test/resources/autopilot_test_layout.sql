@@ -48,64 +48,64 @@ commit;
 
 
 INSERT INTO sensors (id,name,device_id,contact_id,status,previous_status,millis,last_updated)
-VALUES ('0-0002','B0-S-2',0,2,0,1,NULL,NULL),
-       ('0-0013','B0-S-13',0,13,0,1,NULL,NULL),
-       ('0-0001','B0-S-1',0,1,0,1,0,NULL),
-       ('0-0012','B0-S-12',0,12,0,1,NULL,NULL),
-       ('0-0004','B0-S-4',0,4,0,1,NULL,NULL),
-       ('0-0015','B0-S-15',0,15,0,NULL,NULL,NULL),
-       ('0-0003','B0-S-3',0,3,0,1,0,NULL),
-       ('0-0014','B0-S-14',0,14,0,NULL,NULL,NULL),
-       ('0-0006','B0-S-6',0,6,0,NULL,NULL,NULL),
-       ('0-0005','B0-S-5',0,5,0,NULL,NULL,NULL);
+VALUES (2,'M00-C02',0,2,0,1,NULL,NULL),
+       (13,'M00-C13',0,13,0,1,NULL,NULL),
+       (1,'M00-C01',0,1,0,1,0,NULL),
+       (12,'M00-C12',0,12,0,1,NULL,NULL),
+       (4,'M00-C04',0,4,0,1,NULL,NULL),
+       (15,'M00-C15',0,15,0,NULL,NULL,NULL),
+       (3,'M00-C03',0,3,0,1,0,NULL),
+       (14,'M00-C14',0,14,0,NULL,NULL,NULL),
+       (6,'M00-C06',0,6,0,NULL,NULL,NULL),
+       (5,'M00-C05',0,5,0,NULL,NULL,NULL);
 INSERT INTO sensors (id,name,device_id,contact_id,status,previous_status,millis,last_updated)
-VALUES ('0-0016','B0-S-16',0,16,0,NULL,NULL,NULL),
-       ('0-0008','B0-S-8',0,8,0,NULL,NULL,NULL),
-       ('0-0007','B0-S-7',0,7,0,NULL,NULL,NULL),
-       ('0-0009','B0-S-9',0,9,0,NULL,NULL,NULL),
-       ('0-0011','B0-S-11',0,11,0,1,1,null),
-       ('0-0010','B0-S-10',0,10,0,1,1,null);
+VALUES (16,'M00-C16',0,16,0,NULL,NULL,NULL),
+       (8,'M00-C08',0,8,0,NULL,NULL,NULL),
+       (7,'M00-C07',0,7,0,NULL,NULL,NULL),
+       (9,'M00-C09',0,9,0,NULL,NULL,NULL),
+       (11,'M00-C11',0,11,0,1,1,null),
+       (10,'M00-C10',0,10,0,1,1,null);
 commit;
 
 INSERT INTO tiles (id,tile_type,orientation,direction,x,y,signal_type,accessory_id,sensor_id) VALUES
-	 ('se-1','Sensor','East','Center',260,60,NULL,NULL,'0-0001'),
+	 ('se-1','Sensor','East','Center',260,60,NULL,NULL,1),
 	 ('ct-2','Curved','South','Center',500,60,NULL,NULL,NULL),
 	 ('sw-1','Switch','West','Left',580,100,NULL,'001',NULL),
 	 ('bk-2','Block','East','Center',340,100,NULL,NULL,NULL),
-	 ('se-2','Sensor','East','Center',420,60,NULL,NULL,'0-0002'),
+	 ('se-2','Sensor','East','Center',420,60,NULL,NULL,2),
 	 ('st-2','Straight','East','Center',460,60,NULL,NULL,NULL),
 	 ('sw-2','Switch','East','Right',500,100,NULL,'002',NULL),
 	 ('st-5','Straight','West','Center',220,100,NULL,NULL,NULL),
 	 ('st-4','Straight','East','Center',540,100,NULL,NULL,NULL),
-	 ('se-4','Sensor','East','Center',420,100,NULL,NULL,'0-0004');
+	 ('se-4','Sensor','East','Center',420,100,NULL,NULL,4);
 INSERT INTO tiles (id,tile_type,orientation,direction,x,y,signal_type,accessory_id,sensor_id) VALUES
 	 ('st-1','Straight','East','Center',220,60,NULL,NULL,NULL),
 	 ('bk-3','Block','East','Center',740,60,NULL,NULL,NULL),
-	 ('se-3','Sensor','East','Center',260,100,NULL,NULL,'0-0003'),
+	 ('se-3','Sensor','East','Center',260,100,NULL,NULL,3),
 	 ('bk-1','Block','West','Center',340,60,NULL,NULL,NULL),
 	 ('ct-1','Curved','East','Center',580,60,NULL,NULL,NULL),
 	 ('st-3','Straight','East','Center',460,100,NULL,NULL,NULL),
 	 ('st-11','Straight','West','Center',860,60,NULL,NULL,NULL),
 	 ('st-13','Straight','West','Center',620,60,NULL,NULL,NULL),
 	 ('st-14','Straight','West','Center',860,100,NULL,NULL,NULL),
-	 ('se-5','Sensor','West','Center',660,60,NULL,NULL,'0-0011');
+	 ('se-5','Sensor','West','Center',660,60,NULL,NULL,11);
 INSERT INTO tiles (id,tile_type,orientation,direction,x,y,signal_type,accessory_id,sensor_id) VALUES
-	 ('se-6','Sensor','West','Center',820,60,NULL,NULL,'0-0010'),
+	 ('se-6','Sensor','West','Center',820,60,NULL,NULL,10),
 	 ('et-5','End','West','Center',180,60,NULL,NULL,NULL),
-	 ('se-9','Sensor','West','Center',820,100,NULL,NULL,'0-0012'),
+	 ('se-9','Sensor','West','Center',820,100,NULL,NULL,12),
 	 ('et-7','End','East','Center',900,100,NULL,NULL,NULL),
 	 ('et-6','End','East','Center',900,60,NULL,NULL,NULL),
 	 ('et-8','End','West','Center',180,100,NULL,NULL,NULL),
-	 ('se-10','Sensor','West','Center',660,100,NULL,NULL,'0-0013'),
+	 ('se-10','Sensor','West','Center',660,100,NULL,NULL,13),
 	 ('st-17','Straight','West','Center',620,100,NULL,NULL,NULL),
 	 ('bk-4','Block','West','Center',740,100,NULL,NULL,NULL);
 commit;
 
 INSERT INTO blocks (id,tile_id,description,plus_sensor_id,min_sensor_id,plus_signal_id,min_signal_id,locomotive_id,reverse_arrival_side,status,incoming_suffix, always_stop) VALUES
-	 ('bk-1','bk-1','Blok 1','0-0001','0-0002',NULL,NULL,NULL,false,'Free',NULL,true),
-	 ('bk-2','bk-2','Blok 2','0-0004','0-0003',NULL,NULL,NULL,false,'Free',null,true),
-	 ('bk-3','bk-3','Blok 3','0-0010','0-0011',NULL,NULL,NULL,false,'Free',null,true),
-	 ('bk-4','bk-4','Blok 4','0-0013','0-0012',NULL,NULL,NULL,false,'Free',NULL,true);
+	 ('bk-1','bk-1','Blok 1',1,2,NULL,NULL,NULL,false,'Free',NULL,true),
+	 ('bk-2','bk-2','Blok 2',4,3,NULL,NULL,NULL,false,'Free',null,true),
+	 ('bk-3','bk-3','Blok 3',10,11,NULL,NULL,NULL,false,'Free',null,true),
+	 ('bk-4','bk-4','Blok 4',13,12,NULL,NULL,NULL,false,'Free',NULL,true);
 commit;
 
 

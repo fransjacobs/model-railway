@@ -179,7 +179,7 @@ public class StateMachineStepByStepTest {
     }
   }
 
-  //@Test
+  @Test
   @Order(1)
   public void testBk1ToBk4() {
     //StateMachine functionality test, runs in 1 single thread.
@@ -278,7 +278,7 @@ public class StateMachineStepByStepTest {
 
     //Now lets Toggle the enter sensor
     Integer enterSensorId = dispatcher.getEnterSensorId();
-    assertEquals("0-0013", enterSensorId);
+    assertEquals(13, enterSensorId);
     //Check if the enterSensor is registered a a "knownEvent" else we get a Ghost!
     assertTrue(AutoPilot.isSensorHandlerRegistered(enterSensorId));
 
@@ -312,7 +312,7 @@ public class StateMachineStepByStepTest {
 
     //Now lets Toggle the in sensor
     Integer inSensorId = dispatcher.getInSensorId();
-    assertEquals("0-0012", inSensorId);
+    assertEquals(12, inSensorId);
     //Check if the inSensor is registered a a "knownEvent" else we get a Ghost!
     assertTrue(AutoPilot.isSensorHandlerRegistered(inSensorId));
 
@@ -362,7 +362,7 @@ public class StateMachineStepByStepTest {
     assertEquals("IdleState", stateMachine.getDispatcherStateName());
   }
 
-  //@Test
+  @Test
   @Order(2)
   public void testFromBk1ToBk4andViceVersa() {
     Logger.info("fromBk1ToBk4andViceVersa");
@@ -453,10 +453,10 @@ public class StateMachineStepByStepTest {
     assertNotNull(enterSensorId);
     assertNotNull(inSensorId);
 
-    assertEquals("0-0001", occupancySensorId);
-    assertEquals("0-0002", exitSensorId);
-    assertEquals("0-0013", enterSensorId);
-    assertEquals("0-0012", inSensorId);
+    assertEquals(1, occupancySensorId);
+    assertEquals(2, exitSensorId);
+    assertEquals(13, enterSensorId);
+    assertEquals(12, inSensorId);
 
     //Execute the StartState
     stateMachine.handleState();
@@ -476,7 +476,7 @@ public class StateMachineStepByStepTest {
     assertEquals("StartState", stateMachine.getDispatcherStateName());
 
     //Now lets Toggle the enter sensor
-    assertEquals("0-0013", enterSensorId);
+    assertEquals(13, enterSensorId);
     //Check if the enterSensor is registered a a "knownEvent" else we get a Ghost!
     assertTrue(AutoPilot.isSensorHandlerRegistered(enterSensorId));
 
@@ -509,7 +509,7 @@ public class StateMachineStepByStepTest {
     assertEquals("EnterBlockState", stateMachine.getDispatcherStateName());
 
     //Now lets Toggle the in sensor
-    assertEquals("0-0012", inSensorId);
+    assertEquals(12, inSensorId);
     //Check if the inSensor is registered a a "knownEvent" else we get a Ghost!
     assertTrue(AutoPilot.isSensorHandlerRegistered(inSensorId));
 
@@ -599,10 +599,10 @@ public class StateMachineStepByStepTest {
     assertNotNull(enterSensorId);
     assertNotNull(inSensorId);
 
-    assertEquals("0-0001", inSensorId);
-    assertEquals("0-0002", enterSensorId);
-    assertEquals("0-0013", exitSensorId);
-    assertEquals("0-0012", occupancySensorId);
+    assertEquals(1, inSensorId);
+    assertEquals(2, enterSensorId);
+    assertEquals(13, exitSensorId);
+    assertEquals(12, occupancySensorId);
 
     assertEquals("StartState", stateMachine.getDispatcherStateName());
 
@@ -703,6 +703,7 @@ public class StateMachineStepByStepTest {
     assertEquals("IdleState", stateMachine.getDispatcherStateName());
   }
 
+  //TODO !!!!!!
   //@Test
   @Order(3)
   public void testFromBk1ToBk4Gost() {
@@ -801,7 +802,7 @@ public class StateMachineStepByStepTest {
     assertTrue(JCS.getJcsCommandStation().isPowerOn());
 
     Integer inSensorId = dispatcher.getInSensorId();
-    assertNotEquals("0-0013", inSensorId);
+    assertNotEquals(13, inSensorId);
 
     //Check if the enterSensor is registered a a "knownEvent" else we get a Ghost!
     assertFalse(AutoPilot.isSensorHandlerRegistered(inSensorId));

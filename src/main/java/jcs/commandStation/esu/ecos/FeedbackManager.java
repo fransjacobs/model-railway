@@ -57,7 +57,7 @@ class FeedbackManager {
       } else {
         feedbackModule = new FeedbackModuleBean();
         feedbackModule.setId(objectId);
-        feedbackModule.setAddressOffset(S88_OFFSET);
+        feedbackModule.setAddressOffset(0);
         feedbackModule.setModuleNumber(objectId - S88_OFFSET);
         //ESU ECoS has 1 bus
         feedbackModule.setIdentifier(0);
@@ -78,7 +78,7 @@ class FeedbackManager {
         updatePorts(state, feedbackModule);
       }
       modules.put(objectId, feedbackModule);
-      changedSensors = feedbackModule.getChangedSensors();
+      changedSensors = feedbackModule.getChangedSensorEvents();
 
       if (event) {
         if (ecosCommandStation != null) {
@@ -93,7 +93,7 @@ class FeedbackManager {
           int size = Integer.parseInt(values.get(Ecos.SIZE).toString());
           for (int i = 0; i < size; i++) {
             FeedbackModuleBean fbmb = new FeedbackModuleBean();
-            fbmb.setAddressOffset(S88_OFFSET);
+            fbmb.setAddressOffset(0);
             fbmb.setModuleNumber(i);
             fbmb.setId(S88_OFFSET + i);
             fbmb.setPortCount(S88_DEFAULT_PORT_COUNT);

@@ -712,9 +712,9 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
         List<FeedbackModuleBean> feedbackModules = cs.getFeedbackModules();
         Logger.trace("There are "+feedbackModules+" Feedback Modules");
         for(FeedbackModuleBean fm : feedbackModules) {
-          Logger.trace("Module id: "+fm.getId()+" nr: "+fm.getModuleNumber()+" ports: "+fm.getPortCount());
-          Logger.trace("Module id: "+fm.getId()+" S 1 id:"+fm.getSensor(0).getId()+" cid: "+fm.getSensor(0).getContactId()+" did: "+fm.getSensor(0).getDeviceId());
-          Logger.trace("Module id: "+fm.getId()+" S 15 id:"+fm.getSensor(15).getId()+" cid: "+fm.getSensor(15).getContactId()+" did: "+fm.getSensor(15).getDeviceId());
+          Logger.trace("Module id: "+fm.getId()+" Module nr: "+fm.getModuleNumber()+" ports: "+fm.getPortCount()+" NodeId: "+fm.getIdentifier()+" BusNr: "+fm.getBusNumber());
+          Logger.trace("FBModule id: "+fm.getId()+" S 1 id:"+fm.getSensor(0).getId()+" contactId: "+fm.getSensor(0).getContactId()+" ModuleNr: "+fm.getSensor(0).getDeviceId()+" Name "+fm.getSensor(0).getName());
+          Logger.trace("FBModule id: "+fm.getId()+" S 15 id:"+fm.getSensor(15).getId()+" contactId: "+fm.getSensor(15).getContactId()+" ModuleNr: "+fm.getSensor(15).getDeviceId()+" Name "+fm.getSensor(15).getName());
         }
 //        power = cs.power(true);
 //        Logger.trace("4 Power is " + (power ? "On" : "Off"));
@@ -792,13 +792,7 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 //         //reply = cs.connection.sendMessage(new EcosMessage("help(65000,attribute)"));
 //        //Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
 //        
-        List<FeedbackModuleBean> fbml = cs.getFeedbackModules();
-        for (FeedbackModuleBean fbm : fbml) {
-          Logger.trace(fbm);
-          Logger.trace("p-1 " + fbm.getSensor(0).getId());
-          Logger.trace("p-15 " + fbm.getSensor(15).getId());
-        }
-
+       
 //        
 //        reply = cs.connection.sendMessage(new EcosMessage("request(65000,volt"));
 //        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());

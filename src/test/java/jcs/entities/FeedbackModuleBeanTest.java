@@ -15,17 +15,13 @@
  */
 package jcs.entities;
 
+import java.util.ArrayList;
 import java.util.List;
-import jcs.commandStation.events.SensorEvent;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- *
- * @author frans
- */
 public class FeedbackModuleBeanTest {
 
   public FeedbackModuleBeanTest() {
@@ -209,8 +205,8 @@ public class FeedbackModuleBeanTest {
   }
 
   @Test
-  public void testGetSensor() {
-    System.out.println("getSensor");
+  public void testGetSensorMarklin() {
+    System.out.println("getSensorMarklin");
     int port = 1;
     FeedbackModuleBean instance = new FeedbackModuleBean();
     instance.setId(0);
@@ -218,6 +214,7 @@ public class FeedbackModuleBeanTest {
     instance.setPortCount(16);
     instance.setAddressOffset(1000);
     instance.setIdentifier(65);
+    instance.setBusNumber(1);
 
     SensorBean expResult = new SensorBean();
     expResult.setId(1001);
@@ -227,13 +224,10 @@ public class FeedbackModuleBeanTest {
     expResult.setNodeId(65);
     expResult.setStatus(0);
     expResult.setPreviousStatus(0);
-    expResult.setName("00-0001");
+    expResult.setName("B1-M00-C01");
 
     SensorBean result = instance.getSensor(port);
     assertEquals(expResult, result);
-
-//expected: <SensorBean{id=1001, name=65-1001, deviceId=0, contactId=1, nodeId=65, status=null, previousStatus=null, millis=null, lastUpdated=null}>
-// but was: <SensorBean{id=1001, name=00-0001, deviceId=0, contactId=1, nodeId=65, status=0, previousStatus=0, millis=null, lastUpdated=null}>
   }
 
   @Test
@@ -245,7 +239,7 @@ public class FeedbackModuleBeanTest {
     instance.setModuleNumber(1);
     instance.setPortCount(16);
     instance.setAddressOffset(0);
-    instance.setIdentifier(101);
+    instance.setIdentifier(null);
     instance.setPortValue(5, true);
 
     SensorBean expResult = new SensorBean();
@@ -253,56 +247,76 @@ public class FeedbackModuleBeanTest {
 
     expResult.setContactId(5);
     expResult.setDeviceId(1);
-    expResult.setNodeId(101);
+    expResult.setNodeId(null);
     expResult.setStatus(1);
     expResult.setPreviousStatus(0);
-    expResult.setName("01-0005");
+    expResult.setName("M01-C05");
 
     SensorBean result = instance.getSensor(port);
     assertEquals(expResult, result);
-
-//expected: <SensorBean{id=19, name=01-0005, deviceId=1, contactId=5, nodeId=101, status=1, previousStatus=0, millis=null, lastUpdated=null}> 
-// but was: <SensorBean{id=21, name=01-0005, deviceId=1, contactId=5, nodeId=101, status=0, previousStatus=0, millis=null, lastUpdated=null}>
-  }
-  
-  
-  //@Test
-  public void testGetChangedSensors() {
-    System.out.println("getChangedSensors");
-    FeedbackModuleBean instance = new FeedbackModuleBean();
-    List<SensorEvent> expResult = null;
-    List<SensorEvent> result = instance.getChangedSensors();
-    assertEquals(expResult, result);
-    fail("The test case is a prototype.");
   }
 
-  //@Test
+  @Test
   public void testGetSensors() {
     System.out.println("getSensors");
     FeedbackModuleBean instance = new FeedbackModuleBean();
-    List<SensorBean> expResult = null;
+    instance.setId(102);
+    instance.setIdentifier(0);
+    instance.setModuleNumber(2);
+    instance.setPortCount(FeedbackModuleBean.DEFAULT_PORT_COUNT);
+    instance.setAddressOffset(0);
+
+    List<SensorBean> expResult = new ArrayList<>();
+
+    for (int i = 0; i < FeedbackModuleBean.DEFAULT_PORT_COUNT; i++) {
+      SensorBean sb = new SensorBean();
+      sb.setId(2 * FeedbackModuleBean.DEFAULT_PORT_COUNT + i);
+      sb.setContactId(i);
+      sb.setDeviceId(2);
+      sb.setStatus(0);
+      sb.setNodeId(0);
+      sb.setPreviousStatus(0);
+      sb.setName("M02-C" + String.format("%02d", i));
+      expResult.add(sb);
+    }
+
     List<SensorBean> result = instance.getSensors();
     assertEquals(expResult, result);
-    fail("The test case is a prototype.");
   }
 
-  //@Test
-  public void testPortToString() {
-    System.out.println("portToString");
+  @Test
+  public void testGetChangedSensors() {
+    System.out.println("getChangedSensors");
+    int port = 5;
     FeedbackModuleBean instance = new FeedbackModuleBean();
-    String expResult = "";
-    String result = instance.portToString();
+    instance.setId(100);
+    instance.setIdentifier(0);
+    instance.setModuleNumber(0);
+    instance.setPortCount(FeedbackModuleBean.DEFAULT_PORT_COUNT);
+    instance.setAddressOffset(0);
+
+    List<SensorBean> expResult = new ArrayList<>();
+    List<SensorBean> result = instance.getChangedSensors();
+
     assertEquals(expResult, result);
-    fail("The test case is a prototype.");
+
+    instance.setPortValue(5, true);
+
+    result = instance.getChangedSensors();
+
+    SensorBean expChangedResult = new SensorBean();
+    expChangedResult.setId(5);
+
+    expChangedResult.setContactId(5);
+    expChangedResult.setDeviceId(0);
+    expChangedResult.setNodeId(0);
+    expChangedResult.setStatus(1);
+    expChangedResult.setPreviousStatus(0);
+    expChangedResult.setName("M00-C05");
+
+    expResult.add(expChangedResult);
+
+    assertEquals(expResult, result);
   }
 
-  //@Test
-  public void testToString() {
-    System.out.println("toString");
-    FeedbackModuleBean instance = new FeedbackModuleBean();
-    String expResult = "";
-    String result = instance.toString();
-    assertEquals(expResult, result);
-    fail("The test case is a prototype.");
-  }
 }
