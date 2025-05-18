@@ -116,7 +116,11 @@ public class CommandStationBean {
 
   @Transient
   public ConnectionType getConnectionType() {
-    return ConnectionType.get(connectVia);
+    if (connectVia != null) {
+      return ConnectionType.get(connectVia);
+    } else {
+      return null;
+    }
   }
 
   @Transient

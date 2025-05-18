@@ -16,20 +16,25 @@
 package jcs.ui.settings;
 
 import com.fazecast.jSerialComm.SerialPort;
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import jcs.JCS;
+import jcs.commandStation.esu.ecos.net.EcosConnectionFactory;
 import jcs.commandStation.marklin.cs.net.CSConnectionFactory;
 import jcs.entities.CommandStationBean;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.net.InetAddress;
+import javax.swing.JDialog;
 
 /**
  *
@@ -48,10 +53,9 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
 
   private CommandStationBean emptyCS;
   private CommandStationBean emptyFB;
-  
+
   private static final String MARKLIN_CS = "marklin.cs";
   private static final String ESU_ECOS = "esu-ecos";
-  
 
   /**
    * Creates new form CommandStationDialog1
@@ -138,7 +142,7 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
       networkRB.setSelected(true);
     }
 
-    if (CommandStationBean.ConnectionType.SERIAL == selectedFeedbackProvider.getConnectionType()) {
+    if (selectedFeedbackProvider.getConnectionType() != null && CommandStationBean.ConnectionType.SERIAL == selectedFeedbackProvider.getConnectionType()) {
       String port = selectedFeedbackProvider.getSerialPort();
       fbpSerialCB.setSelectedItem(port);
     }
@@ -434,6 +438,7 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
 
   private void discoverBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_discoverBtnActionPerformed
     Logger.trace("Try to discover " + selectedCommandStation.getDescription());
+    executor.execute(() -> discover(selectedCommandStation));
   }//GEN-LAST:event_discoverBtnActionPerformed
 
   private void feedbackCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_feedbackCBActionPerformed
@@ -472,7 +477,7 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
       selectedCommandStation.setConnectionType(CommandStationBean.ConnectionType.NETWORK);
       selectedCommandStation.setSerialPort(null);
     } else {
-      selectedCommandStation.setConnectionType(CommandStationBean.ConnectionType.SERIAL);      
+      selectedCommandStation.setConnectionType(CommandStationBean.ConnectionType.SERIAL);
     }
     persistCommandStation(selectedCommandStation);
   }//GEN-LAST:event_networkRBActionPerformed
@@ -487,17 +492,17 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
   }//GEN-LAST:event_serialRBActionPerformed
 
   private void ipTFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ipTFActionPerformed
-    Logger.trace("ip Address: "+this.ipTF.getText());
+    Logger.trace("ip Address: " + this.ipTF.getText());
     selectedCommandStation.setIpAddress(ipTF.getText());
   }//GEN-LAST:event_ipTFActionPerformed
 
   private void ipTFFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_ipTFFocusLost
-    Logger.trace("ip Address: "+this.ipTF.getText());
+    Logger.trace("ip Address: " + this.ipTF.getText());
     selectedCommandStation.setIpAddress(ipTF.getText());
   }//GEN-LAST:event_ipTFFocusLost
 
   private void ipTFMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ipTFMouseExited
-    Logger.trace("ip Address: "+this.ipTF.getText());
+    Logger.trace("ip Address: " + this.ipTF.getText());
     selectedCommandStation.setIpAddress(ipTF.getText());
   }//GEN-LAST:event_ipTFMouseExited
 
@@ -505,18 +510,48 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
     // TODO add your handling code here:
   }//GEN-LAST:event_connectBtnActionPerformed
 
-  
-  private void discover() {
-    //Start een wacht dialog box...
-    if(MARKLIN_CS.equals(selectedCommandStation.getId())) {
-      InetAddress csAddress = CSConnectionFactory.discoverCs();
-    } else if(ESU_ECOS.equals(selectedCommandStation.getId())) {
-      
+  private InetAddress discover(final CommandStationBean commandStation) {
+    final JOptionPane optionPane = new JOptionPane("Try to discovering a " + commandStation.getDescription(),
+            JOptionPane.INFORMATION_MESSAGE,
+            JOptionPane.OK_OPTION);
+
+    final JDialog discoverDialog = new JDialog(this, "Discovering...");
+    discoverDialog.setContentPane(optionPane);
+    discoverDialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+    discoverDialog.pack();
+    discoverDialog.setLocationRelativeTo(null);
+    discoverDialog.setVisible(true);
+
+    InetAddress inetAddress = null;
+    if (MARKLIN_CS.equals(commandStation.getId())) {
+      inetAddress = CSConnectionFactory.discoverCs();
+    } else if (ESU_ECOS.equals(commandStation.getId())) {
+      inetAddress = EcosConnectionFactory.discoverEcos();
     }
+
+//    optionPane.addPropertyChangeListener((PropertyChangeEvent e) -> {
+//      String prop = e.getPropertyName();
+//      
+//      if (discoverDialog.isVisible()
+//              && (e.getSource() == optionPane)
+//              && (prop.equals(JOptionPane.VALUE_PROPERTY))) {
+//        discoverDialog.setVisible(false);
+//      }
+//    });
+    if (inetAddress != null) {
+      Logger.trace("Discovered host " + inetAddress.getHostAddress() + " for " + commandStation.getDescription());
+      commandStation.setIpAddress(inetAddress.getHostAddress());
+    }
+
+    java.awt.EventQueue.invokeLater(() -> {
+      setComponents();
+      discoverDialog.setVisible(false);
+      discoverDialog.dispose();  
+    });
+
+    return inetAddress;
   }
-  
-  
-  
+
   /**
    * @param args the command line arguments
    */
