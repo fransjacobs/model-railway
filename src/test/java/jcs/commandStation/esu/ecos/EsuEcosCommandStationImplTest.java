@@ -144,48 +144,6 @@ public class EsuEcosCommandStationImplTest {
   }
 
   /**
-   * Test of getDevice method, of class EsuEcosCommandStationImpl.
-   */
-//  @Test
-//  public void testGetDevice() {
-//    if (!skip) {
-//
-//      System.out.println("getDevice");
-//      EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
-//      instance.connect();
-//      DeviceBean expResult = new DeviceBean();
-//      expResult.setName("ECoS-Virtual");
-//      expResult.setVersion("1.3");
-//      expResult.setTypeName("ECoS");
-//      expResult.setSerial("0x00000000");
-//
-//      DeviceBean result = instance.getDevice();
-//      assertEquals(expResult, result);
-//    }
-//  }
-  /**
-   * Test of getDevices method, of class EsuEcosCommandStationImpl.
-   */
-//  @Test
-//  public void testGetDevices() {
-//    if (!skip) {
-//      System.out.println("getDevices");
-//      EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
-//      instance.connect();
-//      DeviceBean db = new DeviceBean();
-//      db.setName("ECoS-Virtual");
-//      db.setVersion("1.3");
-//      db.setTypeName("ECoS");
-//      db.setSerial("0x00000000");
-//
-//      List<DeviceBean> expResult = new ArrayList<>();
-//      expResult.add(db);
-//
-//      List<DeviceBean> result = instance.getDevices();
-//      assertEquals(expResult, result);
-//    }
-//  }
-  /**
    * Test of getIp method, of class EsuEcosCommandStationImpl.
    */
   @Test

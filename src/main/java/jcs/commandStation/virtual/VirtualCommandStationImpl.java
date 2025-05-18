@@ -50,7 +50,8 @@ import org.tinylog.Logger;
  */
 public class VirtualCommandStationImpl extends AbstractController implements DecoderController, AccessoryController, FeedbackController {
 
-  //private DeviceBean mainDevice;
+  public static final String VIRTUAL_CS = "virtual";
+
   private InfoBean infoBean;
 
   private DriveSimulator simulator;
@@ -84,11 +85,10 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
 //    mainDevice.setSerial("1");
 //    mainDevice.setIdentifier(this.commandStationBean.getIdString());
 //    mainDevice.setName(this.commandStationBean.getDescription());
-
     infoBean = new InfoBean();
     infoBean.setProductName(commandStationBean.getDescription());
     infoBean.setArticleNumber(commandStationBean.getShortName());
-    infoBean.setHostname(this.getIp());
+    infoBean.setHostname(getIp());
 
     power(true);
 
@@ -111,20 +111,6 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   public InfoBean getCommandStationInfo() {
     return this.infoBean;
   }
-
-//  @Override
-//  public DeviceBean getDevice() {
-//    return this.mainDevice;
-//  }
-
-//  @Override
-//  public List<DeviceBean> getDevices() {
-//    List<DeviceBean> devices = new ArrayList<>();
-//    if (mainDevice != null) {
-//      devices.add(this.mainDevice);
-//    }
-//    return devices;
-//  }
 
   @Override
   public String getIp() {
@@ -255,21 +241,6 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
     return false;
   }
 
-
-//  @Override
-//  public void switchAccessory(Integer address, AccessoryBean.AccessoryValue value) {
-//    switchAccessory(address, value, 200);
-//  }
-
-//  @Override
-//  public void switchAccessory(String id, AccessoryBean.AccessoryValue value) {
-//    throw new UnsupportedOperationException("Not supported yet.");
-//  }
-//  @Override
-//  public void switchAccessory(Integer address, AccessoryBean.AccessoryValue value, Integer switchTime) {
-//    switchAccessory(address, "dcc", value, switchTime);
-//  }
-
   @Override
   public void switchAccessory(Integer address, String protocol, AccessoryBean.AccessoryValue value, Integer switchTime) {
     if (this.power && connected) {
@@ -308,11 +279,6 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   public List<AccessoryBean> getAccessories() {
     throw new UnsupportedOperationException("Not supported yet.");
   }
-
-//  @Override
-//  public DeviceBean getFeedbackDevice() {
-//    throw new UnsupportedOperationException("Not supported yet.");
-//  }
 
   @Override
   public List<FeedbackModuleBean> getFeedbackModules() {

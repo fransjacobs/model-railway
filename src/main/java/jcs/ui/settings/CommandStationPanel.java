@@ -98,7 +98,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
       commandStations.add(selectedCommandStation);
     }
 
-    commandStationComboBoxModel = new DefaultComboBoxModel<CommandStationBean>(cmdSts);
+    commandStationComboBoxModel = new DefaultComboBoxModel<>(cmdSts);
     commandStationComboBoxModel.setSelectedItem(selectedCommandStation);
     commandStationComboBox.setModel(commandStationComboBoxModel);
 

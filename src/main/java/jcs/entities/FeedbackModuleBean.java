@@ -31,6 +31,7 @@ public class FeedbackModuleBean {
   private Integer addressOffset;
   private Integer identifier;
   private Integer busNumber;
+  private String commandStationId;
 
   private int[] ports;
   private int[] prevPorts;
@@ -40,19 +41,20 @@ public class FeedbackModuleBean {
   public static int DEFAULT_IDENTIFIER = 0;
 
   public FeedbackModuleBean() {
-    this(null, null);
+    this(null, null, null);
   }
 
-  public FeedbackModuleBean(Integer id, Integer moduleNumber) {
-    this(id, moduleNumber, DEFAULT_PORT_COUNT, DEFAULT_ADDRESS_OFFSET, DEFAULT_IDENTIFIER);
+  public FeedbackModuleBean(Integer id, Integer moduleNumber, String commandStationId) {
+    this(id, moduleNumber, DEFAULT_PORT_COUNT, DEFAULT_ADDRESS_OFFSET, DEFAULT_IDENTIFIER, commandStationId);
   }
 
-  public FeedbackModuleBean(Integer id, Integer moduleNumber, Integer portCount, Integer addressOffset, Integer identifier) {
+  public FeedbackModuleBean(Integer id, Integer moduleNumber, Integer portCount, Integer addressOffset, Integer identifier, String commandStationId) {
     this.id = id;
     this.moduleNumber = moduleNumber;
     this.portCount = portCount;
     this.addressOffset = addressOffset;
     this.identifier = identifier;
+    this.commandStationId = commandStationId;
 
     ports = new int[portCount];
     prevPorts = new int[portCount];
@@ -152,6 +154,14 @@ public class FeedbackModuleBean {
     this.prevPorts = prevPorts;
   }
 
+  public String getCommandStationId() {
+    return commandStationId;
+  }
+
+  public void setCommandStationId(String commandStationId) {
+    this.commandStationId = commandStationId;
+  }
+
   public SensorBean getSensor(int port) {
     int sid;
     int offset = 0;
@@ -177,7 +187,7 @@ public class FeedbackModuleBean {
     int status = ports[port];
     int prevStatus = prevPorts[port];
 
-    SensorBean sb = new SensorBean(sid, moduleNumber, port, identifier, status, prevStatus);
+    SensorBean sb = new SensorBean(sid, moduleNumber, port, identifier, status, prevStatus, commandStationId);
     sb.setName(name);
     return sb;
   }

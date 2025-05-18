@@ -17,9 +17,12 @@ commit;
 
 alter table sensors alter id integer;
 alter table sensors add node_id integer;
+alter table sensors add command_station_id varchar(255) not null;
+
 alter table tiles alter sensor_id integer;
 alter table blocks alter plus_sensor_id integer;
 alter table blocks alter min_sensor_id integer;
+
 
 update jcs_version set db_version = '0.0.3', app_version = '0.0.3';
 commit;

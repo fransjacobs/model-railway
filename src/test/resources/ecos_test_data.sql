@@ -387,23 +387,23 @@ INSERT INTO accessories (id,address,name,"type",state,states,switch_time,protoco
 
 commit;
 
-INSERT INTO sensors (id,name,device_id,contact_id,status,previous_status,millis,last_updated,node_id) VALUES
-	 (11,'B0-S-11',0,11,0,NULL,NULL,NULL,0),
-	 (10,'B0-S-10',0,10,1,NULL,NULL,NULL,0),
-	 (2,'B0-S-2',0,2,0,NULL,NULL,NULL,0),
-	 (13,'B0-S-13',0,13,0,1,NULL,NULL,0),
-	 (1,'B0-S-1',0,1,0,NULL,NULL,NULL,0),
-	 (12,'B0-S-12',0,12,0,NULL,NULL,NULL,0),
-	 (4,'B0-S-4',0,4,0,NULL,NULL,NULL,0),
-	 (15,'B0-S-15',0,15,0,1,NULL,NULL,0),
-	 (3,'B0-S-3',0,3,0,NULL,NULL,NULL,0),
-	 (14,'B0-S-14',0,14,0,1,NULL,NULL,0);
-INSERT INTO sensors (id,name,device_id,contact_id,status,previous_status,millis,last_updated,node_id) VALUES
-	 (6,'B0-S-6',0,6,0,1,NULL,NULL,0),
-	 (5,'B0-S-5',0,5,0,1,NULL,NULL,0),
-	 (16,'B0-S-16',0,16,0,1,NULL,NULL,0),
-	 (8,'B0-S-8',0,8,0,1,NULL,NULL,0),
-	 (7,'B0-S-7',0,7,0,1,NULL,NULL,0),
-	 (9,'B0-S-9',0,9,0,NULL,NULL,NULL,0);
+INSERT INTO sensors (id,name,device_id,contact_id,status,previous_status,millis,last_updated,node_id, command_station_id) VALUES
+	 (11,'B0-S-11',0,11,0,NULL,NULL,NULL,0,'esu-ecos'),
+	 (10,'B0-S-10',0,10,1,NULL,NULL,NULL,0,'esu-ecos'),
+	 (2,'B0-S-2',0,2,0,NULL,NULL,NULL,0,'esu-ecos'),
+	 (13,'B0-S-13',0,13,0,1,NULL,NULL,0,'esu-ecos'),
+	 (1,'B0-S-1',0,1,0,NULL,NULL,NULL,0,'esu-ecos'),
+	 (12,'B0-S-12',0,12,0,NULL,NULL,NULL,0,'esu-ecos'),
+	 (4,'B0-S-4',0,4,0,NULL,NULL,NULL,0,'esu-ecos'),
+	 (15,'B0-S-15',0,15,0,1,NULL,NULL,0,'esu-ecos'),
+	 (3,'B0-S-3',0,3,0,NULL,NULL,NULL,0,'esu-ecos'),
+	 (14,'B0-S-14',0,14,0,1,NULL,NULL,0,'esu-ecos');
+INSERT INTO sensors (id,name,device_id,contact_id,status,previous_status,millis,last_updated,node_id,command_station_id) VALUES
+	 (6,'B0-S-6',0,6,0,1,NULL,NULL,0,'esu-ecos'),
+	 (5,'B0-S-5',0,5,0,1,NULL,NULL,0,'esu-ecos'),
+	 (16,'B0-S-16',0,16,0,1,NULL,NULL,0,'esu-ecos'),
+	 (8,'B0-S-8',0,8,0,1,NULL,NULL,0,'esu-ecos'),
+	 (7,'B0-S-7',0,7,0,1,NULL,NULL,0,'esu-ecos'),
+	 (9,'B0-S-9',0,9,0,NULL,NULL,NULL,0,'esu-ecos');
 
 commit;

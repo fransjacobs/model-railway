@@ -27,6 +27,8 @@ import org.tinylog.Logger;
  */
 public class FeedbackEventMessage {
 
+  private static final String MARKLIN_CS = "marklin.cs";
+
   public static SensorBean parse(CanMessage message, Date eventDate) {
     CanMessage resp;
     if (!message.isResponseMessage()) {
@@ -46,7 +48,7 @@ public class FeedbackEventMessage {
 
       Integer millis = ByteUtil.toInt(new byte[]{data[6], data[7]}) * 10;
 
-      SensorBean sensorBean = new SensorBean(contactId, null, null, null, identifier, status, previousStatus, millis, System.currentTimeMillis());
+      SensorBean sensorBean = new SensorBean(contactId, null, null, null, identifier, status, previousStatus, millis, System.currentTimeMillis(), MARKLIN_CS);
       return sensorBean;
     } else {
       Logger.warn("Can't parse message, not a Sensor Response! " + resp);

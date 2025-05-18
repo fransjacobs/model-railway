@@ -943,6 +943,11 @@ public class H2PersistenceService implements PersistenceService {
     return database.where("default_cs=true").first(CommandStationBean.class);
   }
 
+   @Override
+  public CommandStationBean getEnabledFeedbackProvider() {
+    return database.where("default_cs=false and supports_feedback=true and supports_decoder_control=false and enabled=true").first(CommandStationBean.class);
+  }
+  
   @Override
   public synchronized CommandStationBean persist(CommandStationBean commandStationBean) {
     CommandStationBean prev = database.where("id=?", commandStationBean.getId()).first(CommandStationBean.class);

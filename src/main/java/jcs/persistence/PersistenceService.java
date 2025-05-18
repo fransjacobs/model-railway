@@ -505,6 +505,12 @@ public interface PersistenceService {
   CommandStationBean getDefaultCommandStation();
 
   /**
+   *
+   * @return the enabled feedback provider
+   */
+  CommandStationBean getEnabledFeedbackProvider();
+
+  /**
    * Persists a CommandStationBean.
    *
    * @param commandStationBean The CommandStationBean to persist.

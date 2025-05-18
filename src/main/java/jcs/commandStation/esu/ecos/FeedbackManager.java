@@ -33,6 +33,8 @@ class FeedbackManager {
   public static final int S88_OFFSET = 100;
   public static final int S88_DEFAULT_PORT_COUNT = 16;
 
+  private static final String ESU_ECOS_CS = "esu-ecos";
+
   private final EsuEcosCommandStationImpl ecosCommandStation;
   private final Map<Integer, FeedbackModuleBean> modules;
 
@@ -61,6 +63,12 @@ class FeedbackManager {
         feedbackModule.setModuleNumber(objectId - S88_OFFSET);
         //ESU ECoS has 1 bus
         feedbackModule.setIdentifier(0);
+        //In Unit Testcase the command station is null
+        if (ecosCommandStation != null) {
+          feedbackModule.setCommandStationId(ecosCommandStation.getCommandStationBean().getId());
+        } else {
+          feedbackModule.setCommandStationId(ESU_ECOS_CS);
+        }
       }
 
       if (values.containsKey(Ecos.PORTS)) {
@@ -98,6 +106,14 @@ class FeedbackManager {
             fbmb.setId(S88_OFFSET + i);
             fbmb.setPortCount(S88_DEFAULT_PORT_COUNT);
             fbmb.setIdentifier(0);
+
+            //In Unit Testcase the command station is null
+            if (ecosCommandStation != null) {
+              fbmb.setCommandStationId(ecosCommandStation.getCommandStationBean().getId());
+            } else {
+              fbmb.setCommandStationId(ESU_ECOS_CS);
+            }
+
             modules.put(fbmb.getId(), fbmb);
           }
         }

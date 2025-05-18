@@ -47,24 +47,24 @@ VALUES (39,0,1,1,'fkticon_a_001',false),
 commit;
 
 
-INSERT INTO sensors (id,name,device_id,contact_id,status,previous_status,millis,last_updated)
-VALUES (2,'M00-C02',0,2,0,1,NULL,NULL),
-       (13,'M00-C13',0,13,0,1,NULL,NULL),
-       (1,'M00-C01',0,1,0,1,0,NULL),
-       (12,'M00-C12',0,12,0,1,NULL,NULL),
-       (4,'M00-C04',0,4,0,1,NULL,NULL),
-       (15,'M00-C15',0,15,0,NULL,NULL,NULL),
-       (3,'M00-C03',0,3,0,1,0,NULL),
-       (14,'M00-C14',0,14,0,NULL,NULL,NULL),
-       (6,'M00-C06',0,6,0,NULL,NULL,NULL),
-       (5,'M00-C05',0,5,0,NULL,NULL,NULL);
-INSERT INTO sensors (id,name,device_id,contact_id,status,previous_status,millis,last_updated)
-VALUES (16,'M00-C16',0,16,0,NULL,NULL,NULL),
-       (8,'M00-C08',0,8,0,NULL,NULL,NULL),
-       (7,'M00-C07',0,7,0,NULL,NULL,NULL),
-       (9,'M00-C09',0,9,0,NULL,NULL,NULL),
-       (11,'M00-C11',0,11,0,1,1,null),
-       (10,'M00-C10',0,10,0,1,1,null);
+INSERT INTO sensors (id,name,device_id,contact_id,status,previous_status,millis,last_updated,command_station_id)
+VALUES (2,'M00-C02',0,2,0,1,NULL,NULL,'virtual'),
+       (13,'M00-C13',0,13,0,1,NULL,NULL,'virtual'),
+       (1,'M00-C01',0,1,0,1,0,NULL,'virtual'),
+       (12,'M00-C12',0,12,0,1,NULL,NULL,'virtual'),
+       (4,'M00-C04',0,4,0,1,NULL,NULL,'virtual'),
+       (15,'M00-C15',0,15,0,NULL,NULL,NULL,'virtual'),
+       (3,'M00-C03',0,3,0,1,0,NULL,'virtual'),
+       (14,'M00-C14',0,14,0,NULL,NULL,NULL,'virtual'),
+       (6,'M00-C06',0,6,0,NULL,NULL,NULL,'virtual'),
+       (5,'M00-C05',0,5,0,NULL,NULL,NULL,'virtual');
+INSERT INTO sensors (id,name,device_id,contact_id,status,previous_status,millis,last_updated,command_station_id)
+VALUES (16,'M00-C16',0,16,0,NULL,NULL,NULL,'virtual'),
+       (8,'M00-C08',0,8,0,NULL,NULL,NULL,'virtual'),
+       (7,'M00-C07',0,7,0,NULL,NULL,NULL,'virtual'),
+       (9,'M00-C09',0,9,0,NULL,NULL,NULL,'virtual'),
+       (11,'M00-C11',0,11,0,1,1,null,'virtual'),
+       (10,'M00-C10',0,10,0,1,1,null,'virtual');
 commit;
 
 INSERT INTO tiles (id,tile_type,orientation,direction,x,y,signal_type,accessory_id,sensor_id) VALUES
@@ -107,7 +107,6 @@ INSERT INTO blocks (id,tile_id,description,plus_sensor_id,min_sensor_id,plus_sig
 	 ('bk-3','bk-3','Blok 3',10,11,NULL,NULL,NULL,false,'Free',null,true),
 	 ('bk-4','bk-4','Blok 4',13,12,NULL,NULL,NULL,false,'Free',NULL,true);
 commit;
-
 
 INSERT INTO routes (id,from_tile_id,from_suffix,to_tile_id,to_suffix,route_color,locked,status) VALUES
 	 ('[bk-1-]->[bk-3-]','bk-1','-','bk-3','-',NULL,false,NULL),

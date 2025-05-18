@@ -37,24 +37,25 @@ public class SensorBean {
   private Integer millis;
   private Long lastUpdated;
   private Integer nodeId;
+  private String commandStationId;
 
   public SensorBean() {
-    this(null, null, null, null, null, null);
+    this(null, null, null, null, null, null, null);
   }
 
-  public SensorBean(Integer id, Integer deviceId, Integer contactId, Integer nodeId, Integer status, Integer previousStatus) {
-    this(id, null, deviceId, contactId, nodeId, status, previousStatus, (Integer) null, (Long) null);
+  public SensorBean(Integer id, Integer deviceId, Integer contactId, Integer nodeId, Integer status, Integer previousStatus, String commandStationId) {
+    this(id, null, deviceId, contactId, nodeId, status, previousStatus, (Integer) null, (Long) null, commandStationId);
   }
 
-  public SensorBean(Integer id, String name, Integer deviceId, Integer contactId, Integer nodeId, Integer status, Integer previousStatus, Integer millis) {
-    this(id, name, deviceId, contactId, nodeId, status, previousStatus, millis, (Long) null);
+  public SensorBean(Integer id, String name, Integer deviceId, Integer contactId, Integer nodeId, Integer status, Integer previousStatus, Integer millis, String commandStationId) {
+    this(id, name, deviceId, contactId, nodeId, status, previousStatus, millis, (Long) null, commandStationId);
   }
 
-  public SensorBean(Integer id, String name, Integer deviceId, Integer contactId, Integer nodeId, Integer status, Integer previousStatus, Integer millis, Date lastUpdated) {
-    this(id, name, deviceId, contactId, nodeId, status, previousStatus, millis, (lastUpdated != null ? lastUpdated.getTime() : null));
+  public SensorBean(Integer id, String name, Integer deviceId, Integer contactId, Integer nodeId, Integer status, Integer previousStatus, Integer millis, Date lastUpdated, String commandStationId) {
+    this(id, name, deviceId, contactId, nodeId, status, previousStatus, millis, (lastUpdated != null ? lastUpdated.getTime() : null), commandStationId);
   }
 
-  public SensorBean(Integer id, String name, Integer deviceId, Integer contactId, Integer nodeId, Integer status, Integer previousStatus, Integer millis, Long lastUpdated) {
+  public SensorBean(Integer id, String name, Integer deviceId, Integer contactId, Integer nodeId, Integer status, Integer previousStatus, Integer millis, Long lastUpdated, String commandStationId) {
     this.id = id;
     this.name = name;
     this.status = status;
@@ -64,6 +65,7 @@ public class SensorBean {
     this.nodeId = nodeId;
     this.millis = millis;
     this.lastUpdated = lastUpdated;
+    this.commandStationId = commandStationId;
 
     if (name == null) {
       this.name = generateName();
@@ -156,6 +158,15 @@ public class SensorBean {
 
   public void setPreviousStatus(Integer previousStatus) {
     this.previousStatus = previousStatus;
+  }
+
+  @Column(name = "command_station_id", length = 255, nullable = false)
+  public String getCommandStationId() {
+    return commandStationId;
+  }
+
+  public void setCommandStationId(String commandStationId) {
+    this.commandStationId = commandStationId;
   }
 
   @Transient
@@ -261,6 +272,7 @@ public class SensorBean {
     hash = 41 * hash + Objects.hashCode(this.previousStatus);
     hash = 41 * hash + Objects.hashCode(this.millis);
     hash = 41 * hash + Objects.hashCode(this.lastUpdated);
+    hash = 41 * hash + Objects.hashCode(this.commandStationId);
     return hash;
   }
 
@@ -300,6 +312,9 @@ public class SensorBean {
     if (!Objects.equals(this.millis, other.millis)) {
       return false;
     }
+    if (!Objects.equals(this.commandStationId, other.commandStationId)) {
+      return false;
+    }
     return Objects.equals(this.lastUpdated, other.lastUpdated);
   }
 
@@ -314,6 +329,9 @@ public class SensorBean {
       return false;
     }
     final SensorBean other = (SensorBean) obj;
+    if (!Objects.equals(this.commandStationId, other.commandStationId)) {
+      return false;
+    }
     if (!Objects.equals(this.deviceId, other.deviceId)) {
       return false;
     }
@@ -367,6 +385,8 @@ public class SensorBean {
             + millis
             + ", lastUpdated="
             + lastUpdated
+            + ", commandStationId="
+            + commandStationId
             + "}";
   }
 }
