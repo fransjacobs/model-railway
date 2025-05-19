@@ -31,10 +31,9 @@ import jcs.commandStation.marklin.cs.net.CSConnectionFactory;
 import jcs.entities.CommandStationBean;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.net.InetAddress;
 import javax.swing.JDialog;
+import jcs.util.Ping;
 
 /**
  *
@@ -148,6 +147,10 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
     }
 
     setComponents();
+    if (CommandStationBean.ConnectionType.NETWORK == selectedCommandStation.getConnectionType() && selectedCommandStation.getIpAddress() != null && selectedCommandStation.getIpAddress().length() > 8) {
+      executor.execute(() -> checkConnection(selectedCommandStation));
+    }
+
     //enableFields(false);
     //this.progressBar.setVisible(false);
   }
@@ -171,6 +174,7 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
     accessoryControllerLbl = new javax.swing.JLabel();
     feedbackProviderLbl = new javax.swing.JLabel();
     discoverBtn = new javax.swing.JButton();
+    checkBtn = new javax.swing.JButton();
     networkRB = new javax.swing.JRadioButton();
     serialRB = new javax.swing.JRadioButton();
     feedbackCSPanel = new javax.swing.JPanel();
@@ -261,6 +265,15 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
     });
     mainCSPanel.add(discoverBtn);
 
+    checkBtn.setText("Check");
+    checkBtn.setToolTipText("Check Connection");
+    checkBtn.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        checkBtnActionPerformed(evt);
+      }
+    });
+    mainCSPanel.add(checkBtn);
+
     connectionTypeBG.add(networkRB);
     networkRB.setText("Network");
     networkRB.addActionListener(new java.awt.event.ActionListener() {
@@ -326,7 +339,7 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
     jPanel3.setLayout(jPanel3Layout);
     jPanel3Layout.setHorizontalGroup(
       jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-      .addGap(0, 1083, Short.MAX_VALUE)
+      .addGap(0, 1113, Short.MAX_VALUE)
     );
     jPanel3Layout.setVerticalGroup(
       jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -416,6 +429,12 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
       ipOrPortLbl.setText("ip Address:");
     }
 
+    checkBtn.setVisible(CommandStationBean.ConnectionType.NETWORK == selectedCommandStation.getConnectionType() && selectedCommandStation.getIpAddress() != null && selectedCommandStation.getIpAddress().length() > 8);
+
+    if (selectedCommandStation.getIpAddress() == null || selectedCommandStation.getIpAddress().length() > 8) {
+      ipTF.setBackground(new java.awt.Color(255, 255, 255));
+    }
+
     //no main controller feedback support, enable the secondary
     feedbackCB.setVisible(!selectedCommandStation.isFeedbackSupport());
     feedbackCB.setEnabled(!selectedCommandStation.isFeedbackSupport());
@@ -433,7 +452,9 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
 
   private void persistCommandStation(final CommandStationBean commandStation) {
     PersistenceFactory.getService().persist(commandStation);
-    setComponents();
+    java.awt.EventQueue.invokeLater(() -> {
+      setComponents();
+    });
   }
 
   private void discoverBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_discoverBtnActionPerformed
@@ -494,21 +515,28 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
   private void ipTFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ipTFActionPerformed
     Logger.trace("ip Address: " + this.ipTF.getText());
     selectedCommandStation.setIpAddress(ipTF.getText());
+    persistCommandStation(selectedCommandStation);
   }//GEN-LAST:event_ipTFActionPerformed
 
   private void ipTFFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_ipTFFocusLost
     Logger.trace("ip Address: " + this.ipTF.getText());
     selectedCommandStation.setIpAddress(ipTF.getText());
+    persistCommandStation(selectedCommandStation);
   }//GEN-LAST:event_ipTFFocusLost
 
   private void ipTFMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ipTFMouseExited
     Logger.trace("ip Address: " + this.ipTF.getText());
     selectedCommandStation.setIpAddress(ipTF.getText());
+    persistCommandStation(selectedCommandStation);
   }//GEN-LAST:event_ipTFMouseExited
 
   private void connectBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectBtnActionPerformed
     // TODO add your handling code here:
   }//GEN-LAST:event_connectBtnActionPerformed
+
+  private void checkBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkBtnActionPerformed
+    executor.execute(() -> checkConnection(selectedCommandStation));
+  }//GEN-LAST:event_checkBtnActionPerformed
 
   private InetAddress discover(final CommandStationBean commandStation) {
     final JOptionPane optionPane = new JOptionPane("Try to discovering a " + commandStation.getDescription(),
@@ -529,15 +557,6 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
       inetAddress = EcosConnectionFactory.discoverEcos();
     }
 
-//    optionPane.addPropertyChangeListener((PropertyChangeEvent e) -> {
-//      String prop = e.getPropertyName();
-//      
-//      if (discoverDialog.isVisible()
-//              && (e.getSource() == optionPane)
-//              && (prop.equals(JOptionPane.VALUE_PROPERTY))) {
-//        discoverDialog.setVisible(false);
-//      }
-//    });
     if (inetAddress != null) {
       Logger.trace("Discovered host " + inetAddress.getHostAddress() + " for " + commandStation.getDescription());
       commandStation.setIpAddress(inetAddress.getHostAddress());
@@ -546,10 +565,25 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
     java.awt.EventQueue.invokeLater(() -> {
       setComponents();
       discoverDialog.setVisible(false);
-      discoverDialog.dispose();  
+      discoverDialog.dispose();
     });
 
     return inetAddress;
+  }
+
+  private void checkConnection(final CommandStationBean commandStation) {
+    String ip = commandStation.getIpAddress();
+    boolean canConnect = Ping.IsReachable(ip);
+
+    java.awt.EventQueue.invokeLater(() -> {
+      if (canConnect) {
+        ipTF.setBackground(new java.awt.Color(204, 255, 204));
+      } else {
+        ipTF.setBackground(new java.awt.Color(255, 255, 255));
+
+        JOptionPane.showMessageDialog(this, "Can't connect with host " + ip, "Can't Connect", JOptionPane.WARNING_MESSAGE);
+      }
+    });
   }
 
   /**
@@ -585,6 +619,7 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JLabel accessoryControllerLbl;
+  private javax.swing.JButton checkBtn;
   private javax.swing.JComboBox<CommandStationBean> commandStationCB;
   private javax.swing.JLabel commandStationLbl;
   private javax.swing.JButton connectBtn;

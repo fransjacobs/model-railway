@@ -396,8 +396,12 @@ public class JCSCommandStation {
     //Logger.trace("Switch Power " + (on ? "On" : "Off"));
     if (decoderController != null && !AWT_THREAD.equals(Thread.currentThread().getName())) {
       decoderController.power(on);
-    } else if (decoderController != null) {
-      executor.execute(() -> decoderController.power(on));
+    } else {
+      executor.execute(() -> {
+        if (decoderController != null) {
+          decoderController.power(on);
+        }
+      });
     }
   }
 

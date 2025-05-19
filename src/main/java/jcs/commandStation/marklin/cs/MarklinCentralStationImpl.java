@@ -261,7 +261,9 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 
   InfoBean createInfoBean(Map<Integer, CanDevice> canDevices) {
     InfoBean ib = new InfoBean(commandStationBean);
-    ib.setIpAddress(connection.getControllerAddress().getHostAddress());
+    if (connection != null && connection.getControllerAddress() != null) {
+      ib.setIpAddress(connection.getControllerAddress().getHostAddress());
+    }
 
     for (CanDevice d : canDevices.values()) {
       Logger.trace("Checking device: " + d);
@@ -560,8 +562,12 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   public void disconnect() {
     Logger.trace("Start disconnecting...");
     //Stop all schedules
-    measurementTimer.cancel();
-    watchDogTimer.cancel();
+    if (measurementTimer != null) {
+      measurementTimer.cancel();
+    }
+    if (watchDogTimer != null) {
+      watchDogTimer.cancel();
+    }
     //Stop Threads
     if (executor != null) {
       executor.shutdown();
