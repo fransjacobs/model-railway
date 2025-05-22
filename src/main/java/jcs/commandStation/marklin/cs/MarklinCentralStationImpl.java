@@ -18,6 +18,8 @@ package jcs.commandStation.marklin.cs;
 import jcs.commandStation.marklin.cs.can.device.CanDevice;
 import jcs.commandStation.marklin.cs.can.parser.FeedbackEventMessage;
 import java.awt.Image;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -89,6 +91,7 @@ import jcs.commandStation.events.ConnectionEventListener;
 import jcs.commandStation.events.MeasurementEvent;
 import jcs.commandStation.events.MeasurementEventListener;
 import jcs.commandStation.marklin.parser.CanDeviceJSONParser;
+import jcs.util.Ping;
 
 /**
  * Command Station Implementation for Marklin CS-2/3
@@ -176,14 +179,48 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
         executor = Executors.newCachedThreadPool();
       }
 
-      CSConnection csConnection = CSConnectionFactory.getConnection(virtual);
+      if (commandStationBean == null) {
+        Logger.error("Marklin Command Station Configuration NOT set!");
+        return false;
+      } else {
+        Logger.trace("Connect using " + commandStationBean.getConnectionType());
+      }
 
-      connection = csConnection;
+      CommandStationBean.ConnectionType conType = commandStationBean.getConnectionType();
+
+      boolean canConnect;
+      if (conType == CommandStationBean.ConnectionType.NETWORK) {
+        try {
+          InetAddress csAddr;
+          if (virtual) {
+            csAddr = InetAddress.getLocalHost();
+          } else {
+            csAddr = InetAddress.getByName(commandStationBean.getIpAddress());
+          }
+          commandStationBean.setIpAddress(csAddr.getHostAddress());
+          canConnect = csAddr.getHostAddress() != null;
+        } catch (UnknownHostException ex) {
+          Logger.error("Invalid ip address : " + commandStationBean.getIpAddress());
+          return false;
+        }
+      } else {
+        if (virtual) {
+          canConnect = true;
+        } else {
+          canConnect = Ping.IsReachable(commandStationBean.getIpAddress());
+        }
+      }
+
+      if (!canConnect) {
+        Logger.error("Can't connect to " + (commandStationBean.getIpAddress() == null ? "ip Address not set" : "can't reach ip " + commandStationBean.getIpAddress()));
+        return false;
+      }
+
+      connection = CSConnectionFactory.getConnection(commandStationBean);
 
       if (connection != null) {
-        //Wait until the receiver thread has started
         long now = System.currentTimeMillis();
-        long timeout = now + 1000L;
+        long timeout = now + 5000L;
 
         while (!connected && now < timeout) {
           connected = connection.isConnected();
@@ -196,7 +233,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
         if (connected) {
           CanDevice gfp = getGFP();
           canDevices.put(gfp.getUidInt(), gfp);
-          csUid = gfp.getUidInt(); //Integer.parseUnsignedInt(gfp.getUid().replace("0x", ""), 16);
+          csUid = gfp.getUidInt();
 
           canBootLoaderLastCallMillis = System.currentTimeMillis();
 
@@ -217,7 +254,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
           eventMessageHandler = new EventMessageHandler(connection);
           eventMessageHandler.start();
 
-          csConnection.addDisconnectionEventListener(this);
+          connection.addDisconnectionEventListener(this);
           startWatchdog();
 
           power = isPower();
@@ -253,7 +290,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   //Based on the info in this file it is quicker to know whether the CS is a version 2 or 3.
   //In case of a CS-3 the information can be retrieved via JSON else use CAN
   CanDevice getGFP() {
-    CSHTTPConnection httpCon = CSConnectionFactory.getHTTPConnection(virtual);
+    CSHTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
     String geraet = httpCon.getInfoFile();
     CanDevice gfp = GeraetParser.parseFile(geraet);
     return gfp;
@@ -427,7 +464,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
    * This data can also be obtained using the CAN Member PING command, but The JSON gives a little more detail.
    */
   private List<CanDevice> getCS3Devices() {
-    CSHTTPConnection httpCon = CSConnectionFactory.getHTTPConnection(virtual);
+    CSHTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
 
     String devJson = httpCon.getDevicesJSON();
     List<CanDevice> devices = CanDeviceJSONParser.parse(devJson);
@@ -771,14 +808,14 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   }
 
   List<LocomotiveBean> getLocomotivesViaHttp() {
-    CSHTTPConnection httpCon = CSConnectionFactory.getHTTPConnection(virtual);
+    CSHTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
     String csLocos = httpCon.getLocomotivesFile();
     LocomotiveBeanParser lp = new LocomotiveBeanParser();
     return lp.parseLocomotivesFile(csLocos);
   }
 
   List<LocomotiveBean> getLocomotivesViaJSON() {
-    CSHTTPConnection httpCon = CSConnectionFactory.getHTTPConnection(virtual);
+    CSHTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
     String json = httpCon.getLocomotivesJSON();
     LocomotiveBeanJSONParser lp = new LocomotiveBeanJSONParser();
     return lp.parseLocomotives(json);
@@ -806,7 +843,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   }
 
   List<AccessoryBean> getAccessoriesViaHttp() {
-    CSHTTPConnection httpCon = CSConnectionFactory.getHTTPConnection(virtual);
+    CSHTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
     if (isCS3() && System.getProperty("accessory.list.via", "JSON").equalsIgnoreCase("JSON")) {
       String json = httpCon.getAccessoriesJSON();
       return AccessoryBeanParser.parseAccessoryJSON(json, commandStationBean.getId(), commandStationBean.getShortName());
@@ -836,14 +873,14 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 
   @Override
   public Image getLocomotiveImage(String icon) {
-    CSHTTPConnection httpCon = CSConnectionFactory.getHTTPConnection(virtual);
+    CSHTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
     Image locIcon = httpCon.getLocomotiveImage(icon);
     return locIcon;
   }
 
   @Override
   public Image getLocomotiveFunctionImage(String icon) {
-    CSHTTPConnection httpCon = CSConnectionFactory.getHTTPConnection(virtual);
+    CSHTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
     if (this.isCS3()) {
       if (!FunctionSvgToPngConverter.isSvgCacheLoaded()) {
         Logger.trace("Loading SVG Cache");

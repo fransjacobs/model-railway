@@ -26,8 +26,8 @@ import java.util.Set;
 import jcs.JCS;
 import jcs.commandStation.marklin.cs.can.CanMessage;
 import jcs.commandStation.marklin.cs.can.CanMessageFactory;
+import jcs.entities.CommandStationBean;
 import jcs.util.NetworkUtil;
-import jcs.util.Ping;
 import jcs.util.RunUtil;
 import net.straylightlabs.hola.dns.Domain;
 import net.straylightlabs.hola.sd.Instance;
@@ -46,119 +46,126 @@ import org.tinylog.Logger;
 public class CSConnectionFactory {
 
   private static final String MARKLIN_CS_SERVICE = "_workstation._tcp";
-
-  private static CSConnectionFactory instance;
-
-  private CSConnection controllerConnection;
-  private CSHTTPConnection httpConnection;
-  private InetAddress controllerHost;
-
   private static final String BROADCAST_ADDRESS = "255.255.255.255";
 
-  private static final String LAST_USED_IP_PROP_FILE = RunUtil.DEFAULT_PATH + "last-used-marklin-cs-ip.properties";
+  private static InetAddress controllerHost;
+  private static boolean forceVirtual = false;
+  private static boolean virtual;
 
-  private boolean forceVirtual = false;
+  private static CSConnection controllerConnection;
+  private static CSHTTPConnection httpConnection;
 
-  private CSConnectionFactory() {
+  static {
     forceVirtual = "true".equals(System.getProperty("connection.always.virtual", "false"));
   }
 
-  public static CSConnectionFactory getInstance() {
-    if (instance == null) {
-      instance = new CSConnectionFactory();
-    }
-    return instance;
+  public static CSConnection getConnection(CommandStationBean commandStation) {
+    return getConnection(commandStation, (virtual != commandStation.isVirtual()));
   }
 
-  CSConnection getConnectionImpl(boolean flag) {
-    boolean virtual = flag;
+  public static CSConnection getConnection(CommandStationBean commandStation, boolean reconnect) {
+    if (reconnect) {
+      disconnectAll();
+    }
+
+    virtual = commandStation.isVirtual();
     if (!virtual && forceVirtual) {
       virtual = forceVirtual;
       Logger.info("Forcing a virtual connection!");
     }
-    if (!virtual) {
-      if (controllerConnection == null) {
-        String lastUsedIp = RunUtil.readProperty(LAST_USED_IP_PROP_FILE, "ip-address");
 
-        if (lastUsedIp != null) {
-          try {
-            if (Ping.IsReachable(lastUsedIp)) {
-              controllerHost = InetAddress.getByName(lastUsedIp);
-              Logger.trace("Using last used IP Address: " + lastUsedIp);
-            } else {
-              Logger.trace("Last used IP Address: " + lastUsedIp + " is not reachable");
-            }
-          } catch (UnknownHostException ex) {
-            Logger.trace("Last used CS IP: " + lastUsedIp + " is invalid!");
-            lastUsedIp = null;
-          }
-        }
-
-        if (controllerHost == null) {
-          Logger.trace("Try to discover a Marklin CS...");
-          JCS.logProgress("Discovering a Marklin Central Station...");
-          //First try with mdns
-          controllerHost = discoverCs();
-          if (controllerHost == null) {
-            //try the "old" way by sending a "ping"
-            controllerHost = sendMobileAppPing();
-          }
-        }
-
-        if (controllerHost != null) {
-          if (lastUsedIp == null) {
-            //Write the last used IP Addres for faster discovery next time
-            RunUtil.writeProperty(LAST_USED_IP_PROP_FILE, "ip-address", controllerHost.getHostAddress());
-          }
-          Logger.trace("CS ip: " + controllerHost.getHostName());
-
-          controllerConnection = new CSTCPConnection(controllerHost);
-        } else {
-          Logger.warn("Can't find a Marklin Controller host!");
-          JCS.logProgress("Can't find a Marklin Central Station on the Network");
-        }
-      }
-    } else {
-      controllerConnection = new CSVirtualConnection(NetworkUtil.getIPv4HostAddress());
-    }
-
-    return this.controllerConnection;
-  }
-
-  public static CSConnection getConnection(boolean flag) {
-    return getInstance().getConnectionImpl(flag);
-  }
-
-  public static void disconnectAll() {
-    if (instance.controllerConnection != null) {
-      try {
-        instance.controllerConnection.close();
-      } catch (Exception ex) {
-        Logger.trace("Error during disconnect " + ex);
-      }
-    }
-    instance.controllerConnection = null;
-    instance.httpConnection = null;
-    instance.controllerHost = null;
-  }
-
-  CSHTTPConnection getHTTPConnectionImpl(boolean flag) {
-    if (controllerConnection == null) {
-      getConnectionImpl(flag);
-    }
-    if (httpConnection == null) {
-      if (!flag) {
-        httpConnection = new CSHTTPConnectionImpl(controllerHost);
+    try {
+      if (virtual) {
+        controllerHost = InetAddress.getLocalHost();
       } else {
-        httpConnection = new CSHTTPConnectionVirt(controllerHost);
+        controllerHost = InetAddress.getByName(commandStation.getIpAddress());
+      }
+    } catch (UnknownHostException ex) {
+      Logger.error("Invalid ip address : " + commandStation.getIpAddress());
+      return null;
+    }
 
+    if (controllerConnection == null) {
+      if (virtual) {
+        controllerConnection = new CSVirtualConnection(controllerHost);
+      } else {
+        controllerConnection = new CSTCPConnection(controllerHost);
+      }
+    }
+
+    return controllerConnection;
+  }
+
+  public static CSHTTPConnection getHTTPConnection() {
+    if (httpConnection == null) {
+      if (virtual) {
+        httpConnection = new CSHTTPConnectionVirt(controllerHost);
+      } else {
+        httpConnection = new CSHTTPConnectionImpl(controllerHost);
       }
     }
     return httpConnection;
   }
 
-  public static CSHTTPConnection getHTTPConnection(boolean flag) {
-    return getInstance().getHTTPConnectionImpl(flag);
+  public static void disconnectAll() {
+    if (controllerConnection != null) {
+      try {
+        controllerConnection.close();
+      } catch (Exception ex) {
+        Logger.trace("Error during disconnect " + ex);
+      }
+    }
+    controllerConnection = null;
+    httpConnection = null;
+    controllerHost = null;
+  }
+
+  public static String getControllerIp() {
+    if (controllerHost != null) {
+      return controllerHost.getHostAddress();
+    } else {
+      return "Unknown";
+    }
+  }
+
+  /**
+   * Try to Automatically discover the Marklin Central Station IP Address on the local network.<br>
+   * mDNS is now supported by the CS-3, not sure whether the CS-2 also supports it.
+   *
+   * @return the IP Address of the Marklin Central Station of null if not discovered.
+   */
+  public static InetAddress discoverCs() {
+    InetAddress csIp = null;
+
+    try {
+      Service marklinService = Service.fromName(MARKLIN_CS_SERVICE);
+      Query marklinQuery = Query.createFor(marklinService, Domain.LOCAL);
+
+      Set<Instance> marklinInstances = marklinQuery.runOnceOn(NetworkUtil.getIPv4HostAddress());
+
+      Logger.trace("Found " + marklinInstances.size());
+
+      if (marklinInstances.isEmpty()) {
+        Logger.warn("Could not find a Marklin Central Station host on the local network!");
+        return null;
+      }
+
+      Instance cs = marklinInstances.iterator().next();
+      Logger.trace("Marklin Central Station: " + cs);
+
+      Set<InetAddress> addresses = cs.getAddresses();
+
+      //Find the first ip4 address
+      for (InetAddress ia : addresses) {
+        if (ia instanceof Inet4Address) {
+          csIp = ia;
+          break;
+        }
+      }
+    } catch (IOException ex) {
+      Logger.error(ex.getMessage());
+    }
+    return csIp;
   }
 
   /**
@@ -168,7 +175,7 @@ public class CSConnectionFactory {
    *
    * @return the IP Address of the Marklin Central Station or null if not discovered.
    */
-  public static InetAddress sendMobileAppPing() {
+  public static InetAddress discoverCsUsingMobileAppPing() {
     InetAddress csIp = null;
     try {
       InetAddress localAddress;
@@ -211,58 +218,6 @@ public class CSConnectionFactory {
       Logger.trace("No reply. " + ste.getMessage());
     } catch (IOException ex) {
       Logger.error(ex);
-    }
-    return csIp;
-  }
-
-  String getControllerIpImpl() {
-    if (controllerHost != null) {
-      return controllerHost.getHostAddress();
-    } else {
-      return "Unknown";
-    }
-  }
-
-  public static String getControllerIp() {
-    return getInstance().getControllerIpImpl();
-  }
-
-  /**
-   * Try to Automatically discover the Marklin Central Station IP Address on the local network.<br>
-   * mDNS is now supported by the CS-3, not sure whether the CS-2 also supports it.
-   *
-   * @return the IP Address of the Marklin Central Station of null if not discovered.
-   */
-  public static InetAddress discoverCs() {
-    InetAddress csIp = null;
-
-    try {
-      Service marklinService = Service.fromName(MARKLIN_CS_SERVICE);
-      Query marklinQuery = Query.createFor(marklinService, Domain.LOCAL);
-
-      Set<Instance> marklinInstances = marklinQuery.runOnceOn(NetworkUtil.getIPv4HostAddress());
-
-      Logger.trace("Found " + marklinInstances.size());
-
-      if (marklinInstances.isEmpty()) {
-        Logger.warn("Could not find a Marklin Central Station host on the local network!");
-        return null;
-      }
-
-      Instance cs = marklinInstances.iterator().next();
-      Logger.trace("Marklin Central Station: " + cs);
-
-      Set<InetAddress> addresses = cs.getAddresses();
-
-      //Find the first ip4 address
-      for (InetAddress ia : addresses) {
-        if (ia instanceof Inet4Address) {
-          csIp = ia;
-          break;
-        }
-      }
-    } catch (IOException ex) {
-      Logger.error(ex.getMessage());
     }
     return csIp;
   }

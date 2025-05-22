@@ -60,7 +60,7 @@ class AccessoryManager implements AccessoryEventListener {
           //Details
           accessory = parseValues(values, event);
         }
-        this.accessories.put(accessory.getId(), accessory);
+        accessories.put(accessory.getId(), accessory);
       }
 
       if (values.containsKey(Ecos.SIZE)) {
@@ -121,6 +121,8 @@ class AccessoryManager implements AccessoryEventListener {
       } else {
         switch (protocol) {
           case "MOT" ->
+            accessory.setProtocol(AccessoryBean.Protocol.MM);
+          case "MM" ->
             accessory.setProtocol(AccessoryBean.Protocol.MM);
           case "DCC" ->
             accessory.setProtocol(AccessoryBean.Protocol.DCC);

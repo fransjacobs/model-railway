@@ -33,6 +33,10 @@ import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 import java.net.InetAddress;
 import javax.swing.JDialog;
+import jcs.commandStation.DecoderController;
+import jcs.commandStation.entities.InfoBean;
+import jcs.commandStation.esu.ecos.EsuEcosCommandStationImpl;
+import jcs.commandStation.marklin.cs.MarklinCentralStationImpl;
 import jcs.util.Ping;
 
 /**
@@ -55,6 +59,10 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
 
   private static final String MARKLIN_CS = "marklin.cs";
   private static final String ESU_ECOS = "esu-ecos";
+  private static final String DCC_EX = "dcc-ex";
+  private static final String HSI_S88 = "hsi-s88";
+
+  private DecoderController controller;
 
   /**
    * Creates new form CommandStationDialog1
@@ -191,6 +199,12 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
     jScrollPane1 = new javax.swing.JScrollPane();
     jTree1 = new javax.swing.JTree();
     jPanel2 = new javax.swing.JPanel();
+    jPanel1 = new javax.swing.JPanel();
+    controllerPanel = new javax.swing.JPanel();
+    connectedToLbl = new javax.swing.JLabel();
+    serialLbl = new javax.swing.JLabel();
+    swVersionLbl = new javax.swing.JLabel();
+    hwVersionLbl = new javax.swing.JLabel();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -367,16 +381,42 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
 
     getContentPane().add(jPanel5, java.awt.BorderLayout.LINE_START);
 
-    javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-    jPanel2.setLayout(jPanel2Layout);
-    jPanel2Layout.setHorizontalGroup(
-      jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-      .addGap(0, 0, Short.MAX_VALUE)
+    jPanel2.setLayout(new java.awt.BorderLayout());
+
+    javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+    jPanel1.setLayout(jPanel1Layout);
+    jPanel1Layout.setHorizontalGroup(
+      jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+      .addGap(0, 825, Short.MAX_VALUE)
     );
-    jPanel2Layout.setVerticalGroup(
-      jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-      .addGap(0, 417, Short.MAX_VALUE)
+    jPanel1Layout.setVerticalGroup(
+      jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+      .addGap(0, 390, Short.MAX_VALUE)
     );
+
+    jPanel2.add(jPanel1, java.awt.BorderLayout.CENTER);
+
+    java.awt.FlowLayout flowLayout2 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
+    flowLayout2.setAlignOnBaseline(true);
+    controllerPanel.setLayout(flowLayout2);
+
+    connectedToLbl.setText("Connected to: command station");
+    connectedToLbl.setPreferredSize(new java.awt.Dimension(200, 17));
+    controllerPanel.add(connectedToLbl);
+
+    serialLbl.setText("Serial: xxxxxx");
+    serialLbl.setPreferredSize(new java.awt.Dimension(150, 17));
+    controllerPanel.add(serialLbl);
+
+    swVersionLbl.setText("Software version: xxxxxxx");
+    swVersionLbl.setPreferredSize(new java.awt.Dimension(160, 17));
+    controllerPanel.add(swVersionLbl);
+
+    hwVersionLbl.setText("Hardware version: xxxxxx");
+    hwVersionLbl.setPreferredSize(new java.awt.Dimension(160, 17));
+    controllerPanel.add(hwVersionLbl);
+
+    jPanel2.add(controllerPanel, java.awt.BorderLayout.PAGE_START);
 
     getContentPane().add(jPanel2, java.awt.BorderLayout.CENTER);
 
@@ -400,8 +440,8 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
     }
 
     selectedCommandStation = (CommandStationBean) commandStationCBM.getSelectedItem();
-
     executor.execute(() -> changeDefaultCommandStation(selectedCommandStation));
+    selectedCommandStation.setEnabled(true);
 
     setComponents();
     //this.enableFields(this.enableEditCB.isSelected());
@@ -433,6 +473,9 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
 
     if (selectedCommandStation.getIpAddress() == null || selectedCommandStation.getIpAddress().length() > 8) {
       ipTF.setBackground(new java.awt.Color(255, 255, 255));
+      connectBtn.setEnabled(true);
+    } else {
+      connectBtn.setEnabled(false);
     }
 
     //no main controller feedback support, enable the secondary
@@ -441,6 +484,41 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
     feedbackLbl.setVisible(!selectedCommandStation.isFeedbackSupport());
 
     secondfbpLbl.setVisible(!selectedCommandStation.isFeedbackSupport() && selectedFeedbackProvider.isFeedbackSupport() && selectedFeedbackProvider.getId() != null);
+
+    fbpSerialCB.setVisible(!selectedCommandStation.isFeedbackSupport());
+    fbpSerialCB.setEnabled(!selectedCommandStation.isFeedbackSupport());
+    fbpSerialLbl.setVisible(!selectedCommandStation.isFeedbackSupport());
+
+    if (controller != null && controller.isConnected()) {
+      InfoBean ib = controller.getCommandStationInfo();
+      connectedToLbl.setText("Connected to : " + ib.getProductName());
+      connectedToLbl.setVisible(true);
+
+      serialLbl.setText("Serial: " + ib.getSerialNumber());
+      serialLbl.setVisible(true);
+
+      if (ib.getSoftwareVersion() != null) {
+        swVersionLbl.setText("Software version: " + ib.getSoftwareVersion());
+        swVersionLbl.setVisible(true);
+      } else {
+        swVersionLbl.setVisible(false);
+      }
+
+      if (ib.getHardwareVersion() != null) {
+        hwVersionLbl.setText(("Hardware version: " + ib.getHardwareVersion()));
+        hwVersionLbl.setVisible(true);
+      } else {
+        hwVersionLbl.setVisible(false);
+      }
+
+      connectBtn.setText("Disconnect");
+    } else {
+      connectedToLbl.setVisible(false);
+      serialLbl.setVisible(false);
+      swVersionLbl.setVisible(false);
+      hwVersionLbl.setVisible(false);
+      connectBtn.setText("Connect");
+    }
   }
 
   private void changeDefaultCommandStation(final CommandStationBean newDefault) {
@@ -531,7 +609,13 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
   }//GEN-LAST:event_ipTFMouseExited
 
   private void connectBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectBtnActionPerformed
-    // TODO add your handling code here:
+    Logger.trace("Try to connect to " + selectedCommandStation.getDescription());
+
+    if ("Connect".equals(connectBtn.getText())) {
+      executor.execute(() -> connect(selectedCommandStation));
+    } else {
+      executor.execute(() -> disconnect());
+    }
   }//GEN-LAST:event_connectBtnActionPerformed
 
   private void checkBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkBtnActionPerformed
@@ -541,7 +625,7 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
   private InetAddress discover(final CommandStationBean commandStation) {
     final JOptionPane optionPane = new JOptionPane("Try to discovering a " + commandStation.getDescription(),
             JOptionPane.INFORMATION_MESSAGE,
-            JOptionPane.OK_OPTION);
+            JOptionPane.DEFAULT_OPTION);
 
     final JDialog discoverDialog = new JDialog(this, "Discovering...");
     discoverDialog.setContentPane(optionPane);
@@ -560,10 +644,10 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
     if (inetAddress != null) {
       Logger.trace("Discovered host " + inetAddress.getHostAddress() + " for " + commandStation.getDescription());
       commandStation.setIpAddress(inetAddress.getHostAddress());
+      persistCommandStation(commandStation);
     }
 
     java.awt.EventQueue.invokeLater(() -> {
-      setComponents();
       discoverDialog.setVisible(false);
       discoverDialog.dispose();
     });
@@ -578,12 +662,87 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
     java.awt.EventQueue.invokeLater(() -> {
       if (canConnect) {
         ipTF.setBackground(new java.awt.Color(204, 255, 204));
+        connectBtn.setEnabled(true);
       } else {
         ipTF.setBackground(new java.awt.Color(255, 255, 255));
-
+        connectBtn.setEnabled(false);
         JOptionPane.showMessageDialog(this, "Can't connect with host " + ip, "Can't Connect", JOptionPane.WARNING_MESSAGE);
       }
     });
+  }
+
+  private void disconnect() {
+    if (controller != null) {
+      controller.disconnect();
+      controller = null;
+
+      java.awt.EventQueue.invokeLater(() -> {
+        setComponents();
+      });
+
+    }
+  }
+
+  private void connect(final CommandStationBean commandStation) {
+    final JOptionPane optionPane = new JOptionPane("Try to connect to " + commandStation.getDescription(),
+            JOptionPane.INFORMATION_MESSAGE,
+            JOptionPane.DEFAULT_OPTION);
+
+    final JDialog connectingDialog = new JDialog(this, "Connecting...");
+    connectingDialog.setContentPane(optionPane);
+    connectingDialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+    connectingDialog.pack();
+    connectingDialog.setLocationRelativeTo(null);
+    connectingDialog.setVisible(true);
+
+    if (MARKLIN_CS.equals(commandStation.getId())) {
+      controller = new MarklinCentralStationImpl(commandStation);
+    } else if (ESU_ECOS.equals(commandStation.getId())) {
+      controller = new EsuEcosCommandStationImpl(commandStation);
+    } else if (DCC_EX.equals(commandStation.getId())) {
+      Logger.info("TODO: DCC-EX!");
+    } else if (HSI_S88.equals(commandStation.getId())) {
+      Logger.info("TODO: HSI-S88!");
+    } else {
+      Logger.trace("Unknown Controller!");
+    }
+
+    if (controller == null) {
+      return;
+    }
+
+    controller.connect();
+    if (controller.isConnected()) {
+      //Obtain some info from the controller
+      Logger.trace("Connected to " + controller.getCommandStationInfo());
+
+      java.awt.EventQueue.invokeLater(() -> {
+        setComponents();
+      });
+    }
+
+    java.awt.EventQueue.invokeLater(() -> {
+      connectingDialog.setVisible(false);
+      connectingDialog.dispose();
+    });
+
+    //} catch (UnknownHostException ex) {
+    //  Logger.error("Unknown host " + commandStation.getIpAddress());
+    //  return false;
+    //}
+  }
+
+  @Override
+  public void setVisible(boolean b) {
+    super.setVisible(b);
+
+    if (!b && this.controller != null) {
+      if (controller.isConnected()) {
+        controller.disconnect();
+      }
+      controller = null;
+      Logger.trace("Disconnected from " + selectedCommandStation.getId());
+    }
   }
 
   /**
@@ -605,6 +764,7 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
       dialog.addWindowListener(new java.awt.event.WindowAdapter() {
         @Override
         public void windowClosing(java.awt.event.WindowEvent e) {
+          dialog.setVisible(false);
           System.exit(0);
         }
       });
@@ -623,8 +783,10 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
   private javax.swing.JComboBox<CommandStationBean> commandStationCB;
   private javax.swing.JLabel commandStationLbl;
   private javax.swing.JButton connectBtn;
+  private javax.swing.JLabel connectedToLbl;
   private javax.swing.ButtonGroup connectionTypeBG;
   private javax.swing.JLabel controllerLbl;
+  private javax.swing.JPanel controllerPanel;
   private javax.swing.JButton discoverBtn;
   private javax.swing.JComboBox<String> fbpSerialCB;
   private javax.swing.JLabel fbpSerialLbl;
@@ -633,8 +795,10 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
   private javax.swing.JLabel feedbackLbl;
   private javax.swing.JLabel feedbackProviderLbl;
   private javax.swing.Box.Filler filler1;
+  private javax.swing.JLabel hwVersionLbl;
   private javax.swing.JLabel ipOrPortLbl;
   private javax.swing.JTextField ipTF;
+  private javax.swing.JPanel jPanel1;
   private javax.swing.JPanel jPanel2;
   private javax.swing.JPanel jPanel3;
   private javax.swing.JPanel jPanel4;
@@ -645,7 +809,9 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
   private javax.swing.JRadioButton networkRB;
   private javax.swing.JLabel secondfbpLbl;
   private javax.swing.JComboBox<String> serialCB;
+  private javax.swing.JLabel serialLbl;
   private javax.swing.JRadioButton serialRB;
+  private javax.swing.JLabel swVersionLbl;
   private javax.swing.JPanel topPanel;
   // End of variables declaration//GEN-END:variables
 

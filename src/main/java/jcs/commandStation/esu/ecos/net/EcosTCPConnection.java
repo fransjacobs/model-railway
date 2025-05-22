@@ -69,22 +69,23 @@ class EcosTCPConnection implements EcosConnection {
         messageReceiver.start();
       }
     } catch (IOException ex) {
-      this.clientSocket = null;
+      clientSocket = null;
       Logger.error("Can't (re)connect with ESU Ecos " + ecosAddress.getHostAddress() + ". Cause: " + ex.getMessage());
       Logger.trace(ex);
     }
   }
 
   private void disconnect() {
-    this.messageReceiver.quit();
+    messageReceiver.quit();
 
     //wait until the messageReceiver has shut down
     long now = System.currentTimeMillis();
     long start = now;
-    long timeout = now + TIMEOUT;
-    boolean finished = this.messageReceiver.isFinished();
+    long timeout = now + TIMEOUT * 4;
+    boolean finished = messageReceiver.isFinished();
+
     while (!finished && now < timeout) {
-      finished = this.messageReceiver.isFinished();
+      finished = messageReceiver.isFinished();
       now = System.currentTimeMillis();
     }
 
@@ -144,7 +145,7 @@ class EcosTCPConnection implements EcosConnection {
     } catch (IOException | InterruptedException ex) {
       Logger.error(ex);
       String msg = "Host " + ecosAddress.getHostName();
-      ConnectionEvent de = new ConnectionEvent(msg,false);
+      ConnectionEvent de = new ConnectionEvent(msg, false);
 
       messageReceiver.messageListener.onDisconnect(de);
       messageReceiver.quit();
@@ -159,12 +160,12 @@ class EcosTCPConnection implements EcosConnection {
 
   @Override
   public boolean isConnected() {
-    return this.messageReceiver != null && this.messageReceiver.isRunning();
+    return messageReceiver != null && messageReceiver.isRunning();
   }
 
   @Override
   public TransferQueue<EcosMessage> getEventQueue() {
-    return this.eventQueue;
+    return eventQueue;
   }
 
   private class ClientMessageReceiver extends Thread {
@@ -182,22 +183,28 @@ class EcosTCPConnection implements EcosConnection {
       }
     }
 
-    void quit() {
-      this.quit = true;
+    synchronized void quit() {
+      quit = true;
+      interrupt();
       //Shutdown the socket input otherwise the receving thread can't stop
       try {
-        clientSocket.shutdownInput();
+        if (!clientSocket.isClosed()) {
+          clientSocket.shutdownInput();
+        }
+        if (reader != null) {
+          reader.close();
+        }
       } catch (IOException ex) {
         Logger.error(ex);
       }
     }
 
     boolean isRunning() {
-      return !this.quit;
+      return !quit;
     }
 
     boolean isFinished() {
-      return this.stop;
+      return stop;
     }
 
     void setMessageListener(EcosMessageListener messageListener) {
@@ -206,12 +213,12 @@ class EcosTCPConnection implements EcosConnection {
 
     @Override
     public void run() {
-      this.quit = false;
-      this.setName("ESU-ECOS-RX");
+      quit = false;
+      setName("ESU-ECOS-RX");
 
       Logger.trace("Started listening on port " + clientSocket.getLocalPort() + " ...");
 
-      while (isRunning()) {
+      while (!quit) {
         try {
           String rx = reader.readLine();
           Logger.trace("RX: " + rx);
@@ -247,7 +254,7 @@ class EcosTCPConnection implements EcosConnection {
             sb.append(rx);
             boolean complete = EcosMessage.isComplete(rx);
 
-            while (!complete && now < timeout) {
+            while (!complete && now < timeout && !quit) {
               rx = reader.readLine();
               sb.append(rx);
               complete = EcosMessage.isComplete(sb.toString());
@@ -261,26 +268,27 @@ class EcosTCPConnection implements EcosConnection {
 
               eventQueue.offer(emsg);
             }
-
           }
         } catch (SocketException se) {
           Logger.error(se.getMessage());
           String msg = "Host " + ecosAddress.getHostName();
           ConnectionEvent de = new ConnectionEvent(msg, false);
-          this.messageListener.onDisconnect(de);
+          messageListener.onDisconnect(de);
           quit();
         } catch (IOException | InterruptedException ex) {
           Logger.error(ex);
         }
       }
 
-      Logger.debug("Stop receiving");
       try {
-        reader.close();
+        if (reader != null) {
+          reader.close();
+        }
       } catch (IOException ex) {
         Logger.error(ex);
       }
       stop = true;
+      Logger.debug("Stopped receiving");
     }
   }
 
