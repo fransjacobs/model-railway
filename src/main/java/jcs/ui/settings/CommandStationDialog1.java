@@ -718,6 +718,10 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
 
       java.awt.EventQueue.invokeLater(() -> {
         setComponents();
+        
+        //Query the controller for devices in general and for feedback devices 
+        //how to populate the tree.....
+        
       });
     }
 

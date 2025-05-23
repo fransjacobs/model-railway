@@ -136,9 +136,15 @@ public class EsuEcosCommandStationImplTest {
       expResult.setSerialNumber("0x00000000");
       expResult.setHardwareVersion("1.3");
       expResult.setSoftwareVersion("4.2.13");
+      expResult.setProductName("ECoS-Virtual");
       expResult.setHostname(NetworkUtil.getIPv4HostAddress().getHostAddress());
 
       InfoBean result = instance.getCommandStationInfo();
+      
+//expected: <InfoBean{softwareVersion=4.2.13, hardwareVersion=1.3, serialNumber=0x00000000, productName=null, articleNumber=Virtual, hostname=192.168.1.231, gfpUid=null, guiUid=null}> 
+// but was: <InfoBean{softwareVersion=4.2.13, hardwareVersion=1.3, serialNumber=0x00000000, productName=ECoS-Virtual, articleNumber=Virtual, hostname=192.168.1.231, gfpUid=null, guiUid=null}>
+      
+      
       assertEquals(expResult, result);
     }
   }
