@@ -651,75 +651,6 @@ public class CommandStationDialog1 extends JDialog implements TreeSelectionListe
       root.add(deviceNode);
     }
 
-//    if (controller != null && controller instanceof FeedbackController) {
-//      //DefaultMutableTreeNode feedbackmodules = null;
-//
-//      DefaultMutableTreeNode category = null;
-//      DefaultMutableTreeNode book = null;
-//
-//      List<FeedbackModuleBean> modules = ((FeedbackController) controller).getFeedbackModules();
-//      Collections.sort(modules);
-//
-//      for (FeedbackModuleBean fm : modules) {
-//        DefaultMutableTreeNode moduleNode = new DefaultMutableTreeNode("M " + fm.toString());
-//        Logger.trace("M " + fm.toString());
-//
-//        if () {
-//          root.add(moduleNode);
-//        }
-//      }
-//      category = new DefaultMutableTreeNode("Books for Java Programmers");
-//      top.add(category);
-//
-//      //original Tutorial
-//      book = new DefaultMutableTreeNode(new BookInfo("The Java Tutorial: A Short Course on the Basics",
-//              "tutorial.html"));
-//      category.add(book);
-//
-//      //Tutorial Continued
-//      book = new DefaultMutableTreeNode(new BookInfo("The Java Tutorial Continued: The Rest of the JDK",
-//              "tutorialcont.html"));
-//      category.add(book);
-//
-//      //Swing Tutorial
-//      book = new DefaultMutableTreeNode(new BookInfo("The Swing Tutorial: A Guide to Constructing GUIs",
-//              "swingtutorial.html"));
-//      category.add(book);
-//
-//      //...add more books for programmers...
-//      category = new DefaultMutableTreeNode("Books for Java Implementers");
-//      top.add(category);
-//
-//      //VM
-//      book = new DefaultMutableTreeNode(new BookInfo("The Java Virtual Machine Specification",
-//              "vm.html"));
-//      category.add(book);
-//
-//      //Language Spec
-//      book = new DefaultMutableTreeNode(new BookInfo("The Java Language Specification",
-//              "jls.html"));
-//      category.add(book);
-//  }
-  }
-
-  private class BookInfo {
-
-    public String bookName;
-    public URL bookURL;
-
-    public BookInfo(String book, String filename) {
-      bookName = book;
-      bookURL = getClass().getResource("/sandbox/" + filename);
-
-      if (bookURL == null) {
-        Logger.warn("Couldn't find file: " + filename);
-      }
-    }
-
-    @Override
-    public String toString() {
-      return bookName;
-    }
   }
 
   public void valueChanged(TreeSelectionEvent e) {
@@ -732,36 +663,9 @@ public class CommandStationDialog1 extends JDialog implements TreeSelectionListe
     Object nodeInfo = node.getUserObject();
 
     if (node.isLeaf()) {
-      CommandStationDialog1.BookInfo book = (CommandStationDialog1.BookInfo) nodeInfo;
 
-      displayURL(book.bookURL);
-//      if (DEBUG) {
-//        System.out.print(book.bookURL + ":  \n    ");
-//      }
     } else {
-      //displayURL(helpURL);
     }
-//    if (DEBUG) {
-//      System.out.println(nodeInfo.toString());
-//    }
-  }
-
-  private void displayURL(URL url) {
-    //try {
-    if (url != null) {
-      //htmlPane.setPage(url);
-      Logger.trace("Suppose to set URL: " + url);
-    } else {
-      // htmlPane.setText("File Not Found");
-      Logger.trace("File Not Found " + url);
-//                 if (DEBUG) {
-//                    System.out.println("Attempted to display a null URL.");
-//                }
-    }
-    //} catch (IOException e) {
-    //System.err.println("Attempted to read a bad URL: " + url);
-    // Logger.trace("Attempted to read a bad URL: " + url);
-    //}
   }
 
   private void changeDefaultCommandStation(final CommandStationBean newDefault) {
