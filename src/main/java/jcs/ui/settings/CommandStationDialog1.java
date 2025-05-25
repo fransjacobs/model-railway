@@ -32,18 +32,29 @@ import jcs.entities.CommandStationBean;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 import java.net.InetAddress;
+import java.net.URL;
+import java.util.Collections;
 import javax.swing.JDialog;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeSelectionModel;
 import jcs.commandStation.DecoderController;
+import jcs.commandStation.FeedbackController;
+import jcs.commandStation.entities.Device;
 import jcs.commandStation.entities.InfoBean;
 import jcs.commandStation.esu.ecos.EsuEcosCommandStationImpl;
 import jcs.commandStation.marklin.cs.MarklinCentralStationImpl;
+import jcs.entities.FeedbackModuleBean;
+import jcs.entities.SensorBean;
 import jcs.util.Ping;
 
 /**
  *
  * @author fransjacobs
  */
-public class CommandStationDialog1 extends javax.swing.JDialog {
+public class CommandStationDialog1 extends JDialog implements TreeSelectionListener {
 
   private ComboBoxModel<CommandStationBean> commandStationCBM;
   private ComboBoxModel<CommandStationBean> feedbackCBM;
@@ -70,7 +81,7 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
   public CommandStationDialog1(java.awt.Frame parent, boolean modal) {
     super(parent, modal);
     initComponents();
-    this.executor = Executors.newSingleThreadExecutor();
+    executor = Executors.newSingleThreadExecutor();
     if (PersistenceFactory.getService() != null) {
       initModels(null);
     }
@@ -84,7 +95,7 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
       selectedCommandStation = selected;
     }
 
-    if (!selectedCommandStation.isFeedbackSupport()) {
+    if (selectedCommandStation != null && !selectedCommandStation.isFeedbackSupport()) {
       selectedFeedbackProvider = PersistenceFactory.getService().getEnabledFeedbackProvider();
     }
 
@@ -155,12 +166,10 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
     }
 
     setComponents();
-    if (CommandStationBean.ConnectionType.NETWORK == selectedCommandStation.getConnectionType() && selectedCommandStation.getIpAddress() != null && selectedCommandStation.getIpAddress().length() > 8) {
+
+    if (!selectedCommandStation.isVirtual() && CommandStationBean.ConnectionType.NETWORK == selectedCommandStation.getConnectionType() && selectedCommandStation.getIpAddress() != null && selectedCommandStation.getIpAddress().length() > 8) {
       executor.execute(() -> checkConnection(selectedCommandStation));
     }
-
-    //enableFields(false);
-    //this.progressBar.setVisible(false);
   }
 
   /**
@@ -175,6 +184,7 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
     mainCSPanel = new javax.swing.JPanel();
     commandStationLbl = new javax.swing.JLabel();
     commandStationCB = new javax.swing.JComboBox<>();
+    virtualCB = new javax.swing.JCheckBox();
     ipOrPortLbl = new javax.swing.JLabel();
     ipTF = new javax.swing.JTextField();
     serialCB = new javax.swing.JComboBox<>();
@@ -196,15 +206,28 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
     jPanel4 = new javax.swing.JPanel();
     connectBtn = new javax.swing.JButton();
     jPanel5 = new javax.swing.JPanel();
-    jScrollPane1 = new javax.swing.JScrollPane();
-    jTree1 = new javax.swing.JTree();
     jPanel2 = new javax.swing.JPanel();
-    jPanel1 = new javax.swing.JPanel();
+    propertiesPanel = new javax.swing.JPanel();
     controllerPanel = new javax.swing.JPanel();
     connectedToLbl = new javax.swing.JLabel();
     serialLbl = new javax.swing.JLabel();
     swVersionLbl = new javax.swing.JLabel();
     hwVersionLbl = new javax.swing.JLabel();
+    feedbackSettingsPanel = new javax.swing.JPanel();
+    jLabel1 = new javax.swing.JLabel();
+    mainSpinner = new javax.swing.JSpinner();
+    jLabel2 = new javax.swing.JLabel();
+    bus1Spinner = new javax.swing.JSpinner();
+    jLabel3 = new javax.swing.JLabel();
+    bus2Spinner = new javax.swing.JSpinner();
+    jLabel4 = new javax.swing.JLabel();
+    bus3Spinner = new javax.swing.JSpinner();
+    filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(100, 0), new java.awt.Dimension(100, 0), new java.awt.Dimension(100, 32767));
+    updateBtn = new javax.swing.JButton();
+    jPanel6 = new javax.swing.JPanel();
+    jPanel1 = new javax.swing.JPanel();
+    jScrollPane1 = new javax.swing.JScrollPane();
+    jTree1 = new javax.swing.JTree();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -226,6 +249,15 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
       }
     });
     mainCSPanel.add(commandStationCB);
+
+    virtualCB.setText("Virtual");
+    virtualCB.setToolTipText("Use Virtual Connection");
+    virtualCB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        virtualCBActionPerformed(evt);
+      }
+    });
+    mainCSPanel.add(virtualCB);
 
     ipOrPortLbl.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
     ipOrPortLbl.setLabelFor(ipTF);
@@ -353,7 +385,7 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
     jPanel3.setLayout(jPanel3Layout);
     jPanel3Layout.setHorizontalGroup(
       jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-      .addGap(0, 1113, Short.MAX_VALUE)
+      .addGap(0, 1202, Short.MAX_VALUE)
     );
     jPanel3Layout.setVerticalGroup(
       jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -372,33 +404,19 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
 
     getContentPane().add(jPanel4, java.awt.BorderLayout.LINE_END);
 
-    jPanel5.setPreferredSize(new java.awt.Dimension(200, 400));
+    jPanel5.setPreferredSize(new java.awt.Dimension(100, 400));
     jPanel5.setLayout(new java.awt.BorderLayout());
-
-    jScrollPane1.setViewportView(jTree1);
-
-    jPanel5.add(jScrollPane1, java.awt.BorderLayout.CENTER);
-
     getContentPane().add(jPanel5, java.awt.BorderLayout.LINE_START);
 
     jPanel2.setLayout(new java.awt.BorderLayout());
 
-    javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-    jPanel1.setLayout(jPanel1Layout);
-    jPanel1Layout.setHorizontalGroup(
-      jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-      .addGap(0, 825, Short.MAX_VALUE)
-    );
-    jPanel1Layout.setVerticalGroup(
-      jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-      .addGap(0, 390, Short.MAX_VALUE)
-    );
+    jcs.ui.swing.layout.VerticalFlowLayout verticalFlowLayout2 = new jcs.ui.swing.layout.VerticalFlowLayout();
+    verticalFlowLayout2.sethAlignment(0);
+    propertiesPanel.setLayout(verticalFlowLayout2);
 
-    jPanel2.add(jPanel1, java.awt.BorderLayout.CENTER);
-
-    java.awt.FlowLayout flowLayout2 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
-    flowLayout2.setAlignOnBaseline(true);
-    controllerPanel.setLayout(flowLayout2);
+    java.awt.FlowLayout flowLayout3 = new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT);
+    flowLayout3.setAlignOnBaseline(true);
+    controllerPanel.setLayout(flowLayout3);
 
     connectedToLbl.setText("Connected to: command station");
     connectedToLbl.setPreferredSize(new java.awt.Dimension(200, 17));
@@ -416,7 +434,77 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
     hwVersionLbl.setPreferredSize(new java.awt.Dimension(160, 17));
     controllerPanel.add(hwVersionLbl);
 
-    jPanel2.add(controllerPanel, java.awt.BorderLayout.PAGE_START);
+    propertiesPanel.add(controllerPanel);
+
+    feedbackSettingsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Feedback Modules"));
+
+    jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
+    jLabel1.setText("Main");
+    jLabel1.setPreferredSize(new java.awt.Dimension(40, 17));
+    feedbackSettingsPanel.add(jLabel1);
+
+    mainSpinner.setModel(new javax.swing.SpinnerNumberModel(0, null, 31, 1));
+    feedbackSettingsPanel.add(mainSpinner);
+
+    jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
+    jLabel2.setText("Bus 1");
+    jLabel2.setPreferredSize(new java.awt.Dimension(40, 17));
+    feedbackSettingsPanel.add(jLabel2);
+
+    bus1Spinner.setModel(new javax.swing.SpinnerNumberModel(0, null, 31, 1));
+    feedbackSettingsPanel.add(bus1Spinner);
+
+    jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
+    jLabel3.setText("Bus 2");
+    jLabel3.setPreferredSize(new java.awt.Dimension(40, 17));
+    feedbackSettingsPanel.add(jLabel3);
+
+    bus2Spinner.setModel(new javax.swing.SpinnerNumberModel(0, null, 31, 1));
+    feedbackSettingsPanel.add(bus2Spinner);
+
+    jLabel4.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
+    jLabel4.setText("Bus 3");
+    jLabel4.setPreferredSize(new java.awt.Dimension(40, 17));
+    feedbackSettingsPanel.add(jLabel4);
+
+    bus3Spinner.setModel(new javax.swing.SpinnerNumberModel(0, null, 31, 1));
+    feedbackSettingsPanel.add(bus3Spinner);
+    feedbackSettingsPanel.add(filler2);
+
+    updateBtn.setText("Update");
+    updateBtn.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        updateBtnActionPerformed(evt);
+      }
+    });
+    feedbackSettingsPanel.add(updateBtn);
+
+    propertiesPanel.add(feedbackSettingsPanel);
+
+    jPanel2.add(propertiesPanel, java.awt.BorderLayout.PAGE_START);
+
+    jPanel6.setPreferredSize(new java.awt.Dimension(750, 318));
+
+    javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
+    jPanel6.setLayout(jPanel6Layout);
+    jPanel6Layout.setHorizontalGroup(
+      jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+      .addGap(0, 750, Short.MAX_VALUE)
+    );
+    jPanel6Layout.setVerticalGroup(
+      jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+      .addGap(0, 318, Short.MAX_VALUE)
+    );
+
+    jPanel2.add(jPanel6, java.awt.BorderLayout.EAST);
+
+    jPanel1.setLayout(new java.awt.GridLayout(1, 1));
+
+    jScrollPane1.setViewportView(jTree1);
+
+    jPanel1.add(jScrollPane1);
+
+    jPanel2.add(jPanel1, java.awt.BorderLayout.CENTER);
 
     getContentPane().add(jPanel2, java.awt.BorderLayout.CENTER);
 
@@ -426,9 +514,9 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
   private void commandStationCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_commandStationCBActionPerformed
     CommandStationBean newSelectedCommandStation = (CommandStationBean) commandStationCBM.getSelectedItem();
 
-    if (!selectedCommandStation.getId().equals(newSelectedCommandStation.getId())) {
+    if (selectedCommandStation != null && selectedCommandStation.getId() != null && !selectedCommandStation.getId().equals(newSelectedCommandStation.getId())) {
       try {
-        if (JCS.getJcsCommandStation() != null) {
+        if (JCS.getJcsCommandStation() != null && JCS.getJcsCommandStation().isConnected()) {
           JCS.getJcsCommandStation().switchPower(false);
         }
         if (JCS.getParentFrame() != null) {
@@ -437,21 +525,23 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
       } catch (Exception e) {
         Logger.error(e.getMessage());
       }
+    } else {
+      selectedCommandStation = newSelectedCommandStation;
     }
 
     selectedCommandStation = (CommandStationBean) commandStationCBM.getSelectedItem();
-    executor.execute(() -> changeDefaultCommandStation(selectedCommandStation));
     selectedCommandStation.setEnabled(true);
+    executor.execute(() -> changeDefaultCommandStation(selectedCommandStation));
 
-    setComponents();
-    //this.enableFields(this.enableEditCB.isSelected());
-    Logger.trace("Selected CS: " + this.selectedCommandStation.getDescription());
+    Logger.trace("Selected CS: " + selectedCommandStation.getDescription());
   }//GEN-LAST:event_commandStationCBActionPerformed
 
   private void setComponents() {
     controllerLbl.setVisible(selectedCommandStation.isDecoderControlSupport());
     accessoryControllerLbl.setVisible(selectedCommandStation.isAccessoryControlSupport());
     feedbackProviderLbl.setVisible(selectedCommandStation.isFeedbackSupport());
+
+    virtualCB.setSelected(selectedCommandStation.isVirtual());
 
     discoverBtn.setVisible(selectedCommandStation.isIpAutoConfiguration());
     ipTF.setText(selectedCommandStation.getIpAddress());
@@ -519,6 +609,159 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
       hwVersionLbl.setVisible(false);
       connectBtn.setText("Connect");
     }
+  }
+
+  private void initTree() {
+    Logger.trace("build tree");
+    DefaultMutableTreeNode root = new DefaultMutableTreeNode(selectedCommandStation.getDescription());
+    createNodes(root);
+
+    DefaultTreeModel model = new DefaultTreeModel(root);
+
+    jTree1.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+    jTree1.addTreeSelectionListener(this);
+
+    jTree1.setModel(model);
+  }
+
+  private void createNodes(DefaultMutableTreeNode root) {
+    Logger.trace("Create feedback nodes");
+    if (controller == null) {
+      return;
+    }
+
+    List<Device> devices = controller.getDevices();
+
+    for (Device d : devices) {
+      DefaultMutableTreeNode deviceNode = new DefaultMutableTreeNode(d.getId() + " " + d.getName());
+
+      if (d.isFeedback()) {
+        List<FeedbackModuleBean> modules = ((FeedbackController) controller).getFeedbackModules();
+        Collections.sort(modules);
+
+        for (FeedbackModuleBean fm : modules) {
+          DefaultMutableTreeNode moduleNode = new DefaultMutableTreeNode("M " + fm.toString());
+          Logger.trace("M " + fm.toString());
+
+          deviceNode.add(moduleNode);
+        }
+
+      }
+
+      root.add(deviceNode);
+    }
+
+//    if (controller != null && controller instanceof FeedbackController) {
+//      //DefaultMutableTreeNode feedbackmodules = null;
+//
+//      DefaultMutableTreeNode category = null;
+//      DefaultMutableTreeNode book = null;
+//
+//      List<FeedbackModuleBean> modules = ((FeedbackController) controller).getFeedbackModules();
+//      Collections.sort(modules);
+//
+//      for (FeedbackModuleBean fm : modules) {
+//        DefaultMutableTreeNode moduleNode = new DefaultMutableTreeNode("M " + fm.toString());
+//        Logger.trace("M " + fm.toString());
+//
+//        if () {
+//          root.add(moduleNode);
+//        }
+//      }
+//      category = new DefaultMutableTreeNode("Books for Java Programmers");
+//      top.add(category);
+//
+//      //original Tutorial
+//      book = new DefaultMutableTreeNode(new BookInfo("The Java Tutorial: A Short Course on the Basics",
+//              "tutorial.html"));
+//      category.add(book);
+//
+//      //Tutorial Continued
+//      book = new DefaultMutableTreeNode(new BookInfo("The Java Tutorial Continued: The Rest of the JDK",
+//              "tutorialcont.html"));
+//      category.add(book);
+//
+//      //Swing Tutorial
+//      book = new DefaultMutableTreeNode(new BookInfo("The Swing Tutorial: A Guide to Constructing GUIs",
+//              "swingtutorial.html"));
+//      category.add(book);
+//
+//      //...add more books for programmers...
+//      category = new DefaultMutableTreeNode("Books for Java Implementers");
+//      top.add(category);
+//
+//      //VM
+//      book = new DefaultMutableTreeNode(new BookInfo("The Java Virtual Machine Specification",
+//              "vm.html"));
+//      category.add(book);
+//
+//      //Language Spec
+//      book = new DefaultMutableTreeNode(new BookInfo("The Java Language Specification",
+//              "jls.html"));
+//      category.add(book);
+//  }
+  }
+
+  private class BookInfo {
+
+    public String bookName;
+    public URL bookURL;
+
+    public BookInfo(String book, String filename) {
+      bookName = book;
+      bookURL = getClass().getResource("/sandbox/" + filename);
+
+      if (bookURL == null) {
+        Logger.warn("Couldn't find file: " + filename);
+      }
+    }
+
+    @Override
+    public String toString() {
+      return bookName;
+    }
+  }
+
+  public void valueChanged(TreeSelectionEvent e) {
+    DefaultMutableTreeNode node = (DefaultMutableTreeNode) jTree1.getLastSelectedPathComponent();
+
+    if (node == null) {
+      return;
+    }
+
+    Object nodeInfo = node.getUserObject();
+
+    if (node.isLeaf()) {
+      CommandStationDialog1.BookInfo book = (CommandStationDialog1.BookInfo) nodeInfo;
+
+      displayURL(book.bookURL);
+//      if (DEBUG) {
+//        System.out.print(book.bookURL + ":  \n    ");
+//      }
+    } else {
+      //displayURL(helpURL);
+    }
+//    if (DEBUG) {
+//      System.out.println(nodeInfo.toString());
+//    }
+  }
+
+  private void displayURL(URL url) {
+    //try {
+    if (url != null) {
+      //htmlPane.setPage(url);
+      Logger.trace("Suppose to set URL: " + url);
+    } else {
+      // htmlPane.setText("File Not Found");
+      Logger.trace("File Not Found " + url);
+//                 if (DEBUG) {
+//                    System.out.println("Attempted to display a null URL.");
+//                }
+    }
+    //} catch (IOException e) {
+    //System.err.println("Attempted to read a bad URL: " + url);
+    // Logger.trace("Attempted to read a bad URL: " + url);
+    //}
   }
 
   private void changeDefaultCommandStation(final CommandStationBean newDefault) {
@@ -622,6 +865,31 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
     executor.execute(() -> checkConnection(selectedCommandStation));
   }//GEN-LAST:event_checkBtnActionPerformed
 
+  private void virtualCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_virtualCBActionPerformed
+    selectedCommandStation.setVirtual(virtualCB.isSelected());
+    persistCommandStation(selectedCommandStation);
+  }//GEN-LAST:event_virtualCBActionPerformed
+
+  private void updateBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateBtnActionPerformed
+    //TODO in workerthread with some feedback in the UI
+
+    updateSensors();
+  }//GEN-LAST:event_updateBtnActionPerformed
+
+  private void updateSensors() {
+
+    List<FeedbackModuleBean> modules = ((FeedbackController) controller).getFeedbackModules();
+
+    Logger.trace("There are " + modules.size() + " feedback modules");
+    for (FeedbackModuleBean fbm : modules) {
+      List<SensorBean> sensors = fbm.getSensors();
+      for (SensorBean sb : sensors) {
+        PersistenceFactory.getService().persist(sb);
+      }
+    }
+
+  }
+
   private InetAddress discover(final CommandStationBean commandStation) {
     final JOptionPane optionPane = new JOptionPane("Try to discovering a " + commandStation.getDescription(),
             JOptionPane.INFORMATION_MESSAGE,
@@ -717,11 +985,11 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
       Logger.trace("Connected to " + controller.getCommandStationInfo());
 
       java.awt.EventQueue.invokeLater(() -> {
+        initTree();
         setComponents();
-        
+
         //Query the controller for devices in general and for feedback devices 
         //how to populate the tree.....
-        
       });
     }
 
@@ -783,6 +1051,9 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JLabel accessoryControllerLbl;
+  private javax.swing.JSpinner bus1Spinner;
+  private javax.swing.JSpinner bus2Spinner;
+  private javax.swing.JSpinner bus3Spinner;
   private javax.swing.JButton checkBtn;
   private javax.swing.JComboBox<CommandStationBean> commandStationCB;
   private javax.swing.JLabel commandStationLbl;
@@ -798,25 +1069,36 @@ public class CommandStationDialog1 extends javax.swing.JDialog {
   private javax.swing.JPanel feedbackCSPanel;
   private javax.swing.JLabel feedbackLbl;
   private javax.swing.JLabel feedbackProviderLbl;
+  private javax.swing.JPanel feedbackSettingsPanel;
   private javax.swing.Box.Filler filler1;
+  private javax.swing.Box.Filler filler2;
   private javax.swing.JLabel hwVersionLbl;
   private javax.swing.JLabel ipOrPortLbl;
   private javax.swing.JTextField ipTF;
+  private javax.swing.JLabel jLabel1;
+  private javax.swing.JLabel jLabel2;
+  private javax.swing.JLabel jLabel3;
+  private javax.swing.JLabel jLabel4;
   private javax.swing.JPanel jPanel1;
   private javax.swing.JPanel jPanel2;
   private javax.swing.JPanel jPanel3;
   private javax.swing.JPanel jPanel4;
   private javax.swing.JPanel jPanel5;
+  private javax.swing.JPanel jPanel6;
   private javax.swing.JScrollPane jScrollPane1;
   private javax.swing.JTree jTree1;
   private javax.swing.JPanel mainCSPanel;
+  private javax.swing.JSpinner mainSpinner;
   private javax.swing.JRadioButton networkRB;
+  private javax.swing.JPanel propertiesPanel;
   private javax.swing.JLabel secondfbpLbl;
   private javax.swing.JComboBox<String> serialCB;
   private javax.swing.JLabel serialLbl;
   private javax.swing.JRadioButton serialRB;
   private javax.swing.JLabel swVersionLbl;
   private javax.swing.JPanel topPanel;
+  private javax.swing.JButton updateBtn;
+  private javax.swing.JCheckBox virtualCB;
   // End of variables declaration//GEN-END:variables
 
 }

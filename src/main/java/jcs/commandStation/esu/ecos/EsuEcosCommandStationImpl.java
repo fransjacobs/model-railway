@@ -51,6 +51,7 @@ import jcs.commandStation.events.LocomotiveSpeedEventListener;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.commandStation.autopilot.DriveSimulator;
 import jcs.commandStation.VirtualConnection;
+import jcs.commandStation.entities.Device;
 import static jcs.entities.AccessoryBean.AccessoryValue.GREEN;
 import static jcs.entities.AccessoryBean.AccessoryValue.RED;
 import jcs.entities.LocomotiveBean;
@@ -272,14 +273,14 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
         Logger.trace("Stopping event handling...");
         eventMessageHandler.quit();
         eventMessageHandler.join();
-        
+
         eventMessageHandler = null;
       }
       if (connected) {
         connection.close();
         connected = false;
       }
-      
+
       EcosConnectionFactory.disconnectAll();
     } catch (Exception ex) {
       Logger.error(ex);
@@ -306,6 +307,40 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
       ib.setHostname("Not Connected");
     }
     return ib;
+  }
+
+  @Override
+  public List<Device> getDevices() {
+    List<Device> devices = new ArrayList<>();
+    Device ecos = new Device();
+    ecos.setId(EcosManager.ID + "");
+    ecos.setName(ecosManager.getName());
+    ecos.setSerialNumber(ecosManager.getSerialNumber());
+    ecos.setHardwareVersion(ecosManager.getHardwareVersion());
+    ecos.setSoftwareVersion(ecosManager.getApplicationVersion());
+    devices.add(ecos);
+
+    Device locs = new Device();
+    locs.setId(LocomotiveManager.ID + "");
+    locs.setName("LocomotiveManager");
+    locs.setSize(locomotiveManager.getSize());
+    devices.add(locs);
+
+    Device acm = new Device();
+    acm.setId(AccessoryManager.ID + "");
+    acm.setName("AccessoryManager");
+    acm.setSize(accessoryManager.getSize());
+    devices.add(acm);
+
+    Device fbm = new Device();
+    fbm.setId(FeedbackManager.ID + "");
+    fbm.setName("FeedbackManager");
+    fbm.setSize(feedbackManager.getSize());
+    fbm.setChannels(feedbackManager.getModules().size());
+    fbm.setFeedback(true);
+    devices.add(fbm);
+
+    return devices;
   }
 
   @Override

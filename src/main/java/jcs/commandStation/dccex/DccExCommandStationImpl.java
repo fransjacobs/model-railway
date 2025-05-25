@@ -16,6 +16,7 @@
 package jcs.commandStation.dccex;
 
 import java.awt.Image;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
 import jcs.JCS;
@@ -26,6 +27,7 @@ import jcs.commandStation.dccex.connection.DccExConnectionFactory;
 import jcs.commandStation.dccex.connection.DccExMessageListener;
 import jcs.commandStation.dccex.events.CabEvent;
 import jcs.commandStation.dccex.events.DccExMeasurementEvent;
+import jcs.commandStation.entities.Device;
 import jcs.commandStation.events.AccessoryEvent;
 import jcs.commandStation.events.AccessoryEventListener;
 import jcs.commandStation.events.ConnectionEvent;
@@ -57,7 +59,6 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
   private boolean powerStatusSet = false;
 
   //Map<Integer, ChannelBean> measurementChannels;
-
   public DccExCommandStationImpl(CommandStationBean commandStationBean) {
     this(commandStationBean, false);
   }
@@ -96,7 +97,6 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
 //      handleMeasurement(csrq);
 //    }
 //  }
-
   @Override
   public final boolean connect() {
     if (!connected) {
@@ -380,6 +380,12 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
   }
 
   @Override
+  public List<Device> getDevices() {
+    List<Device> devices = new ArrayList<>();
+    return devices;
+  }
+
+  @Override
   public boolean isSupportTrackMeasurements() {
     return false; // true;
   }
@@ -393,7 +399,6 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
 //    }
 //    return this.measurementChannels;
 //  }
-
   private void fireAllDisconnectionEventListeners(final ConnectionEvent disconnectionEvent) {
     for (ConnectionEventListener listener : this.connectionEventListeners) {
       listener.onConnectionChange(disconnectionEvent);
@@ -534,7 +539,6 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
 //      }
 //    }
 //  }
-
   private void handleInfoMessage(String message) {
     //executor.execute(() -> fireAllPowerEventListeners(powerEvent));
     Logger.trace("Info: " + message);
@@ -704,6 +708,9 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
 //      ((DccExCommandStationImpl) cs).pause(500L);
 //      cs.power(true);
 //      Logger.trace("Power is: " + (cs.isPower() ? "On" : "Off"));
+    
+  
+
 /////
       //((DccExCommandStationImpl) cs).pause(500L);
 //      cs.changeFunctionValue(8, 0, true);

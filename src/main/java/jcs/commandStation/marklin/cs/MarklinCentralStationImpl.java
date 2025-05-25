@@ -72,6 +72,7 @@ import jcs.commandStation.marklin.cs2.PowerEventParser;
 import jcs.commandStation.VirtualConnection;
 import jcs.commandStation.autopilot.AutoPilot;
 import jcs.commandStation.autopilot.DriveSimulator;
+import jcs.commandStation.entities.Device;
 import jcs.commandStation.entities.MeasuredChannels;
 import jcs.commandStation.entities.MeasurementBean;
 import jcs.commandStation.events.ConnectionEvent;
@@ -477,6 +478,23 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       infoBean = createInfoBean(canDevices);
     }
     return infoBean;
+  }
+
+  @Override
+  public List<Device> getDevices() {
+    List<Device> devices = new ArrayList<>();
+    for (CanDevice cd : canDevices.values()) {
+      Device d = new Device();
+      d.setId(cd.getUid());
+      d.setName(cd.getName());
+      d.setSerialNumber(cd.getSerial());
+      d.setSoftwareVersion(cd.getVersion());
+      d.setHardwareVersion(cd.getHwVersion());
+      d.setChannels(cd.getConfigChannelCount());
+      devices.add(d);
+    }
+
+    return devices;
   }
 
   @Override

@@ -15,6 +15,7 @@
  */
 package jcs.commandStation.hsis88;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -32,6 +33,7 @@ import jcs.entities.CommandStationBean.ConnectionType;
 import jcs.entities.FeedbackModuleBean;
 import jcs.commandStation.entities.InfoBean;
 import jcs.commandStation.VirtualConnection;
+import jcs.commandStation.entities.Device;
 import jcs.entities.SensorBean;
 import jcs.util.RunUtil;
 import org.tinylog.Logger;
@@ -124,7 +126,7 @@ public class HSIImpl extends AbstractController implements FeedbackController {
 
           //DeviceBean d = new DeviceBean();
           String[] hsiinfo = info.split("/");
-         //d.setName(info);
+          //d.setName(info);
           //d.setUid("0");
 //          for (int i = 0; i < hsiinfo.length; i++) {
 //            switch (i) {
@@ -155,25 +157,15 @@ public class HSIImpl extends AbstractController implements FeedbackController {
     return connected;
   }
 
-//  @Override
-//  public DeviceBean getDevice() {
-//    return this.mainDevice;
-//  }
-
-//  @Override
-//  public List<DeviceBean> getDevices() {
-//    return null;//this.devices.values().stream().collect(Collectors.toList());
-//  }
-
   @Override
   public InfoBean getCommandStationInfo() {
     return infoBean;
   }
 
-//  @Override
-//  public DeviceBean getFeedbackDevice() {
-//    return this.feedbackDevice;
-//  }
+  public List<Device> getDevices() {
+    List<Device> devices = new ArrayList<>();
+    return devices;
+  }
 
   @Override
   public List<FeedbackModuleBean> getFeedbackModules() {

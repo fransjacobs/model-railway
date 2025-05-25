@@ -17,6 +17,7 @@ package jcs.commandStation.virtual;
 
 import jcs.commandStation.autopilot.DriveSimulator;
 import java.awt.Image;
+import java.util.ArrayList;
 import java.util.List;
 import jcs.JCS;
 import jcs.commandStation.AbstractController;
@@ -24,6 +25,7 @@ import jcs.commandStation.AccessoryController;
 import jcs.commandStation.DecoderController;
 import jcs.commandStation.FeedbackController;
 import jcs.commandStation.autopilot.AutoPilot;
+import jcs.commandStation.entities.Device;
 import jcs.commandStation.events.AccessoryEvent;
 import jcs.commandStation.events.AccessoryEventListener;
 import jcs.commandStation.events.LocomotiveDirectionEvent;
@@ -112,6 +114,13 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
     return this.infoBean;
   }
 
+  @Override
+   public List<Device> getDevices() {
+    List<Device> devices = new ArrayList<>();
+    
+    return devices;
+  }
+  
   @Override
   public String getIp() {
     return NetworkUtil.getIPv4HostAddress().getHostAddress();

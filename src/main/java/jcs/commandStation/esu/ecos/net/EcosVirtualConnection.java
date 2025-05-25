@@ -47,6 +47,8 @@ class EcosVirtualConnection implements EcosConnection, VirtualConnection {
 
   private EcosMessageListener messageListener;
   private boolean debug = false;
+  
+  private static String ESU_ECOS_ID = "esu-ecos";
 
   EcosVirtualConnection(InetAddress address) {
     debug = System.getProperty("message.debug", "false").equalsIgnoreCase("true");
@@ -111,7 +113,7 @@ class EcosVirtualConnection implements EcosConnection, VirtualConnection {
       }
       case EcosMessageFactory.QUERY_LOCOMOTIVES -> {
         //Query the locomotives from the database
-        List<LocomotiveBean> locos = PersistenceFactory.getService().getLocomotives();
+        List<LocomotiveBean> locos = PersistenceFactory.getService().getLocomotivesByCommandStationId(ESU_ECOS_ID);
 
         for (LocomotiveBean loco : locos) {
           //name,addr,protocol

@@ -23,7 +23,7 @@ import org.tinylog.Logger;
 /**
  * Represents 1 Feedback Module (S88) with a number of ports (usually 16)
  */
-public class FeedbackModuleBean {
+public class FeedbackModuleBean implements Comparable<FeedbackModuleBean> {
 
   private Integer id;
   private Integer moduleNumber;
@@ -58,6 +58,31 @@ public class FeedbackModuleBean {
 
     ports = new int[portCount];
     prevPorts = new int[portCount];
+  }
+
+  @Override
+  public int compareTo(FeedbackModuleBean o) {
+    int bn = 0;
+    if (busNumber != null) {
+      bn = busNumber;
+    }
+    int obn = 0;
+    if (o.busNumber != null) {
+      obn = o.busNumber;
+    }
+    int mn = 0;
+    if (moduleNumber != null) {
+      mn = moduleNumber;
+    }
+    int omn = 0;
+    if (o.moduleNumber != null) {
+      omn = o.moduleNumber;
+    }
+
+    if (Integer.compare(bn, obn) != 0) {
+      return Integer.compare(bn, obn);
+    }
+    return Integer.compare(mn, omn);
   }
 
   public Integer getId() {

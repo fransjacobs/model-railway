@@ -15,6 +15,8 @@
  */
 package jcs.commandStation;
 
+import java.util.List;
+import jcs.commandStation.entities.Device;
 import jcs.entities.CommandStationBean;
 import jcs.commandStation.entities.InfoBean;
 import jcs.commandStation.events.ConnectionEventListener;
@@ -38,6 +40,8 @@ public interface GenericController {
   void removeConnectionEventListener(ConnectionEventListener listener);
 
   InfoBean getCommandStationInfo();
+
+  List<Device> getDevices();
 
   String getIp();
 
