@@ -36,6 +36,7 @@ import org.junit.Test;
 public class LocomotiveManagerTest {
 
   public LocomotiveManagerTest() {
+    System.setProperty("persistenceService", "jcs.persistence.TestH2PersistenceService");
   }
 
   @BeforeEach

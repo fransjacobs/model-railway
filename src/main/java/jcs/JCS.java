@@ -15,27 +15,38 @@
  */
 package jcs;
 
+import java.awt.Desktop;
 import java.awt.GraphicsEnvironment;
+import java.awt.Taskbar;
+import java.awt.desktop.AboutEvent;
+import java.awt.desktop.AboutHandler;
+import java.awt.desktop.OpenFilesEvent;
+import java.awt.desktop.OpenFilesHandler;
+import java.awt.desktop.PreferencesEvent;
+import java.awt.desktop.PreferencesHandler;
+import java.awt.desktop.QuitEvent;
+import java.awt.desktop.QuitHandler;
+import java.awt.desktop.QuitResponse;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
+import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import jcs.commandStation.JCSCommandStation;
-import jcs.commandStation.JCSCommandStationImpl;
 import jcs.commandStation.events.PowerEvent;
 import jcs.commandStation.events.PowerEventListener;
-import jcs.commandStation.events.RefreshEvent;
-import jcs.commandStation.events.RefreshEventListener;
 import jcs.persistence.PersistenceFactory;
 import jcs.persistence.PersistenceService;
 import jcs.persistence.util.H2DatabaseUtil;
 import jcs.ui.JCSFrame;
 import jcs.ui.splash.JCSSplash;
 import jcs.ui.util.FrameMonitor;
-import jcs.ui.util.MacOsAdapter;
 import jcs.ui.util.ProcessFactory;
+import jcs.ui.util.UICallback;
 import jcs.util.RunUtil;
 import jcs.util.VersionInfo;
 import org.tinylog.Logger;
@@ -46,22 +57,23 @@ import org.tinylog.Logger;
  *
  */
 public class JCS extends Thread {
-  
+
   private static JCS instance = null;
   private static JCSSplash splashScreen;
   private static PersistenceService persistentStore;
   private static JCSCommandStation jcsCommandStation;
-  
-  private static MacOsAdapter osAdapter;
+
   private static JCSFrame jcsFrame;
   private static String version;
-  
-  private final List<RefreshEventListener> refreshEventListeners;
-  
+
+  private static UICallback uiCallback;
+
+  //private final List<RefreshEventListener> refreshEventListeners;
+
   private JCS() {
-    refreshEventListeners = new ArrayList<>();
+    //refreshEventListeners = new ArrayList<>();
   }
-  
+
   public static void logProgress(String message) {
     if (splashScreen != null) {
       splashScreen.logProgress(message);
@@ -69,79 +81,27 @@ public class JCS extends Thread {
       Logger.info(message);
     }
   }
-  
+
   public static JCSFrame getParentFrame() {
     return jcsFrame;
   }
-  
+
   public static PersistenceService getPersistenceService() {
     if (persistentStore == null) {
       persistentStore = PersistenceFactory.getService();
     }
     return persistentStore;
   }
-  
+
   public static JCSCommandStation getJcsCommandStation() {
     if (jcsCommandStation == null) {
       if (getPersistenceService() != null) {
-        jcsCommandStation = new JCSCommandStationImpl();
+        jcsCommandStation = new JCSCommandStation();
       } else {
         Logger.error("Can't obtain the persistent store!");
       }
     }
     return jcsCommandStation;
-  }
-  
-  private void startGui() {
-    JCS.logProgress("Check OS...");
-    
-    if (RunUtil.isMacOSX()) {
-      MacOsAdapter.setMacOsProperties();
-      osAdapter = new MacOsAdapter();
-    }
-    
-    java.awt.EventQueue.invokeLater(() -> {
-      jcsFrame = new JCSFrame();
-      
-      if (RunUtil.isMacOSX()) {
-        osAdapter.setUiCallback(jcsFrame);
-      }
-
-      //URL iconUrl = JCS.class.getResource("/media/jcs-train-64.png");
-      URL iconUrl = JCS.class.getResource("/media/jcs-train-2-512.png");
-      if (iconUrl != null) {
-        jcsFrame.setIconImage(new ImageIcon(iconUrl).getImage());
-      }
-      
-      FrameMonitor.registerFrame(jcsFrame, JCS.class.getName());
-      
-      jcsFrame.setVisible(true);
-      jcsFrame.toFront();
-      jcsFrame.showOverviewPanel();
-      if ("true".equalsIgnoreCase(System.getProperty("controller.autoconnect", "true"))) {
-        jcsFrame.connect(true);
-      }
-    });
-    
-    JCS.logProgress("JCS started...");
-    
-    int mb = 1024 * 1024;
-    Runtime runtime = Runtime.getRuntime();
-    
-    StringBuilder sb = new StringBuilder();
-    sb.append("Used Memory: ");
-    sb.append((runtime.totalMemory() - runtime.freeMemory()) / mb);
-    sb.append(" [MB]. Free Memory: ");
-    sb.append(runtime.freeMemory() / mb);
-    sb.append(" [MB]. Available Memory: ");
-    sb.append(runtime.totalMemory() / mb);
-    sb.append(" [MB]. Max Memory: ");
-    sb.append(runtime.maxMemory() / mb);
-    sb.append(" [MB].");
-    
-    Logger.info(sb);
-    splashScreen.hideSplash(200);
-    splashScreen.close();
   }
 
   /**
@@ -155,21 +115,7 @@ public class JCS extends Thread {
     ProcessFactory.getInstance().shutdown();
     Logger.info("JCS " + VersionInfo.getVersion() + " session finished");
   }
-  
-  public static void addRefreshListener(RefreshEventListener refreshListener) {
-    instance.refreshEventListeners.add(refreshListener);
-  }
-  
-  public static void removeRefreshListener(RefreshEventListener refreshListener) {
-    instance.refreshEventListeners.remove(refreshListener);
-  }
-  
-  public static void settingsChanged(RefreshEvent refreshEvent) {
-    for (RefreshEventListener rel : instance.refreshEventListeners) {
-      rel.onChange(refreshEvent);
-    }
-  }
-  
+
   public static JCS getInstance() {
     if (instance == null) {
       instance = new JCS();
@@ -179,21 +125,37 @@ public class JCS extends Thread {
     }
     return instance;
   }
-  
+
+  private static boolean lockAppInstance() {
+    try {
+      String lockFilePath = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "jcs.lock";
+
+      final File file = new File(lockFilePath);
+      if (file.createNewFile()) {
+        file.deleteOnExit();
+        return true;
+      }
+      return false;
+    } catch (IOException e) {
+      return false;
+    }
+  }
+
   public static void main(String[] args) {
     System.setProperty("fazecast.jSerialComm.appid", "JCS");
     version = VersionInfo.getVersion();
     Logger.info("Starting JCS Version " + version + "...");
-    
+
     if (GraphicsEnvironment.isHeadless()) {
       Logger.error("This JDK environment is headless, can't start a GUI!");
       //Quit....
       System.exit(1);
     }
+
     //Load properties
     RunUtil.loadProperties();
     RunUtil.loadExternalProperties();
-    
+
     try {
       String plaf = System.getProperty("jcs.plaf", "com.formdev.flatlaf.FlatLightLaf");
       if (plaf != null) {
@@ -204,11 +166,29 @@ public class JCS extends Thread {
     } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
       Logger.error(ex);
     }
-    
+
+    if (!lockAppInstance()) {
+      Logger.warn("Can not obtain a lock. Check if an other instance of JCS is running");
+      JOptionPane.showMessageDialog(null, "There is another instance of JCS running.", "JCS allready running", JOptionPane.INFORMATION_MESSAGE, null);
+      System.exit(0);
+    }
+
+    if (RunUtil.isMacOSX()) {
+      System.setProperty("apple.awt.application.name", "JCS");
+      System.setProperty("apple.laf.useScreenMenuBar", "true");
+      System.setProperty("apple.awt.application.appearance", "system");
+    }
+
     splashScreen = new JCSSplash();
-    splashScreen.showSplash();
+
+    if ("true".equalsIgnoreCase(System.getProperty("disable.splash", "false"))) {
+      Logger.info("Splasscreen is disabled");
+    } else {
+      splashScreen.showSplash();
+    }
+
     splashScreen.setProgressMax(25);
-    
+
     logProgress("JCS is Starting...");
 
     //Check the persistent properties, prepare environment
@@ -221,24 +201,26 @@ public class JCS extends Thread {
 
     //Database file exist check whether an update is needed
     String dbVersion = H2DatabaseUtil.getDataBaseVersion();
+
     if (!H2DatabaseUtil.DB_VERSION.equals(dbVersion)) {
       Logger.trace("Current DB Version " + dbVersion + " need to be updated to: " + H2DatabaseUtil.DB_VERSION + "...");
       logProgress("Updating JCS Database to version " + H2DatabaseUtil.DB_VERSION + "...");
       dbVersion = H2DatabaseUtil.updateDatabase();
     }
+
     logProgress("Connecting to existing Database version " + dbVersion + "...");
-    
+
     logProgress("Starting JCS Command Station...");
     persistentStore = getPersistenceService();
     jcsCommandStation = getJcsCommandStation();
-    
+
     if (persistentStore != null) {
       if ("true".equalsIgnoreCase(System.getProperty("commandStation.autoconnect", "true"))) {
         if (jcsCommandStation != null) {
           boolean connected = jcsCommandStation.connect();
           if (connected) {
             logProgress("Connected with Command Station...");
-            
+
             boolean power = jcsCommandStation.isPowerOn();
             logProgress("Track Power is " + (power ? "on" : "off"));
             Logger.info("Track Power is " + (power ? "on" : "off"));
@@ -250,10 +232,11 @@ public class JCS extends Thread {
           logProgress("NO Default Command Station found...");
         }
       }
-      
+
       logProgress("Starting UI...");
-      
+
       JCS jcs = JCS.getInstance();
+
       jcs.startGui();
     } else {
       Logger.error("Could not obtain a Persistent store. Quitting....");
@@ -263,20 +246,119 @@ public class JCS extends Thread {
       System.exit(0);
     }
   }
-  
+
+  private void startGui() {
+    JCS.logProgress("Starting UI...");
+
+    if (RunUtil.isMacOSX()) {
+      try {
+        Desktop desktop = Desktop.getDesktop();
+        desktop.setAboutHandler(new JCSAboutHandler());
+        desktop.setQuitHandler(new JCSQuitHandler());
+        desktop.setPreferencesHandler(new JCSPreferencesHandler());
+
+        Taskbar taskbar = Taskbar.getTaskbar();
+        try {
+          //BufferedImage img = ImageIO.read(JCS.class.getResource("/media/jcs-train-64.png"));
+          BufferedImage img = ImageIO.read(JCS.class.getResource("/media/jcs-train-2-512.png"));
+          taskbar.setIconImage(img);
+        } catch (final UnsupportedOperationException e) {
+          Logger.warn("The os does not support: 'taskbar.setIconImage'");
+        } catch (final SecurityException e) {
+          Logger.warn("There was a security exception for: 'taskbar.setIconImage'");
+        }
+      } catch (SecurityException | IllegalArgumentException | IOException ex) {
+        Logger.warn("Failed to register with MacOS: " + ex);
+      }
+    }
+
+    java.awt.EventQueue.invokeLater(() -> {
+      jcsFrame = new JCSFrame();
+      JCS.uiCallback = jcsFrame;
+
+      //URL iconUrl = JCS.class.getResource("/media/jcs-train-64.png");
+      URL iconUrl = JCS.class.getResource("/media/jcs-train-2-512.png");
+      if (iconUrl != null) {
+        jcsFrame.setIconImage(new ImageIcon(iconUrl).getImage());
+      }
+
+      FrameMonitor.registerFrame(jcsFrame, JCS.class.getName());
+
+      jcsFrame.setVisible(true);
+      jcsFrame.toFront();
+      jcsFrame.showOverviewPanel();
+      if ("true".equalsIgnoreCase(System.getProperty("controller.autoconnect", "true"))) {
+        jcsFrame.connect(true);
+      }
+    });
+
+    JCS.logProgress("JCS started...");
+
+    int mb = 1024 * 1024;
+    Runtime runtime = Runtime.getRuntime();
+
+    StringBuilder sb = new StringBuilder();
+    sb.append("Used Memory: ");
+    sb.append((runtime.totalMemory() - runtime.freeMemory()) / mb);
+    sb.append(" [MB]. Free Memory: ");
+    sb.append(runtime.freeMemory() / mb);
+    sb.append(" [MB]. Available Memory: ");
+    sb.append(runtime.totalMemory() / mb);
+    sb.append(" [MB]. Max Memory: ");
+    sb.append(runtime.maxMemory() / mb);
+    sb.append(" [MB].");
+
+    Logger.info(sb);
+    splashScreen.hideSplash(200);
+    splashScreen.close();
+  }
+
   private static class Powerlistener implements PowerEventListener {
-    
+
     Powerlistener() {
     }
-    
+
     @Override
     public void onPowerChange(PowerEvent event) {
       Logger.info("Track Power is " + (event.isPower() ? "on" : "off"));
-      
+
       if (JCS.jcsFrame != null) {
         JCS.jcsFrame.powerChanged(event);
       }
     }
   }
-  
+
+  private class JCSQuitHandler implements QuitHandler {
+
+    @Override
+    public void handleQuitRequestWith(QuitEvent e, QuitResponse response) {
+      uiCallback.handleQuitRequest();
+    }
+  }
+
+  private class JCSAboutHandler implements AboutHandler {
+
+    @Override
+    public void handleAbout(AboutEvent e) {
+      uiCallback.handleAbout();
+    }
+  }
+
+  private class JCSPreferencesHandler implements PreferencesHandler {
+
+    @Override
+    public void handlePreferences(PreferencesEvent e) {
+      uiCallback.handlePreferences();
+    }
+  }
+
+  private class JCSOpenFilesHandler implements OpenFilesHandler {
+
+    @Override
+    public void openFiles(OpenFilesEvent e) {
+      //STUB
+      uiCallback.openFiles(null);
+    }
+  }
+
 }

@@ -29,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class AccessoryManagerTest {
 
   public AccessoryManagerTest() {
+    System.setProperty("persistenceService", "jcs.persistence.TestH2PersistenceService");
   }
 
   @BeforeEach

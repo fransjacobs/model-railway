@@ -23,23 +23,23 @@ import jcs.commandStation.events.SensorEvent;
  */
 public class ExpectedSensorEventHandler implements SensorEventHandler {
 
-  private final String sensorId;
+  private final Integer sensorId;
   private final Dispatcher dispatcher;
 
-  public ExpectedSensorEventHandler(String sensorId, Dispatcher dispatcher) {
+  public ExpectedSensorEventHandler(Integer sensorId, Dispatcher dispatcher) {
     this.sensorId = sensorId;
     this.dispatcher = dispatcher;
   }
 
   @Override
   public void handleEvent(SensorEvent event) {
-    if (this.sensorId.equals(event.getId())) {
+    if (this.sensorId.equals(event.getSensorId())) {
       this.dispatcher.onIgnoreEvent(event);
     }
   }
 
   @Override
-  public String getSensorId() {
+  public Integer getSensorId() {
     return this.sensorId;
   }
 

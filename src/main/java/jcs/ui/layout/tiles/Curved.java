@@ -15,32 +15,58 @@
  */
 package jcs.ui.layout.tiles;
 
-import java.awt.BasicStroke;
-import java.awt.Graphics2D;
 import java.awt.Point;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
+import javax.swing.UIManager;
 import jcs.entities.TileBean;
+import jcs.entities.TileBean.Orientation;
+import static jcs.entities.TileBean.Orientation.NORTH;
+import static jcs.entities.TileBean.Orientation.SOUTH;
+import static jcs.entities.TileBean.Orientation.WEST;
+import jcs.entities.TileBean.TileType;
+import jcs.ui.layout.tiles.ui.CurvedUI;
+import jcs.ui.layout.tiles.ui.TileUI;
 
-public class Curved extends AbstractTile implements Tile {
+/**
+ * Representation of a Curved track on the layout
+ */
+public class Curved extends Tile {
 
-  Curved(TileBean tileBean) {
-    super(tileBean);
-    this.width = DEFAULT_WIDTH;
-    this.height = DEFAULT_HEIGHT;
+  public Curved(TileBean tileBean) {
+    super(tileBean, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+    setModel(new DefaultTileModel(tileBean.getOrientation()));
+    initUI();
   }
 
-  Curved(Orientation orientation, int x, int y) {
-    this(orientation, new Point(x, y));
+  public Curved(Orientation orientation, Point center) {
+    this(orientation, center.x, center.y);
   }
 
-  Curved(Orientation orientation, Point center) {
-    super(orientation, center);
-    this.width = DEFAULT_WIDTH;
-    this.height = DEFAULT_HEIGHT;
-    this.type = TileType.CURVED.getTileType();
+  public Curved(Orientation orientation, int x, int y) {
+    this(orientation, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+  }
+
+  public Curved(Orientation orientation, int x, int y, int width, int height) {
+    super(TileType.CURVED, orientation, x, y, width, height);
+    setModel(new DefaultTileModel(orientation));
+    initUI();
+  }
+
+  private void initUI() {
+    updateUI();
+  }
+
+  @Override
+  public String getUIClassID() {
+    return CurvedUI.UI_CLASS_ID;
+  }
+
+  @Override
+  public void updateUI() {
+    UIManager.put(TileUI.UI_CLASS_ID, "jcs.ui.layout.tiles.ui.CurvedUI");
+    setUI((TileUI) UIManager.getUI(this));
+    invalidate();
   }
 
   @Override
@@ -105,35 +131,6 @@ public class Curved extends AbstractTile implements Tile {
       }
     }
     return edgeConnections;
-  }
-
-  @Override
-  public Set<Point> getAllPoints() {
-    Set<Point> aps = new HashSet<>();
-    aps.add(getCenter());
-    return aps;
-  }
-
-  @Override
-  public void renderTile(Graphics2D g2) {
-    int[] xPoints = new int[]{400, 400, 170, 230};
-    int[] yPoints = new int[]{230, 170, 400, 400};
-
-    g2.setStroke(new BasicStroke(1, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-    g2.setPaint(trackColor);
-
-    g2.fillPolygon(xPoints, yPoints, xPoints.length);
-  }
-
-  @Override
-  public void renderTileRoute(Graphics2D g2) {
-    int[] xPoints = new int[]{400, 400, 190, 210};
-    int[] yPoints = new int[]{210, 190, 400, 400};
-
-    g2.setStroke(new BasicStroke(1, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-    g2.setPaint(trackRouteColor);
-
-    g2.fillPolygon(xPoints, yPoints, xPoints.length);
   }
 
 }

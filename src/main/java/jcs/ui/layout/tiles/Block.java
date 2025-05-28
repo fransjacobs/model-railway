@@ -15,83 +15,77 @@
  */
 package jcs.ui.layout.tiles;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics2D;
-import java.awt.Image;
+import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import jcs.entities.BlockBean;
-import jcs.entities.BlockBean.BlockState;
+import javax.swing.UIManager;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.TileBean;
-import jcs.entities.TileBean.Direction;
 import jcs.entities.TileBean.Orientation;
 import static jcs.entities.TileBean.Orientation.EAST;
 import static jcs.entities.TileBean.Orientation.NORTH;
 import static jcs.entities.TileBean.Orientation.SOUTH;
 import static jcs.entities.TileBean.Orientation.WEST;
 import jcs.entities.TileBean.TileType;
-import jcs.ui.layout.events.TileEvent;
 import static jcs.ui.layout.tiles.Tile.DEFAULT_HEIGHT;
 import static jcs.ui.layout.tiles.Tile.DEFAULT_WIDTH;
-import static jcs.ui.layout.tiles.Tile.RENDER_HEIGHT;
-import static jcs.ui.layout.tiles.Tile.RENDER_WIDTH;
-import jcs.ui.util.ImageUtil;
+import static jcs.ui.layout.tiles.Tile.GRID;
+import jcs.ui.layout.tiles.ui.StraightUI;
+import jcs.ui.layout.tiles.ui.TileUI;
 
-public class Block extends AbstractTile implements Tile {
+/**
+ * Representation of a Block on the layout
+ */
+public class Block extends Tile {
 
   public static final int BLOCK_WIDTH = DEFAULT_WIDTH * 3;
   public static final int BLOCK_HEIGHT = DEFAULT_HEIGHT * 3;
 
-  protected BlockState routeBlockState;
-
-  Block(TileBean tileBean) {
+  public Block(TileBean tileBean) {
     super(tileBean);
-    if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
-      this.width = BLOCK_WIDTH;
-      this.renderWidth = RENDER_WIDTH * 3;
-      this.height = DEFAULT_HEIGHT;
-      this.renderHeight = RENDER_HEIGHT;
-    } else {
-      this.width = DEFAULT_WIDTH;
-      this.renderWidth = RENDER_WIDTH;
-      this.height = BLOCK_HEIGHT;
-      this.renderHeight = RENDER_HEIGHT * 3;
-    }
-    this.blockBean = tileBean.getBlockBean();
-    this.type = tileBean.getType();
+    setModel(new DefaultTileModel(tileBean.getOrientation()));
+    populateModel();
+    initUI();
   }
 
-  Block(Orientation orientation, Point center) {
+  public Block(Orientation orientation, Point center) {
     this(orientation, center.x, center.y);
   }
 
-  Block(Orientation orientation, int x, int y) {
-    super(orientation, Direction.CENTER, x, y);
+  public Block(Orientation orientation, int x, int y) {
+    this(orientation, x, y, tileWidth(orientation, TileType.BLOCK), tileHeight(orientation, TileType.BLOCK));
+  }
 
-    if (Orientation.EAST == getOrientation() || Orientation.WEST == getOrientation()) {
-      this.width = BLOCK_WIDTH;
-      this.renderWidth = RENDER_WIDTH * 3;
-      this.height = DEFAULT_HEIGHT;
-      this.renderHeight = RENDER_HEIGHT;
-    } else {
-      this.width = DEFAULT_WIDTH;
-      this.renderWidth = RENDER_WIDTH;
-      this.height = BLOCK_HEIGHT;
-      this.renderHeight = RENDER_HEIGHT * 3;
-    }
-    this.type = TileType.BLOCK.getTileType();
+  public Block(Orientation orientation, int x, int y, int width, int height) {
+    super(TileType.BLOCK, orientation, x, y, width, height);
+    setModel(new DefaultTileModel(orientation));
+    initUI();
+  }
+
+  private void initUI() {
+    updateUI();
+  }
+
+  @Override
+  public String getUIClassID() {
+    return StraightUI.UI_CLASS_ID;
+  }
+
+  @Override
+  public void updateUI() {
+    UIManager.put(TileUI.UI_CLASS_ID, "jcs.ui.layout.tiles.ui.BlockUI");
+    setUI((TileUI) UIManager.getUI(this));
+    invalidate();
   }
 
   @Override
   public Set<Point> getAltPoints() {
-    int xx = this.x;
-    int yy = this.y;
+    int xx = this.tileX;
+    int yy = this.tileY;
     Set<Point> alternatives = new HashSet<>();
 
     if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
@@ -116,6 +110,33 @@ public class Block extends AbstractTile implements Tile {
     aps.add(getCenter());
     aps.addAll(getAltPoints());
     return aps;
+  }
+
+  @Override
+  Set<Point> getAllPoints(Point center) {
+    Set<Point> points = getAltPoints(center);
+    points.add(center);
+    return points;
+  }
+
+  @Override
+  Set<Point> getAltPoints(Point center) {
+    Set<Point> alts = new HashSet<>();
+
+    if (Orientation.EAST == model.getTileOrienation() || Orientation.WEST == model.getTileOrienation()) {
+      // West
+      Point wp = new Point((center.x - DEFAULT_WIDTH), center.y);
+      Point ep = new Point((center.x + DEFAULT_WIDTH), center.y);
+      alts.add(wp);
+      alts.add(ep);
+    } else {
+      Point np = new Point(center.x, (center.y - DEFAULT_HEIGHT));
+      Point sp = new Point(center.x, (center.y + DEFAULT_HEIGHT));
+      alts.add(np);
+      alts.add(sp);
+    }
+
+    return alts;
   }
 
   public Point getAltPoint(String suffix) {
@@ -259,29 +280,30 @@ public class Block extends AbstractTile implements Tile {
       }
     }
 
+    Orientation tileOrientation = model.getTileOrienation();
     if (match != null) {
-      if (Orientation.EAST == getOrientation() && Orientation.EAST == match) {
+      if (Orientation.EAST == tileOrientation && Orientation.EAST == match) {
         suffix = "+";
       }
-      if (Orientation.WEST == getOrientation() && Orientation.WEST == match) {
+      if (Orientation.WEST == tileOrientation && Orientation.WEST == match) {
         suffix = "+";
       }
-      if (Orientation.EAST == getOrientation() && Orientation.WEST == match) {
+      if (Orientation.EAST == tileOrientation && Orientation.WEST == match) {
         suffix = "-";
       }
-      if (Orientation.WEST == getOrientation() && Orientation.EAST == match) {
+      if (Orientation.WEST == tileOrientation && Orientation.EAST == match) {
         suffix = "-";
       }
-      if (Orientation.NORTH == getOrientation() && Orientation.NORTH == match) {
+      if (Orientation.NORTH == tileOrientation && Orientation.NORTH == match) {
         suffix = "+";
       }
-      if (Orientation.NORTH == getOrientation() && Orientation.SOUTH == match) {
+      if (Orientation.NORTH == tileOrientation && Orientation.SOUTH == match) {
         suffix = "-";
       }
-      if (Orientation.SOUTH == getOrientation() && Orientation.SOUTH == match) {
+      if (Orientation.SOUTH == tileOrientation && Orientation.SOUTH == match) {
         suffix = "+";
       }
-      if (Orientation.SOUTH == getOrientation() && Orientation.NORTH == match) {
+      if (Orientation.SOUTH == tileOrientation && Orientation.NORTH == match) {
         suffix = "-";
       }
     }
@@ -289,106 +311,18 @@ public class Block extends AbstractTile implements Tile {
   }
 
   @Override
-  public void rotate() {
+  public Orientation rotate() {
     super.rotate();
-    if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
-      this.width = DEFAULT_WIDTH * 3;
-      this.height = DEFAULT_HEIGHT;
 
-      this.renderWidth = RENDER_WIDTH * 3;
-      this.renderHeight = RENDER_HEIGHT;
-    } else {
-      this.width = DEFAULT_WIDTH;
-      this.height = DEFAULT_HEIGHT * 3;
+    Orientation tileOrientation = model.getTileOrienation();
+    int w = tileWidth(tileOrientation, TileType.BLOCK);
+    int h = tileHeight(tileOrientation, TileType.BLOCK);
 
-      this.renderWidth = RENDER_WIDTH;
-      this.renderHeight = RENDER_HEIGHT * 3;
-    }
-  }
-
-  public void setWidth(int width) {
-    this.width = width;
-  }
-
-  public void setHeight(int height) {
-    this.height = height;
-  }
-
-  public void setRenderWidth(int renderWidth) {
-    this.renderWidth = renderWidth;
-  }
-
-  public void setRenderHeight(int renderHeight) {
-    this.renderHeight = renderHeight;
-  }
-
-  public void setRenderOffsetX(int renderOffsetX) {
-    this.renderOffsetX = renderOffsetX;
-  }
-
-  public void setRenderOffsetY(int renderOffsetY) {
-    this.renderOffsetY = renderOffsetY;
-  }
-
-  /**
-   * Depending on the block status change the background color<br>
-   * - Red: Occupied<br>
-   * - Green: Departure<br>
-   * - Magenta: Arrival / entering<br>
-   * - Yellow: reserved<br>
-   * - White: all clear / default<br>
-   *
-   * @return the Color which belong with the current Block State
-   */
-  public Color getBlockStateColor() {
-    if (blockBean != null) {
-      BlockState blockState = blockBean.getBlockState();
-      return getBlockStateColor(blockState);
-    } else {
-      return Color.white;
-    }
-  }
-
-  public Color getBlockStateColor(BlockState blockState) {
-    return switch (blockState) {
-      case GHOST ->
-        new Color(250, 0, 0);
-      case LOCKED ->
-        new Color(250, 250, 210);
-      case OCCUPIED ->
-        new Color(250, 210, 210);
-      case OUT_OF_ORDER ->
-        new Color(190, 190, 190);
-      case OUTBOUND ->
-        new Color(210, 250, 210);
-      case INBOUND ->
-        new Color(250, 210, 250);
-      default ->
-        new Color(255, 255, 255);
-    };
-  }
-
-  public void setRouteBlockState(BlockState routeBlockState) {
-    this.routeBlockState = routeBlockState;
-  }
-
-  public BlockState getRouteBlockState() {
-    return routeBlockState;
-  }
-
-  public BlockState getBlockState() {
-    if (blockBean != null) {
-      return blockBean.getBlockState();
-    } else {
-      return BlockState.FREE;
-    }
-  }
-
-  public void setBlockState(BlockState blockState) {
-    if (blockBean == null) {
-      this.blockBean = new BlockBean((TileBean) this);
-    }
-    blockBean.setBlockState(blockState);
+    Dimension d = new Dimension(w, h);
+    setPreferredSize(d);
+    setSize(d);
+    setBounds(getTileBounds());
+    return model.getTileOrienation();
   }
 
   public static String getDepartureSuffix(Orientation tileOrientation, boolean reverseArrival, LocomotiveBean.Direction direction) {
@@ -424,380 +358,27 @@ public class Block extends AbstractTile implements Tile {
   }
 
   @Override
-  public void renderTile(Graphics2D g2) {
-    int xx = 20;
-    int yy = 50;
-    int rw = RENDER_WIDTH * 3 - 40;
-    int rh = 300;
+  public Rectangle getTileBounds() {
+    int multiplier = (model.isScaleImage() ? 1 : 10);
+    Orientation tileOrientation = model.getTileOrienation();
 
-    g2.setStroke(new BasicStroke(3, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_ROUND));
-
-    g2.setPaint(Color.darkGray);
-    g2.drawRoundRect(xx, yy, rw, rh, 15, 15);
-
-    Color blockStateColor = getBlockStateColor();
-    //Logger.trace("Block " + this.id + " State: " + this.getBlockBean().getBlockState().getState() + " Color: " + blockStateColor.toString());
-    g2.setPaint(blockStateColor);
-    g2.fillRoundRect(xx, yy, rw, rh, 15, 15);
-
-    g2.setStroke(new BasicStroke(20, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_ROUND));
-    g2.setPaint(Color.darkGray);
-    g2.drawLine(rw + 20, yy - 0, rw + 20, yy + 300);
-
-    //When there is a locomotive in the block mark the direction of travel.
-    //The default, forwards is in the direction of the block orientation, i.e. the +
-    if (getBlockBean() != null && getBlockBean().getLocomotive() != null && getBlockBean().getLocomotive().getName() != null) {
-      renderDirectionArrow(g2);
-    }
-
-    drawName(g2);
-  }
-
-  private void renderDirectionArrow(Graphics2D g2) {
-    //The default, forwards is in the direction of the block orientation, i.e. the +
-    Orientation orientation = this.getOrientation();
-    BlockBean bb = this.getBlockBean();
-    boolean reverseArrival = bb.isReverseArrival();
-
-    LocomotiveBean.Direction logicalDirection;
-    if (bb.getLogicalDirection() != null) {
-      logicalDirection = LocomotiveBean.Direction.get(bb.getLogicalDirection());
+    int xx, yy;
+    if (tileOrientation == Orientation.EAST || tileOrientation == Orientation.WEST) {
+      xx = tileX - GRID * multiplier - GRID * multiplier * 2;
+      yy = tileY - GRID * multiplier;
     } else {
-      logicalDirection = bb.getLocomotive().getDirection();
+      xx = tileX - GRID * multiplier;
+      yy = tileY - GRID * multiplier - GRID * multiplier * 2;
     }
 
-    String departureSuffix = bb.getDepartureSuffix();
-    if (departureSuffix == null) {
-      departureSuffix = Block.getDepartureSuffix(orientation, reverseArrival, logicalDirection);
-    }
-
-    //Logger.trace(this.getId()+" LogicalDirection is " + (bb.getLogicalDirection() != null ? "Set" : "Not Set") + " Dir: " + logicalDirection.getDirection() + " Orientation: " + orientation.getOrientation() + " departureSuffix: " + departureSuffix);
-    if ("+".equals(departureSuffix)) {
-      if (Orientation.EAST == orientation || Orientation.SOUTH == orientation) {
-        switch (logicalDirection) {
-          case LocomotiveBean.Direction.FORWARDS -> {
-            if (reverseArrival) {
-              renderLeftArrow(g2);
-            } else {
-              renderRightArrow(g2);
-            }
-          }
-          case LocomotiveBean.Direction.BACKWARDS -> {
-            if (reverseArrival) {
-              renderRightArrow(g2);
-            } else {
-              renderLeftArrow(g2);
-            }
-          }
-        }
-      } else {
-        switch (logicalDirection) {
-          case LocomotiveBean.Direction.BACKWARDS -> {
-            if (reverseArrival) {
-              renderLeftArrow(g2);
-            } else {
-              renderRightArrow(g2);
-            }
-          }
-          case LocomotiveBean.Direction.FORWARDS -> {
-            if (reverseArrival) {
-              renderRightArrow(g2);
-            } else {
-              renderLeftArrow(g2);
-            }
-          }
-        }
-      }
+    if (model.isScaleImage()) {
+      return new Rectangle(xx, yy, tileWidth(tileOrientation, TileType.BLOCK), tileHeight(tileOrientation, TileType.BLOCK));
     } else {
-      if (Orientation.EAST == orientation || Orientation.SOUTH == orientation) {
-        switch (logicalDirection) {
-          case LocomotiveBean.Direction.FORWARDS -> {
-            if (reverseArrival) {
-              renderLeftArrow(g2);
-            } else {
-              renderRightArrow(g2);
-            }
-          }
-          case LocomotiveBean.Direction.BACKWARDS -> {
-            if (reverseArrival) {
-              renderRightArrow(g2);
-            } else {
-              renderLeftArrow(g2);
-            }
-          }
-        }
-      } else {
-        switch (logicalDirection) {
-          case LocomotiveBean.Direction.BACKWARDS -> {
-            if (reverseArrival) {
-              renderLeftArrow(g2);
-            } else {
-              renderRightArrow(g2);
-            }
-          }
-          case LocomotiveBean.Direction.FORWARDS -> {
-            if (reverseArrival) {
-              renderRightArrow(g2);
-            } else {
-              renderLeftArrow(g2);
-            }
-          }
-        }
-      }
-    }
+      int renderWidth = getUI().getRenderWidth();
+      int renderHeight = getUI().getRenderHeight();
 
-  }
-
-  private void renderLeftArrow(Graphics2D g2) {
-    //Logger.trace(this.getId()+" LogicalDirection is " + this.getBlockBean().getLogicalDirection() + " Orientation: " + this.getOrientation() + " departureSuffix: " + this.getBlockBean().getDepartureSuffix());
-    g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
-  }
-
-  private void renderRightArrow(Graphics2D g2) {
-    //Logger.trace(this.getId()+" LogicalDirection is " + this.getBlockBean().getLogicalDirection() + " Orientation: " + this.getOrientation() + " departureSuffix: " + this.getBlockBean().getDepartureSuffix());
-    g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
-  }
-
-  @Override
-  public void renderTileRoute(Graphics2D g2d
-  ) {
-    if (routeBlockState != null) {
-      backgroundColor = getBlockStateColor(routeBlockState);
+      return new Rectangle(xx, yy, renderWidth, renderHeight);
     }
   }
 
-  protected void overlayLocImage(Graphics2D g2d) {
-    Image locImage = getLocImage();
-    String departureSuffix = null;
-    boolean reverseImage = true;
-    if (getBlockBean() != null) {
-      reverseImage = getBlockBean().isReverseArrival();
-    }
-
-    if (getBlockBean() != null) {
-      departureSuffix = getBlockBean().getDepartureSuffix();
-    }
-    if (locImage != null) {
-      // scale it to max h of 45
-      int size = 45;
-      float aspect = (float) locImage.getHeight(null) / (float) locImage.getWidth(null);
-      //TODO: Use Scalr?
-      locImage = locImage.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH);
-
-      //Logger.trace("LocImage w: " + w + " h: " + h);
-      //Depending on the block orientation the image needs to be rotated and flipped
-      //Incase the departure suffix is NOT set center the locomotive image
-      switch (getOrientation()) {
-        case WEST -> {
-          int xx;
-          int w = locImage.getWidth(null);
-          int h = locImage.getHeight(null);
-
-          if (null == departureSuffix) {
-            xx = x - width / 2 + w;
-          } else {
-            switch (departureSuffix) {
-              case "+" -> {
-                xx = x - width / 2 + w - 25;
-              }
-              default -> {
-                xx = x - width / 2 + w + 10;
-              }
-            }
-          }
-          int yy = y - h / 2;
-
-          if (reverseImage) {
-            locImage = ImageUtil.flipVertically(locImage);
-          }
-          g2d.drawImage(locImage, xx, yy, null);
-        }
-        case SOUTH -> {
-          locImage = ImageUtil.flipHorizontally(locImage);
-          locImage = ImageUtil.rotate(locImage, 90);
-
-          int w = locImage.getWidth(null);
-          int h = locImage.getHeight(null);
-
-          int xx = x - w / 2;
-          int yy;
-          if (null == departureSuffix) {
-            yy = y - height / 2 + h;
-          } else {
-            switch (departureSuffix) {
-              case "-" -> {
-                yy = y - height / 2 + h - 25;
-              }
-              default -> {
-                yy = y - height / 2 + h + 10;
-              }
-            }
-          }
-          if (reverseImage) {
-            locImage = ImageUtil.flipHorizontally(locImage);
-          }
-          g2d.drawImage(locImage, xx, yy, null);
-        }
-        case NORTH -> {
-          locImage = ImageUtil.flipHorizontally(locImage);
-          locImage = ImageUtil.rotate(locImage, 90);
-
-          int w = locImage.getWidth(null);
-          int h = locImage.getHeight(null);
-
-          int xx = x - w / 2;
-          int yy;
-          if (null == departureSuffix) {
-            int minY = y - height / 2 + h;
-            yy = minY;
-          } else {
-            switch (departureSuffix) {
-              case "+" -> {
-                yy = y - height / 2 + h - 25;
-              }
-              default -> {
-                yy = y - height / 2 + h + 10;
-              }
-            }
-          }
-          if (reverseImage) {
-            locImage = ImageUtil.flipHorizontally(locImage);
-          }
-          g2d.drawImage(locImage, xx, yy, null);
-        }
-        default -> {
-          //EAST
-          int xx;
-          int w = locImage.getWidth(null);
-          int h = locImage.getHeight(null);
-
-          if (null == departureSuffix) {
-            xx = x - width / 2 + w;
-          } else {
-            switch (departureSuffix) {
-              case "-" -> {
-                xx = x - width / 2 + w - 25;
-              }
-              default -> {
-                xx = x - width / 2 + w + 10;
-              }
-            }
-          }
-          int yy = y - h / 2;
-
-          if (reverseImage) {
-            locImage = ImageUtil.flipVertically(locImage);
-          }
-          g2d.drawImage(locImage, xx, yy, null);
-        }
-      }
-    }
-  }
-
-  /**
-   * Overridden to overlay a locomotive Icon
-   *
-   * @param g2d The graphics handle
-   * @param drawOutline
-   */
-  @Override
-  public void drawTile(Graphics2D g2d, boolean drawOutline) {
-    super.drawTile(g2d, drawOutline);
-    if (getLocImage() != null) {
-      overlayLocImage(g2d);
-    }
-  }
-
-  @Override
-  public void onTileChange(TileEvent tileEvent) {
-    //TODO: Does not yet work for route block status change
-    Color pb = this.backgroundColor;
-    super.onTileChange(tileEvent);
-    if (!pb.equals(backgroundColor)) {
-      repaintTile();
-    }
-  }
-
-  private Image getLocImage() {
-    if (blockBean != null && blockBean.getLocomotive() != null && blockBean.getLocomotive().getLocIcon() != null) {
-      //Do not show the image in block state FREE, OUT_OF_ORDER and LOCKED
-      BlockState blockState = blockBean.getBlockState();
-      boolean showImage = !(BlockState.FREE == blockState || BlockState.LOCKED == blockState || BlockState.OUT_OF_ORDER == blockState || BlockState.GHOST == blockState);
-      if (showImage) {
-        return blockBean.getLocomotive().getLocIcon();
-      } else {
-        return null;
-      }
-    } else {
-      return null;
-    }
-  }
-
-  public String getBlockText() {
-    String blockText;
-    if (!drawOutline && getBlockBean() != null && getBlockBean().getDescription() != null) {
-      if (blockBean.getLocomotive() != null && blockBean.getLocomotive().getName() != null && BlockState.GHOST != blockBean.getBlockState()) {
-        blockText = getBlockBean().getLocomotive().getName();
-      } else {
-        if (getBlockBean().getDescription().length() > 0) {
-          blockText = getBlockBean().getDescription();
-        } else {
-          blockText = getId();
-        }
-      }
-    } else {
-      // Design mode show description when available
-      if (getBlockBean() != null && getBlockBean().getDescription() != null && getBlockBean().getDescription().length() > 0) {
-        blockText = getBlockBean().getDescription();
-      } else {
-        blockText = getId();
-      }
-    }
-    return blockText;
-  }
-
-  @Override
-  public void drawName(Graphics2D g2d) {
-    Image locImage = getLocImage();
-
-    if (locImage == null) {
-      g2d.setPaint(Color.black);
-
-      Font currentFont = g2d.getFont();
-      Font newFont = currentFont.deriveFont(currentFont.getSize() * 10.0F);
-      g2d.setFont(newFont);
-
-      String blockText = getBlockText();
-
-      // Scale the text if necessary
-      int textWidth = g2d.getFontMetrics().stringWidth(blockText);
-      double fontscale = 10.0;
-      if (textWidth > 845) {
-        fontscale = fontscale * 847.0 / textWidth;
-        newFont = currentFont.deriveFont(currentFont.getSize() * (float) fontscale);
-        g2d.setFont(newFont);
-        textWidth = g2d.getFontMetrics().stringWidth(blockText);
-      }
-
-      int textHeight = g2d.getFontMetrics().getHeight();
-
-      switch (getOrientation()) {
-        case EAST -> {
-          drawRotate(g2d, ((RENDER_WIDTH * 3) / 2) - textWidth / 2, RENDER_GRID + textHeight / 3, 0, blockText);
-        }
-        case WEST -> {
-          drawRotate(g2d, ((RENDER_WIDTH * 3) / 2) + textWidth / 2, RENDER_GRID - textHeight / 3, 180, blockText);
-        }
-        case NORTH -> {
-          drawRotate(g2d, ((RENDER_WIDTH * 3) / 2) - textWidth / 2, RENDER_GRID + textHeight / 3, 0, blockText);
-        }
-        case SOUTH -> {
-          drawRotate(g2d, ((RENDER_WIDTH * 3) / 2) + textWidth / 2, RENDER_GRID - textHeight / 3, 180, blockText);
-        }
-      }
-      // reset to the original font
-      newFont = currentFont.deriveFont(currentFont.getSize() * 1.0F);
-      g2d.setFont(newFont);
-    }
-  }
 }

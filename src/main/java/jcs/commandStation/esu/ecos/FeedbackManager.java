@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import jcs.commandStation.events.SensorEvent;
-import jcs.entities.FeedbackModuleBean;
+import jcs.commandStation.entities.FeedbackModule;
 import org.tinylog.Logger;
 
 /**
@@ -31,9 +31,12 @@ class FeedbackManager {
 
   public static final int ID = Ecos.FEEDBACK_MANAGER_ID;
   public static final int S88_OFFSET = 100;
+  public static final int S88_DEFAULT_PORT_COUNT = 16;
+
+  private static final String ESU_ECOS_CS = "esu-ecos";
 
   private final EsuEcosCommandStationImpl ecosCommandStation;
-  private final Map<Integer, FeedbackModuleBean> modules;
+  private final Map<Integer, FeedbackModule> modules;
 
   FeedbackManager(EsuEcosCommandStationImpl ecosCommandStation, EcosMessage message) {
     this.ecosCommandStation = ecosCommandStation;
@@ -42,7 +45,6 @@ class FeedbackManager {
   }
 
   private List<SensorEvent> parse(EcosMessage message) {
-    Logger.trace(message.getMessage());
     Logger.trace(message.getResponse());
 
     List<SensorEvent> changedSensors;
@@ -51,14 +53,22 @@ class FeedbackManager {
     int objectId = message.getObjectId();
 
     if (ID != objectId) {
-      FeedbackModuleBean feedbackModule;
-      if (this.modules.containsKey(objectId)) {
-        feedbackModule = this.modules.get(objectId);
+      FeedbackModule feedbackModule;
+      if (modules.containsKey(objectId)) {
+        feedbackModule = modules.get(objectId);
       } else {
-        feedbackModule = new FeedbackModuleBean();
+        feedbackModule = new FeedbackModule();
         feedbackModule.setId(objectId);
-        feedbackModule.setAddressOffset(S88_OFFSET);
-        feedbackModule.setModuleNumber(objectId - S88_OFFSET);
+        feedbackModule.setAddressOffset(0);
+        feedbackModule.setModuleNumber(objectId - S88_OFFSET + 1);
+        //ESU ECoS has 1 bus
+        feedbackModule.setIdentifier(0);
+        //In Unit Testcase the command station is null
+        if (ecosCommandStation != null) {
+          feedbackModule.setCommandStationId(ecosCommandStation.getCommandStationBean().getId());
+        } else {
+          feedbackModule.setCommandStationId(ESU_ECOS_CS);
+        }
       }
 
       if (values.containsKey(Ecos.PORTS)) {
@@ -67,19 +77,21 @@ class FeedbackManager {
           int ports = Integer.parseInt(vports);
           feedbackModule.setPortCount(ports);
         }
+      } else {
+        feedbackModule.setPortCount(S88_DEFAULT_PORT_COUNT);
       }
 
       if (values.containsKey(Ecos.STATE)) {
         String state = values.get(Ecos.STATE).toString();
         updatePorts(state, feedbackModule);
       }
-      this.modules.put(objectId, feedbackModule);
-      changedSensors = feedbackModule.getChangedSensors();
+      modules.put(objectId, feedbackModule);
+      changedSensors = feedbackModule.getChangedSensorEvents();
 
       if (event) {
-        if (this.ecosCommandStation != null) {
+        if (ecosCommandStation != null) {
           for (SensorEvent sensorEvent : changedSensors) {
-            this.ecosCommandStation.fireSensorEventListeners(sensorEvent);
+            ecosCommandStation.fireSensorEventListeners(sensorEvent);
           }
         }
       }
@@ -88,14 +100,24 @@ class FeedbackManager {
         if (values.containsKey(Ecos.SIZE)) {
           int size = Integer.parseInt(values.get(Ecos.SIZE).toString());
           for (int i = 0; i < size; i++) {
-            FeedbackModuleBean fbmb = new FeedbackModuleBean();
-            fbmb.setAddressOffset(S88_OFFSET);
-            fbmb.setModuleNumber(i);
-            fbmb.setId(S88_OFFSET+i);
-            this.modules.put(fbmb.getId(), fbmb);
+            FeedbackModule fbmb = new FeedbackModule();
+            fbmb.setAddressOffset(0);
+            fbmb.setModuleNumber(i + 1);
+            fbmb.setId(S88_OFFSET + i);
+            fbmb.setPortCount(S88_DEFAULT_PORT_COUNT);
+            fbmb.setIdentifier(0);
+            fbmb.setBusSize(size);
+
+            //In Unit Testcase the command station is null
+            if (ecosCommandStation != null) {
+              fbmb.setCommandStationId(ecosCommandStation.getCommandStationBean().getId());
+            } else {
+              fbmb.setCommandStationId(ESU_ECOS_CS);
+            }
+
+            modules.put(fbmb.getId(), fbmb);
           }
         }
-
       }
       changedSensors = Collections.EMPTY_LIST;
     }
@@ -111,7 +133,7 @@ class FeedbackManager {
     return this.modules.size();
   }
 
-  void updatePorts(String state, FeedbackModuleBean s88) {
+  void updatePorts(String state, FeedbackModule s88) {
     String val = state.replace("0x", "");
     int l = 4 - val.length();
     for (int i = 0; i < l; i++) {
@@ -122,8 +144,8 @@ class FeedbackManager {
     int[] prevPorts = s88.getPrevPorts();
 
     if (ports == null) {
-      ports = new int[FeedbackModuleBean.DEFAULT_PORT_COUNT];
-      prevPorts = new int[FeedbackModuleBean.DEFAULT_PORT_COUNT];
+      ports = new int[FeedbackModule.DEFAULT_PORT_COUNT];
+      prevPorts = new int[FeedbackModule.DEFAULT_PORT_COUNT];
     }
     //Set the previous ports State
     System.arraycopy(ports, 0, prevPorts, 0, ports.length);
@@ -139,11 +161,11 @@ class FeedbackManager {
     s88.setPorts(ports);
   }
 
-  public Map<Integer, FeedbackModuleBean> getModules() {
+  public Map<Integer, FeedbackModule> getModules() {
     return modules;
   }
 
-  public FeedbackModuleBean getFeedbackModule(int id) {
-    return this.modules.get(id);
+  public FeedbackModule getFeedbackModule(int id) {
+    return modules.get(id);
   }
 }

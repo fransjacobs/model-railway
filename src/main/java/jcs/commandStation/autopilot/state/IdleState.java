@@ -59,6 +59,19 @@ class IdleState extends DispatcherState {
           } catch (InterruptedException ex) {
             Logger.trace("Interrupted: " + ex.getMessage());
           }
+        } else {
+          //Locomotive is stopped...
+          Logger.trace(dispatcher.getName() + " Automode: " + AutoPilot.isAutoModeActive() + " Dispacher " + dispatcher.isLocomotiveAutomodeOn());
+          
+          //stop this thread...
+          try {
+            synchronized (this) {
+              wait(10000);
+            }
+          } catch (InterruptedException ex) {
+            Logger.trace("Interrupted: " + ex.getMessage());
+          }
+
         }
       }
       return this;

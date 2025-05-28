@@ -15,10 +15,6 @@
  */
 package jcs.commandStation.marklin.cs2;
 
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -267,20 +263,6 @@ public class LocomotiveBeanParser {
       }
     }
     return lb;
-  }
-
-  public static void main(String[] a) throws Exception {
-    Path path = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "lokomotive.cs2");
-
-    String loksFile = Files.readString(path);
-
-    LocomotiveBeanParser lp = new LocomotiveBeanParser();
-    List<LocomotiveBean> locs = lp.parseLocomotivesFile(loksFile);
-
-    for (LocomotiveBean loc : locs) {
-      Logger.trace(loc);
-    }
-
   }
 
 }

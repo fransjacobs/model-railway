@@ -15,8 +15,8 @@
  */
 package jcs.commandStation.entities;
 
-
 import jakarta.persistence.Transient;
+import java.util.Objects;
 import jcs.entities.CommandStationBean;
 
 /**
@@ -32,41 +32,17 @@ public class InfoBean extends CommandStationBean {
   private String hostname;
   private String gfpUid;
   private String guiUid;
+  private boolean supportMeasurements;
 
-//private String id;
-//  private String description;
-//  private String shortName;
-//  private String className;
-//  private String connectVia;
-//  private String serialPort;
-//  private String ipAddress;
-//  private Integer networkPort;
-//  private boolean ipAutoConfiguration;
-//  private boolean decoderControlSupport;
-//  private boolean accessoryControlSupport;
-//  private boolean feedbackSupport;
-//  private boolean locomotiveSynchronizationSupport;
-//  private boolean accessorySynchronizationSupport;
-//  private boolean locomotiveImageSynchronizationSupport;
-//  private boolean locomotiveFunctionSynchronizationSupport;
-//  private String protocols;
-//  private boolean defaultCs;
-//  private boolean enabled;
-//  private String lastUsedSerial;
-//  private String supConnTypesStr;
-//  private boolean virtual;
-//
-//  private String feedbackModuleIdentifier;
-//  private Integer feedbackChannelCount;
-//  private Integer feedbackBus0ModuleCount;
-//  private Integer feedbackBus1ModuleCount;
-//  private Integer feedbackBus2ModuleCount;
-//  private Integer feedbackBus3ModuleCount;  
   public InfoBean() {
 
   }
 
   public InfoBean(CommandStationBean commandStationBean) {
+    copyInto(commandStationBean);
+  }
+
+  public final void copyInto(CommandStationBean commandStationBean) {
     this.id = commandStationBean.getId();
     this.description = commandStationBean.getDescription();
     this.shortName = commandStationBean.getShortName();
@@ -169,9 +145,68 @@ public class InfoBean extends CommandStationBean {
     this.guiUid = guiUid;
   }
 
+  @Transient
+  public boolean isSupportMeasurements() {
+    return supportMeasurements;
+  }
+
+  public void setSupportMeasurements(boolean supportMeasurements) {
+    this.supportMeasurements = supportMeasurements;
+  }
+
   @Override
   public String toString() {
     return "InfoBean{" + "softwareVersion=" + softwareVersion + ", hardwareVersion=" + hardwareVersion + ", serialNumber=" + serialNumber + ", productName=" + productName + ", articleNumber=" + articleNumber + ", hostname=" + hostname + ", gfpUid=" + gfpUid + ", guiUid=" + guiUid + "}";
+  }
+
+  @Override
+  public int hashCode() {
+    int hash = 3;
+    hash = 97 * hash + Objects.hashCode(this.softwareVersion);
+    hash = 97 * hash + Objects.hashCode(this.hardwareVersion);
+    hash = 97 * hash + Objects.hashCode(this.serialNumber);
+    hash = 97 * hash + Objects.hashCode(this.productName);
+    hash = 97 * hash + Objects.hashCode(this.articleNumber);
+    hash = 97 * hash + Objects.hashCode(this.hostname);
+    hash = 97 * hash + Objects.hashCode(this.gfpUid);
+    hash = 97 * hash + Objects.hashCode(this.guiUid);
+    return hash;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    final InfoBean other = (InfoBean) obj;
+    if (!Objects.equals(this.softwareVersion, other.softwareVersion)) {
+      return false;
+    }
+    if (!Objects.equals(this.hardwareVersion, other.hardwareVersion)) {
+      return false;
+    }
+    if (!Objects.equals(this.serialNumber, other.serialNumber)) {
+      return false;
+    }
+    if (!Objects.equals(this.productName, other.productName)) {
+      return false;
+    }
+    if (!Objects.equals(this.articleNumber, other.articleNumber)) {
+      return false;
+    }
+    if (!Objects.equals(this.hostname, other.hostname)) {
+      return false;
+    }
+    if (!Objects.equals(this.gfpUid, other.gfpUid)) {
+      return false;
+    }
+    return Objects.equals(this.guiUid, other.guiUid);
   }
 
 }

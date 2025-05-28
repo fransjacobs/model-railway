@@ -25,7 +25,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
-import jcs.commandStation.events.DisconnectionEvent;
+import jcs.commandStation.events.ConnectionEvent;
 import org.tinylog.Logger;
 
 /**
@@ -175,7 +175,7 @@ class HSISerialConnection implements HSIConnection {
       Logger.trace("Port " + commPort.getSystemPortName() + " is Disconnected");
 
       String msg = commPort.getDescriptivePortName() + " [" + commPort.getSystemPortName() + "]";
-      DisconnectionEvent de = new DisconnectionEvent(msg);
+      ConnectionEvent de = new ConnectionEvent(msg, false);
 
       for (HSIMessageListener listener : feedbackListeners) {
         listener.onDisconnect(de);

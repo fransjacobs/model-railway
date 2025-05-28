@@ -15,26 +15,44 @@
  */
 package jcs.ui.layout.tiles;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Graphics2D;
 import java.awt.Point;
 import java.util.Collection;
+import javax.swing.UIManager;
 import jcs.entities.TileBean;
+import jcs.entities.TileBean.Orientation;
+import jcs.entities.TileBean.TileType;
+import jcs.ui.layout.tiles.ui.StraightDirectionUI;
+import jcs.ui.layout.tiles.ui.TileUI;
 
+/**
+ * Representation of a Straight track where trans can only run in one direction on the layout
+ */
 public class StraightDirection extends Straight {
 
-  StraightDirection(TileBean tileBean) {
+  public StraightDirection(TileBean tileBean) {
     super(tileBean);
+    this.tileType = TileType.STRAIGHT_DIR;
   }
 
-  StraightDirection(Orientation orientation, int x, int y) {
+  public StraightDirection(Orientation orientation, int x, int y) {
     this(orientation, new Point(x, y));
   }
 
-  StraightDirection(Orientation orientation, Point center) {
+  public StraightDirection(Orientation orientation, Point center) {
     super(orientation, center);
-    this.type = TileType.STRAIGHT_DIR.getTileType();
+    this.tileType = TileType.STRAIGHT_DIR;
+  }
+
+  @Override
+  public String getUIClassID() {
+    return StraightDirectionUI.UI_CLASS_ID;
+  }
+
+  @Override
+  public void updateUI() {
+    UIManager.put(TileUI.UI_CLASS_ID, "jcs.ui.layout.tiles.ui.StraightDirectionUI");
+    setUI((TileUI) UIManager.getUI(this));
+    invalidate();
   }
 
   @Override
@@ -59,30 +77,4 @@ public class StraightDirection extends Straight {
     }
     return arrowDirection && isAdjacent(other);
   }
-
-  private void renderDirectionArrow(Graphics2D g2) {
-    //   |\
-    // ==|+===
-    //   |/
-    g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
-    g2.setPaint(Color.green.darker());
-
-    g2.fillPolygon(new int[]{150, 150, 270}, new int[]{130, 270, 200}, 3);
-  }
-
-  @Override
-  public void renderTile(Graphics2D g2) {
-    Graphics2D g2d = (Graphics2D) g2.create();
-
-    renderStraight(g2d);
-
-    renderDirectionArrow(g2d);
-
-    if (drawRoute) {
-      renderTileRoute(g2);
-    }
-
-    g2d.dispose();
-  }
-
 }

@@ -107,7 +107,7 @@ interface MarklinCan {
 
   //Sensor messages
   public final static int S88_EVENT = 0x22;
-  public final static int S88_EVENT_RESP = 0x23;
+  //public final static int S88_EVENT_RESP = 0x23;
 
   public final static int SX1_EVENT = 0x24;
 
@@ -179,5 +179,7 @@ interface MarklinCan {
   public static final byte[] MOBILE_APP_HASH = new byte[]{0x47, 0x11};
   //Magic hash which will result is getting device ids 
   public static final byte[] MAGIC_HASH = new byte[]{0x07, 0x69};
+
+  public static final int DCC_ACCESSORY_OFFSET = 14336;
 
 }

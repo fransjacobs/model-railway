@@ -67,7 +67,7 @@ public class AccessoryBeanParser {
           }
           ab = new AccessoryBean();
           ab.setSynchronize(true);
-          ab.setSource(source + ":"+MAGNETARTIKEL);
+          ab.setSource(source + ":" + MAGNETARTIKEL);
           ab.setCommandStationId(commandStationId);
         }
         case ".name" -> {
@@ -165,7 +165,7 @@ public class AccessoryBeanParser {
     for (int i = 0; i < aa.length(); i++) {
       AccessoryBean ab = new AccessoryBean();
       ab.setSynchronize(true);
-      ab.setSource(source + ":"+MAGS_JSON);
+      ab.setSource(source + ":" + MAGS_JSON);
       ab.setCommandStationId(commandStationId);
 
       JSONObject ajo = aa.getJSONObject(i);
@@ -199,26 +199,25 @@ public class AccessoryBeanParser {
     return accessories;
   }
 
-  public static void main(String[] a) throws Exception {
-
-    Path accessoryFile = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "magnetartikel.cs2");
-    String file = Files.readString(accessoryFile);
-    List<AccessoryBean> accessories = AccessoryBeanParser.parseAccessoryFile(file, "marklin.cs", "CS");
-    for (AccessoryBean acc : accessories) {
-      Logger.trace(acc.toLogString());
-    }
-    Logger.trace("Total " + accessories.size());
-
-    Path accessoryJson = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "mags.json");
-
-    String json = Files.readString(accessoryJson);
-    accessories = AccessoryBeanParser.parseAccessoryJSON(json, "marklin.cs", "CS");
-
-    for (AccessoryBean acc : accessories) {
-      Logger.trace(acc.toLogString());
-    }
-    Logger.trace("Total " + accessories.size());
-
-  }
-
+//  public static void main(String[] a) throws Exception {
+//
+//    Path accessoryFile = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "magnetartikel.cs2");
+//    String file = Files.readString(accessoryFile);
+//    List<AccessoryBean> accessories = AccessoryBeanParser.parseAccessoryFile(file, "marklin.cs", "CS");
+//    for (AccessoryBean acc : accessories) {
+//      Logger.trace(acc.toLogString());
+//    }
+//    Logger.trace("Total " + accessories.size());
+//
+//    Path accessoryJson = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "mags.json");
+//
+//    String json = Files.readString(accessoryJson);
+//    accessories = AccessoryBeanParser.parseAccessoryJSON(json, "marklin.cs", "CS");
+//
+//    for (AccessoryBean acc : accessories) {
+//      Logger.trace(acc.toLogString());
+//    }
+//    Logger.trace("Total " + accessories.size());
+//
+//  }
 }

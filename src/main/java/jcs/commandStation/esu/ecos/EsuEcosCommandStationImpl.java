@@ -19,9 +19,9 @@ import java.awt.Image;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TransferQueue;
 import jcs.JCS;
@@ -36,10 +36,8 @@ import jcs.commandStation.events.PowerEvent;
 import jcs.commandStation.events.PowerEventListener;
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.AccessoryBean;
-import jcs.entities.ChannelBean;
 import jcs.entities.CommandStationBean;
-import jcs.commandStation.entities.DeviceBean;
-import jcs.entities.FeedbackModuleBean;
+import jcs.commandStation.entities.FeedbackModule;
 import jcs.commandStation.entities.InfoBean;
 import jcs.commandStation.esu.ecos.net.EcosHTTPConnection;
 import jcs.commandStation.events.AccessoryEvent;
@@ -53,9 +51,11 @@ import jcs.commandStation.events.LocomotiveSpeedEventListener;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.commandStation.autopilot.DriveSimulator;
 import jcs.commandStation.VirtualConnection;
+import jcs.commandStation.entities.Device;
 import static jcs.entities.AccessoryBean.AccessoryValue.GREEN;
 import static jcs.entities.AccessoryBean.AccessoryValue.RED;
 import jcs.entities.LocomotiveBean;
+import jcs.util.Ping;
 import org.tinylog.Logger;
 
 public class EsuEcosCommandStationImpl extends AbstractController implements DecoderController, AccessoryController, FeedbackController {
@@ -98,12 +98,10 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     connect();
   }
 
-  
-  
   @Override
   public boolean connect() {
     if (!connected) {
-      Logger.trace("Connecting to a " + (this.virtual ? "Virtual " : "") + "ESU ECoS Command Station...");
+      Logger.trace("Connecting to a " + (virtual ? "Virtual " : "") + "ESU ECoS Command Station...");
       if (executor == null || executor.isShutdown()) {
         executor = Executors.newCachedThreadPool();
       }
@@ -117,72 +115,81 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
       CommandStationBean.ConnectionType conType = commandStationBean.getConnectionType();
 
-      boolean canConnect = true;
+      boolean canConnect;
       if (conType == CommandStationBean.ConnectionType.NETWORK) {
-        if (commandStationBean.getIpAddress() != null) {
-          EcosConnectionFactory.writeLastUsedIpAddressProperty(commandStationBean.getIpAddress());
-        } else {
-          //try to discover the ECoS
-          InetAddress ecosAddr = EcosConnectionFactory.discoverEcos();
-          String ip = ecosAddr.getHostAddress();
-          commandStationBean.setIpAddress(ip);
-          EcosConnectionFactory.writeLastUsedIpAddressProperty(commandStationBean.getIpAddress());
-          canConnect = ip != null;
-          if (!canConnect) {
-            Logger.error("Can't connect; IP Address not set");
-          }
-        }
-      }
-
-      if (canConnect) {
-        connection = EcosConnectionFactory.getConnection(commandStationBean.isVirtual());
-
-        if (connection != null) {
-          long now = System.currentTimeMillis();
-          long timeout = now + 5000L;
-
-          while (!connected && now < timeout) {
-            connected = connection.isConnected();
-            now = System.currentTimeMillis();
-          }
-          if (!connected && now > timeout) {
-            Logger.error("Could not establish a connection");
-          }
-
-          if (connected) {
-            //Start the EventHandler
-            eventMessageHandler = new EventHandler(this.connection);
-            eventMessageHandler.start();
-
-            //Obtain some info about the ECoS
-            initBaseObject();
-
-            initLocomotiveManager();
-            Logger.trace("There are " + this.locomotiveManager.getSize() + " locomotives");
-
-            initAccessoryManager();
-            Logger.trace("There are " + this.accessoryManager.getSize() + " accessories");
-
-            initFeedbackManager();
-            Logger.trace("There are " + this.feedbackManager.getSize() + " feedback modules");
-
-            if (isVirtual()) {
-              simulator = new DriveSimulator();
-              Logger.info("ECoS Virtual Mode Enabled!");
-
-            }
-
+        try {
+          InetAddress ecosAddr;
+          if (virtual) {
+            ecosAddr = InetAddress.getLocalHost();
           } else {
-            Logger.warn("Can't connect with a ESU ECoS Command Station!");
-            JCS.logProgress("Can't connect with ESU ECoS Command Station!");
+            ecosAddr = InetAddress.getByName(commandStationBean.getIpAddress());
           }
+          commandStationBean.setIpAddress(ecosAddr.getHostAddress());
+          canConnect = ecosAddr.getHostAddress() != null;
+        } catch (UnknownHostException ex) {
+          Logger.error("Invalid ip address : " + commandStationBean.getIpAddress());
+          return false;
+        }
+      } else {
+        if (virtual) {
+          canConnect = true;
+        } else {
+          canConnect = Ping.IsReachable(commandStationBean.getIpAddress());
         }
       }
+
+      if (!canConnect) {
+        Logger.error("Can't connect to " + (commandStationBean.getIpAddress() == null ? "ip Address not set" : "can't reach ip " + commandStationBean.getIpAddress()));
+        return false;
+      }
+
+      connection = EcosConnectionFactory.getConnection(commandStationBean);
+
+      if (connection != null) {
+        long now = System.currentTimeMillis();
+        long timeout = now + 5000L;
+
+        while (!connected && now < timeout) {
+          connected = connection.isConnected();
+          now = System.currentTimeMillis();
+        }
+        if (!connected && now > timeout) {
+          Logger.error("Could not establish a connection");
+        }
+
+        if (connected) {
+          //Start the EventHandler
+          eventMessageHandler = new EventHandler(this.connection);
+          eventMessageHandler.start();
+
+          //Obtain some info about the ECoS
+          initBaseObject();
+
+          initLocomotiveManager();
+          Logger.trace("There are " + this.locomotiveManager.getSize() + " locomotives");
+
+          initAccessoryManager();
+          Logger.trace("There are " + this.accessoryManager.getSize() + " accessories");
+
+          initFeedbackManager();
+          Logger.trace("There are " + this.feedbackManager.getSize() + " feedback modules");
+
+          if (isVirtual()) {
+            simulator = new DriveSimulator();
+            Logger.info("ECoS Virtual Mode Enabled!");
+
+          }
+
+        } else {
+          Logger.warn("Can't connect with a ESU ECoS Command Station!");
+          JCS.logProgress("Can't connect with ESU ECoS Command Station!");
+        }
+      }
+
     }
 //            Logger.trace("Connected with: " + (this.mainDevice != null ? this.mainDevice.getName() : "Unknown"));
 //            JCS.logProgress("Power is " + (this.power ? "On" : "Off"));
-    return this.connected;
-
+    return connected;
   }
 
   private void initBaseObject() {
@@ -230,11 +237,11 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
     for (int i = 0; i < feedbackManager.getSize(); i++) {
       int moduleId = i + FeedbackManager.S88_OFFSET;
-      reply = connection.sendMessage(EcosMessageFactory.getFeedbackModuleInfo(moduleId));
-      
+      //reply = 
+      //connection.sendMessage(EcosMessageFactory.getFeedbackModuleInfo(moduleId));
+
       //TODO: Start of day...
       //feedbackManager.update(reply);
-
       connection.sendMessage(EcosMessageFactory.subscribeFeedbackModule(moduleId));
       //Logger.trace("r: "+reply.getResponse());
     }
@@ -243,18 +250,38 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
   @Override
   public void disconnect() {
     try {
-      if (this.connected) {
-        this.connection.sendMessage(EcosMessageFactory.unSubscribeBaseObject());
-        //TODO unsubscribe from all locomotives, accessories and sensors
+      if (connected) {
+        Logger.trace("Unsubsribe from " + feedbackManager.getSize() + " feedback modules...");
+        for (FeedbackModule fm : feedbackManager.getModules().values()) {
+          connection.sendMessage(EcosMessageFactory.unSubscribeFeedbackModule(fm.getId()));
+        }
+        Logger.trace("Unsubscribe from " + accessoryManager.getSize() + " accessories...");
+        for (AccessoryBean a : this.accessoryManager.getAccessories().values()) {
+          connection.sendMessage(EcosMessageFactory.unSubscribeAccessory(a.getId()));
+        }
+        Logger.trace("Unsubscribe from " + locomotiveManager.getSize() + " locomotives...");
+        for (LocomotiveBean l : this.locomotiveManager.getLocomotives().values()) {
+          connection.sendMessage(EcosMessageFactory.unSubscribeLocomotive(l.getId()));
+        }
 
+        connection.sendMessage(EcosMessageFactory.unSubscribeAccessoryManager());
+        connection.sendMessage(EcosMessageFactory.unSubscribeLokManager());
+        connection.sendMessage(EcosMessageFactory.unSubscribeFeedbackManager());
+        connection.sendMessage(EcosMessageFactory.unSubscribeBaseObject());
       }
-      if (this.eventMessageHandler != null) {
-        this.eventMessageHandler.quit();
+      if (eventMessageHandler != null) {
+        Logger.trace("Stopping event handling...");
+        eventMessageHandler.quit();
+        eventMessageHandler.join();
+
+        eventMessageHandler = null;
       }
-      if (this.connected) {
-        this.connection.close();
-        this.connected = false;
+      if (connected) {
+        connection.close();
+        connected = false;
       }
+
+      EcosConnectionFactory.disconnectAll();
     } catch (Exception ex) {
       Logger.error(ex);
     }
@@ -262,16 +289,19 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
   @Override
   public InfoBean getCommandStationInfo() {
-    InfoBean ib = new InfoBean(this.commandStationBean);
-    if (this.ecosManager != null) {
-
-      ib.setArticleNumber(this.ecosManager.getName().replace(this.ecosManager.getCommandStationType() + "-", ""));
-      ib.setDescription(this.ecosManager.getName());
-      ib.setArticleNumber(this.ecosManager.getName().replace(this.ecosManager.getCommandStationType() + "-", ""));
-      ib.setSerialNumber(this.ecosManager.getSerialNumber());
-      ib.setHardwareVersion(this.ecosManager.getHardwareVersion());
-      ib.setSoftwareVersion(this.ecosManager.getApplicationVersion());
-      ib.setHostname(this.getIp());
+    InfoBean ib = new InfoBean(commandStationBean);
+    if (ecosManager != null) {
+      ib.setArticleNumber(ecosManager.getName().replace(this.ecosManager.getCommandStationType() + "-", ""));
+      ib.setDescription(ecosManager.getName());
+      ib.setArticleNumber(ecosManager.getName().replace(this.ecosManager.getCommandStationType() + "-", ""));
+      ib.setSerialNumber(ecosManager.getSerialNumber());
+      ib.setProductName(ecosManager.getName());
+      ib.setHardwareVersion(ecosManager.getHardwareVersion());
+      ib.setSoftwareVersion(ecosManager.getApplicationVersion());
+      ib.setHostname(getIp());
+      if (ib.getIpAddress() == null) {
+        ib.setIpAddress(getIp());
+      }
     } else {
       ib.setDescription("Not Connected");
       ib.setHostname("Not Connected");
@@ -279,26 +309,37 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     return ib;
   }
 
-  //TODO: is the device in this form it is now really necessary?
   @Override
-  public DeviceBean getDevice() {
-    DeviceBean d = new DeviceBean();
-    if (ecosManager != null) {
-      d.setName(ecosManager.getName());
-      d.setVersion(ecosManager.getHardwareVersion());
-      d.setTypeName(ecosManager.getCommandStationType());
-      d.setSerial(ecosManager.getSerialNumber());
-    } else {
-      d.setName("Not Connected");
-    }
-    return d;
-  }
+  public List<Device> getDevices() {
+    List<Device> devices = new ArrayList<>();
+    Device ecos = new Device();
+    ecos.setId(EcosManager.ID + "");
+    ecos.setName(ecosManager.getName());
+    ecos.setSerialNumber(ecosManager.getSerialNumber());
+    ecos.setHardwareVersion(ecosManager.getHardwareVersion());
+    ecos.setSoftwareVersion(ecosManager.getApplicationVersion());
+    devices.add(ecos);
 
-  //TODO: is the device in this form it is now really necessary?
-  @Override
-  public List<DeviceBean> getDevices() {
-    List<DeviceBean> devices = new ArrayList<>();
-    devices.add(getDevice());
+    Device locs = new Device();
+    locs.setId(LocomotiveManager.ID + "");
+    locs.setName("LocomotiveManager");
+    locs.setSize(locomotiveManager.getSize());
+    devices.add(locs);
+
+    Device acm = new Device();
+    acm.setId(AccessoryManager.ID + "");
+    acm.setName("AccessoryManager");
+    acm.setSize(accessoryManager.getSize());
+    devices.add(acm);
+
+    Device fbm = new Device();
+    fbm.setId(FeedbackManager.ID + "");
+    fbm.setName("FeedbackManager");
+    fbm.setSize(feedbackManager.getSize());
+    fbm.setChannels(feedbackManager.getModules().size());
+    fbm.setFeedback(true);
+    devices.add(fbm);
+
     return devices;
   }
 
@@ -401,8 +442,7 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
       //When a locomotive has a speed change (>0) check if Auto mode is on.
       //When in Auto mode try to simulate the first sensor the locomotive is suppose to hit.
       if (AutoPilot.isAutoModeActive() && speed > 0) {
-        //simulateDriving(locUid, speed, direction);
-        this.simulator.simulateDriving(locUid, speed, direction);
+        simulator.simulateDriving(locUid, speed, direction);
       }
     }
   }
@@ -469,21 +509,9 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
   }
 
   @Override
-  public Map<Integer, ChannelBean> getTrackMeasurements() {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  @Override
-  public void switchAccessory(Integer address, AccessoryBean.AccessoryValue value) {
-    switchAccessory(address, value, this.defaultSwitchTime);
-  }
-
-  @Override
-  public void switchAccessory(Integer address, AccessoryBean.AccessoryValue value, Integer switchTime) {
-    //for now try to find the object id based on the address.
-    //The protocol is not known so "accidents" can happen...
+  public void switchAccessory(Integer address, String protocol, AccessoryBean.AccessoryValue value, Integer switchTime) {
     Logger.trace("Using Address " + address + " to find the AccessoryId...");
-    String id = this.accessoryManager.findId(address);
+    String id = accessoryManager.findId(address);
     if (id != null) {
       switchAccessory(id, value);
     } else {
@@ -491,8 +519,8 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     }
   }
 
-  @Override
-  public void switchAccessory(String id, AccessoryBean.AccessoryValue value) {
+  //@Override
+  void switchAccessory(String id, AccessoryBean.AccessoryValue value) {
     //if (this.power && this.connected) {
     Logger.trace("Changing Accessory " + id + " to " + value);
     int state;
@@ -543,41 +571,24 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
   }
 
   @Override
-  public DeviceBean getFeedbackDevice() {
-    DeviceBean db = new DeviceBean();
-    db.setArticleNumber(this.ecosManager.getName());
-    db.setIdentifier("0x0");
-    db.getBusLength(this.feedbackManager.getSize());
-    db.setVersion(this.ecosManager.getApplicationVersion());
-    db.setSerial(this.ecosManager.getSerialNumber());
-    db.setTypeName("Link S88");
-
-    ChannelBean cb = new ChannelBean();
-    cb.setName(DeviceBean.BUS0);
-    cb.setNumber(0);
-
-    db.addSensorBus(0, cb);
-
-    return db;
-  }
-
-  @Override
-  public List<FeedbackModuleBean> getFeedbackModules() {
-    List<FeedbackModuleBean> feedbackModules = new ArrayList<>(this.feedbackManager.getModules().values());
+  public List<FeedbackModule> getFeedbackModules() {
+    List<FeedbackModule> feedbackModules = new ArrayList<>(this.feedbackManager.getModules().values());
     return feedbackModules;
   }
 
   @Override
   public void fireSensorEventListeners(SensorEvent sensorEvent) {
     Logger.trace("SensorEvent: " + sensorEvent);
-    for (SensorEventListener listener : sensorEventListeners) {
-      listener.onSensorChange(sensorEvent);
+    if (sensorEventListeners != null && !sensorEventListeners.isEmpty()) {
+      for (SensorEventListener listener : sensorEventListeners) {
+        listener.onSensorChange(sensorEvent);
+      }
     }
   }
 
   @Override
   public void simulateSensor(SensorEvent sensorEvent) {
-    if (this.connection instanceof VirtualConnection virtualConnection) {
+    if (connection instanceof VirtualConnection virtualConnection) {
       virtualConnection.sendEvent(sensorEvent);
     }
   }
@@ -607,8 +618,10 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
   }
 
   void fireAccessoryEventListeners(final AccessoryEvent accessoryEvent) {
-    for (AccessoryEventListener listener : this.accessoryEventListeners) {
-      listener.onAccessoryChange(accessoryEvent);
+    if (accessoryEventListeners != null && !accessoryEventListeners.isEmpty()) {
+      for (AccessoryEventListener listener : accessoryEventListeners) {
+        listener.onAccessoryChange(accessoryEvent);
+      }
     }
   }
 
@@ -622,7 +635,6 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
   //Communication from Ecos reply messages to JCS
   private class EventHandler extends Thread {
 
-    private boolean stop = false;
     private boolean quit = true;
     private BufferedReader reader;
 
@@ -632,16 +644,9 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
       eventQueue = connection.getEventQueue();
     }
 
-    void quit() {
+    synchronized void quit() {
       this.quit = true;
-    }
-
-    boolean isRunning() {
-      return !this.quit;
-    }
-
-    boolean isFinished() {
-      return this.stop;
+      interrupt();
     }
 
     @Override
@@ -651,7 +656,7 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
       Logger.trace("Event Handler Started...");
 
-      while (isRunning()) {
+      while (!quit) {
         try {
           EcosMessage eventMessage = eventQueue.take();
           Logger.trace("# " + (eventMessage.isEvent() ? "-> " + eventMessage.getResponse() : eventMessage.getMessage() + " -> " + eventMessage.getResponse()));
@@ -684,21 +689,25 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
             }
           }
         } catch (InterruptedException ex) {
-          Logger.error(ex);
+          if (!quit) {
+            Logger.error(ex);
+          }
         }
       }
 
-      Logger.debug("Stop receiving");
       try {
-        reader.close();
+        if (reader != null) {
+          reader.close();
+        }
       } catch (IOException ex) {
         Logger.error(ex);
       }
-      stop = true;
+      Logger.debug("Stop receiving");
     }
   }
 
-//////////////////////////////////////////////////////////////////////////////////////  
+  //////////////////////////////////////////////////////////////////////////////////////
+  /// @param a 
   // For testing only
   public static void main(String[] a) {
 
@@ -753,6 +762,13 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 //
 //        cs.pause(1000);
 //
+        List<FeedbackModule> feedbackModules = cs.getFeedbackModules();
+        Logger.trace("There are " + feedbackModules + " Feedback Modules");
+        for (FeedbackModule fm : feedbackModules) {
+          Logger.trace("Module id: " + fm.getId() + " Module nr: " + fm.getModuleNumber() + " ports: " + fm.getPortCount() + " NodeId: " + fm.getIdentifier() + " BusNr: " + fm.getBusNumber());
+          Logger.trace("FBModule id: " + fm.getId() + " S 1 id:" + fm.getSensor(0).getId() + " contactId: " + fm.getSensor(0).getContactId() + " ModuleNr: " + fm.getSensor(0).getDeviceId() + " Name " + fm.getSensor(0).getName());
+          Logger.trace("FBModule id: " + fm.getId() + " S 15 id:" + fm.getSensor(15).getId() + " contactId: " + fm.getSensor(15).getContactId() + " ModuleNr: " + fm.getSensor(15).getDeviceId() + " Name " + fm.getSensor(15).getName());
+        }
 //        power = cs.power(true);
 //        Logger.trace("4 Power is " + (power ? "On" : "Off"));
         //EcosMessage reply = cs.connection.sendMessage(new EcosMessage("queryObjects(26)"));
@@ -829,6 +845,7 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 //         //reply = cs.connection.sendMessage(new EcosMessage("help(65000,attribute)"));
 //        //Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
 //        
+
 //        
 //        reply = cs.connection.sendMessage(new EcosMessage("request(65000,volt"));
 //        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());

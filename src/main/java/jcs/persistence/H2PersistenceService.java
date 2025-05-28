@@ -18,14 +18,16 @@ package jcs.persistence;
 import com.dieselpoint.norm.Database;
 import com.dieselpoint.norm.DbException;
 import java.awt.Image;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import javax.imageio.ImageIO;
 import jcs.entities.AccessoryBean;
@@ -40,27 +42,46 @@ import jcs.entities.RouteElementBean;
 import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
 import jcs.persistence.sqlmakers.H2SqlMaker;
-import jcs.ui.layout.tiles.Tile;
 import org.tinylog.Logger;
 
 public class H2PersistenceService implements PersistenceService {
 
-  private Database database;
+  protected Database database;
 
-  private final HashMap<String, Image> imageCache;
-  private final HashMap<String, Image> functionImageCache;
+  protected final HashMap<String, Image> imageCache;
+  protected final HashMap<String, Image> functionImageCache;
+  protected final PropertyChangeSupport changeSupport;
 
   public H2PersistenceService() {
-    connect();
+    initConnect();
     imageCache = new HashMap<>();
     functionImageCache = new HashMap<>();
+    changeSupport = new PropertyChangeSupport(this);
+    postInit();
+  }
+
+  private void initConnect() {
+    connect();
+  }
+
+  private void postInit() {
     setJCSPropertiesAsSystemProperties();
   }
 
-  private void connect() {
+  protected void connect() {
     Logger.debug("Connecting to: " + System.getProperty("norm.jdbcUrl") + " with db user: " + System.getProperty("norm.user"));
     database = new Database();
     database.setSqlMaker(new H2SqlMaker());
+  }
+
+  @Override
+  public void addPropertyChangeListener(PropertyChangeListener listener) {
+    changeSupport.addPropertyChangeListener(listener);
+  }
+
+  @Override
+  public void removePropertyChangeListener(PropertyChangeListener listener) {
+    changeSupport.removePropertyChangeListener(listener);
   }
 
   @Override
@@ -77,15 +98,15 @@ public class H2PersistenceService implements PersistenceService {
 
   @Override
   public JCSPropertyBean persist(JCSPropertyBean property) {
-    JCSPropertyBean prop
-            = database.where("p_key=?", property.getKey()).first(JCSPropertyBean.class);
-    if (prop != null) {
+    JCSPropertyBean oldProp = database.where("p_key=?", property.getKey()).first(JCSPropertyBean.class);
+    if (oldProp != null) {
       int rows = database.update(property).getRowsAffected();
       Logger.trace(rows + " rows updated");
     } else {
       int rows = database.insert(property).getRowsAffected();
       Logger.trace(rows + " rows inserted");
     }
+    changeSupport.firePropertyChange("data.property", oldProp, property);
     return property;
   }
 
@@ -93,11 +114,24 @@ public class H2PersistenceService implements PersistenceService {
   public void remove(JCSPropertyBean property) {
     int rows = database.delete(property).getRowsAffected();
     Logger.trace(rows + " rows deleted");
+    changeSupport.firePropertyChange("data.property.deleted", property, null);
+  }
+
+  @Override
+  public List<SensorBean> getAllSensors() {
+    List<SensorBean> sensors = database.results(SensorBean.class);
+    return sensors;
   }
 
   @Override
   public List<SensorBean> getSensors() {
-    List<SensorBean> sensors = database.results(SensorBean.class);
+    String commandStationId = getDefaultCommandStation().getId();
+    return getSensorsByCommandStationId(commandStationId);
+  }
+
+  @Override
+  public List<SensorBean> getSensorsByCommandStationId(String commandStationId) {
+    List<SensorBean> sensors = database.where("command_station_id=?", commandStationId).orderBy("id").results(SensorBean.class);
     return sensors;
   }
 
@@ -117,13 +151,12 @@ public class H2PersistenceService implements PersistenceService {
   @Override
   public SensorBean getSensor(Integer deviceId, Integer contactId) {
     Object[] args = new Object[]{deviceId, contactId};
-    SensorBean sensor
-            = database.where("device_id=? and contact_id=?", args).first(SensorBean.class);
+    SensorBean sensor = database.where("device_id=? and contact_id=?", args).first(SensorBean.class);
     return sensor;
   }
 
   @Override
-  public SensorBean getSensor(String id) {
+  public SensorBean getSensor(Integer id) {
     SensorBean sensor = database.where("id=?", id).first(SensorBean.class);
     return sensor;
   }
@@ -133,12 +166,19 @@ public class H2PersistenceService implements PersistenceService {
     SensorBean prev = database.where("id=?", sensor.getId()).first(SensorBean.class);
 
     if (prev != null) {
-      // sensor.setName(prev.getName());
       database.update(sensor);
     } else {
       database.insert(sensor);
     }
+
+    changeSupport.firePropertyChange("data.sensor", prev, sensor);
     return sensor;
+  }
+
+  @Override
+  public List<SensorBean> persistSensorBeans(List<SensorBean> sensors) {
+    sensors.forEach(s -> persist(s));
+    return sensors;
   }
 
   @Override
@@ -151,83 +191,66 @@ public class H2PersistenceService implements PersistenceService {
 
     int rows = database.delete(sensor).getRowsAffected();
     Logger.trace(sensor + " rows + " + rows + " deleted");
+    changeSupport.firePropertyChange("data.sensor.deleted", sensor, null);
   }
 
   @Override
-  public List<SensorBean> generateSensorBeans(Integer deviceId, Integer bus0len, Integer bus1len, Integer bus2len, Integer bus3len) {
-    Map<String, SensorBean> sensorBeans = new HashMap<>();
+  public void removeAllSensors() {
+    // First ensure the linked tile records are decoupled
+    database.sql("update tiles set sensor_id = null").execute();
+    // Also update the blocks
+    database.sql("update blocks set min_sensor_id = null").execute();
+    database.sql("update blocks set plus_sensor_id = null").execute();
 
-    if (bus0len != null) {
-      for (int i = 0; i < (bus0len * 16); i++) {
-        SensorBean sb = new SensorBean();
-        sb.setDeviceId(deviceId);
-        sb.setContactId((i + 1));
-        sb.setName("B0-S-" + (i + 1));
-        String id = sb.getId();
-        sensorBeans.put(id, sb);
-      }
-    }
-
-    if (bus1len != null) {
-      for (int i = 0; i < (bus1len * 16); i++) {
-        SensorBean sb = new SensorBean();
-        sb.setDeviceId(deviceId);
-        sb.setContactId((i + 1001));
-        sb.setName("B1-S-" + (i + 1001));
-        String id = sb.getId();
-        sensorBeans.put(id, sb);
-      }
-    }
-
-    if (bus2len != null) {
-      for (int i = 0; i < (bus2len * 16); i++) {
-        SensorBean sb = new SensorBean();
-        sb.setDeviceId(deviceId);
-        sb.setContactId((i + 2001));
-        sb.setName("B2-S-" + (i + 2001));
-        String id = sb.getId();
-        sensorBeans.put(id, sb);
-      }
-    }
-
-    if (bus3len != null) {
-      for (int i = 0; i < (bus3len * 16); i++) {
-        SensorBean sb = new SensorBean();
-        sb.setContactId((i + 3001));
-        sb.setName("B3-S-" + (i + 3001));
-        String id = sb.getId();
-        sensorBeans.put(id, sb);
-      }
-    }
-
-    List<SensorBean> existing = getSensors();
-    for (SensorBean sb : existing) {
-      if (!sensorBeans.containsKey(sb.getId())) {
-        Logger.trace("Removing " + sb);
-        remove(sb);
-      }
-    }
-
-    for (SensorBean sb : sensorBeans.values()) {
-      persist(sb);
-    }
-
-    return getSensors();
+    int rows = database.sql("delete from sensors").execute().getRowsAffected();
+    Logger.trace("All " + rows + " Sensors deleted");
   }
 
   @Override
-  public List<FunctionBean> getLocomotiveFunctions(Long locomotiveId) {
+  public List<FunctionBean> getLocomotiveFunctions(LocomotiveBean locomotive) {
+    Long locomotiveId = locomotive.getId();
+    String commandStationId = locomotive.getCommandStationId();
+
     List<FunctionBean> locFunctions = database.where("locomotive_id=?", locomotiveId).orderBy("f_number").results(FunctionBean.class);
 
     for (FunctionBean fb : locFunctions) {
-      fb.setInActiveIconImage(this.getFunctionImage(fb.getInActiveIcon()));
-      fb.setActiveIconImage(this.getFunctionImage(fb.getActiveIcon()));
+      if (CommandStationBean.ESU_ECOS.equals(commandStationId)) {
+        String ico = fb.getIcon();
+        String path = "/media/esu/f" + ico + ".png";
+
+        fb.setInActiveIconImage(getFunctionImage(path));
+        fb.setActiveIconImage(getFunctionImage(path));
+
+        //   reverseButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/left-24.png")));
+      } else {
+        fb.setInActiveIconImage(getFunctionImage(fb.getInActiveIcon()));
+        fb.setActiveIconImage(getFunctionImage(fb.getActiveIcon()));
+      }
     }
     return locFunctions;
   }
 
   @Override
+  public FunctionBean getLocomotiveFunction(LocomotiveBean locomotive, Integer number) {
+    Long locomotiveId = locomotive.getId();
+    String commandStationId = locomotive.getCommandStationId();
+
+    FunctionBean fb = database.where("locomotive_id=? and f_number=?", locomotiveId, number).first(FunctionBean.class);
+    if (fb != null) {
+      if (CommandStationBean.ESU_ECOS.equals(commandStationId)) {
+
+      } else {
+        fb.setInActiveIconImage(getFunctionImage(fb.getInActiveIcon()));
+        fb.setActiveIconImage(getFunctionImage(fb.getActiveIcon()));
+      }
+    }
+    return fb;
+  }
+
+  @Override
   public FunctionBean getLocomotiveFunction(Long locomotiveId, Integer number) {
+    String commandStationId = getDefaultCommandStation().getId();
+
     FunctionBean fb = database.where("locomotive_id=? and f_number=?", locomotiveId, number).first(FunctionBean.class);
     if (fb != null) {
       fb.setInActiveIconImage(getFunctionImage(fb.getInActiveIcon()));
@@ -252,7 +275,7 @@ public class H2PersistenceService implements PersistenceService {
       if (loco.getIcon() != null) {
         loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
       }
-      loco.addAllFunctions(getLocomotiveFunctions(loco.getId()));
+      loco.addAllFunctions(getLocomotiveFunctions(loco));
     }
     return loco;
   }
@@ -266,7 +289,7 @@ public class H2PersistenceService implements PersistenceService {
       if (loco.getIcon() != null) {
         loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
       }
-      loco.addAllFunctions(getLocomotiveFunctions(loco.getId()));
+      loco.addAllFunctions(getLocomotiveFunctions(loco));
     }
     return loco;
   }
@@ -276,7 +299,7 @@ public class H2PersistenceService implements PersistenceService {
     LocomotiveBean loco = database.where("id=?", id).first(LocomotiveBean.class);
     if (loco != null) {
       loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
-      loco.addAllFunctions(getLocomotiveFunctions(loco.getId()));
+      loco.addAllFunctions(getLocomotiveFunctions(loco));
     }
     return loco;
   }
@@ -287,7 +310,7 @@ public class H2PersistenceService implements PersistenceService {
 
     for (LocomotiveBean loco : locos) {
       loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
-      loco.addAllFunctions(getLocomotiveFunctions(loco.getId()));
+      loco.addAllFunctions(getLocomotiveFunctions(loco));
     }
 
     return locos;
@@ -311,7 +334,7 @@ public class H2PersistenceService implements PersistenceService {
 
     for (LocomotiveBean loco : locos) {
       loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
-      loco.addAllFunctions(getLocomotiveFunctions(loco.getId()));
+      loco.addAllFunctions(getLocomotiveFunctions(loco));
     }
 
     return locos;
@@ -325,7 +348,7 @@ public class H2PersistenceService implements PersistenceService {
 
     for (LocomotiveBean loco : locos) {
       loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
-      loco.addAllFunctions(getLocomotiveFunctions(loco.getId()));
+      loco.addAllFunctions(getLocomotiveFunctions(loco));
     }
 
     return locos;
@@ -341,11 +364,13 @@ public class H2PersistenceService implements PersistenceService {
       }
     }
     try {
-      if (database.where("id=?", functionBean.getId()).first(FunctionBean.class) != null) {
+      FunctionBean prev = database.where("id=?", functionBean.getId()).first(FunctionBean.class);
+      if (prev != null) {
         database.update(functionBean);
       } else {
         database.insert(functionBean);
       }
+      changeSupport.firePropertyChange("data.function", prev, functionBean);
     } catch (DbException dbe) {
       Logger.error("Error: " + dbe.getMessage());
       Logger.debug("SQL: " + dbe.getSql());
@@ -366,12 +391,14 @@ public class H2PersistenceService implements PersistenceService {
   @Override
   public synchronized LocomotiveBean persist(LocomotiveBean locomotive) {
     try {
-      if (database.where("id=?", locomotive.getId()).first(LocomotiveBean.class) != null) {
+      LocomotiveBean prev = database.where("id=?", locomotive.getId()).first(LocomotiveBean.class);
+      if (prev != null) {
         database.update(locomotive);
       } else {
         database.sql("delete from locomotive_functions where locomotive_id =?", locomotive.getId()).execute();
         database.insert(locomotive);
       }
+      changeSupport.firePropertyChange("data.locomotive", prev, locomotive);
     } catch (Exception e) {
       Logger.error(e);
     }
@@ -387,11 +414,12 @@ public class H2PersistenceService implements PersistenceService {
 
   @Override
   public synchronized void remove(LocomotiveBean locomotive) {
-    // First femove the functions
+    // First remove the functions
     database.sql("delete from locomotive_functions where locomotive_id =?", locomotive.getId()).execute();
 
     int rows = database.delete(locomotive).getRowsAffected();
     Logger.trace(rows + " rows deleted");
+    changeSupport.firePropertyChange("data.locomotive.deleted", locomotive, null);
   }
 
   @Override
@@ -402,10 +430,10 @@ public class H2PersistenceService implements PersistenceService {
       if (image != null) {
         int size = 100;
         float aspect = (float) image.getHeight(null) / (float) image.getWidth(null);
-        this.imageCache.put(imageName, image.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH));
+        imageCache.put(imageName, image.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH));
       }
     }
-    return this.imageCache.get(imageName);
+    return imageCache.get(imageName);
   }
 
   @Override
@@ -416,10 +444,10 @@ public class H2PersistenceService implements PersistenceService {
       if (image != null) {
         int size = 30;
         float aspect = (float) image.getHeight(null) / (float) image.getWidth(null);
-        this.functionImageCache.put(imageName, image.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH));
+        functionImageCache.put(imageName, image.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH));
       }
     }
-    return this.functionImageCache.get(imageName);
+    return functionImageCache.get(imageName);
   }
 
   @Override
@@ -441,23 +469,37 @@ public class H2PersistenceService implements PersistenceService {
       }
 
       if (function) {
-        path = path + "zfunctions" + File.separator;
+        if (!path.contains("/media/esu")) {
+          path = path + "zfunctions" + File.separator;
+        }
       }
 
       File imgFile;
-      if (path.contains(".")) {
+      if (path.contains("/media/esu/")) {
+        //local resourse 
+        imgFile = null;
+      } else if (path.contains(".")) {
         imgFile = new File(path);
       } else {
         imgFile = new File(path + imageName.toLowerCase() + ".png");
       }
 
-      if (imgFile.exists()) {
+      if (imgFile != null && imgFile.exists()) {
         try {
           image = ImageIO.read(imgFile);
         } catch (IOException e) {
           Logger.trace("Image file " + imageName + ".png does not exists");
         }
       } else {
+        if (path.contains("/media")) {
+          URL iconUrl = getClass().getResource(path);
+          try {
+            image = ImageIO.read(iconUrl);
+          } catch (IOException | IllegalArgumentException e) {
+            Logger.trace("Image URL " + iconUrl + " does not exists");
+          }
+        }
+
         //TODO:
         // should we attempt to obtain it now and cache it when available, but also when it is not
         // available put a marker so that we are not trying over and over again...
@@ -531,11 +573,13 @@ public class H2PersistenceService implements PersistenceService {
 
   @Override
   public synchronized AccessoryBean persist(AccessoryBean accessory) {
-    if (database.where("id=?", accessory.getId()).first(AccessoryBean.class) != null) {
+    AccessoryBean prev = database.where("id=?", accessory.getId()).first(AccessoryBean.class);
+    if (prev != null) {
       database.update(accessory);
     } else {
       database.insert(accessory);
     }
+    changeSupport.firePropertyChange("data.accessory", prev, accessory);
     return accessory;
   }
 
@@ -545,6 +589,7 @@ public class H2PersistenceService implements PersistenceService {
     database.sql("update tiles set sensor_id = null where accessory_id =?", accessory.getId()).execute();
     int rows = database.delete(accessory).getRowsAffected();
     Logger.trace(rows + " Accessories deleted");
+    changeSupport.firePropertyChange("data.accessory.deleted", accessory, null);
   }
 
   private TileBean addReleatedObjects(TileBean tileBean, BlockBean blockBean) {
@@ -611,24 +656,20 @@ public class H2PersistenceService implements PersistenceService {
     if (tileBean == null) {
       return null;
     }
-    TileBean tb;
-    if (tileBean instanceof Tile tile) {
-      tb = tile.getTileBean();
-    } else {
-      tb = tileBean;
-    }
 
-    if (tb != null && tb.getId() != null) {
-      if (database.where("id=?", tb.getId()).first(TileBean.class) != null) {
-        database.update(tb).getRowsAffected();
+    if (tileBean.getId() != null) {
+      TileBean prev = database.where("id=?", tileBean.getId()).first(TileBean.class);
+      if (prev != null) {
+        database.update(tileBean).getRowsAffected();
         //Logger.trace("Updated " + tileBean);
       } else {
-        database.insert(tb);
+        database.insert(tileBean);
       }
+      changeSupport.firePropertyChange("data.tile", prev, tileBean);
     }
 
     if (tileBean.getBlockBean() != null) {
-      this.persist(tileBean.getBlockBean());
+      persist(tileBean.getBlockBean());
     }
 
     return tileBean;
@@ -636,17 +677,20 @@ public class H2PersistenceService implements PersistenceService {
 
   @Override
   public synchronized void remove(TileBean tileBean) {
+    removeRouteByTileId(tileBean.getId());
+
     if (tileBean.getBlockBean() != null) {
       BlockBean bb = tileBean.getBlockBean();
-      this.remove(bb);
+      remove(bb);
     }
     int rows = database.delete(tileBean).getRowsAffected();
     Logger.trace(rows + " TileBean(s) deleted");
+    changeSupport.firePropertyChange("data.tile.deleted", tileBean, null);
   }
 
   @Override
-  public synchronized void persist(List<TileBean> tiles) {
-    List<TileBean> dbTiles = this.getTileBeans();
+  public synchronized List<TileBean> persist(List<TileBean> tiles) {
+    List<TileBean> dbTiles = getTileBeans();
     Set<String> newTileIds = new HashSet<>();
     for (TileBean tb : tiles) {
       newTileIds.add(tb.getId());
@@ -665,12 +709,13 @@ public class H2PersistenceService implements PersistenceService {
     }
 
     for (TileBean tb : tilesToRemove) {
-      this.remove(tb);
+      remove(tb);
     }
 
     for (TileBean tb : tiles) {
       persist(tb);
     }
+    return tiles;
   }
 
   private RouteElementBean addRelatedObjects(RouteElementBean routeElementBean) {
@@ -692,7 +737,8 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   private RouteElementBean persist(RouteElementBean routeElement) {
-    if (database.where("id=?", routeElement.getId()).first(RouteElementBean.class) != null) {
+    RouteElementBean prev = database.where("id=?", routeElement.getId()).first(RouteElementBean.class);
+    if (prev != null) {
       database.update(routeElement);
     } else {
       database.insert(routeElement);
@@ -757,7 +803,8 @@ public class H2PersistenceService implements PersistenceService {
 
   @Override
   public synchronized RouteBean persist(RouteBean route) {
-    if (database.where("id=?", route.getId()).first(RouteBean.class) != null) {
+    RouteBean prev = database.where("id=?", route.getId()).first(RouteBean.class);
+    if (prev != null) {
       database.update(route);
     } else {
       database.insert(route);
@@ -778,7 +825,33 @@ public class H2PersistenceService implements PersistenceService {
       }
       route.setRouteElements(rblr);
     }
+    changeSupport.firePropertyChange("data.route", prev, route);
     return route;
+  }
+
+  private void removeRouteElementsByRouteId(String routeId) {
+    database.sql("delete from route_elements where route_id =?", routeId).execute();
+  }
+
+  private void removeRouteByTileId(String tileId) {
+
+    List<String> routIds = new ArrayList<>();
+    List<RouteBean> fromRoutes = database.where("from_tile_id = ?", tileId).results(RouteBean.class);
+    for (RouteBean rb : fromRoutes) {
+      removeRouteElementsByRouteId(rb.getId());
+      routIds.add(rb.getId());
+    }
+    List<RouteBean> toRoutes = database.where("to_tile_id = ?", tileId).results(RouteBean.class);
+    for (RouteBean rb : toRoutes) {
+      removeRouteElementsByRouteId(rb.getId());
+      routIds.add(rb.getId());
+    }
+
+    for (String rid : routIds) {
+      RouteBean route = this.getRoute(rid);
+      database.sql("delete from routes where id =?", rid).execute();
+      changeSupport.firePropertyChange("data.route.deleted", route, null);
+    }
   }
 
   @Override
@@ -790,15 +863,17 @@ public class H2PersistenceService implements PersistenceService {
 
     int rows = this.database.delete(route).getRowsAffected();
     Logger.trace(rows + " rows deleted");
+    changeSupport.firePropertyChange("data.route.deleted", route, null);
   }
 
   public synchronized void removeAllRoutes() {
     database.sql("delete from route_elements").execute();
     int rows = database.sql("delete from routes").execute().getRowsAffected();
     Logger.trace("Deleted " + rows + " routes");
+    changeSupport.firePropertyChange("data.routes.deleted", null, null);
   }
 
-  private void setJCSPropertiesAsSystemProperties() {
+  protected void setJCSPropertiesAsSystemProperties() {
     List<JCSPropertyBean> props = getProperties();
     props.forEach(p -> {
       System.setProperty(p.getKey(), p.getValue());
@@ -880,12 +955,19 @@ public class H2PersistenceService implements PersistenceService {
       }
     }
 
-    if (block != null && block.getId() != null && database.where("id=?", block.getId()).first(BlockBean.class) != null) {
-      database.update(block);
+    BlockBean prev = null;
+    if (block != null && block.getId() != null) {
+      prev = database.where("id=?", block.getId()).first(BlockBean.class);
+      if (prev != null) {
+        database.update(block);
+      } else {
+        database.insert(block);
+      }
     } else {
       database.insert(block);
     }
 
+    changeSupport.firePropertyChange("data.blockr", prev, block);
     return block;
   }
 
@@ -893,12 +975,14 @@ public class H2PersistenceService implements PersistenceService {
   public synchronized void remove(BlockBean block) {
     int rows = this.database.delete(block).getRowsAffected();
     Logger.trace(rows + " rows deleted");
+    changeSupport.firePropertyChange("data.sblock.deleted", block, null);
   }
 
   @Override
   public synchronized void removeAllBlocks() {
     int rows = database.sql("delete from blocks").execute().getRowsAffected();
     Logger.trace("Deleted " + rows + " blocks");
+    changeSupport.firePropertyChange("data.block.deleted", null, null);
   }
 
   @Override
@@ -919,19 +1003,29 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
+  public CommandStationBean getEnabledFeedbackProvider() {
+    return database.where("default_cs=false and supports_feedback=true and supports_decoder_control=false and enabled=true").first(CommandStationBean.class);
+  }
+
+  @Override
   public synchronized CommandStationBean persist(CommandStationBean commandStationBean) {
-    if (database.where("id=?", commandStationBean.getId()).first(CommandStationBean.class) != null) {
+    CommandStationBean prev = database.where("id=?", commandStationBean.getId()).first(CommandStationBean.class);
+    if (prev != null) {
       database.update(commandStationBean);
     } else {
       Logger.warn("Can't Create CommandStation " + commandStationBean);
     }
+    changeSupport.firePropertyChange("data.commandStation", prev, commandStationBean);
     return commandStationBean;
   }
 
   @Override
   public synchronized CommandStationBean changeDefaultCommandStation(CommandStationBean newDefaultCommandStationBean) {
+    CommandStationBean prev = getDefaultCommandStation();
     Object[] args = new Object[]{newDefaultCommandStationBean.getId(), newDefaultCommandStationBean.getId()};
     database.sql("update command_stations set default_cs = case when id = ? then true else false end, enabled = case when id = ? then true else false end", args).execute();
+
+    changeSupport.firePropertyChange("data.commandStation", prev, newDefaultCommandStationBean);
     return newDefaultCommandStationBean;
   }
 

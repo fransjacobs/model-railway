@@ -18,16 +18,16 @@ In JCS wordt een blok altijd gemarkeerd door twee sensoren.
 ## Het tekenen van de baan
 
 Wanneer JCS is gestart, selecteer je de Bewerken-knop om de bewerkingsmodus te activeren.
-![Start Edit](assets/startedit.png)
+![Start Edit](assets/startedit.png) Via toesenbord door Ctrl + E.
 
 JCS toont het scherm voor het bewerken van de baan.
 ![Start Edit](assets/layoutedittoolbar.png)
 
 De werkbalk bevat de meest voorkomende elementen om een baan te tekenen. Een plattegrond van een baan bestaat uit tegels.
 Een tegel stelt een component, zoals een recht stuk, sensor, blok, enz. voor.
-Gebruik de __+__ knop om een tegel op het canvas toe te voegen. De prullenbakknop verwijdert een tegel.
-Klik met de rechtermuisknop op een tegel om eigenschappen te bekijken of de tegel te draaien of om te keren indien van toepassing.
-Wanneer een tegel is geselecteerd, kan deze naar de juiste positie worden gesleept.
+Gebruik de __+__ knop, of via toetsenbord Alt + A om een tegel op het canvas toe te voegen. De prullenbakknop (Alt +D) verwijdert een tegel.
+Klik met de rechtermuisknop op een tegel om eigenschappen te bekijken of de tegel te draaien (Alt + R) of om te keren (Alt + H of Alt + V),
+indien van toepassing. Wanneer een tegel is geselecteerd, kan deze naar de juiste positie worden gesleept.
 Tegels worden automatisch opgeslagen.
 Het voorbeeld ziet er als volgt uit wanneer alle tegels op het canvas zijn geplaatst.
 

@@ -183,11 +183,11 @@ public class SignalDialog extends javax.swing.JDialog {
     private void saveExitBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveExitBtnActionPerformed
       if (this.signal != null && this.signal.getAccessoryBean() != null) {
         if (this.signal.getAccessoryBean().getName() != null) {
-          PersistenceFactory.getService().persist((signal));
+          PersistenceFactory.getService().persist((signal.getTileBean()));
           JCS.getJcsCommandStation().addAccessoryEventListener(signal);
         } else {
           this.signal.setAccessoryBean(null);
-          PersistenceFactory.getService().persist((signal));
+          PersistenceFactory.getService().persist((signal.getTileBean()));
         }
       }
       this.setVisible(false);

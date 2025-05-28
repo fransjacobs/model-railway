@@ -18,59 +18,57 @@ package jcs.commandStation.events;
 import jcs.entities.SensorBean;
 
 /**
- *
- * @author Frans Jacobs
+ * Value change happened on a Sensor.
  */
-public class SensorEvent {
+public class SensorEvent implements JCSActionEvent {
 
   private final SensorBean sensorBean;
+  private final boolean newValue;
 
   public SensorEvent(SensorBean sensorBean) {
+    this(sensorBean, sensorBean.isActive());
+  }
+
+  public SensorEvent(SensorBean sensorBean, boolean newValue) {
     this.sensorBean = sensorBean;
+    this.newValue = newValue;
   }
 
   public SensorBean getSensorBean() {
     return sensorBean;
   }
 
-  public String getId() {
-    if (sensorBean.getId() != null) {
-      return sensorBean.getId();
-    } else {
-      //TODO: Number format? check with both CS 3 and HSI 88 life sensors
-      Integer deviceId = sensorBean.getDeviceId();
-      Integer contactId = sensorBean.getContactId();
-      String cn = ((contactId) > 9 ? "" : "0");
-      if (cn.length() == 2) {
-        cn = "00" + cn;
-      } else if (cn.length() == 3) {
-        cn = "0" + cn;
-      }
-      return deviceId + "-" + cn;
-    }
+  public Integer getSensorId() {
+    return sensorBean.getId();
+  }
+
+  @Deprecated
+  @Override
+  public String getIdString() {
+    return sensorBean.getId().toString();
   }
 
   public Integer getDeviceId() {
-    return this.sensorBean.getDeviceId();
+    return sensorBean.getDeviceId();
   }
 
   public Integer getContactId() {
-    return this.sensorBean.getContactId();
+    return sensorBean.getContactId();
   }
 
   public boolean isChanged() {
-    boolean active = sensorBean.isActive();
+    //boolean active = sensorBean.isActive();
     boolean prevActive = sensorBean.isPreviousActive();
-    return active != prevActive;
+    return newValue != prevActive;
   }
 
   public boolean isActive() {
-    return sensorBean.isActive();
+    return newValue; //sensorBean.isActive();
   }
 
   @Override
   public String toString() {
-    return "SensorEvent{" + "id=" + getId() + ", active=" + (isActive() ? "1" : "0") + "}";
+    return "SensorEvent{" + "id=" + getIdString() + ", active=" + (isActive() ? "1" : "0") + "}";
   }
 
 }

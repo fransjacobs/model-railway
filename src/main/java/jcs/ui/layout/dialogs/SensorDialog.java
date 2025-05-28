@@ -29,6 +29,7 @@ import jcs.entities.TileBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.layout.tiles.Sensor;
 import jcs.ui.layout.tiles.Tile;
+import jcs.ui.layout.tiles.TileCache;
 import org.tinylog.Logger;
 
 /**
@@ -36,6 +37,8 @@ import org.tinylog.Logger;
  * @author fransjacobs
  */
 public class SensorDialog extends javax.swing.JDialog {
+
+  private static final long serialVersionUID = -1992484290463412418L;
 
   private final Sensor sensor;
   private final SensorBeanComboBoxModel sensorComboBoxModel;
@@ -57,19 +60,19 @@ public class SensorDialog extends javax.swing.JDialog {
 
   private void postInit() {
     setLocationRelativeTo(null);
-    String text = this.headingLbl.getText() + " " + this.sensor.getId();
+    String text = this.headingLbl.getText() + " " + sensor.getId();
     this.headingLbl.setText(text);
 
     List<SensorBean> sensors = PersistenceFactory.getService().getSensors();
     List<TileBean> sensorTiles = PersistenceFactory.getService().getTileBeansByTileType(TileBean.TileType.SENSOR);
 
-    Set<String> usedSensorIds = new HashSet<>();
+    Set<Integer> usedSensorIds = new HashSet<>();
     for (TileBean tb : sensorTiles) {
       if (tb.getSensorId() != null) {
         usedSensorIds.add(tb.getSensorId());
       }
     }
-    //Filter the unused turnouts
+    //Filter the unused sensors
     List<SensorBean> filtered = new ArrayList<>();
     for (SensorBean sb : sensors) {
       if (!usedSensorIds.contains(sb.getId())) {
@@ -77,11 +80,11 @@ public class SensorDialog extends javax.swing.JDialog {
       }
     }
     //Ensure the selected is still there
-    if (this.sensor.getSensorBean() != null) {
-      filtered.add(this.sensor.getSensorBean());
+    if (sensor.getSensorBean() != null) {
+      filtered.add(sensor.getSensorBean());
     } else {
-      if (sensor.getSensorId() != null && this.sensor.getSensorBean() == null) {
-        this.sensor.setSensorBean(PersistenceFactory.getService().getSensor(sensor.getSensorId()));
+      if (sensor.getSensorId() != null && sensor.getSensorBean() == null) {
+        sensor.setSensorBean(PersistenceFactory.getService().getSensor(sensor.getSensorId()));
         filtered.add(this.sensor.getSensorBean());
       }
     }
@@ -92,30 +95,30 @@ public class SensorDialog extends javax.swing.JDialog {
 
     sensorComboBoxModel.removeAllElements();
     sensorComboBoxModel.addAll(filtered);
-    this.sensorCB.setModel(sensorComboBoxModel);
+    sensorCB.setModel(sensorComboBoxModel);
 
     SensorBean sb = this.sensor.getSensorBean();
     if (sb == null) {
       sb = emptyBean;
-      //Use the SensorTileId as id
-      sb.setId(this.sensor.getId());
+      //Use the SensorTileId as id sequence
+      sb.setId(TileCache.getIdSeq(sensor.getId()));
     }
 
-    this.sensor.setSensorBean(sb);
-    this.sensorComboBoxModel.setSelectedItem(sb);
+    sensor.setSensorBean(sb);
+    sensorComboBoxModel.setSelectedItem(sb);
 
-    if (this.sensor.getSensorBean().getName() != null) {
-      this.nameTF.setText(this.sensor.getSensorBean().getName());
+    if (sensor.getSensorBean().getName() != null) {
+      nameTF.setText(this.sensor.getSensorBean().getName());
     } else {
       //Use the tile name
-      this.nameTF.setText(this.sensor.getTileBean().getId());
+      nameTF.setText(sensor.getTileBean().getId());
     }
 
-    if (this.sensor.getSensorBean().getDeviceId() != null) {
-      this.deviceIdSpinner.setValue(this.sensor.getSensorBean().getDeviceId());
+    if (sensor.getSensorBean().getDeviceId() != null) {
+      deviceIdSpinner.setValue(this.sensor.getSensorBean().getDeviceId());
     }
     if (this.sensor.getSensorBean().getContactId() != null) {
-      this.contactIdSpinner.setValue(this.sensor.getSensorBean().getContactId());
+      contactIdSpinner.setValue(this.sensor.getSensorBean().getContactId());
     }
 
     if (JCS.getJcsCommandStation() != null) {
@@ -263,18 +266,20 @@ public class SensorDialog extends javax.swing.JDialog {
         if (PersistenceFactory.getService() != null) {
           PersistenceFactory.getService().persist(sensorBean);
 
-          PersistenceFactory.getService().persist((sensor));
+          PersistenceFactory.getService().persist((sensor.getTileBean()));
           JCS.getJcsCommandStation().addSensorEventListener(sensor);
         }
       } else if (this.sensor != null && this.sensor.getSensorBean() == null) {
-        SensorBean sensorBean = new SensorBean(this.nameTF.getText(), (Integer) this.deviceIdSpinner.getValue(), (Integer) contactIdSpinner.getValue());
+
+        //TODO !!!!!
+        SensorBean sensorBean = null; //new SensorBean(this.nameTF.getText(), (Integer) this.deviceIdSpinner.getValue(), (Integer) contactIdSpinner.getValue());
 
         if (PersistenceFactory.getService() != null) {
           sensorBean = PersistenceFactory.getService().persist(sensorBean);
           sensor.setSensorBean(sensorBean);
           Logger.trace("Created " + sensorBean);
 
-          PersistenceFactory.getService().persist((sensor));
+          PersistenceFactory.getService().persist((sensor.getTileBean()));
           JCS.getJcsCommandStation().addSensorEventListener(sensor);
         }
       }
@@ -308,13 +313,13 @@ public class SensorDialog extends javax.swing.JDialog {
     @Override
     public int compare(SensorBean a, SensorBean b) {
       //Avoid null pointers
-      String aa = a.getId();
+      Integer aa = a.getId();
       if (aa == null) {
-        aa = "000";
+        aa = 0;
       }
-      String bb = b.getId();
+      Integer bb = b.getId();
       if (bb == null) {
-        bb = "000";
+        bb = 0;
       }
 
       return aa.compareTo(bb);
@@ -322,6 +327,8 @@ public class SensorDialog extends javax.swing.JDialog {
   }
 
   class SensorBeanComboBoxModel extends DefaultComboBoxModel<SensorBean> {
+
+    private static final long serialVersionUID = 3565601635482469055L;
 
     private final List<SensorBean> model;
 

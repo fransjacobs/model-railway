@@ -18,22 +18,45 @@ package jcs.ui;
 import javax.swing.JPanel;
 import jcs.commandStation.events.RefreshEvent;
 import jcs.commandStation.events.RefreshEventListener;
+import jcs.ui.util.LocomotiveSelectionChangedListener;
 
 /**
  *
  */
 public class DispatcherStatusPanel extends JPanel implements RefreshEventListener {
 
-  /**
-   * Creates new form DispatcherStatusPanel
-   */
+  private static final long serialVersionUID = 6158244271104499799L;
+
   public DispatcherStatusPanel() {
     initComponents();
   }
-  
+
+  public void showDispatcherTab() {
+    tabsPane.setSelectedIndex(1);
+  }
+
+  public void showLocomotiveTab() {
+    tabsPane.setSelectedIndex(0);
+  }
+
+  public void refresh() {
+    locomotiveTablePanel.refresh();
+  }
+
   @Override
   public void onChange(RefreshEvent event) {
-    this.locomotiveTablePanel.onChange(event);
+    locomotiveTablePanel.onChange(event);
+  }
+
+  public void addLocomotiveSelectionChangeListener(LocomotiveSelectionChangedListener listener) {
+    locomotiveTablePanel.addLocomotiveSelectionChangeListener(listener);
+    dispatcherTablePanel.addLocomotiveSelectionChangeListener(listener);
+
+  }
+
+  public void removeLocomotiveSelectionChangeListener(LocomotiveSelectionChangedListener listener) {
+    locomotiveTablePanel.removeLocomotiveSelectionChangeListener(listener);
+    dispatcherTablePanel.removeLocomotiveSelectionChangeListener(listener);
   }
 
   /**
@@ -44,12 +67,13 @@ public class DispatcherStatusPanel extends JPanel implements RefreshEventListene
   private void initComponents() {
 
     tabsPane = new javax.swing.JTabbedPane();
-    locomotiveTablePanel = new jcs.ui.table.LocomotiveTablePanel();
-    dispatcherTablePanel = new jcs.ui.table.DispatcherTablePanel();
+    locomotiveTablePanel = new jcs.ui.panel.LocomotiveTablePanel();
+    dispatcherTablePanel = new jcs.ui.panel.DispatcherTablePanel();
 
+    setPreferredSize(new java.awt.Dimension(300, 450));
     setLayout(new java.awt.BorderLayout());
 
-    tabsPane.setPreferredSize(new java.awt.Dimension(300, 800));
+    tabsPane.setPreferredSize(new java.awt.Dimension(300, 440));
     tabsPane.addTab("Locomotives", locomotiveTablePanel);
     tabsPane.addTab("Dispatcher", dispatcherTablePanel);
 
@@ -58,8 +82,8 @@ public class DispatcherStatusPanel extends JPanel implements RefreshEventListene
 
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
-  private jcs.ui.table.DispatcherTablePanel dispatcherTablePanel;
-  private jcs.ui.table.LocomotiveTablePanel locomotiveTablePanel;
+  private jcs.ui.panel.DispatcherTablePanel dispatcherTablePanel;
+  private jcs.ui.panel.LocomotiveTablePanel locomotiveTablePanel;
   private javax.swing.JTabbedPane tabsPane;
   // End of variables declaration//GEN-END:variables
 

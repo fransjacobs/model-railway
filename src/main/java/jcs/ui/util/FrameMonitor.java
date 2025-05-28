@@ -20,6 +20,7 @@ import java.awt.Point;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.util.prefs.Preferences;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import org.tinylog.Logger;
 
@@ -49,10 +50,14 @@ public class FrameMonitor {
   }
 
   public static void registerFrame(JFrame frame, String frameUniqueId, int defaultX, int defaultY, int defaultW, int defaultH) {
+    if (System.getProperty("disable.ui.pref.storage", "false").equalsIgnoreCase("true")) {
+      return;
+    }
+
     Preferences prefs = Preferences.userRoot().node(FrameMonitor.class.getSimpleName() + "-" + frameUniqueId);
 
-    frame.setLocation(getFrameLocation(prefs, defaultX, defaultY));
-    frame.setSize(getFrameSize(prefs, defaultW, defaultH));
+    frame.setLocation(getLocation(prefs, defaultX, defaultY));
+    frame.setSize(getSize(prefs, defaultW, defaultH));
 
     PreferencesEventUpdater updater = new PreferencesEventUpdater(400, () -> updatePref(frame, prefs));
 
@@ -69,23 +74,85 @@ public class FrameMonitor {
     });
   }
 
+  /**
+   * Align the dialog default in the middle of the screen using then "packed" sizes
+   *
+   * @param dialog the Dialog to show
+   * @param dialogUniqueId the id of the the dialog
+   */
+  public static void registerFrame(JDialog dialog, String dialogUniqueId) {
+    dialog.pack();
+    dialog.setLocationRelativeTo(null);
+    Point location = dialog.getLocation();
+    int defaultX = location.x;
+    int defaultY = location.y;
+    Dimension size = dialog.getSize();
+    int defaultW = size.width;
+    int defaultH = size.height;
+
+    registerDialog(dialog, dialogUniqueId, defaultX, defaultY, defaultW, defaultH);
+  }
+
+  public static void registerDialog(JDialog dialog, String dialogUniqueId, int defaultX, int defaultY, int defaultW, int defaultH) {
+    if (System.getProperty("disable.ui.pref.storage", "false").equalsIgnoreCase("true")) {
+      return;
+    }
+
+    Preferences prefs = Preferences.userRoot().node(FrameMonitor.class.getSimpleName() + "-" + dialogUniqueId);
+
+    dialog.setLocation(getLocation(prefs, defaultX, defaultY));
+    dialog.setSize(getSize(prefs, defaultW, defaultH));
+
+    PreferencesEventUpdater updater = new PreferencesEventUpdater(400, () -> updatePref(dialog, prefs));
+
+    dialog.addComponentListener(new ComponentAdapter() {
+      @Override
+      public void componentResized(ComponentEvent e) {
+        updater.update();
+      }
+
+      @Override
+      public void componentMoved(ComponentEvent e) {
+        updater.update();
+      }
+    });
+  }
+
   private static void updatePref(JFrame frame, Preferences prefs) {
+    if (System.getProperty("disable.ui.pref.storage", "false").equalsIgnoreCase("true")) {
+      return;
+    }
+
     Point location = frame.getLocation();
     prefs.putInt("x", location.x);
     prefs.putInt("y", location.y);
     Dimension size = frame.getSize();
     prefs.putInt("w", size.width);
     prefs.putInt("h", size.height);
-    Logger.trace("Updated prefs for " + frame.getClass().getSimpleName()+" Pos: ("+location.x+","+location.y+") Size W: "+size.width+" H: "+size.height);
+    Logger.trace("Updated prefs for " + frame.getClass().getSimpleName() + " Pos: (" + location.x + "," + location.y + ") Size W: " + size.width + " H: " + size.height);
   }
 
-  private static Dimension getFrameSize(Preferences pref, int defaultW, int defaultH) {
+  private static void updatePref(JDialog dialog, Preferences prefs) {
+    if (System.getProperty("disable.ui.pref.storage", "false").equalsIgnoreCase("true")) {
+      return;
+    }
+
+    Point location = dialog.getLocation();
+    prefs.putInt("x", location.x);
+    prefs.putInt("y", location.y);
+    Dimension size = dialog.getSize();
+    prefs.putInt("w", size.width);
+    prefs.putInt("h", size.height);
+    Logger.trace("Updated prefs for " + dialog.getClass().getSimpleName() + " Pos: (" + location.x + "," + location.y + ") Size W: " + size.width + " H: " + size.height);
+  }
+
+  private static Dimension getSize(Preferences pref, int defaultW, int defaultH) {
     int w = pref.getInt("w", defaultW);
     int h = pref.getInt("h", defaultH);
     return new Dimension(w, h);
   }
 
-  private static Point getFrameLocation(Preferences pref, int defaultX, int defaultY) {
+  private static Point getLocation(Preferences pref, int defaultX, int defaultY) {
     int x = pref.getInt("x", defaultX);
     int y = pref.getInt("y", defaultY);
     return new Point(x, y);

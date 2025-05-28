@@ -33,7 +33,6 @@ import static java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR;
 import static java.awt.Toolkit.getDefaultToolkit;
 import java.awt.datatransfer.StringSelection;
 import static java.lang.Math.min;
-import java.net.InetAddress;
 import java.net.URL;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -42,17 +41,16 @@ import static javax.swing.JOptionPane.showMessageDialog;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import jcs.commandStation.esu.ecos.net.EcosConnectionFactory;
+import jcs.JCS;
 import org.tinylog.Logger;
 
 /**
  *
  * Inspired on the work of https://github.com/shinyhut/vernacular-vnc<br>
  * My ESU Ecos 50000 has a defect in the screen.<br>
- * This Java viewer is helping the development.
- * In hind site I thin is a welcome addition to add to the main frame in due time
+ * This Java viewer is helping the development.<br>
+ * In hind site I think is a welcome addition, hance this is added into the main frame
  *
- * @author frans
  */
 public class VNCPanel extends javax.swing.JPanel {
 
@@ -61,19 +59,24 @@ public class VNCPanel extends javax.swing.JPanel {
   private VernacularClient client;
   private static final int DEFAULT_VNC_PORT = 5900;
 
-  /**
-   * Creates new form VNCPanel
-   */
   public VNCPanel() {
     initComponents();
     initVnc();
   }
 
   private void initVnc() {
-    addDrawingSurface();
-    initialiseVernacularClient();
-    //clipboardMonitor.start();
-
+    if (JCS.getJcsCommandStation() != null) {
+      if (!JCS.getJcsCommandStation().getCommandStationBean().isVirtual()) {
+        addDrawingSurface();
+        //clipboardMonitor.start();
+        initialiseVernacularClient();
+        if (JCS.getJcsCommandStation().isConnected()) {
+          String ip = JCS.getJcsCommandStation().getCommandStationInfo().getIpAddress();
+          int port = DEFAULT_VNC_PORT;
+          connect(ip, port);
+        }
+      }
+    }
   }
 
   private void addDrawingSurface() {
@@ -367,8 +370,6 @@ public class VNCPanel extends javax.swing.JPanel {
       VNCPanel vncPanel = new VNCPanel();
       JFrame testFrame = new JFrame("VNCPanel Tester");
 
-      //this.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/media/jcs-train-64.png")));
-      //URL iconUrl = KeyboardSensorPanel.class.getResource("/media/jcs-train-2-512.png");
       URL iconUrl = KeyboardSensorPanel.class.getResource("/media/jcs-train-64.png");
       if (iconUrl != null) {
         testFrame.setIconImage(new ImageIcon(iconUrl).getImage());
@@ -386,22 +387,6 @@ public class VNCPanel extends javax.swing.JPanel {
 
       //For now disable the connections possibilities
       vncPanel.menuPanel.setVisible(false);
-
-      //String host = "192.168.1.110";
-      String host;
-      InetAddress ia = EcosConnectionFactory.discoverEcos();
-      //InetAddress ia = CSConnectionFactory.discoverCs();
-
-      if (ia != null) {
-        host = ia.getHostAddress();
-      } else {
-        Logger.warn("Use a default host ip.....");
-        host = "192.168.1.110";
-      }
-
-      int port = DEFAULT_VNC_PORT;
-      vncPanel.connect(host, port);
-
       testFrame.pack();
       testFrame.setLocationRelativeTo(null);
       testFrame.setVisible(true);

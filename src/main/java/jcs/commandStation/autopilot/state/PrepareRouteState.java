@@ -76,7 +76,7 @@ class PrepareRouteState extends DispatcherState {
     Logger.trace("Search a free route for " + locomotive.getName() + "...");
 
     BlockBean departureBlock = dispatcher.getDepartureBlock();
-    if(departureBlock.getLogicalDirection() == null) {
+    if (departureBlock.getLogicalDirection() == null) {
       departureBlock.setLogicalDirection(locomotive.getDirection().getDirection());
     }
     Direction logicalDirection = Direction.get(departureBlock.getLogicalDirection());
@@ -103,7 +103,7 @@ class PrepareRouteState extends DispatcherState {
       Direction newDirection = LocomotiveBean.toggle(oldDirection);
       Logger.trace("Reversing Locomotive, from " + oldDirection + " to " + newDirection + "...");
 
-      this.swapLocomotiveDirection = true;
+      swapLocomotiveDirection = true;
       //Do NOT persist the direction yet, just test....
       //locomotive.setDispatcherDirection(newDirection);
       departureBlock.setLogicalDirection(newDirection.getDirection());
@@ -153,7 +153,7 @@ class PrepareRouteState extends DispatcherState {
       route = checkedRoutes.get(rIdx);
       Logger.trace("Choosen route " + route.toLogString());
       //persist the departure block
-      PersistenceFactory.getService().persist(departureBlock);     
+      PersistenceFactory.getService().persist(departureBlock);
     } else {
       Logger.debug("No route available for " + locomotive.getName() + " ...");
       if (swapLocomotiveDirection) {
@@ -223,7 +223,7 @@ class PrepareRouteState extends DispatcherState {
       //Are playing a role.
       //On the departure side we have the OccupiedSensor, ie the IN sensor when arriving.
       //The exit sensor i.e the last sensor to leave the departure block.
-      String occupancySensorId, exitSensorId;
+      Integer occupancySensorId, exitSensorId;
       if ("+".equals(departureSuffix)) {
         occupancySensorId = departureBlock.getMinSensorId();
         exitSensorId = departureBlock.getPlusSensorId();
@@ -236,7 +236,7 @@ class PrepareRouteState extends DispatcherState {
 
       //On the destination side we have the enterSensor end the IN sensor.
       //From which side on the block is the train expected to arrive?
-      String enterSensorId, inSensorId;
+      Integer enterSensorId, inSensorId;
       if ("+".equals(arrivalSuffix)) {
         enterSensorId = destinationBlock.getPlusSensorId();
         inSensorId = destinationBlock.getMinSensorId();
@@ -256,7 +256,7 @@ class PrepareRouteState extends DispatcherState {
 
       if (swapLocomotiveDirection) {
         //Direction newDir = locomotive.getDispatcherDirection();
-        Direction newDir = Direction.get(departureBlock.getLogicalDirection());      
+        Direction newDir = Direction.get(departureBlock.getLogicalDirection());
         Logger.trace("Changing Direction to " + newDir);
         dispatcher.changeLocomotiveDirection(locomotive, newDir);
       }

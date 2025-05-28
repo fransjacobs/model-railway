@@ -31,8 +31,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- *
- * @author frans
+ * Represents a Command Station
  */
 @Table(name = "command_stations")
 public class CommandStationBean {
@@ -66,6 +65,11 @@ public class CommandStationBean {
   protected Integer feedbackBus1ModuleCount;
   protected Integer feedbackBus2ModuleCount;
   protected Integer feedbackBus3ModuleCount;
+
+  public static final String MARKLIN_CS = "marklin.cs";
+  public static final String ESU_ECOS = "esu-ecos";
+  public static final String DCC_EX = "dcc-ex";
+  public static final String HSI_S88 = "hsi-s88";
 
   @Id
   @Column(name = "id")
@@ -116,7 +120,11 @@ public class CommandStationBean {
 
   @Transient
   public ConnectionType getConnectionType() {
-    return ConnectionType.get(connectVia);
+    if (connectVia != null) {
+      return ConnectionType.get(connectVia);
+    } else {
+      return null;
+    }
   }
 
   @Transient

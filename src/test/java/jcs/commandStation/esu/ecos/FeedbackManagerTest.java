@@ -15,7 +15,7 @@
  */
 package jcs.commandStation.esu.ecos;
 
-import jcs.entities.FeedbackModuleBean;
+import jcs.commandStation.entities.FeedbackModule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class FeedbackManagerTest {
 
   public FeedbackManagerTest() {
+    System.setProperty("persistenceService", "jcs.persistence.TestH2PersistenceService");
   }
 
   @BeforeEach
@@ -150,7 +151,7 @@ public class FeedbackManagerTest {
 
     instance.update(new EcosMessage("<EVENT 100>100 state[0x1]<END 0 (OK)>"));
 
-    FeedbackModuleBean fbmb = instance.getFeedbackModule(100);
+    FeedbackModule fbmb = instance.getFeedbackModule(100);
     boolean x = fbmb.isPort(0);
 
     assertEquals(true, instance.getFeedbackModule(100).isPort(0));

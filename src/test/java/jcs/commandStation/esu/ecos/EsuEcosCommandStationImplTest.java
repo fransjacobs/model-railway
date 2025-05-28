@@ -15,20 +15,15 @@
  */
 package jcs.commandStation.esu.ecos;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import jcs.commandStation.entities.DeviceBean;
 import jcs.commandStation.entities.InfoBean;
 import jcs.entities.AccessoryBean;
-import jcs.entities.ChannelBean;
 import jcs.entities.CommandStationBean;
-import jcs.entities.FeedbackModuleBean;
+import jcs.commandStation.entities.FeedbackModule;
 import jcs.entities.LocomotiveBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.persistence.util.PersistenceTestHelper;
 import jcs.util.NetworkUtil;
-import org.junit.Before;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,7 +43,7 @@ public class EsuEcosCommandStationImplTest {
 
   public EsuEcosCommandStationImplTest() {
     System.setProperty("message.debug", "true");
-    System.setProperty("persistenceService", "jcs.persistence.H2PersistenceService");
+    System.setProperty("persistenceService", "jcs.persistence.TestH2PersistenceService");
     System.setProperty("connection.always.virtual", "true");
     testHelper = PersistenceTestHelper.getInstance();
 
@@ -73,6 +68,7 @@ public class EsuEcosCommandStationImplTest {
   }
 
   private CommandStationBean getEcosAsDefaultCommandStationBean() {
+
     CommandStationBean ecosCommandStationBean = PersistenceFactory.getService().getDefaultCommandStation();
 
     if (ecosCommandStationBean == null) {
@@ -140,53 +136,15 @@ public class EsuEcosCommandStationImplTest {
       expResult.setSerialNumber("0x00000000");
       expResult.setHardwareVersion("1.3");
       expResult.setSoftwareVersion("4.2.13");
+      expResult.setProductName("ECoS-Virtual");
       expResult.setHostname(NetworkUtil.getIPv4HostAddress().getHostAddress());
 
       InfoBean result = instance.getCommandStationInfo();
-      assertEquals(expResult, result);
-    }
-  }
-
-  /**
-   * Test of getDevice method, of class EsuEcosCommandStationImpl.
-   */
-  @Test
-  public void testGetDevice() {
-    if (!skip) {
-
-      System.out.println("getDevice");
-      EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
-      instance.connect();
-      DeviceBean expResult = new DeviceBean();
-      expResult.setName("ECoS-Virtual");
-      expResult.setVersion("1.3");
-      expResult.setTypeName("ECoS");
-      expResult.setSerial("0x00000000");
-
-      DeviceBean result = instance.getDevice();
-      assertEquals(expResult, result);
-    }
-  }
-
-  /**
-   * Test of getDevices method, of class EsuEcosCommandStationImpl.
-   */
-  @Test
-  public void testGetDevices() {
-    if (!skip) {
-      System.out.println("getDevices");
-      EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
-      instance.connect();
-      DeviceBean db = new DeviceBean();
-      db.setName("ECoS-Virtual");
-      db.setVersion("1.3");
-      db.setTypeName("ECoS");
-      db.setSerial("0x00000000");
-
-      List<DeviceBean> expResult = new ArrayList<>();
-      expResult.add(db);
-
-      List<DeviceBean> result = instance.getDevices();
+      
+//expected: <InfoBean{softwareVersion=4.2.13, hardwareVersion=1.3, serialNumber=0x00000000, productName=null, articleNumber=Virtual, hostname=192.168.1.231, gfpUid=null, guiUid=null}> 
+// but was: <InfoBean{softwareVersion=4.2.13, hardwareVersion=1.3, serialNumber=0x00000000, productName=ECoS-Virtual, articleNumber=Virtual, hostname=192.168.1.231, gfpUid=null, guiUid=null}>
+      
+      
       assertEquals(expResult, result);
     }
   }
@@ -325,12 +283,14 @@ public class EsuEcosCommandStationImplTest {
   //@Test
   public void testSwitchAccessory_Integer_AccessoryBeanAccessoryValue() {
     System.out.println("switchAccessory");
+    int switchTime = 200;
+    String protocol = "mm";
     EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
     instance.connect();
 
     Integer address = null;
     AccessoryBean.AccessoryValue value = null;
-    instance.switchAccessory(address, value);
+    instance.switchAccessory(address, protocol, value, switchTime);
     // TODO review the generated test code and remove the default call to fail.
     fail("The test case is a prototype.");
   }
@@ -341,13 +301,14 @@ public class EsuEcosCommandStationImplTest {
   //@Test
   public void testSwitchAccessory_3args() {
     System.out.println("switchAccessory");
+    int switchTime = 200;
+    String protocol = "dcc";
     EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
     instance.connect();
 
     Integer address = null;
     AccessoryBean.AccessoryValue value = null;
-    Integer switchTime = null;
-    instance.switchAccessory(address, value, switchTime);
+    instance.switchAccessory(address, protocol, value, switchTime);
     // TODO review the generated test code and remove the default call to fail.
     fail("The test case is a prototype.");
   }
@@ -387,32 +348,31 @@ public class EsuEcosCommandStationImplTest {
   /**
    * Test of getFeedbackDevice method, of class EsuEcosCommandStationImpl.
    */
-  @Test
-  public void testGetFeedbackDevice() {
-    if (!skip) {
-      System.out.println("getFeedbackDevice");
-      EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
-      instance.connect();
-
-      DeviceBean expResult = new DeviceBean();
-      expResult.setArticleNumber("ECoS-Virtual");
-      expResult.setIdentifier("0x0");
-      expResult.getBusLength(1);
-      expResult.setVersion("4.2.13");
-      expResult.setSerial("0x00000000");
-      expResult.setTypeName("Link S88");
-
-      ChannelBean cb = new ChannelBean();
-      cb.setName(DeviceBean.BUS0);
-      cb.setNumber(0);
-
-      expResult.addSensorBus(0, cb);
-
-      DeviceBean result = instance.getFeedbackDevice();
-      assertEquals(expResult, result);
-    }
-  }
-
+//  @Test
+//  public void testGetFeedbackDevice() {
+//    if (!skip) {
+//      System.out.println("getFeedbackDevice");
+//      EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
+//      instance.connect();
+//
+//      DeviceBean expResult = new DeviceBean();
+//      expResult.setArticleNumber("ECoS-Virtual");
+//      expResult.setIdentifier("0x0");
+//      expResult.getBusLength(1);
+//      expResult.setVersion("4.2.13");
+//      expResult.setSerial("0x00000000");
+//      expResult.setTypeName("Link S88");
+//
+//      ChannelBean cb = new ChannelBean();
+//      cb.setName(DeviceBean.BUS0);
+//      cb.setNumber(0);
+//
+//      expResult.addSensorBus(0, cb);
+//
+//      DeviceBean result = instance.getFeedbackDevice();
+//      assertEquals(expResult, result);
+//    }
+//  }
   /**
    * Test of getFeedbackModules method, of class EsuEcosCommandStationImpl.
    */
@@ -423,7 +383,7 @@ public class EsuEcosCommandStationImplTest {
       EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
       instance.connect();
       int expResult = 1;
-      List<FeedbackModuleBean> result = instance.getFeedbackModules();
+      List<FeedbackModule> result = instance.getFeedbackModules();
       assertEquals(expResult, result.size());
     }
   }

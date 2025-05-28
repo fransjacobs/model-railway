@@ -15,6 +15,7 @@
  */
 package jcs.commandStation.hsis88;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -23,20 +24,20 @@ import java.util.concurrent.Executors;
 import jcs.JCS;
 import jcs.commandStation.AbstractController;
 import jcs.commandStation.FeedbackController;
-import jcs.commandStation.events.DisconnectionEvent;
-import jcs.commandStation.events.DisconnectionEventListener;
+import jcs.commandStation.events.ConnectionEvent;
 import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
 import static jcs.commandStation.hsis88.HSIConnection.COMMAND_VERSION;
 import jcs.entities.CommandStationBean;
 import jcs.entities.CommandStationBean.ConnectionType;
-import jcs.commandStation.entities.DeviceBean;
-import jcs.entities.FeedbackModuleBean;
+import jcs.commandStation.entities.FeedbackModule;
 import jcs.commandStation.entities.InfoBean;
 import jcs.commandStation.VirtualConnection;
+import jcs.commandStation.entities.Device;
 import jcs.entities.SensorBean;
 import jcs.util.RunUtil;
 import org.tinylog.Logger;
+import jcs.commandStation.events.ConnectionEventListener;
 
 /**
  *
@@ -47,9 +48,9 @@ public class HSIImpl extends AbstractController implements FeedbackController {
   private HSIConnection connection;
 
   private InfoBean infoBean;
-  private final Map<Integer, DeviceBean> devices;
-  private DeviceBean mainDevice;
-  private DeviceBean feedbackDevice;
+  //private final Map<Integer, DeviceBean> devices;
+  //private DeviceBean mainDevice;
+  //private DeviceBean feedbackDevice;
 
   private final Map<Integer, SensorBean> sensors;
 
@@ -59,9 +60,9 @@ public class HSIImpl extends AbstractController implements FeedbackController {
 
   public HSIImpl(CommandStationBean commandStationBean, boolean autoConnect) {
     super(autoConnect, commandStationBean);
-    devices = new HashMap<>();
+    //devices = new HashMap<>();
     sensors = new HashMap<>();
-    this.executor = Executors.newCachedThreadPool();
+    //this.executor = Executors.newCachedThreadPool();
 
     if (commandStationBean != null) {
       if (autoConnect) {
@@ -123,24 +124,24 @@ public class HSIImpl extends AbstractController implements FeedbackController {
           this.infoBean.setHostname(this.commandStationBean.getSerialPort());
           this.infoBean.setProductName(info);
 
-          DeviceBean d = new DeviceBean();
+          //DeviceBean d = new DeviceBean();
           String[] hsiinfo = info.split("/");
-          d.setName(info);
-          d.setUid("0");
-          for (int i = 0; i < hsiinfo.length; i++) {
-            switch (i) {
-              case 0 ->
-                d.setVersion(hsiinfo[i]);
-              case 1 ->
-                d.setSerial(hsiinfo[i]);
-              case 2 ->
-                d.setName(hsiinfo[i]);
-              case 3 ->
-                d.setTypeName(hsiinfo[i]);
-            }
-          }
-          this.mainDevice = d;
-          this.devices.put(0, d);
+          //d.setName(info);
+          //d.setUid("0");
+//          for (int i = 0; i < hsiinfo.length; i++) {
+//            switch (i) {
+//              case 0 ->
+//                //d.setVersion(hsiinfo[i]);
+//              case 1 ->
+//                //d.setSerial(hsiinfo[i]);
+//              case 2 ->
+//                //d.setName(hsiinfo[i]);
+//              case 3 ->
+//                //d.setTypeName(hsiinfo[i]);
+//            }
+//          }
+//          //this.mainDevice = d;
+//          this.devices.put(0, d);
 
           //Query the S88 Modules ?
           //connection.sendMessage("m\r");          
@@ -157,27 +158,17 @@ public class HSIImpl extends AbstractController implements FeedbackController {
   }
 
   @Override
-  public DeviceBean getDevice() {
-    return this.mainDevice;
-  }
-
-  @Override
-  public List<DeviceBean> getDevices() {
-    return null;//this.devices.values().stream().collect(Collectors.toList());
-  }
-
-  @Override
   public InfoBean getCommandStationInfo() {
     return infoBean;
   }
 
-  @Override
-  public DeviceBean getFeedbackDevice() {
-    return this.feedbackDevice;
+  public List<Device> getDevices() {
+    List<Device> devices = new ArrayList<>();
+    return devices;
   }
 
   @Override
-  public List<FeedbackModuleBean> getFeedbackModules() {
+  public List<FeedbackModule> getFeedbackModules() {
     return null;
   }
 
@@ -202,9 +193,9 @@ public class HSIImpl extends AbstractController implements FeedbackController {
     Logger.trace("Disconnected");
   }
 
-  private void fireAllDisconnectionEventListeners(final DisconnectionEvent disconnectionEvent) {
-    for (DisconnectionEventListener listener : this.disconnectionEventListeners) {
-      listener.onDisconnect(disconnectionEvent);
+  private void fireAllDisconnectionEventListeners(final ConnectionEvent disconnectionEvent) {
+    for (ConnectionEventListener listener : this.connectionEventListeners) {
+      listener.onConnectionChange(disconnectionEvent);
     }
     disconnect();
   }
@@ -237,7 +228,7 @@ public class HSIImpl extends AbstractController implements FeedbackController {
     }
 
     @Override
-    public void onDisconnect(DisconnectionEvent event) {
+    public void onDisconnect(ConnectionEvent event) {
       this.hsiImpl.fireAllDisconnectionEventListeners(event);
     }
   }
@@ -279,7 +270,8 @@ public class HSIImpl extends AbstractController implements FeedbackController {
             //Logger.trace("U: " + sb.toLogString());
           }
         } else {
-          sb = new SensorBean(0, key, contacts[i]);
+          //TODO: !!!!!!!
+          sb = null; //new SensorBean(0, key, contacts[i]);
           this.sensors.put(sb.getContactId(), sb);
 
           SensorEvent se = new SensorEvent(sb);

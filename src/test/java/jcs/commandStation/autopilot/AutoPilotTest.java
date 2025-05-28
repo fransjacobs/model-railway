@@ -31,7 +31,7 @@ import jcs.persistence.PersistenceFactory;
 import jcs.persistence.PersistenceService;
 import jcs.persistence.util.PersistenceTestHelper;
 import jcs.ui.layout.tiles.Tile;
-import jcs.ui.layout.tiles.TileFactory;
+import jcs.ui.layout.tiles.TileCache;
 import jcs.util.RunUtil;
 import static org.junit.Assert.assertEquals;
 import org.junit.jupiter.api.AfterAll;
@@ -60,7 +60,7 @@ public class AutoPilotTest {
   private List<SensorEvent> sensorHandlerEvents;
 
   public AutoPilotTest() {
-    System.setProperty("persistenceService", "jcs.persistence.H2PersistenceService");
+    System.setProperty("persistenceService", "jcs.persistence.TestH2PersistenceService");
     System.setProperty("do.not.simulate.virtual.drive", "true");
     System.setProperty("state.machine.stepTest", "false");
     testHelper = PersistenceTestHelper.getInstance();
@@ -71,7 +71,7 @@ public class AutoPilotTest {
     //When running in a batch the default command station could be different..
     CommandStationBean virt = ps.getCommandStation("virtual");
     ps.changeDefaultCommandStation(virt);
-    
+
     if (RunUtil.isWindows()) {
       Logger.info("Skipping tests on Windows!");
       skipTest = true;
@@ -199,7 +199,7 @@ public class AutoPilotTest {
 
     Logger.debug("Autopilot automode started in " + (now - start) + " ms.");
 
-    assertFalse(AutoPilot.areDispatchersRunning());
+    assertFalse(AutoPilot.isADispatcherRunning());
 
     //Lets create a dispatcher. A Loc must be on the track
     LocomotiveBean dhg = ps.getLocomotive(NS_DHG_6505);
@@ -262,7 +262,7 @@ public class AutoPilotTest {
 
     Logger.debug("Autopilot automode started in " + (now - start) + " ms.");
 
-    assertFalse(AutoPilot.areDispatchersRunning());
+    assertFalse(AutoPilot.isADispatcherRunning());
 
     //Lets create a dispatcher. A Loc must be on the track
     LocomotiveBean dhg = ps.getLocomotive(NS_DHG_6505);
@@ -329,7 +329,7 @@ public class AutoPilotTest {
       return;
     }
     System.out.println("isSensorRegistered");
-    String sensorId = "0-0001";
+    Integer sensorId = 1;
     //AutoPilot instance = AutoPilot.getInstance();
     assertFalse(AutoPilot.isAutoModeActive());
 
@@ -358,7 +358,8 @@ public class AutoPilotTest {
     }
     System.out.println("getOnTrackLocomotives");
     //Check is the test script has run well
-    List<Tile> tiles = TileFactory.toTiles(ps.getTileBeans(), false, false);
+    //List<Tile> tiles = TileFactory.toTiles(ps.getTileBeans(), false, false);
+    List<Tile> tiles = TileCache.loadTiles(false);
     assertEquals(29, tiles.size());
     List<BlockBean> blocks = ps.getBlocks();
     assertEquals(4, blocks.size());
@@ -431,7 +432,7 @@ public class AutoPilotTest {
 
     //Toggle a sensor, as the automode is on a Ghost should appear
     //Now lets Toggle the enter sensor
-    SensorBean s2 = ps.getSensor("0-0002");
+    SensorBean s2 = ps.getSensor(2);
     toggleSensorDirect(s2);
 
     assertFalse(JCS.getJcsCommandStation().isPowerOn());
@@ -479,7 +480,7 @@ public class AutoPilotTest {
     List<Dispatcher> dispList = AutoPilot.getLocomotiveDispatchers();
     assertEquals(1, dispList.size());
 
-    assertFalse(AutoPilot.areDispatchersRunning());
+    assertFalse(AutoPilot.isADispatcherRunning());
 
     AutoPilot.stopAutoMode();
     //let the autopilot finish...
@@ -541,7 +542,7 @@ public class AutoPilotTest {
   public void testStopAllLocomotives() {
     System.out.println("stopAllLocomotives");
     AutoPilot instance = null;
-    AutoPilot.stopAllLocomotives();
+    //AutoPilot.stopAllLocomotives();
     fail("The test case is a prototype.");
   }
 
@@ -584,23 +585,23 @@ public class AutoPilotTest {
 
   private class TestSensorHandler implements SensorEventHandler {
 
-    private final String sensorId;
+    private final Integer sensorId;
     private final AutoPilotTest autoPilotTest;
 
-    TestSensorHandler(String sensorId, AutoPilotTest autoPilotTest) {
+    TestSensorHandler(Integer sensorId, AutoPilotTest autoPilotTest) {
       this.sensorId = sensorId;
       this.autoPilotTest = autoPilotTest;
     }
 
     @Override
     public void handleEvent(SensorEvent event) {
-      if (this.sensorId.equals(event.getId())) {
+      if (this.sensorId.equals(event.getSensorId())) {
         this.autoPilotTest.sensorHandlerEvents.add(event);
       }
     }
 
     @Override
-    public String getSensorId() {
+    public Integer getSensorId() {
       return sensorId;
     }
 

@@ -15,7 +15,6 @@
  */
 package jcs.commandStation.marklin.cs.can;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -24,7 +23,7 @@ import jcs.util.ByteUtil;
 /**
  * CS 2/3 CAN message.
  */
-public class CanMessage implements MarklinCan, Serializable {
+public class CanMessage implements MarklinCan {
 
   private int priority;
   private int command;
@@ -92,8 +91,30 @@ public class CanMessage implements MarklinCan, Serializable {
     return val;
   }
 
+  public static int getStringLength(byte[] data) {
+    //A string is terminated with 0x00. Return the lengt before the termination
+    for (int l = 0; l < data.length; l++) {
+      if (data[l] == 0) {
+        //found terminator
+        return l;
+      }
+    }
+    return data.length;
+  }
+
   public static String toString(byte[] data) {
     return new String(data);
+  }
+
+  public static String toString(byte[] data, int length) {
+    byte[] stringData = new byte[length];
+    System.arraycopy(data, 0, stringData, 0, stringData.length);
+    return new String(stringData);
+  }
+
+  public static final byte toByte(int value) {
+    byte[] bts = to2Bytes(value);
+    return bts[1];
   }
 
   public static final byte[] to2Bytes(int value) {
@@ -274,44 +295,6 @@ public class CanMessage implements MarklinCan, Serializable {
     }
   }
 
-  public boolean isPingResponse() {
-    return this.command == PING_RESP;
-  }
-
-  public boolean isPingRequest() {
-    return this.command == PING_REQ;
-  }
-
-  public boolean isStatusConfigRequest() {
-    return this.command == STATUS_CONFIG;
-  }
-
-  public boolean isSensorResponse() {
-    return this.command == S88_EVENT_RESP;
-  }
-
-  public boolean isStatusDataConfigMessage() {
-    return this.command == STATUS_CONFIG | this.command == STATUS_CONFIG + 1;
-  }
-
-  public boolean isSensorMessage() {
-    return this.command == S88_EVENT || this.command == SX1_EVENT;
-  }
-
-  public boolean isAccessoryMessage() {
-    return this.command == ACCESSORY_SWITCHING || this.command == ACCESSORY_SWITCHING_RESP;
-  }
-
-  public boolean isLocomotiveMessage() {
-    return this.command == LOC_VELOCITY || this.command == LOC_VELOCITY_RESP
-            || this.command == LOC_DIRECTION || this.command == LOC_DIRECTION_RESP
-            || this.command == LOC_FUNCTION || this.command == LOC_FUNCTION_RESP;
-  }
-
-  public boolean isSystemMessage() {
-    return this.command == SYSTEM_COMMAND || this.command == SYSTEM_COMMAND_RESP;
-  }
-
   public boolean hasValidResponse() {
     if (this.responses == null || this.responses.isEmpty()) {
       return false;
@@ -392,9 +375,9 @@ public class CanMessage implements MarklinCan, Serializable {
             return this.responses.size() >= 2;
           }
           default -> {
-            if (this.expectsResponse()) {
-              CanMessage r0 = this.responses.get(0);
-              return this.command == r0.getCommand() - 1;
+            if (expectsResponse() && !responses.isEmpty()) {
+              CanMessage r0 = responses.get(0);
+              return command == r0.getCommand() - 1;
             } else {
               return true;
             }
@@ -408,7 +391,7 @@ public class CanMessage implements MarklinCan, Serializable {
 
   @Override
   public String toString() {
-    return ByteUtil.toHexString(this.getMessage());
+    return ByteUtil.toHexString(getMessage());
   }
 
   public int getNumberOfMeasurementValues() {
@@ -468,6 +451,43 @@ public class CanMessage implements MarklinCan, Serializable {
     return to2Bytes(hash);
   }
 
+  /**
+   * Create a CanMessage from a String. This method is used to ease testing.<br>
+   * The message should be in the format:<br>
+   * 0x00 0x00 0x07 0x69 0x04 0x00 0x00 0x00 0x00 0x00 0xab 0x00 0xfc
+   *
+   * @param message a CAN message with content as in the given String
+   * @return 
+   */
+  public static CanMessage parse(String message) {
+    return parse(message, false);
+  }
+
+  /**
+   * Create a CanMessage from a String. This method is used to ease testing.<br>
+   * The message should be in the format:<br>
+   * 0x00 0x00 0x07 0x69 0x04 0x00 0x00 0x00 0x00 0x00 0xab 0x00 0xfc
+   *
+   * @param message a CAN message with content as in the given String
+   * @param response force the response bit set
+   */
+  public static CanMessage parse(String message, boolean response) {
+    String[] sa = message.split(" ");
+    byte[] ba = new byte[MESSAGE_SIZE];
+    for (int i = 0; i < ba.length; i++) {
+      String bs = sa[i];
+      bs = bs.replace("0x", "");
+      ba[i] = toByte(Integer.parseUnsignedInt(bs, 16));
+
+      if (i == 1 && response) {
+        ba[i]++;
+      }
+
+    }
+
+    return new CanMessage(ba);
+  }
+
   @Override
   public int hashCode() {
     int h = 5;
@@ -505,8 +525,6 @@ public class CanMessage implements MarklinCan, Serializable {
     }
     return Arrays.equals(this.data, other.data);
   }
-
-}
 
 //  public String print() {
 //    StringBuilder sb = new StringBuilder();
@@ -611,3 +629,4 @@ public class CanMessage implements MarklinCan, Serializable {
 //        return "Unknown: " + cmd;
 //    }
 //  }
+}

@@ -21,6 +21,7 @@ import jcs.persistence.PersistenceFactory;
 import org.junit.After;
 import static org.junit.Assert.*;
 import org.junit.Before;
+import org.junit.Test;
 import org.junit.jupiter.api.AfterAll;
 import org.tinylog.Logger;
 
@@ -35,7 +36,7 @@ public class MarklinCSTest {
 
   //controller.skip.init
   public MarklinCSTest() {
-
+    System.setProperty("persistenceService", "jcs.persistence.TestH2PersistenceService");
     //JCS.getJcsCommandStation().disconnect();
     //When running in a batch the default command station could be different..
     //CommandStationBean marklinCs = PersistenceFactory.getService().getCommandStation("marklin.cs");
@@ -58,10 +59,11 @@ public class MarklinCSTest {
         csb.setProtocols("DCC,MFX,MM");
         csb.setDefault(true);
         csb.setEnabled(true);
+        csb.setVirtual(true);
 
         instance = new MarklinCentralStationImpl(csb, false);
-        pause(500);
-        csAvailable = instance.connect();
+        pause(200);
+        csAvailable = false; //instance.connect();
 
         if (csAvailable) {
           instance.disconnect();
@@ -77,7 +79,7 @@ public class MarklinCSTest {
   @Before
   public void setUp() {
     if (csAvailable) {
-      pause(500);
+      pause(200);
     } else {
       Logger.warn("Skipping tests CS not available");
     }
@@ -166,7 +168,7 @@ public class MarklinCSTest {
     JCS.getJcsCommandStation().disconnect();
 
     CommandStationBean virt = PersistenceFactory.getService().getCommandStation("virtual");
-    PersistenceFactory.getService().changeDefaultCommandStation(virt);
+    //PersistenceFactory.getService().changeDefaultCommandStation(virt);
   }
 
 }

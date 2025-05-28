@@ -60,7 +60,7 @@ class AccessoryManager implements AccessoryEventListener {
           //Details
           accessory = parseValues(values, event);
         }
-        this.accessories.put(accessory.getId(), accessory);
+        accessories.put(accessory.getId(), accessory);
       }
 
       if (values.containsKey(Ecos.SIZE)) {
@@ -121,6 +121,8 @@ class AccessoryManager implements AccessoryEventListener {
       } else {
         switch (protocol) {
           case "MOT" ->
+            accessory.setProtocol(AccessoryBean.Protocol.MM);
+          case "MM" ->
             accessory.setProtocol(AccessoryBean.Protocol.MM);
           case "DCC" ->
             accessory.setProtocol(AccessoryBean.Protocol.DCC);
@@ -216,6 +218,18 @@ class AccessoryManager implements AccessoryEventListener {
     return accessories;
   }
 
+  AccessoryBean getAccessory(Integer address) {
+    AccessoryBean result = null;
+    for (AccessoryBean accessory : this.accessories.values()) {
+      if (address.equals(accessory.getAddress())) {
+        result = accessory;
+        break;
+      }
+    }
+
+    return result;
+  }
+
   String findId(Integer address) {
     String id = null;
     for (AccessoryBean accessory : this.accessories.values()) {
@@ -230,7 +244,7 @@ class AccessoryManager implements AccessoryEventListener {
   @Override
   public void onAccessoryChange(AccessoryEvent accessoryEvent) {
     AccessoryBean ab = accessoryEvent.getAccessoryBean();
-    String id = accessoryEvent.getId();
+    String id = accessoryEvent.getIdString();
     if (!this.accessories.containsKey(id)) {
       id = findId(ab.getAddress());
     }
@@ -398,6 +412,7 @@ class AccessoryManager implements AccessoryEventListener {
 //20005 name1["Sein mini"]20005 name2["artikel"]20005 name3[">0001<"]20005 addr[16]20005 protocol[MM]20005 mode[SWITCH]20005 symbol[13]20005
 //state[0]20005 type[ACCESSORY]20005 addrext[16g,16r]20005 duration[500]20005 gates[2]20005 variant[0]20005 position[ok]20005 switching[0]
 //  <END 0 (OK, but obsolete attribute at 64)>
+
 ////
 //<EVENT 20000>20000 switching[1]<END 0 (OK)>
 //<EVENT 20000>20000 state[0]<END 0 (OK)>

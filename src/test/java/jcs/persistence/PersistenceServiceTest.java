@@ -39,6 +39,7 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.jupiter.api.Order;
 import org.tinylog.Logger;
 
 public class PersistenceServiceTest {
@@ -56,7 +57,7 @@ public class PersistenceServiceTest {
   private final List<BlockBean> blocks;
 
   public PersistenceServiceTest() {
-    System.setProperty("persistenceService", "jcs.persistence.H2PersistenceService");
+    System.setProperty("persistenceService", "jcs.persistence.TestH2PersistenceService");
 
     testHelper = PersistenceTestHelper.getInstance();
 
@@ -73,10 +74,19 @@ public class PersistenceServiceTest {
 
   @BeforeClass
   public static void setUpClass() throws Exception {
+    System.setProperty("persistenceService", "jcs.persistence.TestH2PersistenceService");
+    PersistenceTestHelper.createDatabaseUsers();
+    PersistenceTestHelper.createDatabase();
+    PersistenceTestHelper.getInstance().insertTestData();
+    CommandStationBean csb = new CommandStationBean();
+    csb.setId("marklin.cs");
+    PersistenceFactory.getService().changeDefaultCommandStation(csb);
+    Logger.info("####### PersistenceService Test Start....");
   }
 
   @AfterClass
   public static void tearDownClass() throws Exception {
+    Logger.info("####### PersistenceService Test END....");
   }
 
   @Before
@@ -91,9 +101,10 @@ public class PersistenceServiceTest {
     jcsPropertyList.add(p10);
     jcsPropertyList.add(p11);
 
-    SensorBean s1 = new SensorBean("65-1", "M1", 65, 1, 0, 0, 0, null);
+    SensorBean s1 = new SensorBean(1, "M1", 65, 1, null, 0, 0, 0,"marklin.cs", 1);
+
     sensors.add(s1);
-    SensorBean s2 = new SensorBean("65-2", "M2", 65, 2, 1, 1, 0, null);
+    SensorBean s2 = new SensorBean(2, "M2", 65, 2, null, 1, 1, 0,"marklin.cs", 1);
     sensors.add(s2);
 
     LocomotiveBean loco2 = new LocomotiveBean(2L, "BR 81 002", 2L, 2, "DB BR 81 008", "mm_prg", 120, 1, 0, 0, false, true, true);
@@ -200,9 +211,9 @@ public class PersistenceServiceTest {
     tiles.add(ct2);
     TileBean ct5 = new TileBean("ct-5", TileBean.TileType.CURVED, Orientation.SOUTH, Direction.CENTER, 180, 380, null, null, null);
     tiles.add(ct5);
-    TileBean se5 = new TileBean("se-5", TileBean.TileType.SENSOR, Orientation.NORTH, Direction.CENTER, 340, 380, null, null, "65-2");
+    TileBean se5 = new TileBean("se-5", TileBean.TileType.SENSOR, Orientation.NORTH, Direction.CENTER, 340, 380, null, null, 2);
     tiles.add(se5);
-    TileBean se6 = new TileBean("se-6", TileBean.TileType.SENSOR, Orientation.WEST, Direction.CENTER, 500, 380, null, null, "65-1");
+    TileBean se6 = new TileBean("se-6", TileBean.TileType.SENSOR, Orientation.WEST, Direction.CENTER, 500, 380, null, null, 1);
     tiles.add(se6);
     TileBean si3 = new TileBean("si-3", TileBean.TileType.SIGNAL, Orientation.EAST, Direction.CENTER, 300, 140, null, "15", null);
     tiles.add(si3);
@@ -252,6 +263,7 @@ public class PersistenceServiceTest {
    * Test of getProperties method, of class PersistenceService.
    */
   @Test
+  @Order(1)
   public void testGetProperties() {
     System.out.println("getProperties");
     PersistenceService instance = PersistenceFactory.getService();
@@ -264,6 +276,7 @@ public class PersistenceServiceTest {
    * Test of getProperty method, of class PersistenceService.
    */
   @Test
+  @Order(2)
   public void testGetProperty() {
     System.out.println("getProperty");
     String key = "k2";
@@ -277,8 +290,9 @@ public class PersistenceServiceTest {
    * Test of persist method, of class PersistenceService.
    */
   @Test
-  public void testPersist_JCSPropertyBean() {
-    System.out.println("persist");
+  @Order(3)
+  public void testPersistJCSPropertyBean() {
+    System.out.println("persistJCSPropertyBean");
     JCSPropertyBean propertyBean = new JCSPropertyBean("k3", "v3");
     PersistenceService instance = PersistenceFactory.getService();
     JCSPropertyBean expResult = propertyBean;
@@ -300,8 +314,9 @@ public class PersistenceServiceTest {
    * Test of remove method, of class PersistenceService.
    */
   @Test
-  public void testRemove_JCSPropertyBean() {
-    System.out.println("remove");
+  @Order(4)
+  public void testRemoveJCSPropertyBean() {
+    System.out.println("removeJCSPropertyBean");
     JCSPropertyBean property = new JCSPropertyBean("k4", "v4");
     PersistenceService instance = PersistenceFactory.getService();
 
@@ -318,6 +333,7 @@ public class PersistenceServiceTest {
    * Test of getSensors method, of class PersistenceService.
    */
   @Test
+  @Order(5)
   public void testGetSensors() {
     System.out.println("getSensors");
     PersistenceService instance = PersistenceFactory.getService();
@@ -330,9 +346,10 @@ public class PersistenceServiceTest {
    * Test of getSensor method, of class PersistenceService.
    */
   @Test
-  public void testGetSensor_Long() {
-    System.out.println("getSensor");
-    String id = "65-1";
+  @Order(6)
+  public void testGetSensorString() {
+    System.out.println("getSensorString");
+    Integer id = 1;
     PersistenceService instance = PersistenceFactory.getService();
     SensorBean expResult = sensors.get(0);
     SensorBean result = instance.getSensor(id);
@@ -343,8 +360,9 @@ public class PersistenceServiceTest {
    * Test of getSensor method, of class PersistenceService.
    */
   @Test
-  public void testGetSensor_Integer_Integer() {
-    System.out.println("getSensor");
+  @Order(7)
+  public void testGetSensorIntegerInteger() {
+    System.out.println("getSensorIntegerInteger");
     Integer deviceId = 65;
     Integer contactId = 2;
     PersistenceService instance = PersistenceFactory.getService();
@@ -357,23 +375,26 @@ public class PersistenceServiceTest {
    * Test of persist method, of class PersistenceService.
    */
   @Test
-  public void testPersist_SensorBean() {
-    System.out.println("persist");
-    SensorBean sensor = new SensorBean("M1P3", 65, 3, 0, 1, 0, null);
+  @Order(8)
+  public void testPersistSensorBean() {
+    System.out.println("persistSensorBean");
+    SensorBean sensor = new SensorBean(3, "M1P3", 0, 3, 65, 0, 1, 0, "marklin.cs", 2);
+
     PersistenceService instance = PersistenceFactory.getService();
 
     SensorBean result = instance.persist(sensor);
 
     assertEquals(sensor, result);
 
-    SensorBean s3 = instance.getSensor(65, 3);
+    SensorBean s3 = instance.getSensor(0, 3);
+
     assertEquals(sensor, s3);
 
     sensor.setStatus(1);
     result = instance.persist(sensor);
     assertEquals(sensor, result);
 
-    s3 = instance.getSensor("65-0003");
+    s3 = instance.getSensor(3);
     assertEquals(sensor, s3);
   }
 
@@ -381,16 +402,18 @@ public class PersistenceServiceTest {
    * Test of remove method, of class PersistenceService.
    */
   @Test
-  public void testRemove_SensorBean() {
-    System.out.println("remove");
-    SensorBean sensor = new SensorBean("M1P4", 65, 4, 0, 1, 0, null);
+  @Order(9)
+  public void testRemoveSensorBean() {
+    System.out.println("removeSensorBean");
+    SensorBean sensor = new SensorBean(4, "M1P4", 1, 4, 65, 0, 1, 0,"marklin.cs", 2);
+
     PersistenceService instance = PersistenceFactory.getService();
 
     SensorBean result = instance.persist(sensor);
 
     assertEquals(sensor, result);
 
-    SensorBean s3 = instance.getSensor(65, 4);
+    SensorBean s3 = instance.getSensor(1, 4);
     assertEquals(sensor, s3);
 
     instance.remove(sensor);
@@ -403,6 +426,7 @@ public class PersistenceServiceTest {
    * Test of getLocomotives method, of class PersistenceService.
    */
   @Test
+  @Order(10)
   public void testGetLocomotives() {
     System.out.println("getLocomotives");
     PersistenceService instance = PersistenceFactory.getService();
@@ -434,8 +458,9 @@ public class PersistenceServiceTest {
    * Test of getLocomotive method, of class PersistenceService.
    */
   @Test
-  public void testGetLocomotive_Integer_DecoderType() {
-    System.out.println("getLocomotive");
+  @Order(11)
+  public void testGetLocomotiveIntegerDecoderType() {
+    System.out.println("getLocomotiveIntegerDecoderType");
     Integer address = 8;
     DecoderType decoderType = DecoderType.MM_PRG;
 
@@ -464,17 +489,15 @@ public class PersistenceServiceTest {
     resFunctions.addAll(result.getFunctions().values());
 
     assertEquals(2, resFunctions.size());
-
-    //        List<LocomotiveFunction> locomotiveFunctions = new LinkedList<>();
-    //        assertEquals(functions, locomotiveFunctions);
   }
 
   /**
    * Test of getLocomotive method, of class PersistenceService.
    */
   @Test
-  public void testGetLocomotive_Integer() {
-    System.out.println("getLocomotive");
+  @Order(12)
+  public void testGetLocomotiveInteger() {
+    System.out.println("getLocomotiveInteger");
     Long id = 2L;
     PersistenceService instance = PersistenceFactory.getService();
     LocomotiveBean expResult = this.locomotives.get(0);
@@ -503,8 +526,9 @@ public class PersistenceServiceTest {
    * Test of persist method, of class PersistenceService.
    */
   @Test
-  public void testPersist_LocomotiveBean() {
-    System.out.println("persist");
+  @Order(13)
+  public void testPersistLocomotiveBean() {
+    System.out.println("persistLocomotiveBean");
     LocomotiveBean locomotive = new LocomotiveBean(80L, "DB BR 44 100", 16393L, 80, "DB BR 44 100", "mfx", 80, 5, 0, 0, false, true, false);
     locomotive.setCommandStationId("marklin.cs");
 
@@ -537,8 +561,6 @@ public class PersistenceServiceTest {
     FunctionBean function = locfunctions.get(0);
     fb80_0.setId(23L);
     assertEquals(fb80_0, function);
-    // expected: jcs.entities.FunctionBean<locoId:80, number:0;type: 1, value: 0, momentary: false>
-    // but was: jcs.entities.FunctionBean<locoId:80, number:0;type: 1, value: 0, momentary: false>
 
     loco.setIcon("new Icon");
     instance.persist(loco);
@@ -553,8 +575,9 @@ public class PersistenceServiceTest {
    * Test of remove method, of class PersistenceService.
    */
   @Test
-  public void testRemove_LocomotiveBean() {
-    System.out.println("remove");
+  @Order(14)
+  public void testRemoveLocomotiveBean() {
+    System.out.println("removeLocomotiveBean");
     LocomotiveBean locomotiveBean = new LocomotiveBean(70L, "To Be Removed", 16370L, 70, "To Be Removed", "mfx", 80, 5, 0, 0, false, true, false);
     locomotiveBean.setCommandStationId("marklin.cs");
 
@@ -578,6 +601,7 @@ public class PersistenceServiceTest {
    * Test of getTurnouts method, of class PersistenceService.
    */
   @Test
+  @Order(15)
   public void testGetTurnouts() {
     System.out.println("getTurnouts");
     PersistenceService instance = PersistenceFactory.getService();
@@ -594,6 +618,7 @@ public class PersistenceServiceTest {
    * Test of getSignals method, of class PersistenceService.
    */
   @Test
+  @Order(16)
   public void testGetSignals() {
     System.out.println("getSignals");
     PersistenceService instance = PersistenceFactory.getService();
@@ -613,6 +638,7 @@ public class PersistenceServiceTest {
    * Test of getAccessory method, of class PersistenceService.
    */
   @Test
+  @Order(17)
   public void testGetAccessoryById() {
     System.out.println("getAccessoryById");
     String id = "25";
@@ -626,6 +652,7 @@ public class PersistenceServiceTest {
    * Test of getAccessoryByAddress method, of class PersistenceService.
    */
   @Test
+  @Order(18)
   public void testGetAccessory() {
     System.out.println("getAccessory");
     Integer address = 7;
@@ -639,8 +666,9 @@ public class PersistenceServiceTest {
    * Test of persist method, of class PersistenceService.
    */
   @Test
-  public void testPersist_AccessoryBean() {
-    System.out.println("persist");
+  @Order(19)
+  public void testPersistAccessoryBean() {
+    System.out.println("persistAccessoryBean");
     AccessoryBean accessory = new AccessoryBean("100", 100, "W 100", "rechtsweiche", 1, 2, 200, "mm", "ein_alt", "weichen", "005", "magicon_a_005_01.svg", "marklin.cs");
 
     PersistenceService instance = PersistenceFactory.getService();
@@ -668,8 +696,9 @@ public class PersistenceServiceTest {
    * Test of remove method, of class PersistenceService.
    */
   @Test
-  public void testRemove_AccessoryBean() {
-    System.out.println("remove");
+  @Order(20)
+  public void testRemoveAccessoryBean() {
+    System.out.println("removeAccessoryBean");
     AccessoryBean accessory = new AccessoryBean("101", 101, "W 101", "rechtsweiche", 1, 2, 200, "mm", "ein_alt", "weichen", "005", "magicon_a_005_01.svg", "marklin.cs");
     PersistenceService instance = PersistenceFactory.getService();
 
@@ -690,8 +719,9 @@ public class PersistenceServiceTest {
    * Test of getTileBeans method, of class PersistenceService.
    */
   @Test
+  @Order(21)
   public void testGetTileBeans() {
-    System.out.println("getTiles");
+    System.out.println("getTileBeans");
     PersistenceService instance = PersistenceFactory.getService();
 
     List<TileBean> result = instance.getTileBeans();
@@ -704,6 +734,7 @@ public class PersistenceServiceTest {
    * Test of getTileBean method, of class PersistenceService.
    */
   @Test
+  @Order(22)
   public void testGetTile() {
     System.out.println("getTile");
     Integer x = 300;
@@ -718,8 +749,9 @@ public class PersistenceServiceTest {
    * Test of persist method, of class PersistenceService.
    */
   @Test
-  public void testPersist_TileBean() {
-    System.out.println("persist");
+  @Order(23)
+  public void testPersistTileBean() {
+    System.out.println("persistTileBean");
     TileBean sw12 = new TileBean("sw-12", TileBean.TileType.SWITCH, Orientation.EAST, Direction.RIGHT, 50, 50, null, null, null);
 
     PersistenceService instance = PersistenceFactory.getService();
@@ -738,8 +770,9 @@ public class PersistenceServiceTest {
   }
 
   @Test
-  public void testRemove_TileBean() {
-    System.out.println("remove");
+  @Order(24)
+  public void testRemoveTileBean() {
+    System.out.println("removeTileBean");
     TileBean sw13 = new TileBean("sw-13", TileBean.TileType.CURVED, Orientation.EAST, Direction.CENTER, 80, 50, null, null, null);
     PersistenceService instance = PersistenceFactory.getService();
 
@@ -759,8 +792,9 @@ public class PersistenceServiceTest {
    * Test of persist method, of class PersistenceService.
    */
   @Test
-  public void testPersist_List_TileBeans() {
-    System.out.println("persist list");
+  @Order(25)
+  public void testPersistListTileBeans() {
+    System.out.println("persistListTileBeans");
     PersistenceService instance = PersistenceFactory.getService();
     List<TileBean> tbl = this.tiles;
     TileBean sw22 = new TileBean("sw-22", TileBean.TileType.CROSS, Orientation.EAST, Direction.CENTER, 100, 100, null, null, null);
@@ -785,6 +819,7 @@ public class PersistenceServiceTest {
   }
 
   @Test
+  @Order(26)
   public void testPersistLotsOfTileBeans() {
     System.out.println("persistLotsOfTileBeans");
     PersistenceService instance = PersistenceFactory.getService();
@@ -810,6 +845,7 @@ public class PersistenceServiceTest {
   }
 
   @Test
+  @Order(27)
   public void testGetRoutes() {
     System.out.println("getRoutes");
     PersistenceService instance = PersistenceFactory.getService();
@@ -819,8 +855,9 @@ public class PersistenceServiceTest {
   }
 
   @Test
-  public void testGetRoute_String() {
-    System.out.println("getRoute_string");
+  @Order(28)
+  public void testGetRouteString() {
+    System.out.println("getRouteString");
     PersistenceService instance = PersistenceFactory.getService();
     RouteBean expResult = this.routes.get(1);
     RouteBean result = instance.getRoute("[bk-2-]->[bk-1+]");
@@ -828,6 +865,7 @@ public class PersistenceServiceTest {
   }
 
   @Test
+  @Order(29)
   public void testGetRoute_String_String_String_String() {
     System.out.println("getRoute_string_string_string_string");
     PersistenceService instance = PersistenceFactory.getService();
@@ -842,6 +880,7 @@ public class PersistenceServiceTest {
   }
 
   @Test
+  @Order(30)
   public void testLockRoute() {
     System.out.println("LockRoute");
     PersistenceService instance = PersistenceFactory.getService();
@@ -871,8 +910,9 @@ public class PersistenceServiceTest {
   }
 
   @Test
-  public void testPersist_RouteBean() {
-    System.out.println("persist");
+  @Order(31)
+  public void testPersistRouteBean() {
+    System.out.println("persistRouteBean");
     RouteBean route = new RouteBean("[ct-2]->[ct-5]", "ct-2", "*", "ct-5", "*", "blue");
 
     List<RouteElementBean> rel = new LinkedList<>();
@@ -908,8 +948,9 @@ public class PersistenceServiceTest {
   }
 
   @Test
-  public void testRemove_RouteBean() {
-    System.out.println("remove");
+  @Order(32)
+  public void testRemoveRouteBean() {
+    System.out.println("removeRouteBean");
     RouteBean routeBean = new RouteBean("[ct-5]->[ct-2]", "ct-5", "*", "ct-2", "*", "orange");
     PersistenceService instance = PersistenceFactory.getService();
 
@@ -927,6 +968,7 @@ public class PersistenceServiceTest {
   }
 
   @Test
+  @Order(33)
   public void testGetBlocks() {
     System.out.println("getBlocks");
     PersistenceService instance = PersistenceFactory.getService();
@@ -936,16 +978,21 @@ public class PersistenceServiceTest {
   }
 
   @Test
+  @Order(34)
   public void testGetBlock() {
     System.out.println("getBlock");
     String id = "bk-1";
     PersistenceService instance = PersistenceFactory.getService();
     BlockBean expResult = this.blocks.get(0);
     BlockBean result = instance.getBlock(id);
+
+    //expected:<BlockBean{id=bk-1, tileId=bk-1, description=Block 1, status=null, arrivalSuffix=null, plusSensorId=null, minSensorId=null, plusSignalId=null, minSignalId=null, locomotiveId=null}> 
+    //but was:<null>
     assertEquals(expResult, result);
   }
 
   @Test
+  @Order(35)
   public void testGetBlockByTileId() {
     System.out.println("getBlockByTileId");
     String tileId = "bk-2";
@@ -956,8 +1003,9 @@ public class PersistenceServiceTest {
   }
 
   @Test
-  public void testPersist_BlockBean() {
-    System.out.println("persist");
+  @Order(36)
+  public void testPersistBlockBean() {
+    System.out.println("persistBlockBean");
     BlockBean block = new BlockBean();
     block.setId("st-1");
     block.setTileId("st-1");
@@ -978,8 +1026,9 @@ public class PersistenceServiceTest {
   }
 
   @Test
-  public void testRemove_BlockBean() {
-    System.out.println("remove");
+  @Order(37)
+  public void testRemoveBlockBean() {
+    System.out.println("removeBlockBean");
     BlockBean block = new BlockBean();
     block.setId("si-3");
     block.setTileId("si-3");
@@ -1002,6 +1051,7 @@ public class PersistenceServiceTest {
   }
 
   @Test
+  @Order(38)
   public void testRemoveAllBlocks() {
     System.out.println("removeAllBlocks");
     PersistenceService instance = PersistenceFactory.getService();
@@ -1018,6 +1068,7 @@ public class PersistenceServiceTest {
   }
 
   @Test
+  @Order(39)
   public void testCommandStations() {
     System.out.println("commandStations");
     PersistenceService instance = PersistenceFactory.getService();

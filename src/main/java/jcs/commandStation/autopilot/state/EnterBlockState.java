@@ -31,8 +31,7 @@ class EnterBlockState extends DispatcherState implements SensorEventListener {
 
   private boolean locomotiveBraking = false;
   private boolean canAdvanceToNextState = false;
-  private String inSensorId;
-  //private Dispatcher dispatcher;
+  private Integer inSensorId;
 
   @Override
   DispatcherState execute(Dispatcher dispatcher) {
@@ -53,7 +52,6 @@ class EnterBlockState extends DispatcherState implements SensorEventListener {
       dispatcher.setWaitForSensorid(inSensorId);
 
       //Register this state as a SensorEventListener
-      //this.dispatcher = dispatcher;
       JCS.getJcsCommandStation().addSensorEventListener(this);
       Logger.trace("Destination block " + destinationBlock.getId() + " In SensorId: " + inSensorId);
 
@@ -67,19 +65,16 @@ class EnterBlockState extends DispatcherState implements SensorEventListener {
       destinationBlock.setBlockState(BlockBean.BlockState.INBOUND);
 
       PersistenceFactory.getService().persist(departureBlock);
-      dispatcher.showBlockState(departureBlock);
-
-      dispatcher.showRoute(route, Color.magenta);
-
       PersistenceFactory.getService().persist(destinationBlock);
+
+      dispatcher.showBlockState(departureBlock);
+      dispatcher.showRoute(route, Color.magenta);
       dispatcher.showBlockState(destinationBlock);
 
       //Switch the departure block sensors on again
-     //dispatcher.clearDepartureIgnoreEventHandlers();
-
-     //dispatcher.setOccupationSensorId(null);
+      //dispatcher.clearDepartureIgnoreEventHandlers();
+      //dispatcher.setOccupationSensorId(null);
       //dispatcher.setExitSensorId(null);
-
       Logger.trace("Now Waiting for the IN event from SensorId: " + this.inSensorId + " Running loco: " + locomotive.getName() + " [" + locomotive.getDecoderType().getDecoderType() + " (" + locomotive.getAddress() + ")] Direction: " + locomotive.getDirection().getDirection() + " current velocity: " + locomotive.getVelocity());
     }
 
@@ -107,15 +102,14 @@ class EnterBlockState extends DispatcherState implements SensorEventListener {
 
   @Override
   public void onSensorChange(SensorEvent sensorEvent) {
-    if (this.inSensorId.equals(sensorEvent.getId())) {
+    if (this.inSensorId.equals(sensorEvent.getSensorId())) {
       if (sensorEvent.isActive()) {
         this.canAdvanceToNextState = true;
-        Logger.trace("In Event from Sensor " + sensorEvent.getId());
+        Logger.trace("In Event from Sensor " + sensorEvent.getSensorId());
         synchronized (this) {
           this.notifyAll();
         }
       }
     }
   }
-
 }

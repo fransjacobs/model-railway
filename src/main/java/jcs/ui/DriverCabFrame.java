@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 frans.
+ * Copyright 2023 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import java.util.List;
 import javax.imageio.ImageIO;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
+import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import jcs.JCS;
@@ -39,15 +40,16 @@ import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.Direction;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.util.ImageUtil;
-import jcs.ui.util.MacOsAdapter;
 import jcs.util.RunUtil;
 import org.tinylog.Logger;
 
 /**
+ * Frame to use when you want to simply drive a Locomotive on the track.
  *
- * @author frans
  */
-public class DriverCabFrame extends javax.swing.JFrame implements LocomotiveDirectionEventListener {
+public class DriverCabFrame extends JFrame implements LocomotiveDirectionEventListener {
+
+  private static final long serialVersionUID = 6139691226868043462L;
 
   private List<LocomotiveBean> filteredLocos;
   List<String> locoNames;
@@ -309,7 +311,8 @@ public class DriverCabFrame extends javax.swing.JFrame implements LocomotiveDire
       if (plaf != null) {
         UIManager.setLookAndFeel(plaf);
       }
-    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
+    }
+    catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
       Logger.error(ex);
     }
 
@@ -320,12 +323,16 @@ public class DriverCabFrame extends javax.swing.JFrame implements LocomotiveDire
       DriverCabFrame driverFrame = new DriverCabFrame();
 
       if (RunUtil.isMacOSX()) {
-        MacOsAdapter.setMacOsProperties();
+        System.setProperty("apple.awt.application.name", "JCS");
+        System.setProperty("apple.laf.useScreenMenuBar", "true");
+        System.setProperty("apple.awt.application.appearance", "system");
+
         Taskbar taskbar = Taskbar.getTaskbar();
         try {
           BufferedImage img = ImageIO.read(DriverCabFrame.class.getResource(frameImageUrl));
           taskbar.setIconImage(img);
-        } catch (IOException | UnsupportedOperationException | SecurityException ex) {
+        }
+        catch (IOException | UnsupportedOperationException | SecurityException ex) {
           Logger.warn("Error: " + ex.getMessage());
         }
       }

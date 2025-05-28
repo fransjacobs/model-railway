@@ -48,19 +48,23 @@ public class StatusPanel extends javax.swing.JPanel implements MeasurementEventL
   @Override
   public void onMeasurement(MeasurementEvent event) {
 
-    switch (event.getCannel()) {
-      case 1:
-        this.currentLbl.setText(event.getFormattedValue());
-        break;
-      case 3:
-        this.voltageLbl.setText(event.getFormattedValue());
-        break;
-      case 4:
-        this.tempLbl.setText(event.getFormattedValue());
-      default:
-        break;
+    if (event.getMain() != null) {
+      this.currentLbl.setText(event.getMain().getDisplayValue() + " " + event.getMain().getUnit());
+    } else {
+      this.currentLbl.setText("-");
     }
 
+    if (event.getVolt() != null) {
+      this.voltageLbl.setText(event.getVolt().getDisplayValue() + " " + event.getVolt().getUnit());
+    } else {
+      this.voltageLbl.setText("-");
+    }
+
+    if (event.getTemp() != null) {
+      this.tempLbl.setText(event.getTemp().getDisplayValue() + " " + event.getTemp().getUnit());
+    } else {
+      this.tempLbl.setText("-");
+    }
   }
 
   /**
@@ -70,6 +74,10 @@ public class StatusPanel extends javax.swing.JPanel implements MeasurementEventL
   // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
   private void initComponents() {
 
+    jPanel1 = new javax.swing.JPanel();
+    connectedLbl = new javax.swing.JLabel();
+    virtualConnectionLbl = new javax.swing.JLabel();
+    autopilotLbl = new javax.swing.JLabel();
     measurePanel = new javax.swing.JPanel();
     voltageLbl = new javax.swing.JLabel();
     currentLbl = new javax.swing.JLabel();
@@ -79,6 +87,25 @@ public class StatusPanel extends javax.swing.JPanel implements MeasurementEventL
     setMinimumSize(new java.awt.Dimension(600, 45));
     setPreferredSize(new java.awt.Dimension(1200, 45));
     setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 0, 0));
+
+    jPanel1.setPreferredSize(new java.awt.Dimension(300, 27));
+    java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
+    flowLayout1.setAlignOnBaseline(true);
+    jPanel1.setLayout(flowLayout1);
+
+    connectedLbl.setText("con");
+    connectedLbl.setToolTipText("Connected");
+    jPanel1.add(connectedLbl);
+
+    virtualConnectionLbl.setText("virt");
+    virtualConnectionLbl.setToolTipText("Virtual Connection");
+    jPanel1.add(virtualConnectionLbl);
+
+    autopilotLbl.setText("Auto");
+    autopilotLbl.setToolTipText("Autopilot running");
+    jPanel1.add(autopilotLbl);
+
+    add(jPanel1);
 
     voltageLbl.setText("-");
     voltageLbl.setToolTipText("");
@@ -101,10 +128,14 @@ public class StatusPanel extends javax.swing.JPanel implements MeasurementEventL
 
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
+  private javax.swing.JLabel autopilotLbl;
+  private javax.swing.JLabel connectedLbl;
   private javax.swing.JLabel currentLbl;
+  private javax.swing.JPanel jPanel1;
   private javax.swing.JPanel jPanel2;
   private javax.swing.JPanel measurePanel;
   private javax.swing.JLabel tempLbl;
+  private javax.swing.JLabel virtualConnectionLbl;
   private javax.swing.JLabel voltageLbl;
   // End of variables declaration//GEN-END:variables
 

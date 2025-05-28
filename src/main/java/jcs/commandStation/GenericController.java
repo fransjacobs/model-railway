@@ -16,10 +16,10 @@
 package jcs.commandStation;
 
 import java.util.List;
-import jcs.commandStation.events.DisconnectionEventListener;
+import jcs.commandStation.entities.Device;
 import jcs.entities.CommandStationBean;
-import jcs.commandStation.entities.DeviceBean;
 import jcs.commandStation.entities.InfoBean;
+import jcs.commandStation.events.ConnectionEventListener;
 
 public interface GenericController {
 
@@ -35,15 +35,13 @@ public interface GenericController {
 
   boolean isVirtual();
 
-  void addDisconnectionEventListener(DisconnectionEventListener listener);
+  void addConnectionEventListener(ConnectionEventListener listener);
 
-  void removeDisconnectionEventListener(DisconnectionEventListener listener);
+  void removeConnectionEventListener(ConnectionEventListener listener);
 
   InfoBean getCommandStationInfo();
 
-  DeviceBean getDevice();
-
-  List<DeviceBean> getDevices();
+  List<Device> getDevices();
 
   String getIp();
 

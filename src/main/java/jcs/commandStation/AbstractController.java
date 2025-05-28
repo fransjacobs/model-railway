@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import jcs.commandStation.events.AccessoryEventListener;
-import jcs.commandStation.events.DisconnectionEventListener;
 import jcs.commandStation.events.LocomotiveDirectionEventListener;
 import jcs.commandStation.events.LocomotiveFunctionEventListener;
 import jcs.commandStation.events.LocomotiveSpeedEventListener;
@@ -28,6 +27,8 @@ import jcs.commandStation.events.PowerEventListener;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.CommandStationBean;
 import org.tinylog.Logger;
+import jcs.commandStation.events.ConnectionEventListener;
+import jcs.commandStation.events.MeasurementEventListener;
 
 public abstract class AbstractController implements GenericController {
 
@@ -42,7 +43,9 @@ public abstract class AbstractController implements GenericController {
   protected final List<LocomotiveDirectionEventListener> locomotiveDirectionEventListeners;
   protected final List<LocomotiveSpeedEventListener> locomotiveSpeedEventListeners;
 
-  protected final List<DisconnectionEventListener> disconnectionEventListeners;
+  protected final List<ConnectionEventListener> connectionEventListeners;
+
+  protected final List<MeasurementEventListener> measurementEventListeners;
 
   protected ExecutorService executor;
 
@@ -70,7 +73,9 @@ public abstract class AbstractController implements GenericController {
     locomotiveDirectionEventListeners = new LinkedList<>();
     locomotiveSpeedEventListeners = new LinkedList<>();
 
-    disconnectionEventListeners = new LinkedList<>();
+    connectionEventListeners = new LinkedList<>();
+
+    measurementEventListeners = new LinkedList<>();
 
     if (this.commandStationBean != null) {
       this.virtual = commandStationBean.isVirtual();
@@ -101,13 +106,13 @@ public abstract class AbstractController implements GenericController {
   }
 
   @Override
-  public void addDisconnectionEventListener(DisconnectionEventListener listener) {
-    this.disconnectionEventListeners.add(listener);
+  public void addConnectionEventListener(ConnectionEventListener listener) {
+    this.connectionEventListeners.add(listener);
   }
 
   @Override
-  public void removeDisconnectionEventListener(DisconnectionEventListener listener) {
-    this.disconnectionEventListeners.remove(listener);
+  public void removeConnectionEventListener(ConnectionEventListener listener) {
+    this.connectionEventListeners.remove(listener);
   }
 
   public boolean isPower() {
@@ -160,6 +165,14 @@ public abstract class AbstractController implements GenericController {
 
   public void removeLocomotiveSpeedEventListener(LocomotiveSpeedEventListener listener) {
     this.locomotiveSpeedEventListeners.remove(listener);
+  }
+
+  public void addMeasurementEventListener(MeasurementEventListener listener) {
+    this.measurementEventListeners.add(listener);
+  }
+
+  public void removeMeasurementEventListener(MeasurementEventListener listener) {
+    this.measurementEventListeners.remove(listener);
   }
 
   protected void pause(long millis) {

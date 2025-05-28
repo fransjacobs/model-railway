@@ -1,12 +1,15 @@
-delete from blocks;
-delete from jcs_properties;
-delete from locomotive_functions;
-delete from locomotives;
 delete from route_elements;
 delete from routes;
+delete from blocks;
 delete from tiles;
+
+commit;
+
+delete from locomotive_functions;
+delete from locomotives;
 delete from sensors;
 delete from accessories;
+delete from jcs_properties;
 
 commit;
 
@@ -20,9 +23,9 @@ insert into jcs_properties(p_key,p_value) values
 
 commit;
 
-insert into sensors (id,name,device_id,contact_id,status,previous_status,millis,last_updated) values
-	 ('65-1', 'M1',65,1,0,0,0,NULL),
-	 ('65-2', 'M2',65,2,1,1,0,NULL);
+insert into sensors (id,name,device_id,contact_id,status,previous_status,millis,last_updated,node_id, command_station_id, bus_nr) values
+	 (1, 'M1',65,1,0,0,0,null,null,'marklin.cs',1),
+	 (2, 'M2',65,2,1,1,0,null,null,'marklin.cs',1);
 	
 commit;
 
@@ -76,8 +79,8 @@ insert into tiles (id,tile_type,orientation,direction,x,y,signal_type,accessory_
 	 ('bk-2','Block','East','Center',420,140,null,null,null),
 	 ('ct-2','Curved','East','Center',260,140,null,null,null),
 	 ('ct-5','Curved','South','Center',180,380,null,null,null),
-	 ('se-5','Sensor','North','Center',340,380,null,NULL,'65-2'),
-	 ('se-6','Sensor','West','Center',500,380,null,null,'65-1'),
+	 ('se-5','Sensor','North','Center',340,380,null,NULL,2),
+	 ('se-6','Sensor','West','Center',500,380,null,null,1),
 	 ('si-3','Signal','East','Center',300,140,null,'15',null),
 	 ('st-1','Straight','East','Center',300,180,null,null,null),
 	 ('sw-1','Switch','West','Left',260,180,null,'2',null),

@@ -50,7 +50,7 @@ public class StateMachineStepByStepTest {
   private Dispatcher dispatcher;
 
   public StateMachineStepByStepTest() {
-    System.setProperty("persistenceService", "jcs.persistence.H2PersistenceService");
+    System.setProperty("persistenceService", "jcs.persistence.TestH2PersistenceService");
     //Switch the Virtual Simulator OFF as it will interfeare with this step test
     System.setProperty("do.not.simulate.virtual.drive", "true");
     System.setProperty("state.machine.stepTest", "true");
@@ -77,14 +77,14 @@ public class StateMachineStepByStepTest {
       ps.persist(route);
     }
     JCS.getJcsCommandStation().switchPower(true);
-    AutoPilot.startAutoMode();
+    AutoPilot.runAutoPilot(true);
     Logger.info("=========================== setUp done..............");
   }
 
   @AfterEach
   public void tearDown() {
     Logger.info("=========================== Teardown..............");
-    AutoPilot.stopAutoMode();
+    AutoPilot.runAutoPilot(false);
     long now = System.currentTimeMillis();
     long start = now;
     long timeout = now + 10000;
@@ -179,7 +179,7 @@ public class StateMachineStepByStepTest {
     }
   }
 
-  //@Test
+  @Test
   @Order(1)
   public void testBk1ToBk4() {
     //StateMachine functionality test, runs in 1 single thread.
@@ -201,7 +201,7 @@ public class StateMachineStepByStepTest {
     BlockBean block4 = ps.getBlockByTileId("bk-4");
     assertEquals(BlockBean.BlockState.FREE, block4.getBlockState());
 
-    StateMachineThread stateMachine = dispatcher.getStateMachineThread();
+    StateMachine stateMachine = dispatcher.getStateMachine();
 
     //Start from bk-1
     assertEquals(NS_DHG_6505, block1.getLocomotiveId());
@@ -211,7 +211,7 @@ public class StateMachineStepByStepTest {
 
     //Thread should NOT run!
     assertFalse(stateMachine.isThreadRunning());
-    assertFalse(stateMachine.isEnableAutomode());
+    assertFalse(stateMachine.isAutomodeEnabled());
     assertEquals("IdleState", stateMachine.getDispatcherStateName());
 
     //Execute IdleState
@@ -222,7 +222,7 @@ public class StateMachineStepByStepTest {
     //Departure
     //Automode should be enabled
     stateMachine.setEnableAutomode(true);
-    assertTrue(stateMachine.isEnableAutomode());
+    assertTrue(stateMachine.isAutomodeEnabled());
 
     //Execute IdleState again
     stateMachine.handleState();
@@ -277,8 +277,8 @@ public class StateMachineStepByStepTest {
     assertEquals("StartState", stateMachine.getDispatcherStateName());
 
     //Now lets Toggle the enter sensor
-    String enterSensorId = dispatcher.getEnterSensorId();
-    assertEquals("0-0013", enterSensorId);
+    Integer enterSensorId = dispatcher.getEnterSensorId();
+    assertEquals(13, enterSensorId);
     //Check if the enterSensor is registered a a "knownEvent" else we get a Ghost!
     assertTrue(AutoPilot.isSensorHandlerRegistered(enterSensorId));
 
@@ -311,8 +311,8 @@ public class StateMachineStepByStepTest {
     assertEquals("EnterBlockState", stateMachine.getDispatcherStateName());
 
     //Now lets Toggle the in sensor
-    String inSensorId = dispatcher.getInSensorId();
-    assertEquals("0-0012", inSensorId);
+    Integer inSensorId = dispatcher.getInSensorId();
+    assertEquals(12, inSensorId);
     //Check if the inSensor is registered a a "knownEvent" else we get a Ghost!
     assertTrue(AutoPilot.isSensorHandlerRegistered(inSensorId));
 
@@ -362,7 +362,7 @@ public class StateMachineStepByStepTest {
     assertEquals("IdleState", stateMachine.getDispatcherStateName());
   }
 
-  //@Test
+  @Test
   @Order(2)
   public void testFromBk1ToBk4andViceVersa() {
     Logger.info("fromBk1ToBk4andViceVersa");
@@ -385,7 +385,7 @@ public class StateMachineStepByStepTest {
     block4.setMinWaitTime(3);
     ps.persist(block4);
 
-    StateMachineThread stateMachine = dispatcher.getStateMachineThread();
+    StateMachine stateMachine = dispatcher.getStateMachine();
 
     //Start from bk-1
     assertEquals(NS_DHG_6505, block1.getLocomotiveId());
@@ -395,7 +395,7 @@ public class StateMachineStepByStepTest {
 
     //Thread should NOT run!
     assertFalse(stateMachine.isThreadRunning());
-    assertFalse(stateMachine.isEnableAutomode());
+    assertFalse(stateMachine.isAutomodeEnabled());
     assertEquals("IdleState", stateMachine.getDispatcherStateName());
 
     //Execute IdleState
@@ -406,7 +406,7 @@ public class StateMachineStepByStepTest {
     //Departure
     //Automode should be enabled
     stateMachine.setEnableAutomode(true);
-    assertTrue(stateMachine.isEnableAutomode());
+    assertTrue(stateMachine.isAutomodeEnabled());
 
     //Execute IdleState again
     stateMachine.handleState();
@@ -443,20 +443,20 @@ public class StateMachineStepByStepTest {
 
     assertTrue(JCS.getJcsCommandStation().isPowerOn());
 
-    String occupancySensorId = dispatcher.getOccupationSensorId();
-    String exitSensorId = dispatcher.getExitSensorId();
-    String enterSensorId = dispatcher.getEnterSensorId();
-    String inSensorId = dispatcher.getInSensorId();
+    Integer occupancySensorId = dispatcher.getOccupationSensorId();
+    Integer exitSensorId = dispatcher.getExitSensorId();
+    Integer enterSensorId = dispatcher.getEnterSensorId();
+    Integer inSensorId = dispatcher.getInSensorId();
 
     assertNotNull(occupancySensorId);
     assertNotNull(exitSensorId);
     assertNotNull(enterSensorId);
     assertNotNull(inSensorId);
 
-    assertEquals("0-0001", occupancySensorId);
-    assertEquals("0-0002", exitSensorId);
-    assertEquals("0-0013", enterSensorId);
-    assertEquals("0-0012", inSensorId);
+    assertEquals(1, occupancySensorId);
+    assertEquals(2, exitSensorId);
+    assertEquals(13, enterSensorId);
+    assertEquals(12, inSensorId);
 
     //Execute the StartState
     stateMachine.handleState();
@@ -476,7 +476,7 @@ public class StateMachineStepByStepTest {
     assertEquals("StartState", stateMachine.getDispatcherStateName());
 
     //Now lets Toggle the enter sensor
-    assertEquals("0-0013", enterSensorId);
+    assertEquals(13, enterSensorId);
     //Check if the enterSensor is registered a a "knownEvent" else we get a Ghost!
     assertTrue(AutoPilot.isSensorHandlerRegistered(enterSensorId));
 
@@ -509,7 +509,7 @@ public class StateMachineStepByStepTest {
     assertEquals("EnterBlockState", stateMachine.getDispatcherStateName());
 
     //Now lets Toggle the in sensor
-    assertEquals("0-0012", inSensorId);
+    assertEquals(12, inSensorId);
     //Check if the inSensor is registered a a "knownEvent" else we get a Ghost!
     assertTrue(AutoPilot.isSensorHandlerRegistered(inSensorId));
 
@@ -599,10 +599,10 @@ public class StateMachineStepByStepTest {
     assertNotNull(enterSensorId);
     assertNotNull(inSensorId);
 
-    assertEquals("0-0001", inSensorId);
-    assertEquals("0-0002", enterSensorId);
-    assertEquals("0-0013", exitSensorId);
-    assertEquals("0-0012", occupancySensorId);
+    assertEquals(1, inSensorId);
+    assertEquals(2, enterSensorId);
+    assertEquals(13, exitSensorId);
+    assertEquals(12, occupancySensorId);
 
     assertEquals("StartState", stateMachine.getDispatcherStateName());
 
@@ -695,7 +695,7 @@ public class StateMachineStepByStepTest {
 
     //Automode OFF!
     stateMachine.setEnableAutomode(false);
-    assertFalse(stateMachine.isEnableAutomode());
+    assertFalse(stateMachine.isAutomodeEnabled());
 
     //Execute the WaitState
     stateMachine.handleState();
@@ -703,6 +703,7 @@ public class StateMachineStepByStepTest {
     assertEquals("IdleState", stateMachine.getDispatcherStateName());
   }
 
+  //TODO !!!!!!
   //@Test
   @Order(3)
   public void testFromBk1ToBk4Gost() {
@@ -722,7 +723,7 @@ public class StateMachineStepByStepTest {
     BlockBean block4 = ps.getBlockByTileId("bk-4");
     assertEquals(BlockBean.BlockState.FREE, block4.getBlockState());
 
-    StateMachineThread stateMachine = dispatcher.getStateMachineThread();
+    StateMachine stateMachine = dispatcher.getStateMachine();
 
     //Start from bk-1
     assertEquals(NS_DHG_6505, block1.getLocomotiveId());
@@ -732,7 +733,7 @@ public class StateMachineStepByStepTest {
 
     //Thread should NOT run!
     assertFalse(stateMachine.isThreadRunning());
-    assertFalse(stateMachine.isEnableAutomode());
+    assertFalse(stateMachine.isAutomodeEnabled());
     assertEquals("IdleState", stateMachine.getDispatcherStateName());
 
     //Execute IdleState
@@ -743,7 +744,7 @@ public class StateMachineStepByStepTest {
     //Departure
     //Automode should be enabled
     stateMachine.setEnableAutomode(true);
-    assertTrue(stateMachine.isEnableAutomode());
+    assertTrue(stateMachine.isAutomodeEnabled());
 
     //Execute IdleState again
     stateMachine.handleState();
@@ -800,8 +801,8 @@ public class StateMachineStepByStepTest {
     //Now lets Toggle and 'unexpected' sensor, which should cause a Ghost!
     assertTrue(JCS.getJcsCommandStation().isPowerOn());
 
-    String inSensorId = dispatcher.getInSensorId();
-    assertNotEquals("0-0013", inSensorId);
+    Integer inSensorId = dispatcher.getInSensorId();
+    assertNotEquals(13, inSensorId);
 
     //Check if the enterSensor is registered a a "knownEvent" else we get a Ghost!
     assertFalse(AutoPilot.isSensorHandlerRegistered(inSensorId));
@@ -839,7 +840,7 @@ public class StateMachineStepByStepTest {
     BlockBean block4 = ps.getBlockByTileId("bk-4");
     assertEquals(BlockBean.BlockState.OUT_OF_ORDER, block4.getBlockState());
 
-    StateMachineThread instance = dispatcher.getStateMachineThread();
+    StateMachine instance = dispatcher.getStateMachine();
 
     //Start from bk-2
     assertEquals(NS_1631, block2.getLocomotiveId());
@@ -849,7 +850,7 @@ public class StateMachineStepByStepTest {
     assertNull(dispatcher.getRouteBean());
 
     assertFalse(instance.isThreadRunning());
-    assertFalse(instance.isEnableAutomode());
+    assertFalse(instance.isAutomodeEnabled());
     assertEquals("IdleState", instance.getDispatcherStateName());
 
     //Execute IdleState
@@ -872,7 +873,7 @@ public class StateMachineStepByStepTest {
 
     //Automode ON!
     instance.setEnableAutomode(true);
-    assertTrue(instance.isEnableAutomode());
+    assertTrue(instance.isAutomodeEnabled());
     assertFalse(instance.isThreadRunning());
 
     block1 = ps.getBlockByTileId("bk-1");
@@ -965,7 +966,7 @@ public class StateMachineStepByStepTest {
     assertNull(dispatcher.getRouteBean());
     assertNull(dispatcher.getDestinationBlock());
 
-    assertFalse(instance.isEnableAutomode());
+    assertFalse(instance.isAutomodeEnabled());
 
     block1 = ps.getBlockByTileId("bk-1");
     assertEquals(BlockBean.BlockState.OUT_OF_ORDER, block1.getBlockState());

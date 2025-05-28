@@ -15,6 +15,7 @@
  */
 package jcs.ui.layout;
 
+import jcs.ui.layout.tiles.TileCache;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Point;
@@ -32,8 +33,7 @@ import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
 import jcs.entities.TileBean.Orientation;
 import jcs.persistence.PersistenceFactory;
-import jcs.ui.layout.events.TileEvent;
-import jcs.ui.layout.tiles.TileFactory;
+import jcs.ui.layout.tiles.Tile;
 import org.tinylog.Logger;
 
 /**
@@ -74,16 +74,16 @@ public class RoutesDialog extends javax.swing.JDialog {
       this.setIconImage(new ImageIcon(iconUrl).getImage());
     }
 
-    if (this.readonly) {
-      this.routeBtn.setEnabled(!readonly);
-      this.routeBtn.setVisible(!readonly);
+    if (readonly) {
+      routeBtn.setEnabled(!readonly);
+      routeBtn.setVisible(!readonly);
 
-      this.deleteRoutesBtn.setEnabled(!readonly);
-      this.deleteRoutesBtn.setVisible(!readonly);
+      deleteRoutesBtn.setEnabled(!readonly);
+      deleteRoutesBtn.setVisible(!readonly);
     }
 
-    if (this.defaultRouteColor == null) {
-      this.defaultRouteColor = Color.darkGray;
+    if (defaultRouteColor == null) {
+      defaultRouteColor = Tile.DEFAULT_ROUTE_TRACK_COLOR;
     }
   }
 
@@ -119,8 +119,16 @@ public class RoutesDialog extends javax.swing.JDialog {
   private void resetRoute(List<RouteElementBean> routeElements) {
     for (RouteElementBean re : routeElements) {
       String tileId = re.getTileId();
-      TileEvent tileEvent = new TileEvent(tileId, false);
-      TileFactory.fireTileEventListener(tileEvent);
+      Tile tile = TileCache.findTile(tileId);
+
+      if (tile.isBlock()) {
+        tile.setBlockState(BlockState.FREE);
+      }
+      if (tile.isJunction()) {
+        tile.setRouteValue(AccessoryBean.AccessoryValue.OFF);
+      }
+
+      tile.setShowRoute(false);
     }
   }
 
@@ -131,21 +139,22 @@ public class RoutesDialog extends javax.swing.JDialog {
       String tileId = re.getTileId();
       Orientation incomingSide = re.getIncomingOrientation();
 
-      TileEvent tileEvent;
+      Tile tile = TileCache.findTile(tileId);
+      tile.setIncomingSide(incomingSide);
+      tile.setTrackRouteColor(defaultRouteColor);
+
       if (re.isTurnout()) {
         AccessoryBean.AccessoryValue routeState = re.getAccessoryValue();
-        tileEvent = new TileEvent(tileId, true, incomingSide, routeState);
+        tile.setRouteValue(routeState);
       } else if (re.isBlock()) {
         if (re.getTileId().equals(routeBean.getFromTileId())) {
           //departure block
-          tileEvent = new TileEvent(tileId, true, BlockState.OUTBOUND);
+          tile.setBlockState(BlockState.OUTBOUND);
         } else {
-          tileEvent = new TileEvent(tileId, true, BlockState.INBOUND);
+          tile.setBlockState(BlockState.INBOUND);
         }
-      } else {
-        tileEvent = new TileEvent(tileId, true, incomingSide);
       }
-      TileFactory.fireTileEventListener(tileEvent);
+      tile.setShowRoute(true);
     }
   }
 

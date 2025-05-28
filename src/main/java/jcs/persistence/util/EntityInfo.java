@@ -54,11 +54,11 @@ public class EntityInfo<T> {
   List<String> displayColumnList;
 
   public EntityInfo(Class<?> clazz) {
-    this(clazz, Collections.EMPTY_LIST, false);
+    this(clazz, Collections.<String>emptyList(), false);
   }
 
   public EntityInfo(Class<?> clazz, boolean ignoreTransient) {
-    this(clazz, Collections.EMPTY_LIST, ignoreTransient);
+    this(clazz, Collections.<String>emptyList(), ignoreTransient);
   }
 
   public EntityInfo(Class<?> clazz, String[] displayColumns) {

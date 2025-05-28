@@ -15,44 +15,72 @@
  */
 package jcs.ui.layout.tiles;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Graphics2D;
 import java.awt.Point;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
+import javax.swing.UIManager;
 import jcs.commandStation.events.AccessoryEvent;
 import jcs.commandStation.events.AccessoryEventListener;
 import jcs.entities.AccessoryBean.AccessoryValue;
-import static jcs.entities.AccessoryBean.AccessoryValue.GREEN;
-import static jcs.entities.AccessoryBean.AccessoryValue.RED;
 import jcs.entities.TileBean;
+import jcs.entities.TileBean.Direction;
 import static jcs.entities.TileBean.Direction.LEFT;
 import static jcs.entities.TileBean.Direction.RIGHT;
+import jcs.entities.TileBean.Orientation;
+import static jcs.entities.TileBean.Orientation.NORTH;
+import static jcs.entities.TileBean.Orientation.SOUTH;
+import static jcs.entities.TileBean.Orientation.WEST;
+import jcs.entities.TileBean.TileType;
+import jcs.ui.layout.tiles.ui.SwitchUI;
+import jcs.ui.layout.tiles.ui.TileUI;
 
-public class Switch extends AbstractTile implements Tile, AccessoryEventListener {
+/**
+ * Representation of a Switch or Turnout on the layout
+ */
+public class Switch extends Tile implements AccessoryEventListener {
 
-  protected AccessoryValue accessoryValue;
-  protected AccessoryValue routeValue;
-  protected Color routeColor;
-
-  Switch(TileBean tileBean) {
-    super(tileBean);
-    this.width = DEFAULT_WIDTH;
-    this.height = DEFAULT_HEIGHT;
+  public Switch(Orientation orientation, Direction direction, Point center) {
+    this(orientation, direction, center.x, center.y);
   }
 
-  Switch(Orientation orientation, Direction direction, int x, int y) {
-    this(orientation, direction, new Point(x, y));
+  public Switch(Orientation orientation, Direction direction, int x, int y) {
+    this(orientation, direction, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT);
   }
 
-  Switch(Orientation orientation, Direction direction, Point center) {
-    super(orientation, direction, center.x, center.y);
-    this.width = DEFAULT_WIDTH;
-    this.height = DEFAULT_HEIGHT;
-    this.type = TileType.SWITCH.getTileType();
+  public Switch(Orientation orientation, Direction direction, int x, int y, int width, int height) {
+    this(TileType.SWITCH, orientation, direction, x, y, width, height);
+  }
+
+  protected Switch(TileType tileType, Orientation orientation, Direction direction, int x, int y, int width, int height) {
+    super(tileType, orientation, direction, x, y, width, height);
+    setModel(new DefaultTileModel(orientation));
+    initUI();
+  }
+
+  public Switch(TileBean tileBean) {
+    this(tileBean, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+  }
+
+  protected Switch(TileBean tileBean, int width, int height) {
+    super(tileBean, width, height);
+    setModel(new DefaultTileModel(tileBean.getOrientation()));
+    initUI();
+  }
+
+  private void initUI() {
+    updateUI();
+  }
+
+  @Override
+  public String getUIClassID() {
+    return SwitchUI.UI_CLASS_ID;
+  }
+
+  @Override
+  public void updateUI() {
+    UIManager.put(TileUI.UI_CLASS_ID, "jcs.ui.layout.tiles.ui.SwitchUI");
+    setUI((TileUI) UIManager.getUI(this));
+    invalidate();
   }
 
   @Override
@@ -156,137 +184,9 @@ public class Switch extends AbstractTile implements Tile, AccessoryEventListener
   }
 
   @Override
-  public Set<Point> getAllPoints() {
-    Set<Point> aps = new HashSet<>();
-    aps.add(getCenter());
-    return aps;
-  }
-
-  public AccessoryValue getAccessoryValue() {
-    if (this.accessoryValue == null) {
-      return AccessoryValue.OFF;
-    } else {
-      return accessoryValue;
-    }
-  }
-
-  public void setValue(AccessoryValue value) {
-    this.accessoryValue = value;
-  }
-
-  public AccessoryValue getRouteValue() {
-    if (routeValue == null) {
-      return AccessoryValue.OFF;
-    } else {
-      return routeValue;
-    }
-  }
-
-  public void setRouteValue(AccessoryValue value) {
-    this.routeValue = value;
-  }
-
-  protected void renderStraight(Graphics2D g2, Color color) {
-    int xx, yy, w, h;
-    xx = 0;
-    yy = 170;
-    w = RENDER_WIDTH;
-    h = 60;
-
-    g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
-    g2.setPaint(color);
-
-    g2.fillRect(xx, yy, w, h);
-  }
-
-  protected void renderDiagonal(Graphics2D g2, Color color) {
-    int[] xPoints, yPoints;
-    if (Direction.RIGHT.equals(getDirection())) {
-      xPoints = new int[]{400, 400, 170, 230};
-      yPoints = new int[]{170, 230, 0, 0};
-    } else {
-      xPoints = new int[]{400, 400, 170, 230};
-      yPoints = new int[]{230, 170, 400, 400};
-    }
-
-    g2.setStroke(new BasicStroke(1, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-    g2.setPaint(color);
-    g2.fillPolygon(xPoints, yPoints, xPoints.length);
-  }
-
-  protected void renderRouteStraight(Graphics2D g2, Color color) {
-    int xx, yy, w, h;
-    xx = 0;
-    yy = 190;
-    w = RENDER_WIDTH;
-    h = 20;
-
-    g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
-    g2.setPaint(color);
-
-    g2.fillRect(xx, yy, w, h);
-  }
-
-  protected void renderRouteDiagonal(Graphics2D g2, Color color) {
-    int[] xPoints, yPoints;
-    if (Direction.RIGHT.equals(getDirection())) {
-      xPoints = new int[]{400, 400, 190, 210};
-      yPoints = new int[]{190, 210, 0, 0};
-    } else {
-      xPoints = new int[]{400, 400, 190, 210};
-      yPoints = new int[]{210, 190, 400, 400};
-    }
-
-    g2.setStroke(new BasicStroke(1, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-    g2.setPaint(color);
-
-    g2.fillPolygon(xPoints, yPoints, xPoints.length);
-  }
-
-  @Override
-  public void renderTile(Graphics2D g2) {
-    if (accessoryValue == null) {
-      this.accessoryValue = AccessoryValue.OFF;
-    }
-
-    switch (accessoryValue) {
-      case RED -> {
-        renderStraight(g2, trackColor);
-        renderDiagonal(g2, Color.red);
-      }
-      case GREEN -> {
-        renderDiagonal(g2, trackColor);
-        renderStraight(g2, Color.green);
-      }
-      default -> {
-        renderStraight(g2, trackColor);
-        renderDiagonal(g2, trackColor);
-      }
-    }
-  }
-
-  @Override
-  public void renderTileRoute(Graphics2D g2) {
-    if (routeValue == null) {
-      routeValue = AccessoryValue.OFF;
-    }
-    switch (routeValue) {
-      case RED -> {
-        renderRouteDiagonal(g2, trackRouteColor);
-      }
-      case GREEN -> {
-        renderRouteStraight(g2, trackRouteColor);
-      }
-      default -> {
-      }
-    }
-  }
-
-  @Override
   public void onAccessoryChange(AccessoryEvent event) {
-    if (this.getAccessoryBean() != null && event.isEventFor(accessoryBean)) {
-      setValue(event.getAccessoryBean().getAccessoryValue());
-      repaintTile();
+    if (getAccessoryBean() != null && event.isEventFor(accessoryBean)) {
+      setAccessoryValue(event.getAccessoryBean().getAccessoryValue());
     }
   }
 

@@ -21,83 +21,96 @@ import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 
-import java.io.Serializable;
 import java.util.Date;
 import java.util.Objects;
 
 @Table(name = "sensors", indexes = {
   @Index(name = "sens_devi_cont_idx", columnList = "device_id, contact_id", unique = true)})
-public class SensorBean implements Serializable {
+public class SensorBean {
 
-  private String id;
+  private Integer id;
   private String name;
   private Integer deviceId;
   private Integer contactId;
   private Integer status;
   private Integer previousStatus;
   private Integer millis;
-  private Date lastUpdated;
+  private Long lastUpdated;
+  private Integer nodeId;
+  private String commandStationId;
+  private Integer busNr;
 
   public SensorBean() {
-    this(null, null, null, null, null, null, null, null);
+    this(null, null, null, null, null, null, null, 0);
   }
 
-  public SensorBean(Integer deviceId, Integer contactId, Integer status) {
-    this(null, null, deviceId, contactId, status, null, null, null);
+  public SensorBean(Integer id, Integer deviceId, Integer contactId, Integer nodeId, Integer status, Integer previousStatus, String commandStationId, Integer busNr) {
+    this(id, null, deviceId, contactId, nodeId, status, previousStatus, (Integer) null, (Long) null, commandStationId, busNr);
   }
 
-  public SensorBean(Integer deviceId, Integer contactId, Integer status, Integer previousStatus, Integer millis, Date lastUpdated) {
-    this(null, null, deviceId, contactId, status, previousStatus, millis, lastUpdated);
+  public SensorBean(Integer id, String name, Integer deviceId, Integer contactId, Integer nodeId, Integer status, Integer previousStatus, Integer millis, String commandStationId, Integer busNr) {
+    this(id, name, deviceId, contactId, nodeId, status, previousStatus, millis, (Long) null, commandStationId, busNr);
   }
 
-  public SensorBean(String name, Integer deviceId, Integer contactId) {
-    this(null, name, deviceId, contactId, null, null, null, null);
+  public SensorBean(Integer id, String name, Integer deviceId, Integer contactId, Integer nodeId, Integer status, Integer previousStatus, Integer millis, Date lastUpdated, String commandStationId, Integer busNr) {
+    this(id, name, deviceId, contactId, nodeId, status, previousStatus, millis, (lastUpdated != null ? lastUpdated.getTime() : null), commandStationId, busNr);
   }
 
-  public SensorBean(String name, Integer deviceId, Integer contactId, Integer status, Integer previousStatus, Integer millis, Date lastUpdated) {
-    this(null, name, deviceId, contactId, status, previousStatus, millis, lastUpdated);
-  }
-
-  public SensorBean(String id, String name, Integer deviceId, Integer contactId, Integer status, Integer previousStatus, Integer millis, Date lastUpdated) {
+  public SensorBean(Integer id, String name, Integer deviceId, Integer contactId, Integer nodeId, Integer status, Integer previousStatus, Integer millis, Long lastUpdated, String commandStationId, Integer busNr) {
     this.id = id;
     this.name = name;
     this.status = status;
     this.previousStatus = previousStatus;
     this.deviceId = deviceId;
     this.contactId = contactId;
+    this.nodeId = nodeId;
     this.millis = millis;
     this.lastUpdated = lastUpdated;
+    this.commandStationId = commandStationId;
+    this.busNr = busNr;
+
+    //TODO!
+    if (name == null) {
+      //this.name = generateName();
+    }
+  }
+
+  private String generateNameOld() {
+    if (deviceId != null && contactId != null && nodeId != null) {
+
+      String dn = deviceId.toString();
+      int dnl = dn.length();
+      for (int x = 0; x < 2 - dnl; x++) {
+        dn = "0" + dn;
+      }
+
+      String cn = contactId.toString();
+      int cnl = cn.length();
+      for (int x = 0; x < 4 - cnl; x++) {
+        cn = "0" + cn;
+      }
+
+      return dn + "-" + cn;
+    } else {
+      return null;
+    }
   }
 
   @Id
   @Column(name = "id", nullable = false)
-  public String getId() {
-    if (id == null) {
-      id = generateId();
-    }
+  public Integer getId() {
     return id;
   }
 
-  private String generateId() {
-    //Format the id start with the device then "-"
-    //than a 4 char contact id
-    if (contactId == null) {
-      return null;
-    }
-    String cn = contactId.toString();
-    int cnl = cn.length();
-    for (int x = 0; x < 4 - cnl; x++) {
-      cn = "0" + cn;
-    }
-    return deviceId + "-" + cn;
-  }
-
-  public void setId(String id) {
+  public void setId(Integer id) {
     this.id = id;
   }
 
   @Column(name = "name", length = 255, nullable = false)
   public String getName() {
+    if (name == null) {
+      //name = generateName();
+    }
     return name;
   }
 
@@ -123,6 +136,15 @@ public class SensorBean implements Serializable {
     this.contactId = contactId;
   }
 
+  @Column(name = "node_id")
+  public Integer getNodeId() {
+    return nodeId;
+  }
+
+  public void setNodeId(Integer nodeId) {
+    this.nodeId = nodeId;
+  }
+
   @Column(name = "status")
   public Integer getStatus() {
     return status;
@@ -141,25 +163,41 @@ public class SensorBean implements Serializable {
     this.previousStatus = previousStatus;
   }
 
+  @Column(name = "command_station_id", length = 255, nullable = false)
+  public String getCommandStationId() {
+    return commandStationId;
+  }
+
+  public void setCommandStationId(String commandStationId) {
+    this.commandStationId = commandStationId;
+  }
+
+  @Column(name = "bus_nr", nullable = false)
+  public Integer getBusNr() {
+    return busNr;
+  }
+
+  public void setBusNr(Integer busNr) {
+    this.busNr = busNr;
+  }
+
   @Transient
   public void toggle() {
     if (status == null) {
       status = 0;
     }
     previousStatus = status;
-    Date lastChanged = this.lastUpdated;
+    Long lastChanged = lastUpdated;
     if (lastChanged == null) {
-      lastChanged = new Date();
+      lastChanged = System.currentTimeMillis();
     }
     if (status == 0) {
       status = 1;
     } else {
       status = 0;
     }
-    lastUpdated = new Date();
-    long prev = lastChanged.getTime();
-    long now = lastUpdated.getTime();
-    Long m = (now - prev) / 10;
+    lastUpdated = System.currentTimeMillis();
+    Long m = (lastUpdated - lastChanged) / 10;
     this.millis = m.intValue();
   }
 
@@ -172,13 +210,34 @@ public class SensorBean implements Serializable {
     this.millis = millis;
   }
 
-  @Column(name = "last_updated")
-  public Date getLastUpdated() {
-    return lastUpdated;
+  @Transient
+  public Long getLastUpdatedMillis() {
+    return this.lastUpdated;
   }
 
-  public void setLastUpdated(Date lastUpdated) {
-    this.lastUpdated = lastUpdated;
+  public void setLastUpdatedMillis(Long updatedOn) {
+    this.lastUpdated = updatedOn;
+  }
+
+  @Column(name = "last_updated")
+  public Date getLastUpdated() {
+    if (lastUpdated != null) {
+      return new Date(lastUpdated);
+    } else {
+      return null;
+    }
+  }
+
+  public void setLastUpdated(Date updatedOn) {
+    Long prevUpdated = lastUpdated;
+    if (updatedOn != null) {
+      lastUpdated = updatedOn.getTime();
+    }
+
+    if (lastUpdated != null && prevUpdated != null) {
+      Long m = (lastUpdated - prevUpdated) / 10;
+      millis = m.intValue();
+    }
   }
 
   @Transient
@@ -191,20 +250,26 @@ public class SensorBean implements Serializable {
   }
 
   public void setActive(boolean active) {
-    this.status = active ? 1 : 0;
+    previousStatus = status;
+    status = active ? 1 : 0;
   }
 
   public void setPreviousActive(boolean active) {
-    this.previousStatus = active ? 1 : 0;
+    previousStatus = active ? 1 : 0;
   }
 
   @Transient
   public boolean isPreviousActive() {
-    if (this.previousStatus != null) {
-      return this.previousStatus > 0;
+    if (previousStatus != null) {
+      return previousStatus > 0;
     } else {
       return false;
     }
+  }
+
+  @Transient
+  public boolean hasChanged() {
+    return !status.equals(previousStatus);
   }
 
   @Override
@@ -214,10 +279,13 @@ public class SensorBean implements Serializable {
     hash = 41 * hash + Objects.hashCode(this.name);
     hash = 41 * hash + Objects.hashCode(this.deviceId);
     hash = 41 * hash + Objects.hashCode(this.contactId);
+    hash = 41 * hash + Objects.hashCode(this.nodeId);
     hash = 41 * hash + Objects.hashCode(this.status);
     hash = 41 * hash + Objects.hashCode(this.previousStatus);
     hash = 41 * hash + Objects.hashCode(this.millis);
     hash = 41 * hash + Objects.hashCode(this.lastUpdated);
+    hash = 41 * hash + Objects.hashCode(this.commandStationId);
+    hash = 41 * hash + Objects.hashCode(this.busNr);
     return hash;
   }
 
@@ -245,6 +313,9 @@ public class SensorBean implements Serializable {
     if (!Objects.equals(this.contactId, other.contactId)) {
       return false;
     }
+    if (!Objects.equals(this.nodeId, other.nodeId)) {
+      return false;
+    }
     if (!Objects.equals(this.status, other.status)) {
       return false;
     }
@@ -254,9 +325,16 @@ public class SensorBean implements Serializable {
     if (!Objects.equals(this.millis, other.millis)) {
       return false;
     }
+    if (!Objects.equals(this.commandStationId, other.commandStationId)) {
+      return false;
+    }
+    if (!Objects.equals(this.busNr, other.busNr)) {
+      return false;
+    }
     return Objects.equals(this.lastUpdated, other.lastUpdated);
   }
 
+  @Deprecated
   public boolean equalsDeviceIdAndContactId(Object obj) {
     if (this == obj) {
       return true;
@@ -268,18 +346,43 @@ public class SensorBean implements Serializable {
       return false;
     }
     final SensorBean other = (SensorBean) obj;
+    if (!Objects.equals(this.commandStationId, other.commandStationId)) {
+      return false;
+    }
     if (!Objects.equals(this.deviceId, other.deviceId)) {
       return false;
     }
     return Objects.equals(this.contactId, other.contactId);
   }
 
+  public boolean equalsId(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    final SensorBean other = (SensorBean) obj;
+    return Objects.equals(this.id, other.id);
+  }
+
   @Override
   public String toString() {
-    return name;
+    //return name;
+    return toLogString();
   }
 
   public String toLogString() {
+//    String ids;
+//    if (id == null) {
+//      ids = "(" + generateId() + ")";
+//    } else {
+//      ids = id;
+//    }
+
     return "SensorBean{"
             + "id="
             + id
@@ -289,6 +392,8 @@ public class SensorBean implements Serializable {
             + deviceId
             + ", contactId="
             + contactId
+            + ", nodeId="
+            + nodeId
             + ", status="
             + status
             + ", previousStatus="
@@ -297,22 +402,10 @@ public class SensorBean implements Serializable {
             + millis
             + ", lastUpdated="
             + lastUpdated
-            + '}';
+            + ", commandStationId="
+            + commandStationId
+            + ", busNr="
+            + busNr
+            + "}";
   }
 }
-
-//    public static Integer calculateModuleNumber(int contactId) {
-//        int module = (contactId - 1) / 16 + 1;
-//        return module;
-//    }
-//    public static int calculatePortNumber(int contactId) {
-//        int module = (contactId - 1) / 16 + 1;
-//        int mport = contactId - (module - 1) * 16;
-//        return mport;
-//    }
-//    public static int calculateContactId(int module, int port) {
-//        //Bei einer CS2 errechnet sich der richtige Kontakt mit der Formel M - 1 * 16 + N
-//        module = module - 1;
-//        int contactId = module * 16;
-//        return contactId + port;
-  //    }

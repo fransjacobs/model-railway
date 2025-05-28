@@ -16,7 +16,7 @@
 package jcs.commandStation.esu.ecos.net;
 
 import jcs.commandStation.esu.ecos.EcosMessage;
-import jcs.commandStation.events.DisconnectionEvent;
+import jcs.commandStation.events.ConnectionEvent;
 
 /**
  *
@@ -26,6 +26,6 @@ public interface EcosMessageListener {
 
   void onMessage(EcosMessage message);
 
-  void onDisconnect(DisconnectionEvent event);
+  void onDisconnect(ConnectionEvent event);
 
 }

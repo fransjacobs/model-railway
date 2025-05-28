@@ -36,7 +36,6 @@ import jcs.util.RunUtil;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.tinylog.Logger;
@@ -57,7 +56,7 @@ public class StateMachineThreadTest {
   private final ExecutorService executor;
 
   public StateMachineThreadTest() {
-    System.setProperty("persistenceService", "jcs.persistence.H2PersistenceService");
+    System.setProperty("persistenceService", "jcs.persistence.TestH2PersistenceService");
     System.setProperty("do.not.simulate.virtual.drive", "true");
     System.setProperty("state.machine.stepTest", "false");
 
@@ -109,7 +108,7 @@ public class StateMachineThreadTest {
 
     Logger.trace("Power on in " + (now - start) + "ms.");
 
-    AutoPilot.startAutoMode();
+    AutoPilot.runAutoPilot(true);
 
     Logger.info("=========================== setUp done..............");
   }
@@ -117,7 +116,7 @@ public class StateMachineThreadTest {
   @AfterEach
   public void tearDown() {
     Logger.info("=========================== Teardown..............");
-    AutoPilot.stopAutoMode();
+    AutoPilot.runAutoPilot(false);
     long now = System.currentTimeMillis();
     long start = now;
     long timeout = now + 10000;
@@ -187,11 +186,11 @@ public class StateMachineThreadTest {
     Logger.trace("Prepared layout");
   }
 
-  private void toggleSensorInDirect(String sensorId) {
+  private void toggleSensorInDirect(Integer sensorId) {
     this.executor.execute(() -> toggleSensorDirect(sensorId));
   }
 
-  private void toggleSensorDirect(String sensorId) {
+  private void toggleSensorDirect(Integer sensorId) {
     SensorBean sensor = ps.getSensor(sensorId);
     toggleSensorDirect(sensor);
   }
@@ -270,7 +269,7 @@ public class StateMachineThreadTest {
     assertTrue(AutoPilot.isOnTrack(dhg));
 
     assertTrue(AutoPilot.isAutoModeActive());
-    AutoPilot.startAutoMode();
+    AutoPilot.runAutoPilot(true);
 
     long now = System.currentTimeMillis();
     long timeout = now + 10000;
@@ -339,10 +338,10 @@ public class StateMachineThreadTest {
     //Block 4, destination block should be reserved for DHG to come
     assertEquals(NS_DHG_6505, block4.getLocomotiveId());
 
-    String occupancySensorId = dhgDisp.getOccupationSensorId();
-    String exitSensorId = dhgDisp.getExitSensorId();
-    String enterSensorId = dhgDisp.getEnterSensorId();
-    String inSensorId = dhgDisp.getInSensorId();
+    Integer occupancySensorId = dhgDisp.getOccupationSensorId();
+    Integer exitSensorId = dhgDisp.getExitSensorId();
+    Integer enterSensorId = dhgDisp.getEnterSensorId();
+    Integer inSensorId = dhgDisp.getInSensorId();
 
     assertNotNull(occupancySensorId);
     assertNotNull(exitSensorId);
@@ -375,7 +374,7 @@ public class StateMachineThreadTest {
     assertEquals(LocomotiveBean.Direction.FORWARDS, dhgDisp.getLocomotiveBean().getDirection());
 
     //Should be waiting for the enter sensor
-    String waitForId = dhgDisp.getWaitingForSensorId();
+    Integer waitForId = dhgDisp.getWaitingForSensorId();
     assertEquals(enterSensorId, waitForId);
 
     //Now lets Toggle the enter sensor
@@ -578,7 +577,7 @@ public class StateMachineThreadTest {
     long now = System.currentTimeMillis();
     long timeout = now + 10000;
     //Start Automode
-    AutoPilot.startAutoMode();
+    AutoPilot.runAutoPilot(true);
 
     boolean autoPilotRunning = AutoPilot.isAutoModeActive();
     while (!autoPilotRunning && timeout > now) {
@@ -651,10 +650,10 @@ public class StateMachineThreadTest {
     assertEquals("[bk-1-]->[bk-4+]", routeId);
     assertTrue(dispatcher.getRouteBean().isLocked());
 
-    String occupancySensorId = dispatcher.getOccupationSensorId();
-    String exitSensorId = dispatcher.getExitSensorId();
-    String enterSensorId = dispatcher.getEnterSensorId();
-    String inSensorId = dispatcher.getInSensorId();
+    Integer occupancySensorId = dispatcher.getOccupationSensorId();
+    Integer exitSensorId = dispatcher.getExitSensorId();
+    Integer enterSensorId = dispatcher.getEnterSensorId();
+    Integer inSensorId = dispatcher.getInSensorId();
 
     assertNotNull(occupancySensorId);
     assertNotNull(exitSensorId);
@@ -675,7 +674,7 @@ public class StateMachineThreadTest {
     now = System.currentTimeMillis();
     timeout = now + 100000;
     //Must be sure the the enter sensor is registered
-    String waitingForSensorId = dispatcher.getWaitingForSensorId();
+    Integer waitingForSensorId = dispatcher.getWaitingForSensorId();
     while (!enterSensorId.equals(waitingForSensorId) && timeout > now) {
       pause(1);
       waitingForSensorId = dispatcher.getWaitingForSensorId();
@@ -846,7 +845,7 @@ public class StateMachineThreadTest {
     BlockBean block3 = PersistenceFactory.getService().getBlockByTileId("bk-3");
     assertEquals(BlockBean.BlockState.OUT_OF_ORDER, block3.getBlockState());
 
-    StateMachineThread instance = dispatcher.getStateMachineThread();
+    StateMachine instance = dispatcher.getStateMachine();
 
     assertFalse(instance.isThreadRunning());
     assertFalse(instance.isAlive());
@@ -865,7 +864,7 @@ public class StateMachineThreadTest {
     Logger.debug("Dispatcher Thread Started");
     assertTrue(instance.isThreadRunning());
     assertTrue(instance.isAlive());
-    assertFalse(instance.isEnableAutomode());
+    assertFalse(instance.isAutomodeEnabled());
 
     instance.stopRunningThread();
     Logger.debug("Dispatcher Thread Stopped");
@@ -906,7 +905,7 @@ public class StateMachineThreadTest {
 
   @AfterAll
   public static void assertOutput() {
-    AutoPilot.stopAutoMode();
+    AutoPilot.runAutoPilot(false);
 
     long now = System.currentTimeMillis();
     long start = now;

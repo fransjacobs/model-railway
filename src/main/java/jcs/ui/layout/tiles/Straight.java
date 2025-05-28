@@ -15,32 +15,55 @@
  */
 package jcs.ui.layout.tiles;
 
-import java.awt.BasicStroke;
-import java.awt.Graphics2D;
+import jcs.ui.layout.tiles.ui.StraightUI;
+import jcs.ui.layout.tiles.ui.TileUI;
 import java.awt.Point;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
+import javax.swing.UIManager;
 import jcs.entities.TileBean;
+import jcs.entities.TileBean.Orientation;
+import jcs.entities.TileBean.TileType;
 
-public class Straight extends AbstractTile implements Tile {
+/**
+ * Representation of a Straight track on the layout
+ */
+public class Straight extends Tile {
 
-  Straight(TileBean tileBean) {
-    super(tileBean);
-    this.width = DEFAULT_WIDTH;
-    this.height = DEFAULT_HEIGHT;
+  public Straight(TileBean tileBean) {
+    super(tileBean, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+    setModel(new DefaultTileModel(tileBean.getOrientation()));
+    initUI();
   }
 
-  Straight(Orientation orientation, Point center) {
+  public Straight(Orientation orientation, Point center) {
     this(orientation, center.x, center.y);
   }
 
-  Straight(Orientation orientation, int x, int y) {
-    super(orientation, x, y);
-    this.type = TileType.STRAIGHT.getTileType();
-    this.width = DEFAULT_WIDTH;
-    this.height = DEFAULT_HEIGHT;
+  public Straight(Orientation orientation, int x, int y) {
+    this(orientation, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+  }
+
+  public Straight(Orientation orientation, int x, int y, int width, int height) {
+    super(TileType.STRAIGHT, orientation, x, y, width, height);
+    setModel(new DefaultTileModel(orientation));
+    initUI();
+  }
+
+  private void initUI() {
+    updateUI();
+  }
+
+  @Override
+  public String getUIClassID() {
+    return StraightUI.UI_CLASS_ID;
+  }
+
+  @Override
+  public void updateUI() {
+    UIManager.put(TileUI.UI_CLASS_ID, "jcs.ui.layout.tiles.ui.StraightUI");
+    setUI((TileUI) UIManager.getUI(this));
+    invalidate();
   }
 
   @Override
@@ -79,49 +102,6 @@ public class Straight extends AbstractTile implements Tile {
       edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
     }
     return edgeConnections;
-  }
-
-  @Override
-  public Set<Point> getAllPoints() {
-    Set<Point> aps = new HashSet<>();
-    aps.add(getCenter());
-    return aps;
-  }
-
-  protected void renderStraight(Graphics2D g2) {
-    int xx, yy, w, h;
-    xx = 0;
-    yy = 170;
-    w = RENDER_WIDTH;
-    h = 60;
-
-    g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
-    g2.setPaint(trackColor);
-
-    g2.fillRect(xx, yy, w, h);
-  }
-
-  protected void renderRouteStraight(Graphics2D g2) {
-    int xx, yy, w, h;
-    xx = 0;
-    yy = 190;
-    w = RENDER_WIDTH;
-    h = 20;
-
-    g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
-    g2.setPaint(trackRouteColor);
-
-    g2.fillRect(xx, yy, w, h);
-  }
-
-  @Override
-  public void renderTileRoute(Graphics2D g2) {
-    renderRouteStraight(g2);
-  }
-
-  @Override
-  public void renderTile(Graphics2D g2) {
-    renderStraight(g2);
   }
 
 }

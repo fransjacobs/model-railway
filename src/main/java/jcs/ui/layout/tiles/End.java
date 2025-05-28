@@ -15,34 +15,58 @@
  */
 package jcs.ui.layout.tiles;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Graphics2D;
 import java.awt.Point;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
+import javax.swing.UIManager;
 import jcs.entities.TileBean;
+import jcs.entities.TileBean.Orientation;
+import static jcs.entities.TileBean.Orientation.NORTH;
+import static jcs.entities.TileBean.Orientation.SOUTH;
+import static jcs.entities.TileBean.Orientation.WEST;
+import jcs.entities.TileBean.TileType;
+import jcs.ui.layout.tiles.ui.EndUI;
+import jcs.ui.layout.tiles.ui.TileUI;
 
-public class End extends AbstractTile implements Tile {
+/**
+ * Representation of a End track on the layout
+ */
+public class End extends Tile {
 
-  End(TileBean tileBean) {
-    super(tileBean);
-    this.width = DEFAULT_WIDTH;
-    this.height = DEFAULT_HEIGHT;
+  public End(TileBean tileBean) {
+    super(tileBean, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+    setModel(new DefaultTileModel(tileBean.getOrientation()));
+    initUI();
   }
 
-  End(Orientation orientation, Point center) {
+  public End(Orientation orientation, Point center) {
     this(orientation, center.x, center.y);
-
   }
 
-  End(Orientation orientation, int x, int y) {
-    super(orientation, x, y);
-    this.type = TileType.END.getTileType();
-    this.width = DEFAULT_WIDTH;
-    this.height = DEFAULT_HEIGHT;
+  public End(Orientation orientation, int x, int y) {
+    this(orientation, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+  }
+
+  public End(Orientation orientation, int x, int y, int width, int height) {
+    super(TileType.END, orientation, x, y, width, height);
+    setModel(new DefaultTileModel(orientation));
+    initUI();
+  }
+
+  private void initUI() {
+    updateUI();
+  }
+
+  @Override
+  public String getUIClassID() {
+    return EndUI.UI_CLASS_ID;
+  }
+
+  @Override
+  public void updateUI() {
+    UIManager.put(TileUI.UI_CLASS_ID, "jcs.ui.layout.tiles.ui.EndUI");
+    setUI((TileUI) UIManager.getUI(this));
+    invalidate();
   }
 
   @Override
@@ -66,13 +90,6 @@ public class End extends AbstractTile implements Tile {
   }
 
   @Override
-  public Set<Point> getAllPoints() {
-    Set<Point> aps = new HashSet<>();
-    aps.add(getCenter());
-    return aps;
-  }
-
-  @Override
   public Map<Orientation, Point> getEdgePoints() {
     Map<Orientation, Point> edgeConnections = new HashMap<>();
     Orientation orientation = this.getOrientation();
@@ -91,36 +108,4 @@ public class End extends AbstractTile implements Tile {
     }
     return edgeConnections;
   }
-
-  protected void renderEnd(Graphics2D g2) {
-    int xx, yy, w, h;
-    xx = 0;
-    yy = 175;
-
-    w = RENDER_GRID;
-    h = 50;
-
-    g2.setStroke(new BasicStroke(40, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
-    g2.setPaint(trackColor);
-    g2.fillRect(xx, yy, w, h);
-
-    xx = RENDER_GRID;
-    yy = 100;
-
-    w = 30;
-    h = 200;
-
-    g2.setPaint(Color.DARK_GRAY);
-    g2.fillRect(xx, yy, w, h);
-  }
-
-  @Override
-  public void renderTile(Graphics2D g2) {
-    renderEnd(g2);
-  }
-
-  @Override
-  public void renderTileRoute(Graphics2D g2d) {
-  }
-
 }

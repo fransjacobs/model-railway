@@ -26,7 +26,7 @@ import jcs.commandStation.esu.ecos.EcosMessageFactory;
 import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.VirtualConnection;
 import jcs.entities.AccessoryBean;
-import jcs.entities.FeedbackModuleBean;
+import jcs.commandStation.entities.FeedbackModule;
 import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.SensorBean;
@@ -47,6 +47,8 @@ class EcosVirtualConnection implements EcosConnection, VirtualConnection {
 
   private EcosMessageListener messageListener;
   private boolean debug = false;
+  
+  private static String ESU_ECOS_ID = "esu-ecos";
 
   EcosVirtualConnection(InetAddress address) {
     debug = System.getProperty("message.debug", "false").equalsIgnoreCase("true");
@@ -111,7 +113,7 @@ class EcosVirtualConnection implements EcosConnection, VirtualConnection {
       }
       case EcosMessageFactory.QUERY_LOCOMOTIVES -> {
         //Query the locomotives from the database
-        List<LocomotiveBean> locos = PersistenceFactory.getService().getLocomotives();
+        List<LocomotiveBean> locos = PersistenceFactory.getService().getLocomotivesByCommandStationId(ESU_ECOS_ID);
 
         for (LocomotiveBean loco : locos) {
           //name,addr,protocol
@@ -178,7 +180,7 @@ class EcosVirtualConnection implements EcosConnection, VirtualConnection {
       default -> {
         //Interpret the message
         //Logger.trace(msg);
-        //Logger.trace(message.getId() + ": " + message.getCommand());
+        //Logger.trace(message.getIdString() + ": " + message.getCommand());
         String cmd = message.getCommand();
         String id = message.getId();
         int objId = message.getObjectId();
@@ -195,7 +197,7 @@ class EcosVirtualConnection implements EcosConnection, VirtualConnection {
           }
         } else if (objId >= 100 && objId < 999) {
           if (Ecos.CMD_GET.equals(cmd)) {
-            FeedbackModuleBean module = getFeedbackModule(objId);
+            FeedbackModule module = getFeedbackModule(objId);
             replyBuilder.append(module.getAddressOffset() + module.getModuleNumber());
             replyBuilder.append(" state[0x");
             replyBuilder.append(module.getAccumulatedPortsValue());
@@ -332,6 +334,7 @@ class EcosVirtualConnection implements EcosConnection, VirtualConnection {
           replyBuilder.append("]");
         }
       }
+
     }
 
     replyBuilder.append("<END 0 (OK)>");
@@ -400,11 +403,11 @@ class EcosVirtualConnection implements EcosConnection, VirtualConnection {
     };
   }
 
-  FeedbackModuleBean getFeedbackModule(int moduleId) {
+  FeedbackModule getFeedbackModule(int moduleId) {
     List<SensorBean> sensors = PersistenceFactory.getService().getSensors();
     int id = moduleId;
     int moduleNr = id - 100;
-    FeedbackModuleBean module = new FeedbackModuleBean();
+    FeedbackModule module = new FeedbackModule();
     module.setId(id);
     module.setModuleNumber(moduleNr);
     module.setPortCount(16);
@@ -424,8 +427,8 @@ class EcosVirtualConnection implements EcosConnection, VirtualConnection {
   @Override
   public void sendEvent(SensorEvent sensorEvent) {
     Logger.trace("Device: " + sensorEvent.getDeviceId() + " contact: " + sensorEvent.getContactId() + " -> " + sensorEvent.isActive());
-    FeedbackModuleBean fbm = getFeedbackModule(100 + sensorEvent.getDeviceId());
-    //Logger.trace(fbm.getId()+" nr: "+fbm.getModuleNumber() + " Current ports: " + fbm.portToString());
+    FeedbackModule fbm = getFeedbackModule(100 + sensorEvent.getDeviceId());
+    //Logger.trace(fbm.getIdString()+" nr: "+fbm.getModuleNumber() + " Current ports: " + fbm.portToString());
     int port = sensorEvent.getContactId() - 1;
     fbm.setPortValue(port, sensorEvent.isActive());
     //Logger.trace(100 + fbm.getModuleNumber() + " changed ports: " + fbm.portToString());

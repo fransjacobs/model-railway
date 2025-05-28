@@ -196,13 +196,13 @@ public class CanMessageFactory implements MarklinCan {
    * @param gfpUid the GFP UID
    * @return
    */
-  public static CanMessage systemStatus(int channel, int gfpUid) {
+  public static CanMessage systemStatus(int uid, int channel) {
     byte[] data = new byte[CanMessage.DATA_SIZE];
     byte[] hash;
-    if (gfpUid > 0) {
-      byte[] uid = CanMessage.to4Bytes(gfpUid);
-      System.arraycopy(uid, 0, data, 0, uid.length);
-      hash = CanMessage.generateHash(gfpUid);
+    if (uid > 0) {
+      byte[] uidb = CanMessage.to4Bytes(uid);
+      System.arraycopy(uidb, 0, data, 0, uidb.length);
+      hash = CanMessage.generateHash(uid);
     } else {
       hash = MAGIC_HASH;
     }
@@ -214,27 +214,26 @@ public class CanMessageFactory implements MarklinCan {
     return cm;
   }
 
-  public static CanMessage switchAccessory(int address, AccessoryValue value, boolean on, int gfpUid) {
-    byte[] data = new byte[CanMessage.DATA_SIZE];
-    //TODO support for DCC
-    //localID = address - 1; // GUI-address is 1-based, protocol-address is 0-based
-    //if (protocol == ProtocolDCC) { localID |= 0x3800; } else { localID |= 0x3000;}
-    byte[] hash;
-    if (gfpUid > 0) {
-      hash = CanMessage.generateHash(gfpUid);
-    } else {
-      hash = MAGIC_HASH;
-    }
-
-    data[ACCESSORY_CAN_ADDRESS_IDX] = ACCESSORY_CAN_ADDRESS;
-    data[ACCESSORY_ADDRESS_IDX] = (byte) (address - 1);
-    data[ACCESSORY_VALUE_IDX] = (byte) (AccessoryValue.GREEN.equals(value) ? 1 : 0);
-    data[ACCESSORY_ACTIVE_IDX] = (byte) (on ? 1 : 0);
-
-    CanMessage cm = new CanMessage(PRIO_1, ACCESSORY_SWITCHING, hash, DLC_6, data);
-    return cm;
-  }
-
+//  public static CanMessage switchAccessory(int address, AccessoryValue value, boolean on, int gfpUid) {
+//    byte[] data = new byte[CanMessage.DATA_SIZE];
+//    //TODO support for DCC
+//    //localID = address - 1; // GUI-address is 1-based, protocol-address is 0-based
+//    //if (protocol == ProtocolDCC) { localID |= 0x3800; } else { localID |= 0x3000;}
+//    byte[] hash;
+//    if (gfpUid > 0) {
+//      hash = CanMessage.generateHash(gfpUid);
+//    } else {
+//      hash = MAGIC_HASH;
+//    }
+//
+//    data[ACCESSORY_CAN_ADDRESS_IDX] = ACCESSORY_CAN_ADDRESS;
+//    data[ACCESSORY_ADDRESS_IDX] = (byte) (address - 1);
+//    data[ACCESSORY_VALUE_IDX] = (byte) (AccessoryValue.GREEN.equals(value) ? 1 : 0);
+//    data[ACCESSORY_ACTIVE_IDX] = (byte) (on ? 1 : 0);
+//
+//    CanMessage cm = new CanMessage(PRIO_1, ACCESSORY_SWITCHING, hash, DLC_6, data);
+//    return cm;
+//  }
   public static CanMessage switchAccessory(int address, AccessoryValue value, boolean on, int switchTime, int gfpUid) {
     byte[] data = new byte[CanMessage.DATA_SIZE];
     byte[] hash;
@@ -244,8 +243,9 @@ public class CanMessageFactory implements MarklinCan {
       hash = MAGIC_HASH;
     }
 
-    data[ACCESSORY_CAN_ADDRESS_IDX] = ACCESSORY_CAN_ADDRESS;
-    data[ACCESSORY_ADDRESS_IDX] = (byte) (address - 1);
+    byte[] addressBytes = CanMessage.to2Bytes(address);
+    System.arraycopy(addressBytes, 0, data, 2, addressBytes.length);
+    //TODO for signal other values are also supported
     data[ACCESSORY_VALUE_IDX] = (byte) (AccessoryValue.GREEN.equals(value) ? 1 : 0);
     data[ACCESSORY_ACTIVE_IDX] = (byte) (on ? 1 : 0);
 
@@ -328,6 +328,25 @@ public class CanMessageFactory implements MarklinCan {
     return cm;
   }
 
+  
+  //  private int getLocoAddres(int address, DecoderType decoderType) {
+//    int locoAddress;
+//    locoAddress = switch (decoderType) {
+//      case MFX ->
+//        0x4000 + address;
+//      case MFXP ->
+//        0x4000 + address;
+//      case DCC ->
+//        0xC000 + address;
+//      case SX1 ->
+//        0x0800 + address;
+//      default ->
+//        address;
+//    };
+//
+//    return locoAddress;
+//  }
+  
   public static CanMessage setDirection(int address, int csdirection, int gfpUid) {
     byte[] data = new byte[CanMessage.DATA_SIZE];
     byte[] hash;
@@ -402,6 +421,32 @@ public class CanMessageFactory implements MarklinCan {
     return cm;
   }
 
+  /**
+   * Create a CanMessage for an (virtual) event. Used for the Virtual drive simulator
+   *
+   * @param sensorbean
+   * @return
+   */
+  public static CanMessage sensorEventMessage(int nodeId, int contactId, int value, int previousValue, int millis, int uid) {
+    byte[] data = new byte[CanMessage.DATA_SIZE];
+
+    byte[] nId = CanMessage.to2Bytes(nodeId);
+    byte[] cId = CanMessage.to2Bytes(contactId);
+    byte val = (byte) value;
+    byte prev = (byte) previousValue;
+    byte[] time = CanMessage.to2Bytes(millis / 10);
+    byte[] hash = CanMessage.generateHash(uid);
+
+    System.arraycopy(nId, 0, data, 0, nId.length);
+    System.arraycopy(cId, 0, data, 2, cId.length);
+    data[4] = prev;
+    data[5] = val;
+    System.arraycopy(time, 0, data, 6, time.length);
+
+    CanMessage sensorMessage = new CanMessage(PRIO_1, S88_EVENT_RESPONSE, hash, DLC_8, data);
+    return sensorMessage;
+  }
+
   //Mainly for testing....
   public static void main(String[] a) {
     System.out.println("getMobAppPingReq:   " + getMobileAppPingRequest());
@@ -415,15 +460,14 @@ public class CanMessageFactory implements MarklinCan {
     System.out.println("systemStatus ch 1:  " + systemStatus(1, 1668498828));
     System.out.println("systemStatus ch 4:  " + systemStatus(4, 1668498828));
 
-    System.out.println("switchAccessory 1g: " + switchAccessory(1, AccessoryValue.GREEN, true, 1668498828));
-    System.out.println("switchAccessory 1g: " + switchAccessory(1, AccessoryValue.GREEN, false, 1668498828));
+    System.out.println("switchAccessory 1g: " + switchAccessory(1, AccessoryValue.GREEN, true, 20, 1668498828));
+    System.out.println("switchAccessory 1g: " + switchAccessory(1, AccessoryValue.GREEN, false, 30, 1668498828));
 
-    System.out.println("switchAccessory 1g: " + switchAccessory(1, AccessoryValue.RED, true, 1668498828));
+    System.out.println("switchAccessory dcc 1: " + switchAccessory(14336, AccessoryValue.RED, true, 200, 1668498828));
 
-    System.out.println("switchAccessory 2g: " + switchAccessory(2, AccessoryValue.GREEN, true,50, 1668498828));
-    System.out.println("switchAccessory 2r: " + switchAccessory(2, AccessoryValue.RED, true,50, 1668498828));
+    System.out.println("switchAccessory 2g: " + switchAccessory(2, AccessoryValue.GREEN, true, 50, 1668498828));
+    System.out.println("switchAccessory 2r: " + switchAccessory(2, AccessoryValue.RED, true, 50, 1668498828));
 
-    
     System.out.println("requestConfigData:  " + requestConfigData(1668498828, "loks"));
 
     System.out.println("");

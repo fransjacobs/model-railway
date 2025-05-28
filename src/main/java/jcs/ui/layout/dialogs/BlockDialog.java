@@ -27,6 +27,7 @@ import jcs.entities.BlockBean;
 import jcs.entities.SensorBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.layout.LayoutCanvas;
+import jcs.ui.layout.tiles.TileCache;
 import jcs.ui.layout.tiles.Block;
 import jcs.ui.layout.tiles.Sensor;
 import jcs.ui.layout.tiles.Tile;
@@ -37,6 +38,8 @@ import org.tinylog.Logger;
  * @author fransjacobs
  */
 public class BlockDialog extends javax.swing.JDialog {
+
+  private static final long serialVersionUID = 6278388475191663591L;
 
   private final Block block;
   private final LayoutCanvas layoutCanvas;
@@ -60,9 +63,9 @@ public class BlockDialog extends javax.swing.JDialog {
     postInit();
   }
 
-  private Set<String> getLinkedSensorIds() {
+  private Set<Integer> getLinkedSensorIds() {
     List<BlockBean> blocks = PersistenceFactory.getService().getBlocks();
-    Set<String> linkedSensorIds = new HashSet<>();
+    Set<Integer> linkedSensorIds = new HashSet<>();
     for (BlockBean bb : blocks) {
       if (bb.getPlusSensorId() != null) {
         linkedSensorIds.add(bb.getPlusSensorId());
@@ -84,7 +87,7 @@ public class BlockDialog extends javax.swing.JDialog {
       List<SensorBean> allSensors = PersistenceFactory.getService().getSensors();
       List<SensorBean> freeSensors = new ArrayList<>();
       // filter the list, remove sensors which are already linked to other blocks.
-      Set<String> linkedSensorIds = getLinkedSensorIds();
+      Set<Integer> linkedSensorIds = getLinkedSensorIds();
 
       for (SensorBean sb : allSensors) {
         if (!linkedSensorIds.contains(sb.getId())) {
@@ -100,7 +103,7 @@ public class BlockDialog extends javax.swing.JDialog {
       if (bb == null) {
         Logger.tags("bb is null for " + this.block.getId());
         bb = new BlockBean();
-        bb.setTile(block);
+        bb.setTile(block.getTileBean());
         bb.setTileId(this.block.getId());
         bb.setBlockState(BlockBean.BlockState.FREE);
         this.block.setBlockBean(bb);
@@ -161,8 +164,10 @@ public class BlockDialog extends javax.swing.JDialog {
 
     Logger.trace("Neighbor point +: " + pnp + " -: " + mnp);
 
-    Tile neighborPlus = this.layoutCanvas.findTile(pnp);
-    Tile neighborMin = this.layoutCanvas.findTile(mnp);
+    //Tile neighborPlus = this.layoutCanvas.findTile(pnp);
+    Tile neighborPlus = TileCache.findTile(pnp);
+    //Tile neighborMin = this.layoutCanvas.findTile(mnp);
+    Tile neighborMin = TileCache.findTile(mnp);
 
     if (neighborPlus != null && neighborPlus instanceof Sensor) {
       Sensor ps = (Sensor) neighborPlus;

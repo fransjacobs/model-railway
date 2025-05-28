@@ -172,6 +172,11 @@
             <artifactId>logback-classic</artifactId>
             <version>1.2.13</version>
         </dependency>
+        <!--dependency>
+            <groupId>com.sshtools</groupId>
+            <artifactId>two-slices</artifactId>
+            <version>0.9.4</version>
+        </dependency-->
         <dependency>
             <groupId>org.netbeans.external</groupId>
             <artifactId>AbsoluteLayout</artifactId>
@@ -204,9 +209,10 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.13.0</version>
                 <configuration>
-                    <compilerArgs>--enable-preview</compilerArgs>
+                    <!--compilerArgs>-Xlint:unchecked,-verbose</compilerArgs-->
+                    <compilerArgs>-verbose</compilerArgs>
                     <release>21</release>
-                    <showDeprecation>false</showDeprecation>
+                    <showDeprecation>true</showDeprecation>
                 </configuration>
             </plugin>
             <plugin>
@@ -233,6 +239,7 @@
                 <version>3.3.1</version>
                 <configuration>
                     <encoding>UTF-8</encoding>
+                    <propertiesEncoding>${project.build.sourceEncoding}</propertiesEncoding>
                     <nonFilteredFileExtensions>
                         <nonFilteredFileExtension>db:encryptable</nonFilteredFileExtension>
                         <nonFilteredFileExtension>db</nonFilteredFileExtension>
@@ -289,7 +296,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.2</version>
                 <configuration>
-                    <testFailureIgnore>false</testFailureIgnore>
+                    <!--testFailureIgnore>false</testFailureIgnore-->
                     <argLine>-Dfile.encoding=UTF-8</argLine>
                     <configurationParameters>
                         junit.jupiter.execution.parallel.enabled=false
@@ -343,6 +350,27 @@
                         <phase>deploy</phase>
                         <goals>
                             <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>3.6.0</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.puppycrawl.tools</groupId>
+                        <artifactId>checkstyle</artifactId>
+                        <version>10.23.0</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <id>checkstyle</id>
+                        <phase>checkstyle</phase>
+                        <goals>
+                            <goal>checkstyle</goal>
                         </goals>
                     </execution>
                 </executions>

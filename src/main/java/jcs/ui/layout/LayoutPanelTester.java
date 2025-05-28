@@ -35,7 +35,6 @@ public class LayoutPanelTester {
     //System.setProperty("trackServiceAlwaysUseDemo", "true");
     try {
       UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
-      //UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
     } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
       Logger.error(ex);
     }
@@ -43,7 +42,7 @@ public class LayoutPanelTester {
     java.awt.EventQueue.invokeLater(() -> {
       JFrame f = new JFrame("LayoutPanel Tester");
       LayoutPanel layoutPanel = new LayoutPanel();
-      f.add(layoutPanel);
+      f.getContentPane().add(layoutPanel);
 
       URL iconUrl = JCS.class.getResource("/media/jcs-train-64.png");
       if (iconUrl != null) {
@@ -51,7 +50,7 @@ public class LayoutPanelTester {
       }
 
       f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-      layoutPanel.loadTiles();
+      layoutPanel.loadLayout();
       f.pack();
 
       Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
