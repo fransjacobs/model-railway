@@ -969,7 +969,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
       if (JCS.getJcsCommandStation() != null) {
 
         //LocomotiveBean loc = PersistenceFactory.getService().getLocomotive(49189L);
-        LocomotiveBean loc = PersistenceFactory.getService().getLocomotive(1001L);
+        LocomotiveBean loc = PersistenceFactory.getService().getLocomotive(1000L);
         Logger.debug(loc);
 
         testPanel.setLocomotive(loc);

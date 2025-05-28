@@ -22,6 +22,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -206,18 +207,50 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public List<FunctionBean> getLocomotiveFunctions(Long locomotiveId) {
+  public List<FunctionBean> getLocomotiveFunctions(LocomotiveBean locomotive) {
+    Long locomotiveId = locomotive.getId();
+    String commandStationId = locomotive.getCommandStationId();
+
     List<FunctionBean> locFunctions = database.where("locomotive_id=?", locomotiveId).orderBy("f_number").results(FunctionBean.class);
 
     for (FunctionBean fb : locFunctions) {
-      fb.setInActiveIconImage(this.getFunctionImage(fb.getInActiveIcon()));
-      fb.setActiveIconImage(this.getFunctionImage(fb.getActiveIcon()));
+      if (CommandStationBean.ESU_ECOS.equals(commandStationId)) {
+        String ico = fb.getIcon();
+        String path = "/media/esu/f" + ico + ".png";
+
+        fb.setInActiveIconImage(getFunctionImage(path));
+        fb.setActiveIconImage(getFunctionImage(path));
+
+        //   reverseButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/left-24.png")));
+      } else {
+        fb.setInActiveIconImage(getFunctionImage(fb.getInActiveIcon()));
+        fb.setActiveIconImage(getFunctionImage(fb.getActiveIcon()));
+      }
     }
     return locFunctions;
   }
 
   @Override
+  public FunctionBean getLocomotiveFunction(LocomotiveBean locomotive, Integer number) {
+    Long locomotiveId = locomotive.getId();
+    String commandStationId = locomotive.getCommandStationId();
+
+    FunctionBean fb = database.where("locomotive_id=? and f_number=?", locomotiveId, number).first(FunctionBean.class);
+    if (fb != null) {
+      if (CommandStationBean.ESU_ECOS.equals(commandStationId)) {
+
+      } else {
+        fb.setInActiveIconImage(getFunctionImage(fb.getInActiveIcon()));
+        fb.setActiveIconImage(getFunctionImage(fb.getActiveIcon()));
+      }
+    }
+    return fb;
+  }
+
+  @Override
   public FunctionBean getLocomotiveFunction(Long locomotiveId, Integer number) {
+    String commandStationId = getDefaultCommandStation().getId();
+
     FunctionBean fb = database.where("locomotive_id=? and f_number=?", locomotiveId, number).first(FunctionBean.class);
     if (fb != null) {
       fb.setInActiveIconImage(getFunctionImage(fb.getInActiveIcon()));
@@ -242,7 +275,7 @@ public class H2PersistenceService implements PersistenceService {
       if (loco.getIcon() != null) {
         loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
       }
-      loco.addAllFunctions(getLocomotiveFunctions(loco.getId()));
+      loco.addAllFunctions(getLocomotiveFunctions(loco));
     }
     return loco;
   }
@@ -256,7 +289,7 @@ public class H2PersistenceService implements PersistenceService {
       if (loco.getIcon() != null) {
         loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
       }
-      loco.addAllFunctions(getLocomotiveFunctions(loco.getId()));
+      loco.addAllFunctions(getLocomotiveFunctions(loco));
     }
     return loco;
   }
@@ -266,7 +299,7 @@ public class H2PersistenceService implements PersistenceService {
     LocomotiveBean loco = database.where("id=?", id).first(LocomotiveBean.class);
     if (loco != null) {
       loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
-      loco.addAllFunctions(getLocomotiveFunctions(loco.getId()));
+      loco.addAllFunctions(getLocomotiveFunctions(loco));
     }
     return loco;
   }
@@ -277,7 +310,7 @@ public class H2PersistenceService implements PersistenceService {
 
     for (LocomotiveBean loco : locos) {
       loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
-      loco.addAllFunctions(getLocomotiveFunctions(loco.getId()));
+      loco.addAllFunctions(getLocomotiveFunctions(loco));
     }
 
     return locos;
@@ -301,7 +334,7 @@ public class H2PersistenceService implements PersistenceService {
 
     for (LocomotiveBean loco : locos) {
       loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
-      loco.addAllFunctions(getLocomotiveFunctions(loco.getId()));
+      loco.addAllFunctions(getLocomotiveFunctions(loco));
     }
 
     return locos;
@@ -315,7 +348,7 @@ public class H2PersistenceService implements PersistenceService {
 
     for (LocomotiveBean loco : locos) {
       loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
-      loco.addAllFunctions(getLocomotiveFunctions(loco.getId()));
+      loco.addAllFunctions(getLocomotiveFunctions(loco));
     }
 
     return locos;
@@ -436,23 +469,37 @@ public class H2PersistenceService implements PersistenceService {
       }
 
       if (function) {
-        path = path + "zfunctions" + File.separator;
+        if (!path.contains("/media/esu")) {
+          path = path + "zfunctions" + File.separator;
+        }
       }
 
       File imgFile;
-      if (path.contains(".")) {
+      if (path.contains("/media/esu/")) {
+        //local resourse 
+        imgFile = null;
+      } else if (path.contains(".")) {
         imgFile = new File(path);
       } else {
         imgFile = new File(path + imageName.toLowerCase() + ".png");
       }
 
-      if (imgFile.exists()) {
+      if (imgFile != null && imgFile.exists()) {
         try {
           image = ImageIO.read(imgFile);
         } catch (IOException e) {
           Logger.trace("Image file " + imageName + ".png does not exists");
         }
       } else {
+        if (path.contains("/media")) {
+          URL iconUrl = getClass().getResource(path);
+          try {
+            image = ImageIO.read(iconUrl);
+          } catch (IOException | IllegalArgumentException e) {
+            Logger.trace("Image URL " + iconUrl + " does not exists");
+          }
+        }
+
         //TODO:
         // should we attempt to obtain it now and cache it when available, but also when it is not
         // available put a marker so that we are not trying over and over again...

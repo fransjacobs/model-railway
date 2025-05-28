@@ -1397,8 +1397,8 @@ public class SmallDriverCabPanel extends JPanel implements LocomotiveSelectionCh
       testFrame.add(testPanel);
 
       if (JCS.getJcsCommandStation() != null) {
-        LocomotiveBean loc = PersistenceFactory.getService().getLocomotive(16417L);
-        //LocomotiveBean loc = PersistenceFactory.getService().getLocomotive(1001L);
+        //LocomotiveBean loc = PersistenceFactory.getService().getLocomotive(16417L);
+        LocomotiveBean loc = PersistenceFactory.getService().getLocomotive(1000L);
         Logger.debug(loc);
 
         testPanel.setLocomotiveBean(loc);

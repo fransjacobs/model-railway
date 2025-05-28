@@ -46,6 +46,10 @@ import jcs.commandStation.entities.InfoBean;
 import jcs.commandStation.esu.ecos.EsuEcosCommandStationImpl;
 import jcs.commandStation.marklin.cs.MarklinCentralStationImpl;
 import jcs.commandStation.entities.FeedbackModule;
+import static jcs.entities.CommandStationBean.DCC_EX;
+import static jcs.entities.CommandStationBean.ESU_ECOS;
+import static jcs.entities.CommandStationBean.HSI_S88;
+import static jcs.entities.CommandStationBean.MARKLIN_CS;
 import jcs.entities.SensorBean;
 import jcs.util.Ping;
 
@@ -66,11 +70,6 @@ public class CommandStationDialog extends JDialog implements TreeSelectionListen
 
   private CommandStationBean emptyCS;
   private CommandStationBean emptyFB;
-
-  private static final String MARKLIN_CS = "marklin.cs";
-  private static final String ESU_ECOS = "esu-ecos";
-  private static final String DCC_EX = "dcc-ex";
-  private static final String HSI_S88 = "hsi-s88";
 
   private DecoderController controller;
 
@@ -650,7 +649,7 @@ public class CommandStationDialog extends JDialog implements TreeSelectionListen
         }
       }
 
-      if (selectedCommandStation.getId().equals(MARKLIN_CS)) {
+      if (selectedCommandStation.getId().equals(CommandStationBean.MARKLIN_CS)) {
         bus1Lbl.setVisible(true);
         bus1Spinner.setVisible(true);
         bus2Lbl.setVisible(true);
@@ -1012,16 +1011,14 @@ public class CommandStationDialog extends JDialog implements TreeSelectionListen
     connectingDialog.setLocationRelativeTo(null);
     connectingDialog.setVisible(true);
 
-    if (MARKLIN_CS.equals(commandStation.getId())) {
-      controller = new MarklinCentralStationImpl(commandStation);
-    } else if (ESU_ECOS.equals(commandStation.getId())) {
-      controller = new EsuEcosCommandStationImpl(commandStation);
-    } else if (DCC_EX.equals(commandStation.getId())) {
-      Logger.info("TODO: DCC-EX!");
-    } else if (HSI_S88.equals(commandStation.getId())) {
-      Logger.info("TODO: HSI-S88!");
-    } else {
+    if (null == commandStation.getId()) {
       Logger.trace("Unknown Controller!");
+    } else switch (commandStation.getId()) {
+      case MARKLIN_CS -> controller = new MarklinCentralStationImpl(commandStation);
+      case ESU_ECOS -> controller = new EsuEcosCommandStationImpl(commandStation);
+      case DCC_EX -> Logger.info("TODO: DCC-EX!");
+      case HSI_S88 -> Logger.info("TODO: HSI-S88!");
+      default -> Logger.trace("Unknown Controller!");
     }
 
     if (controller == null) {

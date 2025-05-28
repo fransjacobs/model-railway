@@ -236,10 +236,19 @@ public interface PersistenceService {
    * @param locomotiveId The ID of the locomotive.
    * @return A List of FunctionBeans.
    */
-  List<FunctionBean> getLocomotiveFunctions(Long locomotiveId);
+  List<FunctionBean> getLocomotiveFunctions(LocomotiveBean locomotive);
 
   /**
    * Retrieves a FunctionBean associated with a locomotive and function number.
+   *
+   * @param locomotiveId The ID of the locomotive.
+   * @param number The function number.
+   * @return The FunctionBean, or null if not found.
+   */
+  FunctionBean getLocomotiveFunction(LocomotiveBean locomotive, Integer number);
+
+  /**
+   * Retrieves a list of FunctionBeans associated with a locomotive.
    *
    * @param locomotiveId The ID of the locomotive.
    * @param number The function number.
