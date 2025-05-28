@@ -101,10 +101,10 @@ public class PersistenceServiceTest {
     jcsPropertyList.add(p10);
     jcsPropertyList.add(p11);
 
-    SensorBean s1 = new SensorBean(1, "M1", 65, 1, null, 0, 0, 0,"marklin.cs");
+    SensorBean s1 = new SensorBean(1, "M1", 65, 1, null, 0, 0, 0,"marklin.cs", 1);
 
     sensors.add(s1);
-    SensorBean s2 = new SensorBean(2, "M2", 65, 2, null, 1, 1, 0,"marklin.cs");
+    SensorBean s2 = new SensorBean(2, "M2", 65, 2, null, 1, 1, 0,"marklin.cs", 1);
     sensors.add(s2);
 
     LocomotiveBean loco2 = new LocomotiveBean(2L, "BR 81 002", 2L, 2, "DB BR 81 008", "mm_prg", 120, 1, 0, 0, false, true, true);
@@ -378,7 +378,7 @@ public class PersistenceServiceTest {
   @Order(8)
   public void testPersistSensorBean() {
     System.out.println("persistSensorBean");
-    SensorBean sensor = new SensorBean(3, "M1P3", 0, 3, 65, 0, 1, 0, "marklin.cs");
+    SensorBean sensor = new SensorBean(3, "M1P3", 0, 3, 65, 0, 1, 0, "marklin.cs", 2);
 
     PersistenceService instance = PersistenceFactory.getService();
 
@@ -405,7 +405,7 @@ public class PersistenceServiceTest {
   @Order(9)
   public void testRemoveSensorBean() {
     System.out.println("removeSensorBean");
-    SensorBean sensor = new SensorBean(4, "M1P4", 1, 4, 65, 0, 1, 0,"marklin.cs");
+    SensorBean sensor = new SensorBean(4, "M1P4", 1, 4, 65, 0, 1, 0,"marklin.cs", 2);
 
     PersistenceService instance = PersistenceFactory.getService();
 

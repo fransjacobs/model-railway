@@ -13,18 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.entities;
+package jcs.commandStation.entities;
 
 import java.util.ArrayList;
 import java.util.List;
+import jcs.entities.SensorBean;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class FeedbackModuleBeanTest {
+public class FeedbackModuleTest {
 
-  public FeedbackModuleBeanTest() {
+  public FeedbackModuleTest() {
   }
 
   @BeforeEach
@@ -38,7 +39,7 @@ public class FeedbackModuleBeanTest {
   @Test
   public void testGetId() {
     System.out.println("getId");
-    FeedbackModuleBean instance = new FeedbackModuleBean();
+    FeedbackModule instance = new FeedbackModule();
     instance.setId(0);
     Integer expResult = 0;
 
@@ -49,10 +50,10 @@ public class FeedbackModuleBeanTest {
   @Test
   public void testGetModuleNumber() {
     System.out.println("getModuleNumber");
-    FeedbackModuleBean instance = new FeedbackModuleBean();
+    FeedbackModule instance = new FeedbackModule();
     instance.setId(0);
-    instance.setModuleNumber(0);
-    Integer expResult = 0;
+    instance.setModuleNumber(1);
+    Integer expResult = 1;
     Integer result = instance.getModuleNumber();
     assertEquals(expResult, result);
   }
@@ -60,7 +61,7 @@ public class FeedbackModuleBeanTest {
   @Test
   public void testGetPortCount() {
     System.out.println("getPortCount");
-    FeedbackModuleBean instance = new FeedbackModuleBean();
+    FeedbackModule instance = new FeedbackModule();
     instance.setId(0);
     instance.setModuleNumber(0);
     instance.setPortCount(16);
@@ -72,7 +73,7 @@ public class FeedbackModuleBeanTest {
   @Test
   public void testGetAddressOffset() {
     System.out.println("getAddressOffset");
-    FeedbackModuleBean instance = new FeedbackModuleBean();
+    FeedbackModule instance = new FeedbackModule();
     instance.setId(0);
     instance.setModuleNumber(0);
     instance.setPortCount(16);
@@ -85,7 +86,7 @@ public class FeedbackModuleBeanTest {
   @Test
   public void testGetIdentifier() {
     System.out.println("getIdentifier");
-    FeedbackModuleBean instance = new FeedbackModuleBean();
+    FeedbackModule instance = new FeedbackModule();
     instance.setId(0);
     instance.setModuleNumber(0);
     instance.setPortCount(16);
@@ -99,7 +100,7 @@ public class FeedbackModuleBeanTest {
   @Test
   public void testGetPorts() {
     System.out.println("getPorts");
-    FeedbackModuleBean instance = new FeedbackModuleBean();
+    FeedbackModule instance = new FeedbackModule();
     instance.setId(0);
     instance.setModuleNumber(0);
     instance.setPortCount(16);
@@ -120,7 +121,7 @@ public class FeedbackModuleBeanTest {
     System.out.println("setPortValue");
     int port = 3;
     boolean active = true;
-    FeedbackModuleBean instance = new FeedbackModuleBean();
+    FeedbackModule instance = new FeedbackModule();
     instance.setId(0);
     instance.setModuleNumber(0);
     instance.setPortCount(16);
@@ -140,7 +141,7 @@ public class FeedbackModuleBeanTest {
   public void testIsPort() {
     System.out.println("isPort");
     int port = 6;
-    FeedbackModuleBean instance = new FeedbackModuleBean();
+    FeedbackModule instance = new FeedbackModule();
     instance.setId(0);
     instance.setModuleNumber(0);
     instance.setPortCount(16);
@@ -157,7 +158,7 @@ public class FeedbackModuleBeanTest {
   @Test
   public void testGetAccumulatedPortsValue() {
     System.out.println("getAccumulatedPortsValue");
-    FeedbackModuleBean instance = new FeedbackModuleBean();
+    FeedbackModule instance = new FeedbackModule();
     instance.setId(0);
     instance.setModuleNumber(0);
     instance.setPortCount(16);
@@ -175,7 +176,7 @@ public class FeedbackModuleBeanTest {
   @Test
   public void testGetPrevPorts() {
     System.out.println("getPrevPorts");
-    FeedbackModuleBean instance = new FeedbackModuleBean();
+    FeedbackModule instance = new FeedbackModule();
     instance.setId(0);
     instance.setModuleNumber(0);
     instance.setPortCount(16);
@@ -208,9 +209,10 @@ public class FeedbackModuleBeanTest {
   public void testGetSensorMarklin() {
     System.out.println("getSensorMarklin");
     int port = 1;
-    FeedbackModuleBean instance = new FeedbackModuleBean();
+    FeedbackModule instance = new FeedbackModule();
+    instance.setCommandStationId("marklin.cs");
     instance.setId(0);
-    instance.setModuleNumber(0);
+    instance.setModuleNumber(1);
     instance.setPortCount(16);
     instance.setAddressOffset(1000);
     instance.setIdentifier(65);
@@ -219,14 +221,19 @@ public class FeedbackModuleBeanTest {
     SensorBean expResult = new SensorBean();
     expResult.setId(1001);
 
-    expResult.setContactId(1);
-    expResult.setDeviceId(0);
+    expResult.setCommandStationId("marklin.cs");
+    expResult.setContactId(2);
+    expResult.setDeviceId(1);
     expResult.setNodeId(65);
     expResult.setStatus(0);
     expResult.setPreviousStatus(0);
-    expResult.setName("B1-M00-C01");
+    expResult.setName("B1-M01-C02");
+    expResult.setBusNr(1);
 
     SensorBean result = instance.getSensor(port);
+//expected: <SensorBean{id=1001, name=B1-M01-C02, deviceId=1, contactId=2, nodeId=65, status=0, previousStatus=0, millis=null, lastUpdated=null, commandStationId=marklin.cs, busNr=0}> 
+// but was: <SensorBean{id=1001, name=B1-M01-C02, deviceId=1, contactId=2, nodeId=65, status=0, previousStatus=0, millis=null, lastUpdated=null, commandStationId=marklin.cs, busNr=1}>
+
     assertEquals(expResult, result);
   }
 
@@ -234,9 +241,10 @@ public class FeedbackModuleBeanTest {
   public void testGetSensorEsu() {
     System.out.println("getSensorEsu");
     int port = 5;
-    FeedbackModuleBean instance = new FeedbackModuleBean();
+    FeedbackModule instance = new FeedbackModule();
+    instance.setCommandStationId("esu-ecos");
     instance.setId(101);
-    instance.setModuleNumber(1);
+    instance.setModuleNumber(2);
     instance.setPortCount(16);
     instance.setAddressOffset(0);
     instance.setIdentifier(null);
@@ -244,13 +252,13 @@ public class FeedbackModuleBeanTest {
 
     SensorBean expResult = new SensorBean();
     expResult.setId(21);
-
-    expResult.setContactId(5);
-    expResult.setDeviceId(1);
+    expResult.setCommandStationId("esu-ecos");
+    expResult.setContactId(6);
+    expResult.setDeviceId(2);
     expResult.setNodeId(null);
     expResult.setStatus(1);
     expResult.setPreviousStatus(0);
-    expResult.setName("M01-C05");
+    expResult.setName("M02-C06");
 
     SensorBean result = instance.getSensor(port);
     assertEquals(expResult, result);
@@ -259,28 +267,31 @@ public class FeedbackModuleBeanTest {
   @Test
   public void testGetSensors() {
     System.out.println("getSensors");
-    FeedbackModuleBean instance = new FeedbackModuleBean();
+    FeedbackModule instance = new FeedbackModule();
+    instance.setCommandStationId("esu-ecos");
     instance.setId(102);
     instance.setIdentifier(0);
     instance.setModuleNumber(2);
-    instance.setPortCount(FeedbackModuleBean.DEFAULT_PORT_COUNT);
+    instance.setPortCount(FeedbackModule.DEFAULT_PORT_COUNT);
     instance.setAddressOffset(0);
 
     List<SensorBean> expResult = new ArrayList<>();
 
-    for (int i = 0; i < FeedbackModuleBean.DEFAULT_PORT_COUNT; i++) {
+    for (int i = 0; i < FeedbackModule.DEFAULT_PORT_COUNT; i++) {
       SensorBean sb = new SensorBean();
-      sb.setId(2 * FeedbackModuleBean.DEFAULT_PORT_COUNT + i);
-      sb.setContactId(i);
+      sb.setCommandStationId("esu-ecos");
+      sb.setId(1 * FeedbackModule.DEFAULT_PORT_COUNT + i);
+      sb.setContactId(i + 1);
       sb.setDeviceId(2);
       sb.setStatus(0);
       sb.setNodeId(0);
       sb.setPreviousStatus(0);
-      sb.setName("M02-C" + String.format("%02d", i));
+      sb.setName("M02-C" + String.format("%02d", (i + 1)));
       expResult.add(sb);
     }
 
     List<SensorBean> result = instance.getSensors();
+
     assertEquals(expResult, result);
   }
 
@@ -288,11 +299,13 @@ public class FeedbackModuleBeanTest {
   public void testGetChangedSensors() {
     System.out.println("getChangedSensors");
     int port = 5;
-    FeedbackModuleBean instance = new FeedbackModuleBean();
+
+    FeedbackModule instance = new FeedbackModule();
+    instance.setCommandStationId("esu-ecos");
     instance.setId(100);
     instance.setIdentifier(0);
-    instance.setModuleNumber(0);
-    instance.setPortCount(FeedbackModuleBean.DEFAULT_PORT_COUNT);
+    instance.setModuleNumber(1);
+    instance.setPortCount(FeedbackModule.DEFAULT_PORT_COUNT);
     instance.setAddressOffset(0);
 
     List<SensorBean> expResult = new ArrayList<>();
@@ -300,22 +313,25 @@ public class FeedbackModuleBeanTest {
 
     assertEquals(expResult, result);
 
-    instance.setPortValue(5, true);
+    instance.setPortValue(port, true);
 
     result = instance.getChangedSensors();
 
     SensorBean expChangedResult = new SensorBean();
-    expChangedResult.setId(5);
 
-    expChangedResult.setContactId(5);
-    expChangedResult.setDeviceId(0);
+    expChangedResult.setId(5);
+    expChangedResult.setCommandStationId("esu-ecos");
+    expChangedResult.setContactId(6);
+    expChangedResult.setDeviceId(1);
     expChangedResult.setNodeId(0);
     expChangedResult.setStatus(1);
     expChangedResult.setPreviousStatus(0);
-    expChangedResult.setName("M00-C05");
+    expChangedResult.setName("M01-C06");
 
     expResult.add(expChangedResult);
 
+    //expected: <[SensorBean{id=5, name=M00-C06, deviceId=0, contactId=6, nodeId=0, status=1, previousStatus=0, millis=null, lastUpdated=null, commandStationId=esu-ecos}]> 
+    // but was: <[SensorBean{id=5, name=M01-C06, deviceId=1, contactId=6, nodeId=0, status=1, previousStatus=0, millis=null, lastUpdated=null, commandStationId=esu-ecos}]>
     assertEquals(expResult, result);
   }
 

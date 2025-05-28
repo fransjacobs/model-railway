@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Frans Jacobs.
+ * Copyright 2025 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,11 +81,25 @@ public interface PersistenceService {
 
   // Sensors
   /**
-   * Retrieves all SensorBeans.
+   * Retrieves All SensorBeans
+   *
+   * @return A List of SensorBeans.
+   */
+  List<SensorBean> getAllSensors();
+
+  /**
+   * Retrieves SensorBeans for the default command station
    *
    * @return A List of SensorBeans.
    */
   List<SensorBean> getSensors();
+
+  /**
+   *
+   * @param commandStationId the command station id for which the sensors are retrieved
+   * @return A List of SensorBeans
+   */
+  List<SensorBean> getSensorsByCommandStationId(String commandStationId);
 
   /**
    * Retrieves all assigned SensorBeans.

@@ -13,17 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.entities;
+package jcs.commandStation.entities;
 
 import java.util.ArrayList;
 import java.util.List;
 import jcs.commandStation.events.SensorEvent;
+import jcs.entities.SensorBean;
 import org.tinylog.Logger;
 
 /**
  * Represents 1 Feedback Module (S88) with a number of ports (usually 16)
  */
-public class FeedbackModuleBean implements Comparable<FeedbackModuleBean> {
+public class FeedbackModule implements Comparable<FeedbackModule> {
 
   private Integer id;
   private Integer moduleNumber;
@@ -32,6 +33,7 @@ public class FeedbackModuleBean implements Comparable<FeedbackModuleBean> {
   private Integer identifier;
   private Integer busNumber;
   private String commandStationId;
+  private Integer busSize;
 
   private int[] ports;
   private int[] prevPorts;
@@ -40,15 +42,15 @@ public class FeedbackModuleBean implements Comparable<FeedbackModuleBean> {
   public static int DEFAULT_ADDRESS_OFFSET = 0;
   public static int DEFAULT_IDENTIFIER = 0;
 
-  public FeedbackModuleBean() {
+  public FeedbackModule() {
     this(null, null, null);
   }
 
-  public FeedbackModuleBean(Integer id, Integer moduleNumber, String commandStationId) {
+  public FeedbackModule(Integer id, Integer moduleNumber, String commandStationId) {
     this(id, moduleNumber, DEFAULT_PORT_COUNT, DEFAULT_ADDRESS_OFFSET, DEFAULT_IDENTIFIER, commandStationId);
   }
 
-  public FeedbackModuleBean(Integer id, Integer moduleNumber, Integer portCount, Integer addressOffset, Integer identifier, String commandStationId) {
+  public FeedbackModule(Integer id, Integer moduleNumber, Integer portCount, Integer addressOffset, Integer identifier, String commandStationId) {
     this.id = id;
     this.moduleNumber = moduleNumber;
     this.portCount = portCount;
@@ -61,7 +63,7 @@ public class FeedbackModuleBean implements Comparable<FeedbackModuleBean> {
   }
 
   @Override
-  public int compareTo(FeedbackModuleBean o) {
+  public int compareTo(FeedbackModule o) {
     int bn = 0;
     if (busNumber != null) {
       bn = busNumber;
@@ -147,13 +149,13 @@ public class FeedbackModuleBean implements Comparable<FeedbackModuleBean> {
 
   public void setPortValue(int port, boolean active) {
     //save current values
-    System.arraycopy(this.ports, 0, this.prevPorts, 0, this.ports.length);
-    this.ports[port] = active ? 1 : 0;
+    System.arraycopy(ports, 0, prevPorts, 0, ports.length);
+    ports[port] = active ? 1 : 0;
   }
 
   public boolean isPort(int port) {
     if (ports != null && port < ports.length) {
-      return this.ports[port] == 1;
+      return ports[port] == 1;
     } else {
       return false;
     }
@@ -187,6 +189,14 @@ public class FeedbackModuleBean implements Comparable<FeedbackModuleBean> {
     this.commandStationId = commandStationId;
   }
 
+  public Integer getBusSize() {
+    return busSize;
+  }
+
+  public void setBusSize(Integer busSize) {
+    this.busSize = busSize;
+  }
+
   public SensorBean getSensor(int port) {
     int sid;
     int offset = 0;
@@ -196,8 +206,8 @@ public class FeedbackModuleBean implements Comparable<FeedbackModuleBean> {
       if (addressOffset != null) {
         offset = addressOffset;
       }
-      sid = offset + moduleNumber * portCount + port;
-      name = "M" + String.format("%02d", moduleNumber) + "-C" + String.format("%02d", port);
+      sid = offset + (moduleNumber - 1) * portCount + port;
+      name = "M" + String.format("%02d", moduleNumber) + "-C" + String.format("%02d", port + 1);
     } else {
       //Part of a bus, there should be an offset...  
       if (addressOffset != null) {
@@ -205,14 +215,19 @@ public class FeedbackModuleBean implements Comparable<FeedbackModuleBean> {
       } else {
         Logger.warn("Module connected to bus " + busNumber + " but bus address offset is not specified!");
       }
-      sid = offset + moduleNumber * portCount + port;
-      name = "B" + busNumber.toString() + "-M" + String.format("%02d", moduleNumber) + "-C" + String.format("%02d", port);
+      sid = offset + (moduleNumber - 1) * portCount + port;
+      name = "B" + busNumber.toString() + "-M" + String.format("%02d", moduleNumber) + "-C" + String.format("%02d", port + 1);
     }
 
     int status = ports[port];
     int prevStatus = prevPorts[port];
 
-    SensorBean sb = new SensorBean(sid, moduleNumber, port, identifier, status, prevStatus, commandStationId);
+    int busNr = 0;
+    if (busNumber != null) {
+      busNr = busNumber;
+    }
+
+    SensorBean sb = new SensorBean(sid, moduleNumber, port + 1, identifier, status, prevStatus, commandStationId, busNr);
     sb.setName(name);
     return sb;
   }

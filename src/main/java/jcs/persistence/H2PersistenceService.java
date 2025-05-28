@@ -117,8 +117,20 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public List<SensorBean> getSensors() {
+  public List<SensorBean> getAllSensors() {
     List<SensorBean> sensors = database.results(SensorBean.class);
+    return sensors;
+  }
+
+  @Override
+  public List<SensorBean> getSensors() {
+    String commandStationId = getDefaultCommandStation().getId();
+    return getSensorsByCommandStationId(commandStationId);
+  }
+
+  @Override
+  public List<SensorBean> getSensorsByCommandStationId(String commandStationId) {
+    List<SensorBean> sensors = database.where("command_station_id=?", commandStationId).orderBy("id").results(SensorBean.class);
     return sensors;
   }
 
@@ -943,11 +955,11 @@ public class H2PersistenceService implements PersistenceService {
     return database.where("default_cs=true").first(CommandStationBean.class);
   }
 
-   @Override
+  @Override
   public CommandStationBean getEnabledFeedbackProvider() {
     return database.where("default_cs=false and supports_feedback=true and supports_decoder_control=false and enabled=true").first(CommandStationBean.class);
   }
-  
+
   @Override
   public synchronized CommandStationBean persist(CommandStationBean commandStationBean) {
     CommandStationBean prev = database.where("id=?", commandStationBean.getId()).first(CommandStationBean.class);

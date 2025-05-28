@@ -119,7 +119,7 @@ public class SmallDriverCabPanel extends JPanel implements LocomotiveSelectionCh
     buttonsTP.setEnabled(enabled);
   }
 
-  //@Override
+  @Override
   public void onFunctionChange(LocomotiveFunctionEvent event) {
     if (locomotiveBean != null && locomotiveBean.getId().equals(event.getFunctionBean().getLocomotiveId())) {
       FunctionBean fb = event.getFunctionBean();

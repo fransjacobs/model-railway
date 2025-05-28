@@ -40,7 +40,7 @@ import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.CommandStationBean;
-import jcs.entities.FeedbackModuleBean;
+import jcs.commandStation.entities.FeedbackModule;
 import jcs.commandStation.entities.InfoBean;
 import jcs.entities.LocomotiveBean;
 import jcs.util.NetworkUtil;
@@ -290,7 +290,7 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   }
 
   @Override
-  public List<FeedbackModuleBean> getFeedbackModules() {
+  public List<FeedbackModule> getFeedbackModules() {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 

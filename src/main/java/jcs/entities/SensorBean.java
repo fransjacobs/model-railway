@@ -38,24 +38,25 @@ public class SensorBean {
   private Long lastUpdated;
   private Integer nodeId;
   private String commandStationId;
+  private Integer busNr;
 
   public SensorBean() {
-    this(null, null, null, null, null, null, null);
+    this(null, null, null, null, null, null, null, 0);
   }
 
-  public SensorBean(Integer id, Integer deviceId, Integer contactId, Integer nodeId, Integer status, Integer previousStatus, String commandStationId) {
-    this(id, null, deviceId, contactId, nodeId, status, previousStatus, (Integer) null, (Long) null, commandStationId);
+  public SensorBean(Integer id, Integer deviceId, Integer contactId, Integer nodeId, Integer status, Integer previousStatus, String commandStationId, Integer busNr) {
+    this(id, null, deviceId, contactId, nodeId, status, previousStatus, (Integer) null, (Long) null, commandStationId, busNr);
   }
 
-  public SensorBean(Integer id, String name, Integer deviceId, Integer contactId, Integer nodeId, Integer status, Integer previousStatus, Integer millis, String commandStationId) {
-    this(id, name, deviceId, contactId, nodeId, status, previousStatus, millis, (Long) null, commandStationId);
+  public SensorBean(Integer id, String name, Integer deviceId, Integer contactId, Integer nodeId, Integer status, Integer previousStatus, Integer millis, String commandStationId, Integer busNr) {
+    this(id, name, deviceId, contactId, nodeId, status, previousStatus, millis, (Long) null, commandStationId, busNr);
   }
 
-  public SensorBean(Integer id, String name, Integer deviceId, Integer contactId, Integer nodeId, Integer status, Integer previousStatus, Integer millis, Date lastUpdated, String commandStationId) {
-    this(id, name, deviceId, contactId, nodeId, status, previousStatus, millis, (lastUpdated != null ? lastUpdated.getTime() : null), commandStationId);
+  public SensorBean(Integer id, String name, Integer deviceId, Integer contactId, Integer nodeId, Integer status, Integer previousStatus, Integer millis, Date lastUpdated, String commandStationId, Integer busNr) {
+    this(id, name, deviceId, contactId, nodeId, status, previousStatus, millis, (lastUpdated != null ? lastUpdated.getTime() : null), commandStationId, busNr);
   }
 
-  public SensorBean(Integer id, String name, Integer deviceId, Integer contactId, Integer nodeId, Integer status, Integer previousStatus, Integer millis, Long lastUpdated, String commandStationId) {
+  public SensorBean(Integer id, String name, Integer deviceId, Integer contactId, Integer nodeId, Integer status, Integer previousStatus, Integer millis, Long lastUpdated, String commandStationId, Integer busNr) {
     this.id = id;
     this.name = name;
     this.status = status;
@@ -66,13 +67,15 @@ public class SensorBean {
     this.millis = millis;
     this.lastUpdated = lastUpdated;
     this.commandStationId = commandStationId;
+    this.busNr = busNr;
 
+    //TODO!
     if (name == null) {
-      this.name = generateName();
+      //this.name = generateName();
     }
   }
 
-  private String generateName() {
+  private String generateNameOld() {
     if (deviceId != null && contactId != null && nodeId != null) {
 
       String dn = deviceId.toString();
@@ -106,7 +109,7 @@ public class SensorBean {
   @Column(name = "name", length = 255, nullable = false)
   public String getName() {
     if (name == null) {
-      name = generateName();
+      //name = generateName();
     }
     return name;
   }
@@ -167,6 +170,15 @@ public class SensorBean {
 
   public void setCommandStationId(String commandStationId) {
     this.commandStationId = commandStationId;
+  }
+
+  @Column(name = "bus_nr", nullable = false)
+  public Integer getBusNr() {
+    return busNr;
+  }
+
+  public void setBusNr(Integer busNr) {
+    this.busNr = busNr;
   }
 
   @Transient
@@ -273,6 +285,7 @@ public class SensorBean {
     hash = 41 * hash + Objects.hashCode(this.millis);
     hash = 41 * hash + Objects.hashCode(this.lastUpdated);
     hash = 41 * hash + Objects.hashCode(this.commandStationId);
+    hash = 41 * hash + Objects.hashCode(this.busNr);
     return hash;
   }
 
@@ -315,9 +328,13 @@ public class SensorBean {
     if (!Objects.equals(this.commandStationId, other.commandStationId)) {
       return false;
     }
+    if (!Objects.equals(this.busNr, other.busNr)) {
+      return false;
+    }
     return Objects.equals(this.lastUpdated, other.lastUpdated);
   }
 
+  @Deprecated
   public boolean equalsDeviceIdAndContactId(Object obj) {
     if (this == obj) {
       return true;
@@ -387,6 +404,8 @@ public class SensorBean {
             + lastUpdated
             + ", commandStationId="
             + commandStationId
+            + ", busNr="
+            + busNr
             + "}";
   }
 }

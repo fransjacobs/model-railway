@@ -41,9 +41,12 @@ public class CanDevice {
   private String serial;
   private String articleNumber;
   private String name;
+  private String shortName;
 
   private final Map<Integer, MeasuringChannel> measuringChannels;
   private final Map<Integer, ConfigChannel> configChannels;
+
+  public static final String FEEDBACK_DEVICE_NAME = "Link S88";
 
   public CanDevice() {
     measuringChannels = new HashMap<>();
@@ -89,6 +92,14 @@ public class CanDevice {
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  public String getShortName() {
+    return shortName;
+  }
+
+  public void setShortName(String shortName) {
+    this.shortName = shortName;
   }
 
   public String getIdentifier() {

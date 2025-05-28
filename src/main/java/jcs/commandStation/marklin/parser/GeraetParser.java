@@ -35,7 +35,7 @@ public class GeraetParser {
     if (geraetFile == null) {
       return null;
     }
-
+    
     CanDevice gfp = new CanDevice();
     //InfoBean ib = new InfoBean();
     //ib.copyInto(commandStationBean);
@@ -50,10 +50,10 @@ public class GeraetParser {
       }
       String key = line.substring(0, eqidx).trim();
       String value = line.substring(eqidx).replace("=", "").trim();
-
+      
       switch (key) {
         case "[geraet]" -> {
-
+          
         }
         case ".major" -> {
           major = value;
@@ -86,22 +86,24 @@ public class GeraetParser {
         }
       }
     }
-
+    
     String softwareVersion = (major != null ? major : "") + (major != null ? "." : "") + (minor != null ? minor : "");
     //ib.setSoftwareVersion(softwareVersion);
     gfp.setVersion(softwareVersion);
-
-    if (gfp.getSerial().length() < 5) {
+    
+    if (gfp.getSerial() != null & gfp.getSerial().length() < 5) {
       gfp.setSerial("0" + gfp.getSerial());
     }
-
+    
     String shortName;
     if (gfp.getName() != null && gfp.getName().contains("Central Station 3")) {
       shortName = "CS3";
     } else {
       shortName = "CS2";
     }
-
+    
+    gfp.setShortName(shortName);
+    
     gfp.setIdentifier("0x00");
     return gfp;
   }
@@ -116,9 +118,9 @@ public class GeraetParser {
     if (json == null) {
       return null;
     }
-
+    
     InfoBean ib = new InfoBean();
-
+    
     JSONObject infoObject = new JSONObject(json);
     ib.setSoftwareVersion(infoObject.optString("softwareVersion"));
     ib.setHardwareVersion(infoObject.optString("hardwareVersion"));
@@ -128,8 +130,8 @@ public class GeraetParser {
     ib.setHostname(infoObject.optString("hostname"));
     ib.setGfpUid(infoObject.optString("gfpUid"));
     ib.setGuiUid(infoObject.optString("guiUid"));
-
+    
     return ib;
   }
-
+  
 }

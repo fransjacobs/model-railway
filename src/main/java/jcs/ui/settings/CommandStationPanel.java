@@ -56,7 +56,7 @@ import jcs.commandStation.FeedbackController;
 import jcs.entities.CommandStationBean;
 import jcs.entities.CommandStationBean.ConnectionType;
 import jcs.entities.CommandStationBean.Protocol;
-import jcs.entities.FeedbackModuleBean;
+import jcs.commandStation.entities.FeedbackModule;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.swing.layout.VerticalFlowLayout;
 import jcs.util.Ping;
@@ -1372,10 +1372,10 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
   private void recreateSensors() {
 
     if (selectedCommandStation.isFeedbackSupport()) {
-      List<FeedbackModuleBean> feedbackModules = ((FeedbackController) selectedCommandStation).getFeedbackModules();
+      List<FeedbackModule> feedbackModules = ((FeedbackController) selectedCommandStation).getFeedbackModules();
       PersistenceFactory.getService().removeAllSensors();
 
-      for (FeedbackModuleBean fm : feedbackModules) {
+      for (FeedbackModule fm : feedbackModules) {
         PersistenceFactory.getService().persistSensorBeans(fm.getSensors());
       }
     }
@@ -1502,7 +1502,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
                   setProgress(50);
 
                   if (commandStation instanceof FeedbackController feedbackController) {
-                    List<FeedbackModuleBean> feedbackModules = feedbackController.getFeedbackModules();
+                    List<FeedbackModule> feedbackModules = feedbackController.getFeedbackModules();
 
                     if (!feedbackModules.isEmpty()) {
                       Logger.trace(feedbackController.getCommandStationInfo().getProductName() + " Supports Feedback");

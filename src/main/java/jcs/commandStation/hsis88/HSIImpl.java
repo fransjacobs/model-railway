@@ -30,7 +30,7 @@ import jcs.commandStation.events.SensorEventListener;
 import static jcs.commandStation.hsis88.HSIConnection.COMMAND_VERSION;
 import jcs.entities.CommandStationBean;
 import jcs.entities.CommandStationBean.ConnectionType;
-import jcs.entities.FeedbackModuleBean;
+import jcs.commandStation.entities.FeedbackModule;
 import jcs.commandStation.entities.InfoBean;
 import jcs.commandStation.VirtualConnection;
 import jcs.commandStation.entities.Device;
@@ -168,7 +168,7 @@ public class HSIImpl extends AbstractController implements FeedbackController {
   }
 
   @Override
-  public List<FeedbackModuleBean> getFeedbackModules() {
+  public List<FeedbackModule> getFeedbackModules() {
     return null;
   }
 

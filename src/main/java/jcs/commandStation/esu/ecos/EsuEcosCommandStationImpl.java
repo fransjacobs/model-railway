@@ -37,7 +37,7 @@ import jcs.commandStation.events.PowerEventListener;
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.AccessoryBean;
 import jcs.entities.CommandStationBean;
-import jcs.entities.FeedbackModuleBean;
+import jcs.commandStation.entities.FeedbackModule;
 import jcs.commandStation.entities.InfoBean;
 import jcs.commandStation.esu.ecos.net.EcosHTTPConnection;
 import jcs.commandStation.events.AccessoryEvent;
@@ -252,7 +252,7 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     try {
       if (connected) {
         Logger.trace("Unsubsribe from " + feedbackManager.getSize() + " feedback modules...");
-        for (FeedbackModuleBean fm : feedbackManager.getModules().values()) {
+        for (FeedbackModule fm : feedbackManager.getModules().values()) {
           connection.sendMessage(EcosMessageFactory.unSubscribeFeedbackModule(fm.getId()));
         }
         Logger.trace("Unsubscribe from " + accessoryManager.getSize() + " accessories...");
@@ -571,8 +571,8 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
   }
 
   @Override
-  public List<FeedbackModuleBean> getFeedbackModules() {
-    List<FeedbackModuleBean> feedbackModules = new ArrayList<>(this.feedbackManager.getModules().values());
+  public List<FeedbackModule> getFeedbackModules() {
+    List<FeedbackModule> feedbackModules = new ArrayList<>(this.feedbackManager.getModules().values());
     return feedbackModules;
   }
 
@@ -762,9 +762,9 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 //
 //        cs.pause(1000);
 //
-        List<FeedbackModuleBean> feedbackModules = cs.getFeedbackModules();
+        List<FeedbackModule> feedbackModules = cs.getFeedbackModules();
         Logger.trace("There are " + feedbackModules + " Feedback Modules");
-        for (FeedbackModuleBean fm : feedbackModules) {
+        for (FeedbackModule fm : feedbackModules) {
           Logger.trace("Module id: " + fm.getId() + " Module nr: " + fm.getModuleNumber() + " ports: " + fm.getPortCount() + " NodeId: " + fm.getIdentifier() + " BusNr: " + fm.getBusNumber());
           Logger.trace("FBModule id: " + fm.getId() + " S 1 id:" + fm.getSensor(0).getId() + " contactId: " + fm.getSensor(0).getContactId() + " ModuleNr: " + fm.getSensor(0).getDeviceId() + " Name " + fm.getSensor(0).getName());
           Logger.trace("FBModule id: " + fm.getId() + " S 15 id:" + fm.getSensor(15).getId() + " contactId: " + fm.getSensor(15).getContactId() + " ModuleNr: " + fm.getSensor(15).getDeviceId() + " Name " + fm.getSensor(15).getName());

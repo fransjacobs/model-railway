@@ -17,7 +17,14 @@ commit;
 
 alter table sensors alter id integer;
 alter table sensors add node_id integer;
+alter table sensors add bus_nr integer not null default 0;
+
 alter table sensors add command_station_id varchar(255) not null;
+alter table sensors drop constraint sens_deid_coid_un;
+drop index sens_deid_coid_un_idx;
+
+alter table sensors add constraint sens_deid_coid_un unique (device_id,contact_id,bus_nr,command_station_id);
+
 
 alter table tiles alter sensor_id integer;
 alter table blocks alter plus_sensor_id integer;

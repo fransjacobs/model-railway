@@ -64,7 +64,7 @@ import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.CommandStationBean;
 import jcs.commandStation.entities.InfoBean;
 import jcs.commandStation.marklin.cs.can.parser.AccessoryMessage;
-import jcs.entities.FeedbackModuleBean;
+import jcs.commandStation.entities.FeedbackModule;
 import jcs.commandStation.marklin.cs2.LocomotiveDirectionEventParser;
 import jcs.commandStation.marklin.cs2.LocomotiveFunctionEventParser;
 import jcs.commandStation.marklin.cs.can.parser.LocomotiveVelocityMessage;
@@ -491,6 +491,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       d.setSoftwareVersion(cd.getVersion());
       d.setHardwareVersion(cd.getHwVersion());
       d.setChannels(cd.getConfigChannelCount());
+      d.setFeedback(CanDevice.FEEDBACK_DEVICE_NAME.equals(cd.getName()));
       devices.add(d);
     }
 
@@ -498,13 +499,13 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   }
 
   @Override
-  public List<FeedbackModuleBean> getFeedbackModules() {
+  public List<FeedbackModule> getFeedbackModules() {
     //Feedbackmodules can be queried from the Link S88 if available.
     //In case of a CS 3 Plus or CS 2 there should be a node "0" which could have max 32 S88 modules.
     //TODO: Test with CS-3Plus and CS2.
     //Link S88
-    List<FeedbackModuleBean> feedbackModules = new ArrayList<>();
-    CanDevice links88 = getCanDevice("Link S88");
+    List<FeedbackModule> feedbackModules = new ArrayList<>();
+    CanDevice links88 = getCanDevice(CanDevice.FEEDBACK_DEVICE_NAME);
     int bus1Len = 0, bus2Len = 0, bus3Len = 0, nodeId = 0;
     if (links88 != null) {
       nodeId = links88.getIdentifierInt() + 1;
@@ -523,50 +524,54 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 
       //Link S88 has 16 sensors starting from 0
       //Bus 1 offset 1000, Bus 2 offset 2000 and Bus 3 offset 3000
-      FeedbackModuleBean l = new FeedbackModuleBean();
+      FeedbackModule l = new FeedbackModule();
       l.setId(0);
 
       l.setAddressOffset(0);
-      l.setModuleNumber(0);
+      l.setModuleNumber(1);
       l.setPortCount(16);
       l.setIdentifier(nodeId);
       l.setBusNumber(0);
       l.setCommandStationId(commandStationBean.getId());
+      l.setBusSize(1);
       feedbackModules.add(l);
 
       for (int i = 0; i < bus1Len; i++) {
-        FeedbackModuleBean b1 = new FeedbackModuleBean();
+        FeedbackModule b1 = new FeedbackModule();
         //Use the offset plus module nr as the id
         b1.setId(1000 + i);
         b1.setAddressOffset(1000);
-        b1.setModuleNumber(i);
+        b1.setModuleNumber(i + 1);
         b1.setPortCount(16);
         b1.setIdentifier(nodeId);
         b1.setBusNumber(1);
         b1.setCommandStationId(commandStationBean.getId());
+        b1.setBusSize(bus1Len);
         feedbackModules.add(b1);
       }
       for (int i = 0; i < bus2Len; i++) {
-        FeedbackModuleBean b2 = new FeedbackModuleBean();
+        FeedbackModule b2 = new FeedbackModule();
         b2.setId(2000 + i);
         b2.setAddressOffset(2000);
-        b2.setModuleNumber(i);
+        b2.setModuleNumber(i + 1);
         b2.setPortCount(16);
         b2.setIdentifier(nodeId);
         b2.setBusNumber(2);
         b2.setCommandStationId(commandStationBean.getId());
+        b2.setBusSize(bus2Len);
 
         feedbackModules.add(b2);
       }
       for (int i = 0; i < bus3Len; i++) {
-        FeedbackModuleBean b3 = new FeedbackModuleBean();
+        FeedbackModule b3 = new FeedbackModule();
         b3.setId(3000 + i);
         b3.setAddressOffset(3000);
-        b3.setModuleNumber(i);
+        b3.setModuleNumber(i + 1);
         b3.setPortCount(16);
         b3.setIdentifier(nodeId);
         b3.setBusNumber(3);
         b3.setCommandStationId(commandStationBean.getId());
+        b3.setBusSize(bus3Len);
 
         feedbackModules.add(b3);
       }
@@ -1258,9 +1263,9 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 //
 //      Logger.debug("Switch Accessory 2 to Green");
       //cs.switchAccessory(2, AccessoryValue.GREEN, 250);
-      List<FeedbackModuleBean> feedbackModules = cs.getFeedbackModules();
+      List<FeedbackModule> feedbackModules = cs.getFeedbackModules();
       Logger.trace("There are " + feedbackModules + " Feedback Modules");
-      for (FeedbackModuleBean fm : feedbackModules) {
+      for (FeedbackModule fm : feedbackModules) {
         Logger.trace("Module id: " + fm.getId() + " Module nr: " + fm.getModuleNumber() + " ports: " + fm.getPortCount() + " NodeId: " + fm.getIdentifier() + " BusNr: " + fm.getBusNumber());
         Logger.trace("FBModule id: " + fm.getId() + " S 1 id:" + fm.getSensor(0).getId() + " contactId: " + fm.getSensor(0).getContactId() + " ModuleNr: " + fm.getSensor(0).getDeviceId() + " Name " + fm.getSensor(0).getName());
         Logger.trace("FBModule id: " + fm.getId() + " S 15 id:" + fm.getSensor(15).getId() + " contactId: " + fm.getSensor(15).getContactId() + " ModuleNr: " + fm.getSensor(15).getDeviceId() + " Name " + fm.getSensor(15).getName());

@@ -19,7 +19,7 @@ import java.util.List;
 import jcs.commandStation.entities.InfoBean;
 import jcs.entities.AccessoryBean;
 import jcs.entities.CommandStationBean;
-import jcs.entities.FeedbackModuleBean;
+import jcs.commandStation.entities.FeedbackModule;
 import jcs.entities.LocomotiveBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.persistence.util.PersistenceTestHelper;
@@ -383,7 +383,7 @@ public class EsuEcosCommandStationImplTest {
       EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
       instance.connect();
       int expResult = 1;
-      List<FeedbackModuleBean> result = instance.getFeedbackModules();
+      List<FeedbackModule> result = instance.getFeedbackModules();
       assertEquals(expResult, result.size());
     }
   }

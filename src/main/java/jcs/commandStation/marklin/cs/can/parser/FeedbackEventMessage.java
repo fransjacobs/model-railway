@@ -48,7 +48,19 @@ public class FeedbackEventMessage {
 
       Integer millis = ByteUtil.toInt(new byte[]{data[6], data[7]}) * 10;
 
-      SensorBean sensorBean = new SensorBean(contactId, null, null, null, identifier, status, previousStatus, millis, System.currentTimeMillis(), MARKLIN_CS);
+      //Derive the busNumber
+      int busNumber;
+      if (contactId < 1000) {
+        busNumber = 0;
+      } else if (contactId >= 1000 && contactId < 2000) {
+        busNumber = 1;
+      } else if (contactId >= 2000 && contactId < 3000) {
+        busNumber = 2;
+      } else {
+        busNumber = 3;
+      }
+
+      SensorBean sensorBean = new SensorBean(contactId, null, null, null, identifier, status, previousStatus, millis, System.currentTimeMillis(), MARKLIN_CS, busNumber);
       return sensorBean;
     } else {
       Logger.warn("Can't parse message, not a Sensor Response! " + resp);

@@ -18,7 +18,7 @@ package jcs.commandStation;
 import java.util.List;
 import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
-import jcs.entities.FeedbackModuleBean;
+import jcs.commandStation.entities.FeedbackModule;
 
 public interface FeedbackController extends GenericController {
 
@@ -28,7 +28,7 @@ public interface FeedbackController extends GenericController {
 
   //DeviceBean getFeedbackDevice();
 
-  List<FeedbackModuleBean> getFeedbackModules();
+  List<FeedbackModule> getFeedbackModules();
 
   void fireSensorEventListeners(SensorEvent sensorEvent);
 
