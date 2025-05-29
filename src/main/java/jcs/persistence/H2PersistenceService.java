@@ -50,12 +50,14 @@ public class H2PersistenceService implements PersistenceService {
 
   protected final HashMap<String, Image> imageCache;
   protected final HashMap<String, Image> functionImageCache;
+  protected final HashSet<String> nullFunctionImages;
   protected final PropertyChangeSupport changeSupport;
 
   public H2PersistenceService() {
     initConnect();
     imageCache = new HashMap<>();
     functionImageCache = new HashMap<>();
+    nullFunctionImages = new HashSet<>();
     changeSupport = new PropertyChangeSupport(this);
     postInit();
   }
@@ -453,57 +455,58 @@ public class H2PersistenceService implements PersistenceService {
   @Override
   public Image readImage(String imageName, boolean function) {
     Image image = null;
-    if (imageName != null) {
-      String path;
-      if (imageName.contains(File.separator)) {
-        //Contains path seperators so assume it is a manual selected image
-        path = imageName;
-      } else {
-        //no path seperators so assume it is a synchonized command station icon
-        if (getDefaultCommandStation() != null) {
-          String shortName = getDefaultCommandStation().getShortName().toLowerCase();
-          path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + shortName + File.separator;
+    if (!nullFunctionImages.contains(imageName)) {
+      if (imageName != null) {
+        String path;
+        if (imageName.contains(File.separator)) {
+          //Contains path seperators so assume it is a manual selected image
+          path = imageName;
         } else {
-          path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator;
-        }
-      }
-
-      if (function) {
-        if (!path.contains("/media/esu")) {
-          path = path + "zfunctions" + File.separator;
-        }
-      }
-
-      File imgFile;
-      if (path.contains("/media/esu/")) {
-        //local resourse 
-        imgFile = null;
-      } else if (path.contains(".")) {
-        imgFile = new File(path);
-      } else {
-        imgFile = new File(path + imageName.toLowerCase() + ".png");
-      }
-
-      if (imgFile != null && imgFile.exists()) {
-        try {
-          image = ImageIO.read(imgFile);
-        } catch (IOException e) {
-          Logger.trace("Image file " + imageName + ".png does not exists");
-        }
-      } else {
-        if (path.contains("/media")) {
-          URL iconUrl = getClass().getResource(path);
-          try {
-            image = ImageIO.read(iconUrl);
-          } catch (IOException | IllegalArgumentException e) {
-            Logger.trace("Image URL " + iconUrl + " does not exists");
+          //no path seperators so assume it is a synchonized command station icon
+          if (getDefaultCommandStation() != null) {
+            String shortName = getDefaultCommandStation().getShortName().toLowerCase();
+            path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + shortName + File.separator;
+          } else {
+            path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator;
           }
         }
 
-        //TODO:
-        // should we attempt to obtain it now and cache it when available, but also when it is not
-        // available put a marker so that we are not trying over and over again...
-        // who should be responsable for the cache... the command controller, this class, or?
+        if (function) {
+          if (!path.contains("/media/esu")) {
+            path = path + "zfunctions" + File.separator;
+          }
+        }
+
+        File imgFile;
+        if (path.contains("/media/esu/")) {
+          //local resourse 
+          imgFile = null;
+        } else if (path.contains(".")) {
+          imgFile = new File(path);
+        } else {
+          imgFile = new File(path + imageName.toLowerCase() + ".png");
+        }
+
+        if (imgFile != null && imgFile.exists()) {
+          try {
+            image = ImageIO.read(imgFile);
+          } catch (IOException e) {
+            Logger.trace("Image file " + imageName + ".png does not exists");
+          }
+        } else {
+          if (path.contains("/media")) {
+            URL iconUrl = getClass().getResource(path);
+            try {
+              image = ImageIO.read(iconUrl);
+            } catch (IOException | IllegalArgumentException e) {
+              Logger.trace("Image URL " + path + " does not exists");
+            }
+          }
+        }
+      }
+
+      if (image == null) {
+        this.nullFunctionImages.add(imageName);
       }
     }
     return image;

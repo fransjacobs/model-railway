@@ -91,7 +91,7 @@ public class JCSCommandStation {
    * Operations to commandStations are performed in a worker thread to avoid blocking the EventDispatch thread.<br>
    */
   public JCSCommandStation() {
-    this("true".equalsIgnoreCase(System.getProperty("skip.controller.autoconnect", "true")));
+    this("true".equalsIgnoreCase(System.getProperty("skip.controller.autoconnect", "false")));
   }
 
   private JCSCommandStation(boolean autoConnectController) {
@@ -107,7 +107,7 @@ public class JCSCommandStation {
     supportedProtocols = new HashSet<>();
 
     try {
-      if (autoConnectController && decoderController != null && decoderController.getCommandStationBean() != null || accessoryControllers.isEmpty() || feedbackControllers.isEmpty()) {
+      if (decoderController != null && (decoderController.getCommandStationBean() != null || !accessoryControllers.isEmpty() || !feedbackControllers.isEmpty()) && autoConnectController) {
         connect();
         Logger.trace(decoderController != null ? "Aquired " + decoderController.getClass().getSimpleName() : "Could not aquire a Command Station! " + (decoderController.isConnected() ? "Connected" : "NOT Connected"));
       } else {
@@ -116,6 +116,30 @@ public class JCSCommandStation {
     } catch (Exception e) {
       Logger.warn("Can't connect with default Command Station!");
     }
+  }
+
+  public final boolean connectInBackground() {
+    executor.execute(() -> connect());
+
+    long now = System.currentTimeMillis();
+    long timemax = now + 2000;
+
+    boolean con;
+    synchronized (this) {
+      con = decoderController.isConnected();
+      while (!con && timemax < now) {
+        try {
+          wait(500);
+        } catch (InterruptedException ex) {
+          Logger.trace(ex);
+        }
+        now = System.currentTimeMillis();
+      }
+      if (!(timemax < now)) {
+        Logger.trace("Timeout connecting...");
+      }
+    }
+    return con;
   }
 
   public final boolean connect() {
@@ -251,7 +275,8 @@ public class JCSCommandStation {
     if (decoderController != null) {
       return decoderController.getCommandStationBean();
     } else {
-      return null;
+      Logger.trace("Using the default CommandStationBean...");
+      return PersistenceFactory.getService().getDefaultCommandStation();
     }
   }
 

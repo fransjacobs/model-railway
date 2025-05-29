@@ -69,7 +69,6 @@ public class JCS extends Thread {
   private static UICallback uiCallback;
 
   //private final List<RefreshEventListener> refreshEventListeners;
-
   private JCS() {
     //refreshEventListeners = new ArrayList<>();
   }
@@ -215,9 +214,9 @@ public class JCS extends Thread {
     jcsCommandStation = getJcsCommandStation();
 
     if (persistentStore != null) {
-      if ("true".equalsIgnoreCase(System.getProperty("commandStation.autoconnect", "true"))) {
+      if ("true".equalsIgnoreCase(System.getProperty("commandStation.autoconnect", "false"))) {
         if (jcsCommandStation != null) {
-          boolean connected = jcsCommandStation.connect();
+          boolean connected = jcsCommandStation.connectInBackground();
           if (connected) {
             logProgress("Connected with Command Station...");
 
@@ -287,9 +286,8 @@ public class JCS extends Thread {
       jcsFrame.setVisible(true);
       jcsFrame.toFront();
       jcsFrame.showOverviewPanel();
-      if ("true".equalsIgnoreCase(System.getProperty("controller.autoconnect", "true"))) {
-        jcsFrame.connect(true);
-      }
+      boolean con = "true".equalsIgnoreCase(System.getProperty("controller.autoconnect", "true"));
+      jcsFrame.connect(con);
     });
 
     JCS.logProgress("JCS started...");

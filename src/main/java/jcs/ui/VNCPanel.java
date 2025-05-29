@@ -42,6 +42,7 @@ import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import jcs.JCS;
+import jcs.util.Ping;
 import org.tinylog.Logger;
 
 /**
@@ -53,32 +54,41 @@ import org.tinylog.Logger;
  *
  */
 public class VNCPanel extends javax.swing.JPanel {
-
+  
   private Image lastFrame;
   private VernacularConfig config;
   private VernacularClient client;
   private static final int DEFAULT_VNC_PORT = 5900;
-
+  
   public VNCPanel() {
     initComponents();
     initVnc();
   }
-
+  
   private void initVnc() {
-    if (JCS.getJcsCommandStation() != null) {
-      if (!JCS.getJcsCommandStation().getCommandStationBean().isVirtual()) {
-        addDrawingSurface();
-        //clipboardMonitor.start();
-        initialiseVernacularClient();
-        if (JCS.getJcsCommandStation().isConnected()) {
-          String ip = JCS.getJcsCommandStation().getCommandStationInfo().getIpAddress();
-          int port = DEFAULT_VNC_PORT;
-          connect(ip, port);
+    try {
+      if (JCS.getJcsCommandStation() != null) {
+        if (!JCS.getJcsCommandStation().getCommandStationBean().isVirtual()) {
+          addDrawingSurface();
+          //clipboardMonitor.start();
+          initialiseVernacularClient();
+          if (JCS.getJcsCommandStation().isConnected()) {
+            String ip = JCS.getJcsCommandStation().getCommandStationInfo().getIpAddress();
+            int port = DEFAULT_VNC_PORT;
+            
+            if(Ping.IsReachable(ip)) {
+              connect(ip, port);
+            } else {
+              Logger.trace("Can't reach "+ip+" ...");
+            }  
+          }
         }
       }
+    } catch (Exception e) {
+      Logger.warn("Error during init " + e.getMessage());
     }
   }
-
+  
   private void addDrawingSurface() {
     this.viewerPanel.add(new JPanel() {
       @Override
@@ -102,7 +112,7 @@ public class VNCPanel extends javax.swing.JPanel {
       }
     }, CENTER);
   }
-
+  
   private void initialiseVernacularClient() {
     config = new VernacularConfig();
     config.setColorDepth(BPP_24_TRUE);
@@ -118,19 +128,19 @@ public class VNCPanel extends javax.swing.JPanel {
     config.setRemoteClipboardListener(t -> getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(t), null));
     //config.setUseLocalMousePointer(localCursorMenuItem.isSelected());
     config.setUseLocalMousePointer(true);
-
+    
     config.setEnableCopyrectEncoding(true);
     config.setEnableRreEncoding(true);
     config.setEnableHextileEncoding(true);
     config.setEnableZLibEncoding(false);
-
+    
     client = new VernacularClient(config);
   }
-
+  
   private boolean resizeRequired(Image frame) {
     return lastFrame == null || lastFrame.getWidth(null) != frame.getWidth(null) || lastFrame.getHeight(null) != frame.getHeight(null);
   }
-
+  
   private void renderFrame(Image frame) {
     if (resizeRequired(frame)) {
       resizeWindow(frame);
@@ -138,7 +148,7 @@ public class VNCPanel extends javax.swing.JPanel {
     lastFrame = frame;
     repaint();
   }
-
+  
   private void resizeWindow(Image frame) {
     int remoteWidth = frame.getWidth(null);
     int remoteHeight = frame.getHeight(null);
@@ -150,7 +160,7 @@ public class VNCPanel extends javax.swing.JPanel {
     int paddingTop = getHeight() - this.viewerPanel.getHeight();
     int paddingSides = getWidth() - this.viewerPanel.getWidth();
     int maxWidth = (int) screenSize.getWidth() - paddingSides;
-
+    
     int maxHeight = (int) screenSize.getHeight() - paddingTop;
     if (remoteWidth <= maxWidth && remoteHeight < maxHeight) {
       setWindowSize(remoteWidth, remoteHeight);
@@ -161,40 +171,40 @@ public class VNCPanel extends javax.swing.JPanel {
       setWindowSize(scaledWidth, scaledHeight);
     }
   }
-
+  
   private void setWindowSize(int width, int height) {
     this.viewerPanel.setPreferredSize(new Dimension(width, height));
   }
-
+  
   private void resetUI() {
     setCursor(getDefaultCursor());
     lastFrame = null;
     repaint();
   }
-
+  
   private boolean connected() {
     return client != null && client.isRunning();
   }
-
+  
   private void connect(String host, int port) {
     lastFrame = null;
     client.start(host, port);
   }
-
+  
   private void disconnect() {
     if (connected()) {
       client.stop();
     }
     resetUI();
   }
-
+  
   private int scaleMouseX(int x) {
     if (lastFrame == null) {
       return x;
     }
     return (int) (x * ((double) lastFrame.getWidth(null) / this.viewerPanel.getWidth()));
   }
-
+  
   private int scaleMouseY(int y) {
     if (lastFrame == null) {
       return y;
@@ -365,19 +375,19 @@ public class VNCPanel extends javax.swing.JPanel {
     } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
       Logger.error("Can't set the LookAndFeel: " + ex);
     }
-
+    
     java.awt.EventQueue.invokeLater(() -> {
       VNCPanel vncPanel = new VNCPanel();
       JFrame testFrame = new JFrame("VNCPanel Tester");
-
+      
       URL iconUrl = KeyboardSensorPanel.class.getResource("/media/jcs-train-64.png");
       if (iconUrl != null) {
         testFrame.setIconImage(new ImageIcon(iconUrl).getImage());
       }
-
+      
       JFrame.setDefaultLookAndFeelDecorated(true);
       testFrame.add(vncPanel);
-
+      
       testFrame.addWindowListener(new java.awt.event.WindowAdapter() {
         @Override
         public void windowClosing(java.awt.event.WindowEvent e) {
@@ -392,5 +402,5 @@ public class VNCPanel extends javax.swing.JPanel {
       testFrame.setVisible(true);
     });
   }
-
+  
 }
