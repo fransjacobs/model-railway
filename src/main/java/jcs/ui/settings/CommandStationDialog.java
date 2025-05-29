@@ -229,6 +229,7 @@ public class CommandStationDialog extends JDialog implements TreeSelectionListen
     devicesTree = new javax.swing.JTree();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+    setPreferredSize(new java.awt.Dimension(1400, 690));
 
     jcs.ui.swing.layout.VerticalFlowLayout verticalFlowLayout1 = new jcs.ui.swing.layout.VerticalFlowLayout();
     verticalFlowLayout1.sethAlignment(0);
@@ -384,7 +385,7 @@ public class CommandStationDialog extends JDialog implements TreeSelectionListen
     jPanel3.setLayout(jPanel3Layout);
     jPanel3Layout.setHorizontalGroup(
       jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-      .addGap(0, 1406, Short.MAX_VALUE)
+      .addGap(0, 1400, Short.MAX_VALUE)
     );
     jPanel3Layout.setVerticalGroup(
       jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)

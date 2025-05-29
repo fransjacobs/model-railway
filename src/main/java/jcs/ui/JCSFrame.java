@@ -76,6 +76,7 @@ import jcs.util.SerialPortUtil;
 import jcs.util.VersionInfo;
 import org.tinylog.Logger;
 import jcs.commandStation.events.ConnectionEventListener;
+import jcs.util.Ping;
 
 /**
  *
@@ -967,7 +968,22 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     boolean connected = false;
     if (JCS.getJcsCommandStation() != null) {
       if (connect) {
-        JCS.getJcsCommandStation().connect();
+        String ip = JCS.getJcsCommandStation().getCommandStationBean().getIpAddress();
+        if (Ping.IsReachable(ip)) {
+          if ("AWT-EventQueue-0".equals(Thread.currentThread().getName())) {
+            JCS.getJcsCommandStation().connectInBackground();
+          } else {
+
+            JCS.getJcsCommandStation().connect();
+          }
+        } else {
+          Logger.debug("Can't reach ip " + ip + "...");
+          
+          
+                JOptionPane.showMessageDialog(this, "Can't connect. "+ip+" is not reachable.", "Can't Connect", JOptionPane.ERROR_MESSAGE, null);
+
+          
+        }
 
         InfoBean info = JCS.getJcsCommandStation().getCommandStationInfo();
         connected = JCS.getJcsCommandStation().isConnected();
@@ -981,7 +997,9 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
           powerButton.setSelected(JCS.getJcsCommandStation().isPowerOn());
         }
       } else {
-        JCS.getJcsCommandStation().disconnect();
+        if (JCS.getJcsCommandStation().isConnected()) {
+          JCS.getJcsCommandStation().disconnect();
+        }
         connectMI.setText("Connect");
       }
     }
@@ -1055,7 +1073,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
 
     AutoPilot.runAutoPilot(autoPilotBtn.isSelected());
   }
-
 
   private void startAllLocsBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startAllLocsBtnActionPerformed
     startAllLocomotives();
