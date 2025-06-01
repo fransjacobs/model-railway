@@ -122,11 +122,13 @@ public class JCSCommandStation {
     executor.execute(() -> connect());
 
     long now = System.currentTimeMillis();
-    long timemax = now + 2000;
+    long timemax = now + 3000;
 
-    boolean con;
+    boolean con = false;
     synchronized (this) {
-      con = decoderController.isConnected();
+      if (decoderController != null) {
+        con = decoderController.isConnected();
+      }
       while (!con && timemax < now) {
         try {
           wait(500);

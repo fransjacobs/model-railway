@@ -220,6 +220,10 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
       locomotiveDialog.setLocationRelativeTo(null);
     }
     locomotiveDialog.setVisible(true);
+    
+    //Should add a listener here?
+    
+    
   }
 
   private void showAccessories() {
@@ -969,20 +973,16 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     if (JCS.getJcsCommandStation() != null) {
       if (connect) {
         String ip = JCS.getJcsCommandStation().getCommandStationBean().getIpAddress();
+        String name = JCS.getJcsCommandStation().getCommandStationBean().getDescription();
         if (Ping.IsReachable(ip)) {
           if ("AWT-EventQueue-0".equals(Thread.currentThread().getName())) {
             JCS.getJcsCommandStation().connectInBackground();
           } else {
-
             JCS.getJcsCommandStation().connect();
           }
         } else {
           Logger.debug("Can't reach ip " + ip + "...");
-          
-          
-                JOptionPane.showMessageDialog(this, "Can't connect. "+ip+" is not reachable.", "Can't Connect", JOptionPane.ERROR_MESSAGE, null);
-
-          
+          JOptionPane.showMessageDialog(this, "Can't connect to " + name + ", " + ip + " is not reachable.", "Can't Connect", JOptionPane.ERROR_MESSAGE, null);
         }
 
         InfoBean info = JCS.getJcsCommandStation().getCommandStationInfo();
@@ -1207,6 +1207,14 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     powerButton.setSelected(event.isPower());
   }
 
+  public void refreshData() {
+    Logger.trace("Refresh data due to settings change...");
+  }
+  
+  public void refreshLocomotives() {
+    this.dispatcherStatusPanel.refresh();
+  }
+  
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private JMenuItem aboutMI;

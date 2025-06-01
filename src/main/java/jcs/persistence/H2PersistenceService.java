@@ -251,7 +251,7 @@ public class H2PersistenceService implements PersistenceService {
 
   @Override
   public FunctionBean getLocomotiveFunction(Long locomotiveId, Integer number) {
-    String commandStationId = getDefaultCommandStation().getId();
+    //String commandStationId = getDefaultCommandStation().getId();
 
     FunctionBean fb = database.where("locomotive_id=? and f_number=?", locomotiveId, number).first(FunctionBean.class);
     if (fb != null) {
@@ -970,15 +970,15 @@ public class H2PersistenceService implements PersistenceService {
       database.insert(block);
     }
 
-    changeSupport.firePropertyChange("data.blockr", prev, block);
+    changeSupport.firePropertyChange("data.block", prev, block);
     return block;
   }
 
   @Override
   public synchronized void remove(BlockBean block) {
-    int rows = this.database.delete(block).getRowsAffected();
+    int rows = database.delete(block).getRowsAffected();
     Logger.trace(rows + " rows deleted");
-    changeSupport.firePropertyChange("data.sblock.deleted", block, null);
+    changeSupport.firePropertyChange("data.block.deleted", block, null);
   }
 
   @Override
@@ -990,7 +990,6 @@ public class H2PersistenceService implements PersistenceService {
 
   @Override
   public List<CommandStationBean> getCommandStations() {
-    //List<CommandStationBean> commandStationBeans = database.where("enabled=true").results(CommandStationBean.class);
     List<CommandStationBean> commandStationBeans = database.results(CommandStationBean.class);
     return commandStationBeans;
   }

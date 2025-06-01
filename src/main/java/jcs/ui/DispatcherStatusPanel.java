@@ -17,13 +17,12 @@ package jcs.ui;
 
 import javax.swing.JPanel;
 import jcs.commandStation.events.RefreshEvent;
-import jcs.commandStation.events.RefreshEventListener;
 import jcs.ui.util.LocomotiveSelectionChangedListener;
 
 /**
  *
  */
-public class DispatcherStatusPanel extends JPanel implements RefreshEventListener {
+public class DispatcherStatusPanel extends JPanel { //implements RefreshEventListener {
 
   private static final long serialVersionUID = 6158244271104499799L;
 
@@ -43,15 +42,14 @@ public class DispatcherStatusPanel extends JPanel implements RefreshEventListene
     locomotiveTablePanel.refresh();
   }
 
-  @Override
-  public void onChange(RefreshEvent event) {
-    locomotiveTablePanel.onChange(event);
-  }
+//  @Override
+//  public void onChange(RefreshEvent event) {
+//    locomotiveTablePanel.onChange(event);
+//  }
 
   public void addLocomotiveSelectionChangeListener(LocomotiveSelectionChangedListener listener) {
     locomotiveTablePanel.addLocomotiveSelectionChangeListener(listener);
     dispatcherTablePanel.addLocomotiveSelectionChangeListener(listener);
-
   }
 
   public void removeLocomotiveSelectionChangeListener(LocomotiveSelectionChangedListener listener) {

@@ -21,15 +21,21 @@ alter table sensors add bus_nr integer not null default 0;
 
 alter table sensors add command_station_id varchar(255) not null;
 alter table sensors drop constraint sens_deid_coid_un;
+
 drop index sens_deid_coid_un_idx;
 
 alter table sensors add constraint sens_deid_coid_un unique (device_id,contact_id,bus_nr,command_station_id);
-
 
 alter table tiles alter sensor_id integer;
 alter table blocks alter plus_sensor_id integer;
 alter table blocks alter min_sensor_id integer;
 
+alter table locomotives drop constraint loco_addr_dety_un;
+drop index loco_addr_dety_un_idx;
+alter table locomotives add speed_1 integer;
+alter table locomotives add speed_2 integer;
+alter table locomotives add speed_3 integer;
+alter table locomotives add speed_4 integer;
 
 update jcs_version set db_version = '0.0.3', app_version = '0.0.3';
 commit;

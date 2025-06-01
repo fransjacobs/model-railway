@@ -1031,14 +1031,14 @@ public class LocomotiveSettingsPanel extends JPanel implements PropertyChangeLis
       if (!locoListModel.contains((LocomotiveBean) evt.getNewValue())) {
         locoListModel.add((LocomotiveBean) evt.getNewValue());
       }
-      this.locomotiveList.setSelectedValue(evt.getNewValue(), true);
+      locomotiveList.setSelectedValue(evt.getNewValue(), true);
     }
 
     if ("done".equals(evt.getPropertyName())) {
       Logger.trace("Done: " + evt.getNewValue());
       //this.connectionTestResultLbl.setText((String) evt.getNewValue());
-      this.synchPB.setVisible(false);
-      this.locomotiveList.setEnabled(true);
+      synchPB.setVisible(false);
+      locomotiveList.setEnabled(true);
       locomotiveList.clearSelection();
     }
   }
@@ -1156,7 +1156,6 @@ public class LocomotiveSettingsPanel extends JPanel implements PropertyChangeLis
     public void done() {
       initModels();
       synchronizeBtn.setEnabled(commandStationBean.isLocomotiveSynchronizationSupport());
-
     }
   }
 
