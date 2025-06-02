@@ -220,10 +220,8 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
       locomotiveDialog.setLocationRelativeTo(null);
     }
     locomotiveDialog.setVisible(true);
-    
+
     //Should add a listener here?
-    
-    
   }
 
   private void showAccessories() {
@@ -1147,7 +1145,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   private String getTitleString() {
     String jcsVersion = VersionInfo.getVersion();
 
-    if (JCS.getJcsCommandStation() != null && JCS.getJcsCommandStation().getCommandStationInfo() != null) {
+    if (JCS.getJcsCommandStation() != null && JCS.getJcsCommandStation().getCommandStationInfo() != null && JCS.getJcsCommandStation().getCommandStationInfo().getProductName() != null) {
       InfoBean info = JCS.getJcsCommandStation().getCommandStationInfo();
       return "JCS " + "Connected to " + info.getProductName();
     } else {
@@ -1210,11 +1208,11 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   public void refreshData() {
     Logger.trace("Refresh data due to settings change...");
   }
-  
+
   public void refreshLocomotives() {
     this.dispatcherStatusPanel.refresh();
   }
-  
+
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private JMenuItem aboutMI;

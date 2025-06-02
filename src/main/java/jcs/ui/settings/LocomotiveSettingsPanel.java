@@ -278,6 +278,14 @@ public class LocomotiveSettingsPanel extends JPanel implements PropertyChangeLis
     showCB = new JCheckBox();
     commuterCB = new JCheckBox();
     row6Panel = new JPanel();
+    speed1Lbl = new JLabel();
+    speed1Spinner = new JSpinner();
+    speed2Lbl = new JLabel();
+    speed2Spinner = new JSpinner();
+    speed3Lbl = new JLabel();
+    speed3Spinner = new JSpinner();
+    speed4Lbl = new JLabel();
+    speed4Spinner = new JSpinner();
     row7Panel = new JPanel();
     row9Panel = new JPanel();
     filler2 = new Box.Filler(new Dimension(0, 50), new Dimension(0, 50), new Dimension(32767, 300));
@@ -610,6 +618,35 @@ public class LocomotiveSettingsPanel extends JPanel implements PropertyChangeLis
     FlowLayout flowLayout7 = new FlowLayout(FlowLayout.LEFT);
     flowLayout7.setAlignOnBaseline(true);
     row6Panel.setLayout(flowLayout7);
+
+    speed1Lbl.setHorizontalAlignment(SwingConstants.TRAILING);
+    speed1Lbl.setLabelFor(speed1Spinner);
+    speed1Lbl.setText("Speed 1:");
+    speed1Lbl.setPreferredSize(new Dimension(100, 17));
+    row6Panel.add(speed1Lbl);
+    row6Panel.add(speed1Spinner);
+
+    speed2Lbl.setHorizontalAlignment(SwingConstants.TRAILING);
+    speed2Lbl.setLabelFor(speed2Spinner);
+    speed2Lbl.setText("Speed 2:");
+    speed2Lbl.setPreferredSize(new Dimension(60, 17));
+    row6Panel.add(speed2Lbl);
+    row6Panel.add(speed2Spinner);
+
+    speed3Lbl.setHorizontalAlignment(SwingConstants.TRAILING);
+    speed3Lbl.setLabelFor(speed3Spinner);
+    speed3Lbl.setText("Speed 3:");
+    speed3Lbl.setPreferredSize(new Dimension(60, 17));
+    row6Panel.add(speed3Lbl);
+    row6Panel.add(speed3Spinner);
+
+    speed4Lbl.setHorizontalAlignment(SwingConstants.TRAILING);
+    speed4Lbl.setLabelFor(speed4Spinner);
+    speed4Lbl.setText("Speed 4:");
+    speed4Lbl.setPreferredSize(new Dimension(60, 17));
+    row6Panel.add(speed4Lbl);
+    row6Panel.add(speed4Spinner);
+
     locoDetailPanel.add(row6Panel);
 
     row7Panel.setMinimumSize(new Dimension(380, 30));
@@ -1200,6 +1237,14 @@ public class LocomotiveSettingsPanel extends JPanel implements PropertyChangeLis
   JPanel row9Panel;
   JButton saveBtn;
   JCheckBox showCB;
+  JLabel speed1Lbl;
+  JSpinner speed1Spinner;
+  JLabel speed2Lbl;
+  JSpinner speed2Spinner;
+  JLabel speed3Lbl;
+  JSpinner speed3Spinner;
+  JLabel speed4Lbl;
+  JSpinner speed4Spinner;
   JProgressBar synchPB;
   JButton synchronizeBtn;
   JCheckBox synchronizeCB;

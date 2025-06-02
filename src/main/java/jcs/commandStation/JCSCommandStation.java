@@ -118,29 +118,36 @@ public class JCSCommandStation {
     }
   }
 
-  public final boolean connectInBackground() {
-    executor.execute(() -> connect());
-
+  public final synchronized boolean connectInBackground() {
     long now = System.currentTimeMillis();
+    long start = now;
     long timemax = now + 3000;
 
+    executor.execute(() -> connect());
+
     boolean con = false;
-    synchronized (this) {
-      if (decoderController != null) {
-        con = decoderController.isConnected();
-      }
-      while (!con && timemax < now) {
-        try {
-          wait(500);
-        } catch (InterruptedException ex) {
-          Logger.trace(ex);
-        }
-        now = System.currentTimeMillis();
-      }
-      if (!(timemax < now)) {
-        Logger.trace("Timeout connecting...");
-      }
+    if (decoderController != null) {
+      con = decoderController.isConnected();
+    } else {
+      Logger.trace("Can't connect as there is no DecoderController configured !");
     }
+
+    while (!con && now < timemax) {
+      try {
+        wait(500);
+      } catch (InterruptedException ex) {
+        Logger.trace(ex);
+      }
+      now = System.currentTimeMillis();
+      con = decoderController.isConnected();
+    }
+
+    if (con) {
+      Logger.trace("Connected to " + decoderController.getCommandStationBean().getDescription() + " in " + (now - start) + " ms");
+    } else {
+      Logger.trace("Timeout connecting...");
+    }
+
     return con;
   }
 
