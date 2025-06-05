@@ -88,8 +88,7 @@ public class LayoutCanvas extends JPanel {
     CONTROL
   }
 
-  static final int LINE_GRID = 0;
-  static final int DOT_GRID = 1;
+  static final int LINE_GRID = 1;
 
   private int gridType = LINE_GRID;
 
@@ -120,8 +119,8 @@ public class LayoutCanvas extends JPanel {
     setDoubleBuffered(true);
 
     this.readonly = readonly;
+    drawGrid = !readonly;
     this.executor = Executors.newSingleThreadExecutor();
-    //this.executor = Executors.newCachedThreadPool();
 
     this.mode = Mode.SELECT;
     this.orientation = Orientation.EAST;
@@ -145,12 +144,14 @@ public class LayoutCanvas extends JPanel {
     super.paint(g);
 
     if (drawGrid) {
-      if (this.gridType == LINE_GRID) {
-        paintLineGrid(g);
-      } else {
-        paintDotGrid(g);
+      switch (gridType) {
+        case 1 ->
+          paintLineGrid(g);
+        case 2 ->
+          paintDotGrid(g);
+        //default -> no grid
       }
-    }
+   }
 
     //long now = System.currentTimeMillis();
     //Logger.trace("Duration: " + (now - started) + " ms.");
@@ -216,19 +217,9 @@ public class LayoutCanvas extends JPanel {
     Logger.trace("Mode: " + mode);
   }
 
-  void setDrawGrid(boolean flag) {
-    if (flag) {
-      switch (gridType) {
-        case LINE_GRID ->
-          gridType = DOT_GRID;
-        case DOT_GRID ->
-          gridType = LINE_GRID;
-        default ->
-          gridType = LINE_GRID;
-      }
-    }
-    drawGrid = flag;
-    repaint();
+  void setGridType(int gridType) {
+    this.gridType = gridType;
+    executor.execute((() -> repaint()));
   }
 
   void setTileType(TileBean.TileType tileType) {
