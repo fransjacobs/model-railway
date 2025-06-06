@@ -87,6 +87,8 @@ import org.tinylog.Logger;
  * @author frans
  */
 public class CommandStationPanel extends JPanel implements TreeSelectionListener {
+
+  private static final long serialVersionUID = -6257688549267578845L;
   
   private ComboBoxModel<CommandStationBean> commandStationCBM;
   private ComboBoxModel<CommandStationBean> feedbackCBM;
@@ -809,6 +811,7 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
     
   }
   
+  //TODO
   public void valueChanged(TreeSelectionEvent e) {
     DefaultMutableTreeNode node = (DefaultMutableTreeNode) devicesTree.getLastSelectedPathComponent();
     
