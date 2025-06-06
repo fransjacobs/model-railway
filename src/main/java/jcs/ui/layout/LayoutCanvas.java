@@ -321,9 +321,8 @@ public class LayoutCanvas extends JPanel {
         if (MouseEvent.BUTTON1 == evt.getButton() && selectedTile == null) {
           //Only add a new tile when there is no tile on the selected snapPoint
           Logger.trace("Adding a new tile: " + tileType + " @ (" + snapPoint.x + ", " + snapPoint.y + ")");
-          selectedTile = addTile(snapPoint, tileType, orientation, direction, true, !readonly);
+          selectedTile = addTile(snapPoint, tileType, orientation, direction, true, showCenter);
           if (selectedTile != null) {
-            //selectedTiles.addAll(selectedTile.getAllPoints());
             selectedTile.setSelected(true);
             repaint(selectedTile.getTileBounds());
           }
