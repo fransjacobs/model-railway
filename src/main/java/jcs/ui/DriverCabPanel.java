@@ -17,6 +17,7 @@ package jcs.ui;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.event.ChangeListener;
 import jcs.JCS;
@@ -34,7 +35,7 @@ import org.tinylog.Logger;
  *
  * @author frans
  */
-public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDirectionEventListener, LocomotiveSpeedEventListener, PowerEventListener {
+public class DriverCabPanel extends JPanel implements LocomotiveDirectionEventListener, LocomotiveSpeedEventListener, PowerEventListener {
 
   private static final long serialVersionUID = 8833627645563021982L;
 
@@ -53,7 +54,7 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
   }
 
   public DriverCabPanel(LocomotiveBean locomotiveBean) {
-    executor = Executors.newFixedThreadPool(3);
+    executor = Executors.newCachedThreadPool();
     initComponents();
     postInit();
     setLocomotiveBean(locomotiveBean);
@@ -416,20 +417,21 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
 
     if (event.isEventFor(locomotiveBean)) {
       Logger.trace(lb.getName() + " direction changed from " + this.locomotiveBean.getDirection() + " to " + lb.getDirection());
+      disableListener = true;
 
-      //locomotiveBean.setRichtung(lb.getRichtung());
       locomotiveBean.setDirection(lb.getDirection());
 
-      disableListener = true;
       if (Direction.BACKWARDS.equals(lb.getDirection())) {
         this.reverseButton.setSelected(true);
       } else {
         this.forwardButton.setSelected(true);
       }
-      disableListener = false;
+      
       if (this.directionListener != null) {
         this.directionListener.onDirectionChange(event);
       }
+      
+      disableListener = false;      
     }
   }
 

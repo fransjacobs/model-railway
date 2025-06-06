@@ -264,7 +264,7 @@ class EcosTCPConnection implements EcosConnection {
               Logger.trace("Event has no END tag " + sb.toString() + " in " + (now - start) + " ms");
             } else {
               EcosMessage emsg = new EcosMessage(sb.toString());
-              Logger.trace("Complete: " + emsg.isResponseComplete() + "\n" + emsg.getMessage() + "\n" + emsg.getResponse());
+              Logger.trace("Complete: " + emsg.isResponseComplete() + ((emsg.getMessage() != null) ? " -> " + emsg.getMessage() + " -> " : "") + emsg.getResponse());
 
               eventQueue.offer(emsg);
             }
