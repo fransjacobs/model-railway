@@ -864,7 +864,7 @@ public class H2PersistenceService implements PersistenceService {
       database.sql("delete from route_elements where route_id =?", route.getId()).execute();
     }
 
-    int rows = this.database.delete(route).getRowsAffected();
+    int rows = database.delete(route).getRowsAffected();
     Logger.trace(rows + " rows deleted");
     changeSupport.firePropertyChange("data.route.deleted", route, null);
   }

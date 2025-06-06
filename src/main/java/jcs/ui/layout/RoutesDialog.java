@@ -42,6 +42,8 @@ import org.tinylog.Logger;
  */
 public class RoutesDialog extends javax.swing.JDialog {
 
+  private static final long serialVersionUID = -7597770366968399204L;
+
   private final boolean readonly;
   private final List<RouteBean> routes;
   private RouteBean selectedRoute;
@@ -247,7 +249,8 @@ public class RoutesDialog extends javax.swing.JDialog {
 
     private void routeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_routeBtnActionPerformed
       if (layoutCanvas != null) {
-        this.executor.execute(() -> routeLayout());
+        //executor.execute(() -> routeLayout());
+        routeLayout();
       } else {
         Logger.warn("Can not perform routing as the LayoutPanel is null " + evt.paramString());
       }

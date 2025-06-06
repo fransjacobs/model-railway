@@ -220,8 +220,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
       locomotiveDialog.setLocationRelativeTo(null);
     }
     locomotiveDialog.setVisible(true);
-
-    //Should add a listener here?
   }
 
   private void showAccessories() {

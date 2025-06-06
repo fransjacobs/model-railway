@@ -240,35 +240,15 @@ public class LayoutPanel extends JPanel {
     canvas = new LayoutCanvas(this.readonly);
 
     verticalMI.setText("Vertical");
-    verticalMI.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        verticalMIActionPerformed(evt);
-      }
-    });
     straightPopupMenu.add(verticalMI);
 
     horizontalMI.setText("Horizontal");
-    horizontalMI.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        horizontalMIActionPerformed(evt);
-      }
-    });
     straightPopupMenu.add(horizontalMI);
 
     rightMI.setText("Right");
-    rightMI.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        rightMIActionPerformed(evt);
-      }
-    });
     curvedPopupMenu.add(rightMI);
 
     leftMI.setText("Left");
-    leftMI.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        leftMIActionPerformed(evt);
-      }
-    });
     curvedPopupMenu.add(leftMI);
 
     xyMI.setText("x: y:");
@@ -740,44 +720,6 @@ public class LayoutPanel extends JPanel {
     add(canvasScrollPane, BorderLayout.CENTER);
     canvasScrollPane.getAccessibleContext().setAccessibleDescription("");
   }// </editor-fold>//GEN-END:initComponents
-
-  private void horizontalMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_horizontalMIActionPerformed
-//      Logger.trace(this.orientation + ", " + evt.getModifiers() + ", " + evt.paramString());
-//
-//      if (this.mouseLocation != null && evt.getModifiers() == ActionEvent.MOUSE_EVENT_MASK) {
-//          addTile(this.mouseLocation);
-//          this.mouseLocation = null;
-//      }
-  }//GEN-LAST:event_horizontalMIActionPerformed
-
-  private void verticalMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_verticalMIActionPerformed
-//      Logger.trace(this.orientation + ", " + evt.getModifiers() + ", " + evt.paramString());
-//
-//      if (this.mouseLocation != null && evt.getModifiers() == ActionEvent.MOUSE_EVENT_MASK) {
-//          addTile(this.mouseLocation);
-//          this.mouseLocation = null;
-//      }
-  }//GEN-LAST:event_verticalMIActionPerformed
-
-  private void rightMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_rightMIActionPerformed
-//      Logger.trace(this.orientation + ", " + evt.getModifiers() + ", " + evt.paramString());
-//
-//      if (this.mouseLocation != null && evt.getModifiers() == ActionEvent.MOUSE_EVENT_MASK) {
-//          addTile(this.mouseLocation);
-//          this.mouseLocation = null;
-//      }
-  }//GEN-LAST:event_rightMIActionPerformed
-
-  private void leftMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_leftMIActionPerformed
-//      Logger.trace(this.orientation + ", " + evt.getModifiers() + ", " + evt.paramString());
-//
-//      if (this.mouseLocation != null && evt.getModifiers() == ActionEvent.MOUSE_EVENT_MASK) {
-//          addTile(this.mouseLocation);
-//
-//          //do someting with the rotation/direction...
-//          this.mouseLocation = null;
-//      }
-  }//GEN-LAST:event_leftMIActionPerformed
 
     private void rotateMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_rotateMIActionPerformed
 //        rotateSelectedTile();

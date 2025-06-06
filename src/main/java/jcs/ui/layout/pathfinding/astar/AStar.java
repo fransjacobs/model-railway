@@ -39,8 +39,6 @@ import org.tinylog.Logger;
  */
 public class AStar {
 
-  //private final TileCache tileCache;
-
   private final Graph graph;
   private final Map<String, RouteBean> routes;
 
@@ -150,19 +148,24 @@ public class AStar {
   }
 
   public void persistRoutes() {
-    for (RouteBean route : this.routes.values()) {
+    for (RouteBean route : routes.values()) {
       PersistenceFactory.getService().persist(route);
     }
 
-    //Now also create the blocks
-    List<Node> blockNodes = this.graph.getBlockNodes();
+    List<Node> blockNodes = graph.getBlockNodes();
 
     for (Node block : blockNodes) {
-      BlockBean bb = new BlockBean(block.getTile().getTileBean());
-      //Use a default
-      bb.setMinWaitTime(10);
-      bb.setAlwaysStop(true);
-
+      BlockBean bb = block.getTile().getBlockBean();
+      if (bb == null) {
+        bb = new BlockBean(block.getTile().getTileBean());
+        bb.setAlwaysStop(true);
+        bb.setMinWaitTime(10);
+      } else {
+        Logger.trace("Using existing BlockBean: " + bb);
+        if (bb.getMinWaitTime() == null) {
+          bb.setMinWaitTime(10);
+        }
+      }
       PersistenceFactory.getService().persist(bb);
     }
   }
@@ -176,8 +179,8 @@ public class AStar {
   }
 
   public List<Node> findPath(String fromNodeId, String fromSuffix, String toNodeId, String toSuffix) {
-    Node from = this.graph.getNode(fromNodeId);
-    Node to = this.graph.getNode(toNodeId);
+    Node from = graph.getNode(fromNodeId);
+    Node to = graph.getNode(toNodeId);
     return findPath(from, fromSuffix, to, toSuffix);
   }
 
@@ -231,16 +234,14 @@ public class AStar {
   }
 
   public void buildGraph(List<Tile> tiles) {
-    //this.tileCache.reload(tiles);
-    this.graph.clear();
-
+    graph.clear();
     //Every Tile becomes a node
     for (Tile tile : tiles) {
       Node n = new Node(tile);
-      this.graph.addNode(n);
+      graph.addNode(n);
     }
 
-    Logger.trace("Graph has " + this.graph.size() + " nodes...");
+    Logger.trace("Graph has " + graph.size() + " nodes...");
 
     //Create the links or connection between the Nodes
     for (Node node : graph.getNodes()) {
@@ -248,9 +249,7 @@ public class AStar {
       Logger.trace("Node: " + node.getId() + " has " + neighborPoints.size() + " neighbors " + (node.isBlock() ? "[Block]" : "") + (node.isJunction() ? "[Junction]" : ""));
 
       for (Point p : neighborPoints) {
-        //if (tileCache.contains(p)) {
         if (TileCache.contains(p)) {
-          //Node neighbor = graph.getNode(tileCache.getTileId(p));
           Node neighbor = graph.getNode(TileCache.findTile(p).getId());
 
           if (node.getTile().isAdjacent(neighbor.getTile())) {

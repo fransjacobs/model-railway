@@ -12,17 +12,11 @@
           <Properties>
             <Property name="text" type="java.lang.String" value="Vertical"/>
           </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="verticalMIActionPerformed"/>
-          </Events>
         </MenuItem>
         <MenuItem class="javax.swing.JMenuItem" name="horizontalMI">
           <Properties>
             <Property name="text" type="java.lang.String" value="Horizontal"/>
           </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="horizontalMIActionPerformed"/>
-          </Events>
         </MenuItem>
       </SubComponents>
     </Container>
@@ -36,17 +30,11 @@
           <Properties>
             <Property name="text" type="java.lang.String" value="Right"/>
           </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="rightMIActionPerformed"/>
-          </Events>
         </MenuItem>
         <MenuItem class="javax.swing.JMenuItem" name="leftMI">
           <Properties>
             <Property name="text" type="java.lang.String" value="Left"/>
           </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="leftMIActionPerformed"/>
-          </Events>
         </MenuItem>
       </SubComponents>
     </Container>
