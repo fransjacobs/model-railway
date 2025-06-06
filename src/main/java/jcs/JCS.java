@@ -68,9 +68,7 @@ public class JCS extends Thread {
 
   private static UICallback uiCallback;
 
-  //private final List<RefreshEventListener> refreshEventListeners;
   private JCS() {
-    //refreshEventListeners = new ArrayList<>();
   }
 
   public static void logProgress(String message) {
@@ -237,6 +235,12 @@ public class JCS extends Thread {
       JCS jcs = JCS.getInstance();
 
       jcs.startGui();
+
+      //check the connection to the command station
+      if (!JCS.getJcsCommandStation().isConnected()) {
+        JCS.getJcsCommandStation().connectInBackground();
+      }
+
     } else {
       Logger.error("Could not obtain a Persistent store. Quitting....");
       logProgress("Error! Can't Obtain a Persistent store!");
@@ -286,8 +290,6 @@ public class JCS extends Thread {
       jcsFrame.setVisible(true);
       jcsFrame.toFront();
       jcsFrame.showOverviewPanel();
-      boolean con = "true".equalsIgnoreCase(System.getProperty("controller.autoconnect", "true"));
-      jcsFrame.connect(con);
     });
 
     JCS.logProgress("JCS started...");

@@ -22,6 +22,8 @@ import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -31,6 +33,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import jcs.ui.JCSFrame;
 import org.tinylog.Logger;
 
 /**
@@ -74,6 +77,11 @@ public class SettingsDialog extends javax.swing.JDialog {
     setAlwaysOnTop(true);
     setMinimumSize(new Dimension(1024, 750));
     setName("Options"); // NOI18N
+    addWindowListener(new WindowAdapter() {
+      public void windowClosed(WindowEvent evt) {
+        formWindowClosed(evt);
+      }
+    });
 
     centerPanel.setMinimumSize(new Dimension(1021, 750));
     centerPanel.setName("centerPanel"); // NOI18N
@@ -119,6 +127,12 @@ public class SettingsDialog extends javax.swing.JDialog {
 
     Logger.debug("Refreshed " + (c != null ? c.getName() : ""));
   }//GEN-LAST:event_dialogTPStateChanged
+
+  private void formWindowClosed(WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
+    if (getParent() instanceof JCSFrame jCSFrame) {
+      jCSFrame.refreshLocomotives();
+    }
+  }//GEN-LAST:event_formWindowClosed
 
   /**
    * @param args the command line arguments

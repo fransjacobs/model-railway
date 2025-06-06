@@ -19,6 +19,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import jcs.ui.JCSFrame;
 import org.tinylog.Logger;
 
 /**
@@ -48,13 +49,25 @@ public class LocomotiveDialog extends JDialog {
 
     setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
     setTitle("Locomotives");
+    addWindowListener(new java.awt.event.WindowAdapter() {
+      public void windowClosed(java.awt.event.WindowEvent evt) {
+        formWindowClosed(evt);
+      }
+    });
     getContentPane().add(locomotiveSettingsPanel1, java.awt.BorderLayout.CENTER);
 
     pack();
   }// </editor-fold>//GEN-END:initComponents
 
+  private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
+    if (getParent() instanceof JCSFrame jCSFrame) {
+      jCSFrame.refreshLocomotives();
+    }
+  }//GEN-LAST:event_formWindowClosed
+
   /**
    * Only for testing
+   *
    * @param args the command line arguments
    */
   public static void main(String args[]) {
@@ -76,11 +89,11 @@ public class LocomotiveDialog extends JDialog {
           System.exit(0);
         }
       });
-      
+
       dialog.pack();
       dialog.setLocationRelativeTo(null);
       dialog.setVisible(true);
-      
+
     });
   }
 

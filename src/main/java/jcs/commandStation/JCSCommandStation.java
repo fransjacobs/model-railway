@@ -118,27 +118,36 @@ public class JCSCommandStation {
     }
   }
 
-  public final boolean connectInBackground() {
+  public final synchronized boolean connectInBackground() {
+    long now = System.currentTimeMillis();
+    long start = now;
+    long timemax = now + 3000;
+
     executor.execute(() -> connect());
 
-    long now = System.currentTimeMillis();
-    long timemax = now + 2000;
-
-    boolean con;
-    synchronized (this) {
+    boolean con = false;
+    if (decoderController != null) {
       con = decoderController.isConnected();
-      while (!con && timemax < now) {
-        try {
-          wait(500);
-        } catch (InterruptedException ex) {
-          Logger.trace(ex);
-        }
-        now = System.currentTimeMillis();
-      }
-      if (!(timemax < now)) {
-        Logger.trace("Timeout connecting...");
-      }
+    } else {
+      Logger.trace("Can't connect as there is no DecoderController configured !");
     }
+
+    while (!con && now < timemax) {
+      try {
+        wait(500);
+      } catch (InterruptedException ex) {
+        Logger.trace(ex);
+      }
+      now = System.currentTimeMillis();
+      con = decoderController.isConnected();
+    }
+
+    if (con) {
+      Logger.trace("Connected to " + decoderController.getCommandStationBean().getDescription() + " in " + (now - start) + " ms");
+    } else {
+      Logger.trace("Timeout connecting...");
+    }
+
     return con;
   }
 
@@ -439,7 +448,7 @@ public class JCSCommandStation {
   }
 
   public void changeLocomotiveDirection(Direction newDirection, LocomotiveBean locomotive) {
-    Logger.debug("Changing direction to " + newDirection + " for: " + locomotive.getName() + " id: " + locomotive.getId());
+    Logger.debug("Changing direction to " + newDirection + " for: " + locomotive.getName() + " id: " + locomotive.getId() + " velocity: "+ locomotive.getVelocity());
 
     int address;
     if ("marklin.cs".equals(locomotive.getCommandStationId()) || "esu-ecos".equals(locomotive.getCommandStationId())) {

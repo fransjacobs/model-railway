@@ -54,6 +54,11 @@ public class LocomotiveBean implements Serializable {
   private String dispatcherDirection;
   private String locomotiveDirection;
 
+  private Integer speedOne;
+  private Integer speedTwo;
+  private Integer speedThree;
+  private Integer speedFour;
+
   private Image locIcon;
   private CommandStationBean commandStationBean;
 
@@ -319,6 +324,42 @@ public class LocomotiveBean implements Serializable {
 
   public void setCommandStationId(String commandStationId) {
     this.commandStationId = commandStationId;
+  }
+
+  @Column(name = "speed_1")
+  public Integer getSpeedOne() {
+    return speedOne;
+  }
+
+  public void setSpeedOne(Integer speedOne) {
+    this.speedOne = speedOne;
+  }
+
+  @Column(name = "speed_2")
+  public Integer getSpeedTwo() {
+    return speedTwo;
+  }
+
+  public void setSpeedTwo(Integer speedTwo) {
+    this.speedTwo = speedTwo;
+  }
+
+  @Column(name = "speed_3")
+  public Integer getSpeedThree() {
+    return speedThree;
+  }
+
+  public void setSpeedThree(Integer speedThree) {
+    this.speedThree = speedThree;
+  }
+
+  @Column(name = "speed_4")
+  public Integer getSpeedFour() {
+    return speedFour;
+  }
+
+  public void setSpeedFour(Integer speedFour) {
+    this.speedFour = speedFour;
   }
 
   @Transient

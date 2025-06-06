@@ -76,9 +76,14 @@ public class StateMachineStepByStepTest {
       route.setLocked(false);
       ps.persist(route);
     }
-    JCS.getJcsCommandStation().switchPower(true);
-    AutoPilot.runAutoPilot(true);
-    Logger.info("=========================== setUp done..............");
+    if (JCS.getJcsCommandStation().connect()) {
+
+      JCS.getJcsCommandStation().switchPower(true);
+      AutoPilot.runAutoPilot(true);
+      Logger.info("=========================== setUp done..............");
+    } else {
+      Logger.error("###### Can't connect to command station! ########");
+    }
   }
 
   @AfterEach

@@ -371,18 +371,11 @@ public class SensorBean {
 
   @Override
   public String toString() {
-    //return name;
-    return toLogString();
+    return name;
+    //return toLogString();
   }
 
   public String toLogString() {
-//    String ids;
-//    if (id == null) {
-//      ids = "(" + generateId() + ")";
-//    } else {
-//      ids = id;
-//    }
-
     return "SensorBean{"
             + "id="
             + id

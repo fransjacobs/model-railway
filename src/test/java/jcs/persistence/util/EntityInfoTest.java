@@ -134,10 +134,7 @@ public class EntityInfoTest {
     Object bean = createBean();
     EntityInfo instance = new EntityInfo(bean.getClass());
 
-    String[] cols = new String[]{"dispatcher_direction", "id", "name", "address", "tacho_max", "v_min", "velocity", "locomotive_direction", "commuter", "show", "icon", "imported", "command_station_id", "synchronize", "uid", "decoder_type"};
-
-    //expected:<[dispatcher_direction, id, name, address, tacho_max, v_min, velocity, locomotive_direction, commuter, show, icon, imported, command_station_id, synchronize, uid, decoder_type]> 
-    //but was :<[commandStationBean, functions, functionCount, dispatcher_direction, id, image, name, address, decoder, tacho_max, v_min, velocity, locomotive_direction, commuter, show, icon, imported, command_station_id, synchronize, uid, richtung, decoder_type]>
+    String[] cols = new String[]{"speed_2", "speed_3", "speed_1", "dispatcher_direction", "speed_4", "id", "name", "address", "tacho_max", "v_min", "velocity", "locomotive_direction", "commuter", "show", "icon", "imported", "command_station_id", "synchronize", "uid", "decoder_type"};
     List<String> expResult = Arrays.asList(cols);
 
     List<String> result = instance.getAllColumnNames();
@@ -153,7 +150,7 @@ public class EntityInfoTest {
     Object bean = createBean();
     EntityInfo instance = new EntityInfo(bean.getClass(), true);
 
-    String[] cols = new String[]{"commandStationBean", "functions", "active", "functionCount", "dispatcher_direction", "id", "image", "name", "address", "decoder", "tacho_max", "v_min", "velocity", "locomotive_direction", "commuter", "show", "icon", "imported", "command_station_id", "synchronize", "uid", "richtung", "decoder_type"};
+    String[] cols = new String[]{"commandStationBean", "functions", "functionCount", "dispatcher_direction", "id", "active", "speed_2", "speed_3", "speed_1", "speed_4", "image", "name", "address", "decoder", "tacho_max", "v_min", "velocity", "locomotive_direction", "commuter", "show", "icon", "imported", "command_station_id", "synchronize", "uid", "richtung", "decoder_type"};
 
     List<String> expResult = Arrays.asList(cols);
 

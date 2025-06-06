@@ -18,6 +18,7 @@ package jcs.ui.layout;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -55,121 +56,131 @@ import org.tinylog.Logger;
  *
  */
 public class LayoutPanel extends JPanel {
-
+  
   private static final long serialVersionUID = 2275543202224445302L;
-
+  
   private final boolean readonly;
-
+  
+  private int gridType;
+  
+  private static final String GRID_0 = "/media/square-grid-24.png";
+  private static final String GRID_1 = "/media/grid-2-24.png";
+  private static final String GRID_2 = "/media/grid-dot-24.png";
+  
   public LayoutPanel() {
     this(false);
   }
-
+  
   public LayoutPanel(boolean readonly) {
     this.readonly = readonly;
     initComponents();
     postInit();
   }
-
+  
   private void postInit() {
     RunUtil.loadProperties();
-
-    this.straightBtn.setSelected(true);
-    this.canvas.setTileType(TileType.STRAIGHT);
-    this.setMode(readonly ? LayoutCanvas.Mode.CONTROL : LayoutCanvas.Mode.SELECT);
-
+    
+    straightBtn.setSelected(true);
+    canvas.setTileType(TileType.STRAIGHT);
+    setMode(readonly ? LayoutCanvas.Mode.CONTROL : LayoutCanvas.Mode.SELECT);
+    
     if (readonly) {
-      this.canvas.setDrawGrid(!readonly);
-
+      //this.canvas.setDrawGrid(!readonly);
+      this.canvas.setGridType(0);
+      
       this.loadBtn.setEnabled(!readonly);
       this.loadBtn.setVisible(!readonly);
       this.toolBar.remove(this.loadBtn);
-
+      
       this.routeBtn.setEnabled(readonly);
       this.routeBtn.setVisible(readonly);
-
+      
       this.selectBtn.setEnabled(!readonly);
       this.selectBtn.setVisible(!readonly);
       this.toolBar.remove(this.selectBtn);
-
+      
       this.addBtn.setEnabled(!readonly);
       this.addBtn.setVisible(!readonly);
-
+      
       this.deleteBtn.setEnabled(!readonly);
       this.deleteBtn.setVisible(!readonly);
-
+      
       this.gridBtn.setEnabled(!readonly);
       this.gridBtn.setVisible(!readonly);
-
+      
       this.straightBtn.setEnabled(!readonly);
       this.straightBtn.setVisible(!readonly);
-
+      
       this.curvedBtn.setEnabled(!readonly);
       this.curvedBtn.setVisible(!readonly);
-
+      
       this.blockBtn.setEnabled(!readonly);
       this.blockBtn.setVisible(!readonly);
-
+      
       this.sensorBtn.setEnabled(!readonly);
       this.sensorBtn.setVisible(!readonly);
-
+      
       this.signalBtn.setEnabled(!readonly);
       this.signalBtn.setVisible(!readonly);
-
+      
       this.leftSwitchBtn.setEnabled(!readonly);
       this.leftSwitchBtn.setVisible(!readonly);
-
+      
       this.rightSwitchBtn.setEnabled(!readonly);
       this.rightSwitchBtn.setVisible(!readonly);
-
+      
       this.crossLBtn.setEnabled(!readonly);
       this.crossLBtn.setVisible(!readonly);
-
+      
       this.crossRBtn.setEnabled(!readonly);
       this.crossRBtn.setVisible(!readonly);
-
+      
       this.endTrackBtn.setEnabled(!readonly);
       this.endTrackBtn.setVisible(!readonly);
-
+      
       this.straightDirectionBtn.setEnabled(!readonly);
       this.straightDirectionBtn.setVisible(!readonly);
-
+      
       this.crossingBtn.setEnabled(!readonly);
       this.crossingBtn.setVisible(!readonly);
-
+      
       this.flipVerticalBtn.setEnabled(!readonly);
       this.flipVerticalBtn.setVisible(!readonly);
-
+      
       this.flipHorizontalBtn.setEnabled(!readonly);
       this.flipHorizontalBtn.setVisible(!readonly);
+    } else {
+      gridType = 1;
+      gridBtn.setIcon(new ImageIcon(getClass().getResource(GRID_1)));
+      canvas.setGridType(gridType);
     }
-    this.toolBar.remove(this.autoPilotBtn);
-    this.toolBar.remove(this.resetAutopilotBtn);
-    this.toolBar.remove(this.startAllLocomotivesBtn);
-
+    toolBar.remove(autoPilotBtn);
+    toolBar.remove(resetAutopilotBtn);
+    toolBar.remove(startAllLocomotivesBtn);
+    
     if (readonly) {
       loadLayout();
       Powerlistener powerlistener = new Powerlistener();
       JCS.getJcsCommandStation().addPowerEventListener(powerlistener);
     }
-
   }
-
+  
   public void loadLayout() {
     canvas.loadLayoutInBackground();
   }
-
+  
   public void rotateSelectedTile() {
     canvas.rotateSelectedTile();
   }
-
+  
   public void flipSelectedTileHorizontal() {
     canvas.flipSelectedTileHorizontal();
   }
-
+  
   public void flipSelectedTileVerical() {
     canvas.flipSelectedTileVertical();
   }
-
+  
   public void deleteSelectedTile() {
     canvas.deleteSelectedTile();
   }
@@ -204,7 +215,7 @@ public class LayoutPanel extends JPanel {
     startAllLocomotivesBtn = new JToggleButton();
     resetAutopilotBtn = new JButton();
     filler1 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
-    gridBtn = new JToggleButton();
+    gridBtn = new JButton();
     filler2 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
     selectBtn = new JButton();
     addBtn = new JButton();
@@ -420,11 +431,13 @@ public class LayoutPanel extends JPanel {
     toolBar.add(resetAutopilotBtn);
     toolBar.add(filler1);
 
-    gridBtn.setIcon(new ImageIcon(getClass().getResource("/media/grid-2-24.png"))); // NOI18N
-    gridBtn.setSelected(true);
-    gridBtn.setToolTipText("Show Grid");
+    gridBtn.setIcon(new ImageIcon(getClass().getResource("/media/square-grid-24.png"))); // NOI18N
+    gridBtn.setFocusable(false);
     gridBtn.setHorizontalTextPosition(SwingConstants.CENTER);
-    gridBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/grid-dot-24.png"))); // NOI18N
+    gridBtn.setMargin(new Insets(2, 2, 2, 2));
+    gridBtn.setMaximumSize(new Dimension(38, 38));
+    gridBtn.setMinimumSize(new Dimension(38, 38));
+    gridBtn.setPreferredSize(new Dimension(38, 38));
     gridBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
     gridBtn.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
@@ -845,10 +858,6 @@ public class LayoutPanel extends JPanel {
       setTileType(TileBean.TileType.SENSOR);
     }//GEN-LAST:event_sensorBtnActionPerformed
 
-    private void gridBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_gridBtnActionPerformed
-      this.canvas.setDrawGrid(this.gridBtn.isSelected());
-    }//GEN-LAST:event_gridBtnActionPerformed
-
     private void formComponentResized(ComponentEvent evt) {//GEN-FIRST:event_formComponentResized
       //TODO!       
       //Logger.debug(evt.getComponent().getSize());// TODO add your handling code here:
@@ -895,7 +904,7 @@ public class LayoutPanel extends JPanel {
 
   private void autoPilotBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_autoPilotBtnActionPerformed
     Logger.trace(evt.getActionCommand() + (autoPilotBtn.isSelected() ? " Enable" : " Disable") + " Auto mode");
-
+    
     if (autoPilotBtn.isSelected()) {
       startAllLocomotivesBtn.setEnabled(true);
     } else {
@@ -904,7 +913,7 @@ public class LayoutPanel extends JPanel {
       //}
       startAllLocomotivesBtn.setEnabled(false);
     }
-
+    
     AutoPilot.runAutoPilot(autoPilotBtn.isSelected());
   }//GEN-LAST:event_autoPilotBtnActionPerformed
 
@@ -923,18 +932,38 @@ public class LayoutPanel extends JPanel {
     AutoPilot.reset();
   }//GEN-LAST:event_resetAutopilotBtnActionPerformed
 
+  private void gridBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_gridBtnActionPerformed
+    gridType++;
+    if (gridType > 2) {
+      gridType = 0;
+    }
+    switch (gridType) {
+
+      case 0 -> {
+        gridBtn.setIcon(new ImageIcon(getClass().getResource(GRID_0)));
+      }
+      case 1 -> {
+        gridBtn.setIcon(new ImageIcon(getClass().getResource(GRID_1)));
+      }
+      case 2 -> {
+        gridBtn.setIcon(new ImageIcon(getClass().getResource(GRID_2)));
+      }
+    }
+    canvas.setGridType(gridType);
+  }//GEN-LAST:event_gridBtnActionPerformed
+
   private void setTileType(TileBean.TileType tileType) {
     canvas.setTileType(tileType);
   }
-
+  
   private void setDirection(Direction direction) {
     canvas.setDirection(direction);
   }
-
+  
   public void showRoutes() {
     canvas.showRoutesDialog();
   }
-
+  
   public void setMode(LayoutCanvas.Mode mode) {
     switch (mode) {
       case SELECT -> {
@@ -958,12 +987,12 @@ public class LayoutPanel extends JPanel {
         deleteBtn.setIcon(new ImageIcon(getClass().getResource("/media/delete-24.png")));
       }
     }
-
+    
     canvas.setMode(mode);
   }
-
+  
   private class Powerlistener implements PowerEventListener {
-
+    
     @Override
     public void onPowerChange(PowerEvent event) {
       //Logger.info("Track Power is " + (event.isPower() ? "on" : "off"));
@@ -998,7 +1027,7 @@ public class LayoutPanel extends JPanel {
   private JMenuItem flipHorizontalMI;
   private JButton flipVerticalBtn;
   private JMenuItem flipVerticalMI;
-  private JToggleButton gridBtn;
+  private JButton gridBtn;
   private JMenuItem horizontalMI;
   private JMenuItem leftMI;
   private JToggleButton leftSwitchBtn;

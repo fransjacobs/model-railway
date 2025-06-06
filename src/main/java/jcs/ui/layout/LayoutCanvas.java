@@ -88,8 +88,7 @@ public class LayoutCanvas extends JPanel {
     CONTROL
   }
 
-  static final int LINE_GRID = 0;
-  static final int DOT_GRID = 1;
+  static final int LINE_GRID = 1;
 
   private int gridType = LINE_GRID;
 
@@ -109,6 +108,8 @@ public class LayoutCanvas extends JPanel {
 
   private RoutesDialog routesDialog;
 
+  private boolean showCenter;
+
   public LayoutCanvas() {
     this(false);
   }
@@ -119,9 +120,11 @@ public class LayoutCanvas extends JPanel {
     setOpaque(true);
     setDoubleBuffered(true);
 
+    showCenter = "true".equalsIgnoreCase(System.getProperty("tile.show.center", "false"));
+
     this.readonly = readonly;
-    this.executor = Executors.newSingleThreadExecutor();
-    //this.executor = Executors.newCachedThreadPool();
+    drawGrid = !readonly;
+    this.executor = Executors.newCachedThreadPool();
 
     this.mode = Mode.SELECT;
     this.orientation = Orientation.EAST;
@@ -145,10 +148,12 @@ public class LayoutCanvas extends JPanel {
     super.paint(g);
 
     if (drawGrid) {
-      if (this.gridType == LINE_GRID) {
-        paintLineGrid(g);
-      } else {
-        paintDotGrid(g);
+      switch (gridType) {
+        case 1 ->
+          paintLineGrid(g);
+        case 2 ->
+          paintDotGrid(g);
+        //default -> no grid
       }
     }
 
@@ -216,19 +221,9 @@ public class LayoutCanvas extends JPanel {
     Logger.trace("Mode: " + mode);
   }
 
-  void setDrawGrid(boolean flag) {
-    if (flag) {
-      switch (gridType) {
-        case LINE_GRID ->
-          gridType = DOT_GRID;
-        case DOT_GRID ->
-          gridType = LINE_GRID;
-        default ->
-          gridType = LINE_GRID;
-      }
-    }
-    drawGrid = flag;
-    repaint();
+  void setGridType(int gridType) {
+    this.gridType = gridType;
+    executor.execute((() -> repaint()));
   }
 
   void setTileType(TileBean.TileType tileType) {
@@ -241,23 +236,16 @@ public class LayoutCanvas extends JPanel {
   }
 
   void loadLayoutInBackground() {
-    this.executor.execute(() -> loadTiles());
+    executor.execute(() -> {
+      List<Tile> tiles = TileCache.loadTiles(readonly);
 
-//    new Thread(new Runnable() {
-//      public void run() {
-//        final String text = readHugeFile();
-//        SwingUtilities.invokeLater(new Runnable() {
-//          public void run() {
-//            canvas.setTiles();
-//          }
-//        });
-//      }
-//    }).start();
+      java.awt.EventQueue.invokeLater(() -> {
+        loadTiles(tiles);
+      });
+    });
   }
 
-  private void loadTiles() {
-    List<Tile> tiles = TileCache.loadTiles(readonly);
-
+  private void loadTiles(List<Tile> tiles) {
     removeAll();
     selectedTile = null;
 
@@ -285,7 +273,6 @@ public class LayoutCanvas extends JPanel {
 
     for (Tile tile : tiles) {
       add(tile);
-      boolean showCenter = "true".equalsIgnoreCase(System.getProperty("tile.show.center", "false"));
       if (showCenter) {
         tile.setDrawCenterPoint(showCenter);
       }
@@ -293,7 +280,7 @@ public class LayoutCanvas extends JPanel {
   }
 
   private void mouseMoveAction(MouseEvent evt) {
-    Point sp = LayoutUtil.snapToGrid(evt.getPoint());
+    //Point sp = LayoutUtil.snapToGrid(evt.getPoint());
     if (selectedTile != null) {
       setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
     } else {
@@ -352,10 +339,10 @@ public class LayoutCanvas extends JPanel {
         }
       }
       case DELETE -> {
-        Tile toBeDeleted = (Tile) getComponentAt(snapPoint);
-        if (toBeDeleted != null) {
+        Component c = getComponentAt(snapPoint);
+        if (c != null && c instanceof Tile) {
+          Tile toBeDeleted = (Tile) c;
           removeTile(toBeDeleted);
-          //selectedTiles.clear();
           repaint(toBeDeleted.getTileBounds());
           selectedTile = null;
         }
@@ -487,7 +474,7 @@ public class LayoutCanvas extends JPanel {
         bcd.setVisible(true);
 
         Logger.trace("Block properties closed");
-        this.repaint(block.getTileBounds());
+        repaint(block.getTileBounds());
       }
       case SIGNAL -> {
         //this.executor.execute(() -> toggleSignal((Signal) tile));
@@ -556,6 +543,7 @@ public class LayoutCanvas extends JPanel {
         default -> {
         }
       }
+      //TODO: only repaint the edited tile?
       repaint();
     }
   }
@@ -1005,8 +993,9 @@ public class LayoutCanvas extends JPanel {
       Block block = (Block) selectedTile;
       LocomotiveBean locomotive = block.getBlockBean().getLocomotive();
 
-      this.executor.execute(() -> {
+      executor.execute(() -> {
         AutoPilot.resetDispatcher(locomotive);
+
         repaint();
       });
     }

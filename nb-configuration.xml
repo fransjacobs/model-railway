@@ -39,5 +39,6 @@ Any value defined here will override the pom.xml file value but is only applicab
         <com-junichi11-netbeans-changelf.use-project>true</com-junichi11-netbeans-changelf.use-project>
         <com-junichi11-netbeans-changelf.lf-kind>LF</com-junichi11-netbeans-changelf.lf-kind>
         <com-junichi11-netbeans-changelf.use-global>false</com-junichi11-netbeans-changelf.use-global>
+        <netbeans.hint.jdkPlatform>JDK_21_Temurin</netbeans.hint.jdkPlatform>
     </properties>
 </project-shared-configuration>
