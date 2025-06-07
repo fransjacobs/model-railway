@@ -249,8 +249,6 @@ public class CSHTTPConnectionImpl implements CSHTTPConnection {
           device.append("\n");
         }
       }
-    } catch (MalformedURLException ex) {
-      Logger.error(ex);
     } catch (IOException ex) {
       Logger.error(ex);
     }
@@ -295,10 +293,8 @@ public class CSHTTPConnectionImpl implements CSHTTPConnection {
 
       Logger.trace("image URL: " + url);
       image = ImageIO.read(url);
-    } catch (MalformedURLException ex) {
-      Logger.error(ex);
     } catch (IOException ex) {
-      Logger.error(ex);
+      Logger.error("Image " + imageName + " not found. " + ex.getMessage());
     }
     return image;
   }
@@ -314,10 +310,8 @@ public class CSHTTPConnectionImpl implements CSHTTPConnection {
     } catch (IIOException iio) {
       //Image not avalable
       Logger.warn("Image: " + iurl + " is not available");
-    } catch (MalformedURLException ex) {
-      Logger.error(ex);
     } catch (IOException ex) {
-      Logger.error(ex);
+      Logger.error("Image " + imageName + " not found. " + ex.getMessage());
     }
     return image;
   }
