@@ -50,7 +50,7 @@ public class LayoutPanelTester {
       }
 
       f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-      layoutPanel.loadLayout();
+      layoutPanel.loadLayoutInBackground();
       f.pack();
 
       Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();

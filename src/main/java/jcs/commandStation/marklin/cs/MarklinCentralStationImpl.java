@@ -644,8 +644,8 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       if (connection != null) {
         if (eventMessageHandler != null) {
           eventMessageHandler.quit();
+          eventMessageHandler.join(2000);
         }
-        eventMessageHandler.join(2000);
         connection.close();
         connected = false;
       }

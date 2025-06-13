@@ -16,28 +16,54 @@
 package jcs.persistence.util;
 
 import java.io.File;
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
+import static jcs.persistence.util.H2DatabaseUtil.ADMIN_PWD;
+import static jcs.persistence.util.H2DatabaseUtil.ADMIN_USER;
+import static jcs.persistence.util.H2DatabaseUtil.jdbcConnect;
 import org.h2.tools.Script;
 import org.tinylog.Logger;
 
 /**
- * Back the JCS data int a script sql file
+ * Backup to or Restore from a SQL file the whole JCS database.
  */
 public class Backup extends H2DatabaseUtil {
 
-  public static void backup(String filename) {
-    String jdbcUrlAdmin = JDBC_PRE + System.getProperty("user.home") + File.separator + "jcs" + File.separator + JCS_DB_NAME + DB_MODE;
-    String path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + ((filename != null) ? filename : DEFAULT_BACKUP_FILENAME);
+  public static void backup(File backupFile) {
+    if (backupFile == null) {
+      Logger.error("Backup file name can't be empty!");
+      return;
+    }
 
+    String jdbcUrlAdmin = JDBC_PRE + System.getProperty("user.home") + File.separator + "jcs" + File.separator + JCS_DB_NAME + DB_MODE;
     try {
-      Script.process(jdbcUrlAdmin, ADMIN_USER, ADMIN_PWD, path, "DROP", "");
+      Script.process(jdbcUrlAdmin, ADMIN_USER, ADMIN_PWD, backupFile.getAbsolutePath(), "DROP", "");
+    Logger.debug("Created backup in file " + backupFile.getAbsolutePath());
     } catch (SQLException ex) {
       Logger.error(ex);
     }
   }
 
-  public static void main(String[] a) throws SQLException {
-    backup(null);
+  public static void restore(File backupFile) {
+    if (backupFile == null) {
+      Logger.error("Backup file name can't be empty!");
+      return;
+    }
+
+    try {
+      try (Connection c = jdbcConnect(ADMIN_USER, ADMIN_PWD, false)) {
+        if (c != null) {
+          Statement stmt = c.createStatement();
+          stmt.executeUpdate("runscript from '" + backupFile.getAbsolutePath() + "'");
+          Logger.debug("Restored JCS database from " + backupFile.getAbsolutePath());
+        } else {
+          Logger.error("Could not obtain a connection!");
+        }
+      }
+    } catch (SQLException ex) {
+      Logger.error(ex);
+    }
   }
 
 }

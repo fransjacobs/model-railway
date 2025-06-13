@@ -250,6 +250,22 @@ public class JCS extends Thread {
     }
   }
 
+  
+  //TODO
+  private static void shutdown() {
+
+    System.gc();
+    if (RunUtil.isMacOSX()) {
+      for (Thread t : Thread.getAllStackTraces().keySet()) {
+        if (t.getName().startsWith("AWT-")) {
+          t.interrupt();
+        }
+      }
+    }
+    Thread.currentThread().interrupt();
+
+  }
+
   private void startGui() {
     JCS.logProgress("Starting UI...");
 

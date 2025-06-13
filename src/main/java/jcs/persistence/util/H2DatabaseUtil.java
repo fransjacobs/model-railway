@@ -54,7 +54,7 @@ public class H2DatabaseUtil {
   //Future use
   protected static final String CLOSE_ON_EXIT = ";DB_CLOSE_ON_EXIT=FALSE";
 
-  protected static final String DEFAULT_BACKUP_FILENAME = "jcs-backup.sql";
+  public static final String DEFAULT_BACKUP_FILENAME = "jcs-backup.sql";
 
   /**
    * This is the latest database version
