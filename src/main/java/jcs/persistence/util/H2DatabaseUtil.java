@@ -54,6 +54,8 @@ public class H2DatabaseUtil {
   //Future use
   protected static final String CLOSE_ON_EXIT = ";DB_CLOSE_ON_EXIT=FALSE";
 
+  public static final String DEFAULT_BACKUP_FILENAME = "jcs-backup.sql";
+
   /**
    * This is the latest database version
    */
@@ -112,6 +114,26 @@ public class H2DatabaseUtil {
       Logger.error("Can't connect to: " + jdbcUrl + " as " + user + "...", sqle);
     }
     return conn;
+  }
+
+  protected static void createNewDatabase() {
+    H2DatabaseUtil.test = false;
+    deleteDatebaseFile();
+
+    if (databaseFileExists()) {
+      Logger.warn("Database files exists");
+    } else {
+      createDatabaseUsers();
+      createDatabase();
+    }
+
+    String dbv = getDataBaseVersion();
+    Logger.info("Database version: " + dbv);
+
+    String appv = getAppVersion();
+    Logger.info("App version: " + appv);
+
+    updateDatabase();
   }
 
   public static void createDatabase() {
@@ -248,7 +270,7 @@ public class H2DatabaseUtil {
     }
   }
 
-  private static void deleteDatebaseFile() {
+  protected static void deleteDatebaseFile() {
     String pathString = System.getProperty("user.home") + File.separator + "jcs";
     String fileName = (test ? "test-" : "") + JCS_DB_NAME;
 
@@ -364,7 +386,7 @@ public class H2DatabaseUtil {
     return version;
   }
 
-  private static String getVersionNumber(int v) {
+  protected static String getVersionNumber(int v) {
     String formatted = String.format("%03d", v);
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < formatted.length(); i++) {
@@ -411,26 +433,25 @@ public class H2DatabaseUtil {
     return DB_VERSION;
   }
 
-  public static void main(String[] a) {
-    H2DatabaseUtil.test = false;
-    if (H2DatabaseUtil.test) {
-      H2DatabaseUtil.deleteDatebaseFile();
-    }
-    if (H2DatabaseUtil.databaseFileExists()) {
-      Logger.info("Database files exists");
-    } else {
-      H2DatabaseUtil.createDatabaseUsers();
-      H2DatabaseUtil.createDatabase();
-    }
-
-    String dbv = H2DatabaseUtil.getDataBaseVersion();
-    Logger.info("Database version: " + dbv);
-
-    String appv = H2DatabaseUtil.getAppVersion();
-    Logger.info("App version: " + appv);
-
-    H2DatabaseUtil.updateDatabase();
-
-  }
-
+//  public static void main(String[] a) {
+//    H2DatabaseUtil.test = false;
+//    if (H2DatabaseUtil.test) {
+//      H2DatabaseUtil.deleteDatebaseFile();
+//    }
+//    if (H2DatabaseUtil.databaseFileExists()) {
+//      Logger.info("Database files exists");
+//    } else {
+//      H2DatabaseUtil.createDatabaseUsers();
+//      H2DatabaseUtil.createDatabase();
+//    }
+//
+//    String dbv = H2DatabaseUtil.getDataBaseVersion();
+//    Logger.info("Database version: " + dbv);
+//
+//    String appv = H2DatabaseUtil.getAppVersion();
+//    Logger.info("App version: " + appv);
+//
+//    H2DatabaseUtil.updateDatabase();
+//
+//  }
 }

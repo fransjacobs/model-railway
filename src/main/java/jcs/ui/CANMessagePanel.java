@@ -17,8 +17,6 @@ package jcs.ui;
 
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import javax.swing.ImageIcon;

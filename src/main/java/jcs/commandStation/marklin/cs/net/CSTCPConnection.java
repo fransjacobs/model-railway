@@ -90,7 +90,9 @@ class CSTCPConnection implements CSConnection {
   }
 
   private void disconnect() {
-    messageReceiver.quit();
+    if (messageReceiver != null) {
+      messageReceiver.quit();
+    }
     if (dos != null) {
       try {
         dos.close();

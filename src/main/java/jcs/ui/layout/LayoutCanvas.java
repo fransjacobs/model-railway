@@ -245,6 +245,11 @@ public class LayoutCanvas extends JPanel {
     });
   }
 
+  void loadLayout() {
+    List<Tile> tiles = TileCache.loadTiles(readonly);
+    loadTiles(tiles);
+  }
+
   private void loadTiles(List<Tile> tiles) {
     removeAll();
     selectedTile = null;
