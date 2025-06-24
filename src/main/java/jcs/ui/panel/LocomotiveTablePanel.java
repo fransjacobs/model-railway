@@ -40,7 +40,7 @@ import jcs.ui.util.LocomotiveSelectionChangedListener;
 import org.tinylog.Logger;
 
 /**
- * Panel to show locomotives in tabular format 
+ * Panel to show locomotives in tabular format
  */
 public class LocomotiveTablePanel extends JPanel implements RefreshEventListener {
 
@@ -53,6 +53,8 @@ public class LocomotiveTablePanel extends JPanel implements RefreshEventListener
 
     locomotiveBeanTableModel = new LocomotiveBeanTableModel();
     initComponents();
+    locomotiveTable.setDragEnabled(false);
+
     locomotiveTable.setDefaultRenderer(Image.class, new LocIconRenderer());
     locomotiveTable.getRowSorter().addRowSorterListener((RowSorterEvent e) -> {
       //Logger.trace(e.getType() + "," + e.getSource().getSortKeys());// Sorting changed
@@ -145,7 +147,7 @@ public class LocomotiveTablePanel extends JPanel implements RefreshEventListener
   private void fireSelectionChangedListeners(LocomotiveBean locomotive) {
     if (locomotive.getId() != null) {
       Long locomotiveId = locomotive.getId();
-      Logger.trace("Notify "+locomotiveSelectionChangedListeners.size()+" of selection change to locomotiveId: "+locomotiveId);
+      Logger.trace("Notify " + locomotiveSelectionChangedListeners.size() + " of selection change to locomotiveId: " + locomotiveId);
       for (LocomotiveSelectionChangedListener listener : locomotiveSelectionChangedListeners) {
         listener.selectionChanged(locomotiveId);
       }

@@ -19,6 +19,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -101,7 +102,14 @@ public class TrackTileDialog extends javax.swing.JDialog {
       if (layoutCanvas == null) {
         p = getLocationOnScreen();
       } else {
-        p = layoutCanvas.getLocationOnScreen();
+        //Can happen when parent is not yet visible
+        try {
+          p = layoutCanvas.getLocationOnScreen();
+        } catch (java.awt.IllegalComponentStateException icse) {
+          Logger.error(icse.getMessage());
+          Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
+          p = new Point(d.width / 2, d.height / 2);
+        }
       }
 
       pack();
