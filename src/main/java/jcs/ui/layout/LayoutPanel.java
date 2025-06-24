@@ -27,6 +27,7 @@ import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -34,6 +35,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import jcs.JCS;
 import jcs.commandStation.autopilot.AutoPilot;
 import jcs.commandStation.events.PowerEvent;
@@ -41,6 +43,7 @@ import jcs.commandStation.events.PowerEventListener;
 import jcs.entities.TileBean;
 import jcs.entities.TileBean.Direction;
 import jcs.entities.TileBean.TileType;
+import jcs.ui.layout.LayoutCanvas.Mode;
 import jcs.util.RunUtil;
 import org.tinylog.Logger;
 
@@ -153,15 +156,16 @@ public class LayoutPanel extends JPanel {
       gridType = 1;
       gridBtn.setIcon(new ImageIcon(getClass().getResource(GRID_1)));
       canvas.setGridType(gridType);
-    }
-    toolBar.remove(autoPilotBtn);
-    toolBar.remove(resetAutopilotBtn);
-    toolBar.remove(startAllLocomotivesBtn);
 
-    if (readonly) {
-      loadLayoutInBackground();
-      Powerlistener powerlistener = new Powerlistener();
-      JCS.getJcsCommandStation().addPowerEventListener(powerlistener);
+      toolBar.remove(autoPilotBtn);
+      toolBar.remove(resetAutopilotBtn);
+      toolBar.remove(startAllLocomotivesBtn);
+
+      if (readonly) {
+        loadLayoutInBackground();
+        Powerlistener powerlistener = new Powerlistener();
+        JCS.getJcsCommandStation().addPowerEventListener(powerlistener);
+      }
     }
   }
 
@@ -910,7 +914,7 @@ public class LayoutPanel extends JPanel {
     canvas.showRoutesDialog();
   }
 
-  public void setMode(LayoutCanvas.Mode mode) {
+  public void setMode(Mode mode) {
     switch (mode) {
       case SELECT -> {
         selectBtn.setIcon(new ImageIcon(getClass().getResource("/media/cursor-24-y.png")));
@@ -934,7 +938,20 @@ public class LayoutPanel extends JPanel {
       }
     }
 
+    if (mode == Mode.ADD || mode == Mode.DELETE && !readonly) {
+      //trackComponents.setVisible(true);
+      this.canvas.showTrackComponentsDialog();
+    }
+
     canvas.setMode(mode);
+  }
+
+  @Override
+  public void setVisible(boolean b) {
+    super.setVisible(b);
+    if (!canvas.isReadonly()) {
+      canvas.showTrackComponentsDialog();
+    }
   }
 
   private class Powerlistener implements PowerEventListener {

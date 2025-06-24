@@ -26,6 +26,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -71,7 +72,7 @@ import org.tinylog.Logger;
  * which have an influence on the screen are in the TileModel.<br>
  * All Drawing code is in the TileUI.
  */
-public abstract class Tile extends JComponent {
+public abstract class Tile extends JComponent implements Serializable {
 
   public static final int GRID = 20;
   public static final int DEFAULT_WIDTH = GRID * 2;

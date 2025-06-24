@@ -24,11 +24,20 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Point;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -107,6 +116,7 @@ public class LayoutCanvas extends JPanel {
   private Tile selectedTile;
 
   private RoutesDialog routesDialog;
+  private TrackTileDialog trackComponents;
 
   private boolean showCenter;
 
@@ -135,7 +145,17 @@ public class LayoutCanvas extends JPanel {
   }
 
   private void postInit() {
-    routesDialog = new RoutesDialog(getParentFrame(), false, this, this.readonly);
+    routesDialog = new RoutesDialog(getParentFrame(), false, this, readonly);
+
+    if (!readonly) {
+      trackComponents = new TrackTileDialog(getParentFrame(), false, this);
+
+      // DropTarget dt = new DropTarget(this,DnDConstants.ACTION_COPY, new DropTargetHandler(this), true);
+      DropTarget dt = new DropTarget(this, DnDConstants.ACTION_COPY_OR_MOVE, new DropTargetHandler(this), true);
+
+      this.setDropTarget(dt);
+
+    }
   }
 
   public boolean isReadonly() {
@@ -298,6 +318,7 @@ public class LayoutCanvas extends JPanel {
     Point snapPoint = LayoutUtil.snapToGrid(evt.getPoint());
     //Clear any previous selection
     Tile previousSelected = selectedTile;
+
     selectedTile = TileCache.findTile(snapPoint);
     //Only show selected tile in edit mode
     if (selectedTile != null && CONTROL != mode) {
@@ -308,6 +329,7 @@ public class LayoutCanvas extends JPanel {
       Logger.trace("Same tile " + selectedTile.getId() + " selected");
     } else if (previousSelected != null) {
       previousSelected.setSelected(false);
+      repaint(previousSelected.getTileBounds());
     }
 
     switch (mode) {
@@ -323,6 +345,7 @@ public class LayoutCanvas extends JPanel {
         }
       }
       case ADD -> {
+
         if (MouseEvent.BUTTON1 == evt.getButton() && selectedTile == null) {
           //Only add a new tile when there is no tile on the selected snapPoint
           Logger.trace("Adding a new tile: " + tileType + " @ (" + snapPoint.x + ", " + snapPoint.y + ")");
@@ -335,7 +358,9 @@ public class LayoutCanvas extends JPanel {
           if (selectedTile != null) {
             Logger.debug("A tile exists at the selected position: " + selectedTile.getTileType() + " @ (" + snapPoint.x + ", " + snapPoint.y + ") id: " + selectedTile.getId());
           } else {
-            Logger.warn("Found something (" + snapPoint.x + ", " + snapPoint.y + ")");
+            // In Add mode position is free show the menu option to place a Track Component
+            this.addPopupMenu.show(this, evt.getX(), evt.getY());
+            Logger.warn("Found nothing (" + snapPoint.x + ", " + snapPoint.y + ")");
           }
         }
         if (MouseEvent.BUTTON3 == evt.getButton() && selectedTile != null) {
@@ -360,7 +385,7 @@ public class LayoutCanvas extends JPanel {
     }
   }
 
-  private Tile addTile(Point p, TileType tileType, Orientation orientation, Direction direction, boolean selected, boolean showCenter) {
+  Tile addTile(Point p, TileType tileType, Orientation orientation, Direction direction, boolean selected, boolean showCenter) {
     Logger.trace("Adding: " + tileType + " @ " + p + " O: " + orientation + " D: " + direction);
     Tile tile = TileCache.createTile(tileType, orientation, direction, p);
 
@@ -376,6 +401,33 @@ public class LayoutCanvas extends JPanel {
       TileCache.rollback(tile);
       return null;
     }
+  }
+
+  public boolean isSupported(List flavors) {
+    return true;
+  }
+
+  public void paintDropTarget(DropTargetEvent e, int action) {
+    Logger.trace(e.toString() + " action: " + action);
+  }
+
+  public boolean canDrop(DropTargetDropEvent e, int action) {
+    Logger.trace(e.toString() + " action: " + action);
+
+    return true;
+  }
+
+  public void drop(DropTargetDropEvent e, int action) {
+    Logger.trace(e.toString() + " action: " + action);
+
+  }
+
+  Orientation getOrientation() {
+    return orientation;
+  }
+
+  Direction getDirection() {
+    return direction;
   }
 
   void deleteSelectedTile() {
@@ -656,6 +708,8 @@ public class LayoutCanvas extends JPanel {
     Logger.trace("Selected Tile " + selectedTile.getId());
     selectedTile = TileCache.rotateTile(selectedTile);
     selectedTile.setBounds(selectedTile.getTileBounds());
+
+    orientation = selectedTile.getOrientation();
   }
 
   public void flipSelectedTileHorizontal() {
@@ -687,6 +741,10 @@ public class LayoutCanvas extends JPanel {
 
   void showRoutesDialog() {
     routesDialog.setVisible(true);
+  }
+
+  void showTrackComponentsDialog() {
+    trackComponents.setVisible(true);
   }
 
   /**
@@ -721,6 +779,10 @@ public class LayoutCanvas extends JPanel {
     toggleLocomotiveDirectionMI = new JMenuItem();
     removeLocMI = new JMenuItem();
     blockPropertiesMI = new JMenuItem();
+    addPopupMenu = new JPopupMenu();
+    straightMI = new JMenuItem();
+    straightDirectionMI = new JMenuItem();
+    curvedMI = new JMenuItem();
 
     verticalMI.setText("Vertical");
     verticalMI.addActionListener(new ActionListener() {
@@ -876,6 +938,15 @@ public class LayoutCanvas extends JPanel {
       }
     });
     blockPopupMenu.add(blockPropertiesMI);
+
+    straightMI.setText("add Straight");
+    addPopupMenu.add(straightMI);
+
+    straightDirectionMI.setText("add Straight Direction");
+    addPopupMenu.add(straightDirectionMI);
+
+    curvedMI.setText("add Curved");
+    addPopupMenu.add(curvedMI);
 
     setBackground(new Color(255, 255, 255));
     setMinimumSize(new Dimension(1000, 760));
@@ -1105,9 +1176,94 @@ public class LayoutCanvas extends JPanel {
     }
   }//GEN-LAST:event_resetGhostMIActionPerformed
 
+  class DropTargetHandler implements DropTargetListener {
+
+    private final LayoutCanvas layoutCanvas;
+
+    public DropTargetHandler(LayoutCanvas layoutCanvas) {
+      this.layoutCanvas = layoutCanvas;
+    }
+
+    @Override
+    public void dragEnter(DropTargetDragEvent dtde) {
+      if (dtde.getTransferable().isDataFlavorSupported(TrackTileDialog.TileDescTransferable.USER_DATA_FLAVOR)) {
+        Logger.trace("Accept...");
+
+        dtde.acceptDrag(DnDConstants.ACTION_COPY_OR_MOVE);
+      } else {
+        Logger.trace("Reject Drag...");
+        dtde.rejectDrag();
+      }
+    }
+
+    @Override
+    public void dragOver(DropTargetDragEvent dtde) {
+    }
+
+    @Override
+    public void dropActionChanged(DropTargetDragEvent dtde) {
+    }
+
+    @Override
+    public void dragExit(DropTargetEvent dte) {
+    }
+
+    @Override
+    public void drop(DropTargetDropEvent dtde) {
+      if (dtde.getTransferable().isDataFlavorSupported(TrackTileDialog.TileDescTransferable.USER_DATA_FLAVOR)) {
+        Transferable t = dtde.getTransferable();
+        if (t.isDataFlavorSupported(TrackTileDialog.TileDescTransferable.USER_DATA_FLAVOR)) {
+          try {
+            Object transferData = t.getTransferData(TrackTileDialog.TileDescTransferable.USER_DATA_FLAVOR);
+
+            Logger.trace("transferData: " + transferData);
+
+            if (transferData instanceof TrackTileDialog.TileDesc newTile) {
+
+              Logger.trace("Adding: " + newTile + " Location" + dtde.getLocation());
+
+              Point p = LayoutUtil.snapToGrid(dtde.getLocation());
+              TileType tileType = TileType.get(newTile.getTileType());
+              Orientation orientation = Orientation.get(newTile.getTileOrientation());
+              Direction direction = Direction.get(newTile.getTileDirection());
+
+              Tile tile = layoutCanvas.addTile(p, tileType, orientation, direction, true, layoutCanvas.showCenter);
+
+              if (tile == null) {
+                dtde.rejectDrop();
+              } else {
+                dtde.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
+                
+                tile.setSelected(true);
+               
+                Tile prevSelected = layoutCanvas.selectedTile;
+                if (prevSelected != null) {
+                  prevSelected.setSelected(false);
+                  layoutCanvas.repaint(prevSelected.getTileBounds());
+                }
+
+                layoutCanvas.selectedTile = tile;
+                layoutCanvas.repaint(layoutCanvas.selectedTile.getTileBounds()); 
+              }
+            } else {
+              dtde.rejectDrop();
+            }
+          } catch (UnsupportedFlavorException | IOException ex) {
+            Logger.error(ex);
+            dtde.rejectDrop();
+          }
+        } else {
+          dtde.rejectDrop();
+        }
+      }
+    }
+  }
+
   // Variables declaration - do not modify//GEN-BEGIN:variables
+  private JPopupMenu addPopupMenu;
   private JPopupMenu blockPopupMenu;
   private JMenuItem blockPropertiesMI;
+  private JMenuItem curvedMI;
   private JPopupMenu curvedPopupMenu;
   private JMenuItem deleteMI;
   private JMenuItem flipHorizontalMI;
@@ -1125,6 +1281,8 @@ public class LayoutCanvas extends JPanel {
   private JMenuItem rotateMI;
   private JMenuItem startLocomotiveMI;
   private JMenuItem stopLocomotiveMI;
+  private JMenuItem straightDirectionMI;
+  private JMenuItem straightMI;
   private JPopupMenu straightPopupMenu;
   private JMenuItem toggleLocomotiveDirectionMI;
   private JMenuItem toggleOutOfOrderMI;
