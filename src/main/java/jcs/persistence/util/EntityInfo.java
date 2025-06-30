@@ -39,39 +39,45 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import jcs.JcsException;
+import org.tinylog.Logger;
 
 /**
  * Derive Bean info
  *
- * @author frans
- * @param <T>
+ * @param <T> the Bean to derive the attribute from
  */
 public class EntityInfo<T> {
 
   private boolean ignoreTransient;
+  private boolean ignoreDuplicates;
   private Map<String, EntityAttribute> attributeMap = new HashMap<>();
 
   List<String> displayColumnList;
 
   public EntityInfo(Class<?> clazz) {
-    this(clazz, Collections.<String>emptyList(), false);
+    this(clazz, Collections.<String>emptyList(), false, false);
   }
 
   public EntityInfo(Class<?> clazz, boolean ignoreTransient) {
-    this(clazz, Collections.<String>emptyList(), ignoreTransient);
+    this(clazz, Collections.<String>emptyList(), ignoreTransient, false);
   }
 
   public EntityInfo(Class<?> clazz, String[] displayColumns) {
-    this(clazz, Arrays.asList(displayColumns), false);
+    this(clazz, Arrays.asList(displayColumns), false, false);
   }
 
   public EntityInfo(Class<?> clazz, String[] displayColumns, boolean ignoreTransient) {
-    this(clazz, Arrays.asList(displayColumns), ignoreTransient);
+    this(clazz, Arrays.asList(displayColumns), ignoreTransient, false);
   }
 
-  public EntityInfo(Class<?> clazz, List<String> displayColumnList, boolean ignoreTransient) {
+  public EntityInfo(Class<?> clazz, String[] displayColumns, boolean ignoreTransient, boolean ignoreDuplicates) {
+    this(clazz, Arrays.asList(displayColumns), ignoreTransient, ignoreDuplicates);
+  }
+
+  public EntityInfo(Class<?> clazz, List<String> displayColumnList, boolean ignoreTransient, boolean ignoreDuplicates) {
     this.displayColumnList = displayColumnList;
     this.ignoreTransient = ignoreTransient;
+    this.ignoreDuplicates = ignoreDuplicates;
     try {
       if (!Map.class.isAssignableFrom(clazz)) {
         List<EntityAttribute> attributes = populateAttributes(clazz);
@@ -94,7 +100,11 @@ public class EntityInfo<T> {
 
         for (EntityAttribute attr : attributes) {
           if (attributeMap.put(attr.name, attr) != null) {
-            throw new JcsException("Duplicate bean attribute found: '" + attr.name + "' in " + clazz.getName() + ". There may be both a field and a getter/setter");
+            if (ignoreDuplicates) {
+              Logger.warn("Ignoring duplicate bean attribute: '" + attr.name + "' in " + clazz.getName() + "!");
+            } else {
+              throw new JcsException("Duplicate bean attribute found: '" + attr.name + "' in " + clazz.getName() + ". There may be both a field and a getter/setter");
+            }
           }
         }
       }
@@ -339,6 +349,10 @@ public class EntityInfo<T> {
 
   public boolean isIgnoreTransient() {
     return ignoreTransient;
+  }
+
+  public boolean isIgnoreDuplicates() {
+    return ignoreDuplicates;
   }
 
 }

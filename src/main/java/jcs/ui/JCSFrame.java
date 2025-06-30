@@ -211,10 +211,19 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   }
 
   public void showOverviewPanel() {
+    Logger.trace("Show ReadOnly Canvas");
     CardLayout card = (CardLayout) centerPanel.getLayout();
     card.show(centerPanel, "overviewPanel");
     editMode = false;
     overviewPanel.loadLayoutInBackground();
+
+    if (autoPilotBtn.isSelected()) {
+      dispatcherStatusPanel.showDispatcherTab();
+    } else {
+      dispatcherStatusPanel.showLocomotiveTab();
+    }
+    
+    overviewPanel.repaint();
   }
 
   private void showLocomotives() {
@@ -277,6 +286,8 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     if (!AutoPilot.isAutoModeActive()) {
       CardLayout card = (CardLayout) centerPanel.getLayout();
       card.show(centerPanel, "designPanel");
+
+      dispatcherStatusPanel.showComponentsTab();
       layoutPanel.loadLayoutInBackground();
       editMode = true;
     }

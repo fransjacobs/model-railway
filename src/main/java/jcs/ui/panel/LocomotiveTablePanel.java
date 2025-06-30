@@ -53,7 +53,6 @@ public class LocomotiveTablePanel extends JPanel implements RefreshEventListener
 
     locomotiveBeanTableModel = new LocomotiveBeanTableModel();
     initComponents();
-    locomotiveTable.setDragEnabled(false);
 
     locomotiveTable.setDefaultRenderer(Image.class, new LocIconRenderer());
     locomotiveTable.getRowSorter().addRowSorterListener((RowSorterEvent e) -> {

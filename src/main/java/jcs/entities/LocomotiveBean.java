@@ -20,6 +20,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import java.awt.Image;
+import java.awt.datatransfer.DataFlavor;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -33,6 +34,10 @@ import jcs.persistence.util.ColumnPosition;
 @Table(name = "locomotives")
 public class LocomotiveBean implements Serializable {
 
+  private static final long serialVersionUID = 7349932263484026161L;
+
+  public static DataFlavor LOCOMOTIVE_BEAN_FLAVOR = new DataFlavor(LocomotiveBean.class, "LocomotiveBean");
+  
   private Long id;
   private String name;
   private Long uid;

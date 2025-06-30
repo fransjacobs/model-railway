@@ -938,20 +938,7 @@ public class LayoutPanel extends JPanel {
       }
     }
 
-    if (mode == Mode.ADD || mode == Mode.DELETE && !readonly) {
-      //trackComponents.setVisible(true);
-      this.canvas.showTrackComponentsDialog();
-    }
-
     canvas.setMode(mode);
-  }
-
-  @Override
-  public void setVisible(boolean b) {
-    super.setVisible(b);
-    if (!canvas.isReadonly()) {
-      canvas.showTrackComponentsDialog();
-    }
   }
 
   private class Powerlistener implements PowerEventListener {

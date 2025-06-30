@@ -26,12 +26,8 @@ import java.awt.Paint;
 import java.awt.Point;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
-import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -45,7 +41,10 @@ import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.OverlayLayout;
 import javax.swing.SwingUtilities;
+import javax.swing.TransferHandler;
+import javax.swing.TransferHandler.TransferSupport;
 import jcs.commandStation.autopilot.AutoPilot;
 import jcs.entities.BlockBean;
 import jcs.entities.BlockBean.BlockState;
@@ -116,7 +115,6 @@ public class LayoutCanvas extends JPanel {
   private Tile selectedTile;
 
   private RoutesDialog routesDialog;
-  private TrackTileDialog trackComponents;
 
   private boolean showCenter;
 
@@ -134,27 +132,29 @@ public class LayoutCanvas extends JPanel {
 
     this.readonly = readonly;
     drawGrid = !readonly;
-    this.executor = Executors.newCachedThreadPool();
+    executor = Executors.newCachedThreadPool();
 
-    this.mode = Mode.SELECT;
-    this.orientation = Orientation.EAST;
-    this.direction = Direction.CENTER;
+    if (readonly) {
+      mode = Mode.CONTROL;
+    } else {
+      mode = Mode.SELECT;
+    }
+
+    orientation = Orientation.EAST;
+    direction = Direction.CENTER;
 
     initComponents();
     postInit();
   }
 
+  /**
+   * Initialize Dialog's
+   */
   private void postInit() {
     routesDialog = new RoutesDialog(getParentFrame(), false, this, readonly);
 
     if (!readonly) {
-      trackComponents = new TrackTileDialog(getParentFrame(), false, this);
-
-      // DropTarget dt = new DropTarget(this,DnDConstants.ACTION_COPY, new DropTargetHandler(this), true);
-      DropTarget dt = new DropTarget(this, DnDConstants.ACTION_COPY_OR_MOVE, new DropTargetHandler(this), true);
-
-      this.setDropTarget(dt);
-
+      setTransferHandler(new TileBeanDropHandler());
     }
   }
 
@@ -258,7 +258,9 @@ public class LayoutCanvas extends JPanel {
   void loadLayoutInBackground() {
     executor.execute(() -> {
       List<Tile> tiles = TileCache.loadTiles(readonly);
-
+      if (this.readonly) {
+        Logger.trace("Loaded " + tiles.size() + " from database...");
+      }
       java.awt.EventQueue.invokeLater(() -> {
         loadTiles(tiles);
       });
@@ -272,6 +274,7 @@ public class LayoutCanvas extends JPanel {
 
   private void loadTiles(List<Tile> tiles) {
     removeAll();
+    validate();
     selectedTile = null;
 
     Dimension minSize = TileCache.getMinCanvasSize();
@@ -294,6 +297,8 @@ public class LayoutCanvas extends JPanel {
       setPreferredSize(new Dimension(w, h));
       setSize(new Dimension(w, h));
       Logger.trace("Changed size to w: " + w + " h: " + h);
+    } else {
+      Logger.trace("Canvas size; w: " + w + " h: " + h);
     }
 
     for (Tile tile : tiles) {
@@ -302,6 +307,8 @@ public class LayoutCanvas extends JPanel {
         tile.setDrawCenterPoint(showCenter);
       }
     }
+    validate();
+    repaint();
   }
 
   private void mouseMoveAction(MouseEvent evt) {
@@ -345,13 +352,13 @@ public class LayoutCanvas extends JPanel {
         }
       }
       case ADD -> {
-
+        //Be aware of DnD
         if (MouseEvent.BUTTON1 == evt.getButton() && selectedTile == null) {
           //Only add a new tile when there is no tile on the selected snapPoint
           Logger.trace("Adding a new tile: " + tileType + " @ (" + snapPoint.x + ", " + snapPoint.y + ")");
           selectedTile = addTile(snapPoint, tileType, orientation, direction, true, showCenter);
           if (selectedTile != null) {
-            selectedTile.setSelected(true);
+            //selectedTile.setSelected(true);
             repaint(selectedTile.getTileBounds());
           }
         } else {
@@ -741,10 +748,6 @@ public class LayoutCanvas extends JPanel {
 
   void showRoutesDialog() {
     routesDialog.setVisible(true);
-  }
-
-  void showTrackComponentsDialog() {
-    trackComponents.setVisible(true);
   }
 
   /**
@@ -1176,88 +1179,54 @@ public class LayoutCanvas extends JPanel {
     }
   }//GEN-LAST:event_resetGhostMIActionPerformed
 
-  class DropTargetHandler implements DropTargetListener {
+  private class TileBeanDropHandler extends TransferHandler {
 
-    private final LayoutCanvas layoutCanvas;
+    private static final long serialVersionUID = -8292030226504385245L;
 
-    public DropTargetHandler(LayoutCanvas layoutCanvas) {
-      this.layoutCanvas = layoutCanvas;
+    @Override
+    public boolean canImport(TransferSupport support) {
+      boolean b = support.isDataFlavorSupported(TileBean.TILE_BEAN_FLAVOR);
+      return support.isDataFlavorSupported(TileBean.TILE_BEAN_FLAVOR) && !readonly;
     }
 
     @Override
-    public void dragEnter(DropTargetDragEvent dtde) {
-      if (dtde.getTransferable().isDataFlavorSupported(TrackTileDialog.TileDescTransferable.USER_DATA_FLAVOR)) {
-        Logger.trace("Accept...");
-
-        dtde.acceptDrag(DnDConstants.ACTION_COPY_OR_MOVE);
-      } else {
-        Logger.trace("Reject Drag...");
-        dtde.rejectDrag();
+    public boolean importData(TransferSupport support) {
+      if (!canImport(support)) {
+        return false;
       }
-    }
 
-    @Override
-    public void dragOver(DropTargetDragEvent dtde) {
-    }
+      try {
+        Transferable transferable = support.getTransferable();
+        TileBean tb = (TileBean) transferable.getTransferData(TileBean.TILE_BEAN_FLAVOR);
 
-    @Override
-    public void dropActionChanged(DropTargetDragEvent dtde) {
-    }
+        TileType tileType = tb.getTileType();
+        Orientation orientation = getOrientation();
+        Direction direction = tb.getDirection();
+        Point dropPoint = LayoutUtil.snapToGrid(support.getDropLocation().getDropPoint());
 
-    @Override
-    public void dragExit(DropTargetEvent dte) {
-    }
+        Logger.trace("Dropping: " + tb.getName() + " @ (" + dropPoint.x + "," + dropPoint.y + ")");
 
-    @Override
-    public void drop(DropTargetDropEvent dtde) {
-      if (dtde.getTransferable().isDataFlavorSupported(TrackTileDialog.TileDescTransferable.USER_DATA_FLAVOR)) {
-        Transferable t = dtde.getTransferable();
-        if (t.isDataFlavorSupported(TrackTileDialog.TileDescTransferable.USER_DATA_FLAVOR)) {
-          try {
-            Object transferData = t.getTransferData(TrackTileDialog.TileDescTransferable.USER_DATA_FLAVOR);
-
-            Logger.trace("transferData: " + transferData);
-
-            if (transferData instanceof TrackTileDialog.TileDesc newTile) {
-
-              Logger.trace("Adding: " + newTile + " Location" + dtde.getLocation());
-
-              Point p = LayoutUtil.snapToGrid(dtde.getLocation());
-              TileType tileType = TileType.get(newTile.getTileType());
-              Orientation orientation = Orientation.get(newTile.getTileOrientation());
-              Direction direction = Direction.get(newTile.getTileDirection());
-
-              Tile tile = layoutCanvas.addTile(p, tileType, orientation, direction, true, layoutCanvas.showCenter);
-
-              if (tile == null) {
-                dtde.rejectDrop();
-              } else {
-                dtde.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
-                
-                tile.setSelected(true);
-               
-                Tile prevSelected = layoutCanvas.selectedTile;
-                if (prevSelected != null) {
-                  prevSelected.setSelected(false);
-                  layoutCanvas.repaint(prevSelected.getTileBounds());
-                }
-
-                layoutCanvas.selectedTile = tile;
-                layoutCanvas.repaint(layoutCanvas.selectedTile.getTileBounds()); 
-              }
-            } else {
-              dtde.rejectDrop();
-            }
-          } catch (UnsupportedFlavorException | IOException ex) {
-            Logger.error(ex);
-            dtde.rejectDrop();
+        Tile newTile = addTile(dropPoint, tileType, orientation, direction, true, showCenter);
+        if (newTile != null) {
+          if (selectedTile != null) {
+            selectedTile.setSelected(false);
+            repaint(selectedTile.getTileBounds());
           }
-        } else {
-          dtde.rejectDrop();
+          selectedTile = newTile;
+          //selectedTile.setSelected(true);
+          repaint(selectedTile.getTileBounds());
         }
+
+        return newTile != null;
+
+      } catch (UnsupportedFlavorException | IOException e) {
+        // Handle potential exceptions.
+        Logger.error(e);
+        return false;
       }
     }
   }
+
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private JPopupMenu addPopupMenu;

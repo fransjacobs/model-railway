@@ -42,6 +42,8 @@ import jcs.ui.layout.tiles.ui.TileUI;
  */
 public class Block extends Tile {
 
+  private static final long serialVersionUID = -2059351727943354743L;
+
   public static final int BLOCK_WIDTH = DEFAULT_WIDTH * 3;
   public static final int BLOCK_HEIGHT = DEFAULT_HEIGHT * 3;
 

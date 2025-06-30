@@ -56,6 +56,10 @@ public class LayoutPanelTester {
       Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
       f.setLocation(dim.width / 2 - f.getSize().width / 2, dim.height / 2 - f.getSize().height / 2);
       f.setVisible(true);
+
+      TrackTileDialog components = new TrackTileDialog(f, false);
+      components.setVisible(true);
+
     });
   }
 
