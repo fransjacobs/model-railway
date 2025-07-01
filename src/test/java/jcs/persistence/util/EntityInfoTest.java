@@ -19,6 +19,7 @@ import java.awt.Image;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import javax.swing.ImageIcon;
 import jcs.entities.LocomotiveBean;
 import jcs.ui.util.ImageUtil;
 import org.junit.After;
@@ -43,7 +44,7 @@ public class EntityInfoTest {
     Image locImage = ImageUtil.readImage(imgPath);
     //Image is sized by default so
     locImage = ImageUtil.scaleImage(locImage, 100);
-    lb.setLocIcon(locImage);
+    lb.setLocIcon(new ImageIcon(locImage));
 
     return lb;
   }

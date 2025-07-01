@@ -57,7 +57,7 @@ public class LayoutPanelTester {
       f.setLocation(dim.width / 2 - f.getSize().width / 2, dim.height / 2 - f.getSize().height / 2);
       f.setVisible(true);
 
-      TrackTileDialog components = new TrackTileDialog(f, false);
+      TrackTileDialogTester components = new TrackTileDialogTester(f, false);
       components.setVisible(true);
 
     });

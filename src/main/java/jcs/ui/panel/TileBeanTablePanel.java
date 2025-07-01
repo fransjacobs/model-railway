@@ -18,15 +18,11 @@ package jcs.ui.panel;
 import com.twelvemonkeys.image.ImageUtil;
 import java.awt.Component;
 import java.awt.Image;
-import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.event.InputEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.net.URL;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -36,11 +32,8 @@ import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 import static javax.swing.TransferHandler.COPY;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.table.DefaultTableCellRenderer;
 import jcs.entities.TileBean;
-import jcs.ui.KeyboardSensorPanel;
 import jcs.ui.table.model.TileBeanTableModel;
 import org.tinylog.Logger;
 
@@ -48,6 +41,8 @@ import org.tinylog.Logger;
  *
  */
 public class TileBeanTablePanel extends JPanel {
+
+  private static final long serialVersionUID = 3293638209472819910L;
 
   public TileBeanTablePanel() {
     initComponents();
@@ -61,6 +56,7 @@ public class TileBeanTablePanel extends JPanel {
     tileBeanTable.setDragEnabled(true);
 
     tileBeanTable.setTransferHandler(new TransferHandler() {
+      private static final long serialVersionUID = -7249852729273226500L;
 
       @Override
       public int getSourceActions(JComponent c) {
@@ -196,158 +192,4 @@ public class TileBeanTablePanel extends JPanel {
   private jcs.ui.table.model.TileBeanTableModel tileTableModel;
   // End of variables declaration//GEN-END:variables
 
-  //Testing
-  public static void main(String args[]) {
-    try {
-      UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
-    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
-      Logger.error("Can't set the LookAndFeel: " + ex);
-    }
-
-    java.awt.EventQueue.invokeLater(() -> {
-      TileBeanTablePanel testPanel = new TileBeanTablePanel();
-      JFrame testFrame = new JFrame("TileBeanTablePanel Tester");
-      //this.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/media/jcs-train-64.png")));
-      URL iconUrl = KeyboardSensorPanel.class.getResource("/media/jcs-train-2-512.png");
-      if (iconUrl != null) {
-        testFrame.setIconImage(new ImageIcon(iconUrl).getImage());
-      }
-
-      JFrame.setDefaultLookAndFeelDecorated(true);
-      testFrame.add(testPanel);
-
-      testFrame.addWindowListener(new java.awt.event.WindowAdapter() {
-        @Override
-        public void windowClosing(java.awt.event.WindowEvent e) {
-          System.exit(0);
-        }
-      });
-      testFrame.pack();
-      testFrame.setLocationRelativeTo(null);
-      testFrame.setVisible(true);
-    });
-  }
-
-  class TableRowTransferHandler extends TransferHandler {
-
-    @Override
-    public Icon getVisualRepresentation(Transferable t) {
-      return super.getVisualRepresentation(t);
-    }
-
-    @Override
-    public void exportAsDrag(JComponent comp, InputEvent e, int action) {
-      super.exportAsDrag(comp, e, action);
-    }
-
-    @Override
-    public Point getDragImageOffset() {
-      return super.getDragImageOffset();
-    }
-
-    @Override
-    public void setDragImageOffset(Point p) {
-      super.setDragImageOffset(p);
-    }
-
-    @Override
-    public Image getDragImage() {
-      return super.getDragImage();
-    }
-
-    @Override
-    public void setDragImage(Image img) {
-      super.setDragImage(img);
-    }
-
-  }
-
 }
-//  class DragGestureHandler implements DragGestureListener {
-//
-//    private final JList list;
-//
-//    public DragGestureHandler(JList list) {
-//      this.list = list;
-//    }
-//
-//    @Override
-//    public void dragGestureRecognized(DragGestureEvent dge) {
-//      String selectedValue = (String) list.getSelectedValue();
-//
-//      TrackTileDialog.TileDesc tileDesc = createTileDesc(selectedValue);
-//
-//      Transferable t = new TrackTileDialog.TileDescTransferable(tileDesc);
-//      DragSource ds = dge.getDragSource();
-//      //ds.startDrag(dge, null, t, new DragSourceHandler());
-//      dge.startDrag(null, t);
-//    }
-//
-//  }  
-
-//  class TableRowTransferHandlerA extends TransferHandler {
-//
-//    private final DataFlavor localObjectFlavor = new ActivationDataFlavor(Integer.class, "application/x-java-Integer;class=java.lang.Integer", "Integer Row Index");
-//    private JTable table = null;
-//
-//    public TableRowTransferHandler(JTable table) {
-//      this.table = table;
-//    }
-//
-//    @Override
-//    protected Transferable createTransferable(JComponent c) {
-//      assert (c == table);
-//      return new DataHandler(new Integer(table.getSelectedRow()), localObjectFlavor.getMimeType());
-//    }
-//
-//    @Override
-//    public boolean canImport(TransferHandler.TransferSupport info) {
-//      boolean b = info.getComponent() == table && info.isDrop() && info.isDataFlavorSupported(localObjectFlavor);
-//      table.setCursor(b ? DragSource.DefaultMoveDrop : DragSource.DefaultMoveNoDrop);
-//      return b;
-//    }
-//
-//    @Override
-//    public int getSourceActions(JComponent c) {
-//      return TransferHandler.COPY_OR_MOVE;
-//    }
-//
-//    @Override
-//    public boolean importData(TransferHandler.TransferSupport info) {
-//      JTable target = (JTable) info.getComponent();
-//      JTable.DropLocation dl = (JTable.DropLocation) info.getDropLocation();
-//      int index = dl.getRow();
-//      int max = table.getModel().getRowCount();
-//      if (index < 0 || index > max) {
-//        index = max;
-//      }
-//      target.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-//      try {
-//        Integer rowFrom = (Integer) info.getTransferable().getTransferData(localObjectFlavor);
-//        if (rowFrom != -1 && rowFrom != index) {
-//          ((Reorderable) table.getModel()).reorder(rowFrom, index);
-//          if (index > rowFrom) {
-//            index--;
-//          }
-//          target.getSelectionModel().addSelectionInterval(index, index);
-//          return true;
-//        }
-//      } catch (Exception e) {
-//        e.printStackTrace();
-//      }
-//      return false;
-//    }
-//
-//    @Override
-//    protected void exportDone(JComponent c, Transferable t, int act) {
-//      if ((act == TransferHandler.MOVE) || (act == TransferHandler.NONE)) {
-//        table.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-//      }
-//    }
-//
-//  }
-//locomotiveTable.setDefaultRenderer(Image.class, new LocIconRenderer());
-//tileBeanTable.getRowSorter().addRowSorterListener((RowSorterEvent e) -> {
-//Logger.trace(e.getType() + "," + e.getSource().getSortKeys());// Sorting changed
-//});
-

@@ -241,7 +241,7 @@ public class BlockUI extends TileUI {
 
     Image locImage;
     if (model.getLocomotive() != null && model.getLocomotive().getLocIcon() != null) {
-      locImage = model.getLocomotive().getLocIcon();
+      locImage = model.getLocomotive().getLocIcon().getImage();
     } else {
       locImage = null;
     }

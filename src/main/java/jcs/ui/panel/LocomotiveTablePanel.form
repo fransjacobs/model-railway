@@ -49,6 +49,7 @@
             <Property name="rowSorter" type="javax.swing.RowSorter" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
               <Connection code="new TableRowSorter&lt;&gt;(locomotiveBeanTableModel)" type="code"/>
             </Property>
+            <Property name="selectionMode" type="int" value="0"/>
             <Property name="showGrid" type="boolean" value="true"/>
           </Properties>
           <Events>

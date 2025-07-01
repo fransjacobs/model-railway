@@ -18,6 +18,7 @@ package jcs.persistence;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.util.List;
+import javax.swing.ImageIcon;
 import jcs.entities.AccessoryBean;
 import jcs.entities.BlockBean;
 import jcs.entities.CommandStationBean;
@@ -555,7 +556,7 @@ public interface PersistenceService {
    * @param imageName The name of the image file.
    * @return The Image, or null if not found.
    */
-  Image getLocomotiveImage(String imageName);
+  ImageIcon getLocomotiveImage(String imageName);
 
   /**
    * Retrieves a function image.
@@ -563,7 +564,7 @@ public interface PersistenceService {
    * @param imageName The name of the image file.
    * @return The Image, or null if not found.
    */
-  Image getFunctionImage(String imageName);
+  ImageIcon getFunctionImage(String imageName);
 
   /**
    * Reads an image file.

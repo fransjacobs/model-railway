@@ -22,6 +22,7 @@ import java.awt.Toolkit;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -33,6 +34,8 @@ import jcs.ui.util.ImageUtil;
 import org.tinylog.Logger;
 
 public class BlockTileTester extends javax.swing.JFrame {
+
+  private static final long serialVersionUID = 5683130151967672022L;
 
   private Tile blockEast;
   private Tile blockSouth;
@@ -65,18 +68,18 @@ public class BlockTileTester extends javax.swing.JFrame {
 
     blockSouth = new Block(TileBean.Orientation.SOUTH, 360, 80);
     blockSouth.setId("south");
-    blockSouth.setBlockState(blockStates.get(blockStateIndex+1));
+    blockSouth.setBlockState(blockStates.get(blockStateIndex + 1));
 
     blockSouth.setTrackRouteColor(Color.YELLOW);
 
     blockWest = new Block(TileBean.Orientation.WEST, 180, 140);
     blockWest.setId("west");
-    blockSouth.setBlockState(blockStates.get(blockStateIndex+1));
+    blockSouth.setBlockState(blockStates.get(blockStateIndex + 1));
     blockWest.setTrackRouteColor(Color.CYAN);
 
     blockNorth = new Block(TileBean.Orientation.NORTH, 60, 100);
     blockNorth.setId("north");
-    blockSouth.setBlockState(blockStates.get(blockStateIndex+1));
+    blockSouth.setBlockState(blockStates.get(blockStateIndex + 1));
     blockNorth.setTrackRouteColor(Color.blue);
 
     dotGridCanvas.add(blockEast);
@@ -104,26 +107,21 @@ public class BlockTileTester extends javax.swing.JFrame {
   }
 
   private LocomotiveBean createLocomotiveBean() {
-    
-   //     LocomotiveBean lok2 = new LocomotiveBean(12L, "BR 141 015-08", 12L, 12, "DB BR 141 136-2", "mm_prg", 120, 0, 0, 2, false, true);
-    
-  //  LocomotiveBean lok1 = new LocomotiveBean(8L, "NS DHG 6505", 8L, 8, "", "dcc", 100, 0, 0, 1, true, true);
 
+    //     LocomotiveBean lok2 = new LocomotiveBean(12L, "BR 141 015-08", 12L, 12, "DB BR 141 136-2", "mm_prg", 120, 0, 0, 2, false, true);
+    //  LocomotiveBean lok1 = new LocomotiveBean(8L, "NS DHG 6505", 8L, 8, "", "dcc", 100, 0, 0, 1, true, true);
     //String imgPath = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + "dcc-ex" + File.separator + "ns dhg 6505.png";
     //lok1.setIcon(imgPath);
-
     //Image locImage = readImage(imgPath);
     //lok1.setLocIcon(locImage);
-
     //activateEastSensorBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/DHG 6505.png"))); // NOI18N
-    
     LocomotiveBean lb = new LocomotiveBean(8L, "NS DHG 6505", 8L, 8, "", "dcc", 100, 0, 0, 1, true, true);
     String imgPath = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "images" + File.separator + "DHG 6505.png";
     lb.setIcon(imgPath);
     Image locImage = ImageUtil.readImage(imgPath);
     //Image is sized by default so
     locImage = ImageUtil.scaleImage(locImage, 100);
-    lb.setLocIcon(locImage);
+    lb.setLocIcon(new ImageIcon(locImage));
 
 //    if (this.backwardsRB.isSelected()) {
 //      lb.setDirection(LocomotiveBean.Direction.BACKWARDS);

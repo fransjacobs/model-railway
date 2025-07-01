@@ -866,10 +866,10 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
     this.selectedAccessory.setIcon(this.iconTF.getText());
     if (this.selectedAccessory.getIcon() != null) {
       String icon = this.selectedAccessory.getIcon();
-      Image locIcon = PersistenceFactory.getService().getLocomotiveImage(icon);
+      ImageIcon locIcon = PersistenceFactory.getService().getLocomotiveImage(icon);
       if (locIcon != null) {
         //this.selectedAccessory.setLocIcon(locIcon);
-        this.imageLabel.setIcon(new ImageIcon(locIcon));
+        this.imageLabel.setIcon(locIcon);
         this.imageLabel.setText("");
       } else {
         this.imageLabel.setIcon(null);

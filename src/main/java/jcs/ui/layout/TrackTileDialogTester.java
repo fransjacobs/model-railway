@@ -19,14 +19,14 @@ package jcs.ui.layout;
  *
  * Drag and Drop dialog for Testing.
  */
-public class TrackTileDialog extends javax.swing.JDialog {
+public class TrackTileDialogTester extends javax.swing.JDialog {
 
   private static final long serialVersionUID = 7682043946903673677L;
 
   /**
    * Creates new form TileNewJDialog
    */
-  public TrackTileDialog(java.awt.Frame parent, boolean modal) {
+  public TrackTileDialogTester(java.awt.Frame parent, boolean modal) {
     super(parent, modal);
     initComponents();
   }

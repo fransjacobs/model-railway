@@ -20,7 +20,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
-import java.awt.Image;
 import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.io.Serializable;
@@ -288,6 +287,7 @@ public class TileBean implements Comparable, Serializable {
 
   @Transient
   @ColumnPosition(position = 1)
+  @Column(name = "image")
   public ImageIcon getTileIcon() {
     return tileIcon;
   }
@@ -298,6 +298,7 @@ public class TileBean implements Comparable, Serializable {
 
   @Transient
   @ColumnPosition(position = 0)
+  @Column(name = "name")
   public String getName() {
     return name;
   }
