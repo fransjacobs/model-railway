@@ -26,11 +26,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
+import javax.swing.TransferHandler;
+import static javax.swing.TransferHandler.COPY;
 import javax.swing.event.RowSorterEvent;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableRowSorter;
@@ -70,6 +73,32 @@ public class LocomotiveTablePanel extends JPanel implements RefreshEventListener
     if (PersistenceFactory.getService() != null) {
       refresh();
     }
+    locomotiveTable.setDragEnabled(true);
+
+    locomotiveTable.setTransferHandler(new TransferHandler() {
+      private static final long serialVersionUID = -7249852729273226500L;
+
+      @Override
+      public int getSourceActions(JComponent c) {
+        // We specify that the data can be COPIED.
+        return COPY;
+      }
+
+      @Override
+      protected Transferable createTransferable(JComponent c) {
+        JTable table = (JTable) c;
+        int selectedRow = table.getSelectedRow();
+        if (selectedRow < 0) {
+          return null; // No selection, so nothing to transfer.
+        }
+
+        LocomotiveBeanTableModel model = (LocomotiveBeanTableModel) locomotiveTable.getModel();
+        LocomotiveBean locomotiveBean = model.getBeanAt(selectedRow);
+
+        Logger.trace("LocomotiveBean: " + locomotiveBean);
+        return new LocomotiveTablePanel.LocomotiveBeanTransferable(locomotiveBean);
+      }
+    });
 
   }
 

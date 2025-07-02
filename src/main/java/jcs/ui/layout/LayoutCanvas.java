@@ -41,7 +41,6 @@ import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.OverlayLayout;
 import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 import javax.swing.TransferHandler.TransferSupport;
@@ -408,6 +407,14 @@ public class LayoutCanvas extends JPanel {
       TileCache.rollback(tile);
       return null;
     }
+  }
+  
+  public void persistTile(Tile tile) {
+     TileCache.persistTile(tile);
+  }
+  
+  public void persistBlock(BlockBean blockBean) {
+     TileCache.persistBlock(blockBean);
   }
 
   public boolean isSupported(List flavors) {

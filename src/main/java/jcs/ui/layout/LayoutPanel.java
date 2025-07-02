@@ -954,7 +954,6 @@ public class LayoutPanel extends JPanel {
     }
   }
 
-
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private JButton addBtn;
   private JToggleButton autoPilotBtn;

@@ -42,6 +42,7 @@ import static jcs.entities.TileBean.TileType.STRAIGHT;
 import static jcs.entities.TileBean.TileType.STRAIGHT_DIR;
 import static jcs.entities.TileBean.TileType.SWITCH;
 import jcs.commandStation.events.JCSActionEvent;
+import jcs.entities.BlockBean;
 import static jcs.ui.layout.tiles.Tile.GRID;
 
 /**
@@ -392,6 +393,15 @@ public class TileCache {
     if (tile == null) {
       throw new IllegalArgumentException("Tile cannot be null");
     }
+    TileBean tb = tile.getTileBean();
+    PersistenceFactory.getService().persist(tb);
+  }
+
+  public static void persistBlock(final BlockBean block) {
+    if (block == null) {
+      throw new IllegalArgumentException("block cannot be null");
+    }
+    Tile tile = idMap.get(block.getTileId());
     TileBean tb = tile.getTileBean();
     PersistenceFactory.getService().persist(tb);
   }
