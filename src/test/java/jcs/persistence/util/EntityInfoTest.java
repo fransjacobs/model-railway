@@ -44,7 +44,9 @@ public class EntityInfoTest {
     Image locImage = ImageUtil.readImage(imgPath);
     //Image is sized by default so
     locImage = ImageUtil.scaleImage(locImage, 100);
-    lb.setLocIcon(new ImageIcon(locImage));
+    if (locImage != null) {
+      lb.setLocIcon(new ImageIcon(locImage));
+    }
 
     return lb;
   }
