@@ -417,6 +417,8 @@ public class Block extends Tile {
 
   private class LocomotiveBeanDropHandler extends TransferHandler {
 
+    private static final long serialVersionUID = -1556738612609648531L;
+
     @Override
     public boolean canImport(TransferHandler.TransferSupport support) {
       return support.isDataFlavorSupported(LocomotiveBean.LOCOMOTIVE_BEAN_FLAVOR);
