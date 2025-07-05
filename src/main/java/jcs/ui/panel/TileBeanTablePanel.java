@@ -76,6 +76,8 @@ public class TileBeanTablePanel extends JPanel {
 
         TileBean tb = model.getTileBean(selectedRow);
 
+        setDragImage(tb.getTileIcon().getImage());
+        
         Logger.trace("TileBean: " + tb.getName());
         return new TileBeanTablePanel.TileBeanTransferable(tb);
       }

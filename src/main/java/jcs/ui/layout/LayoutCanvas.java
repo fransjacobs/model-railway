@@ -468,11 +468,12 @@ public class LayoutCanvas extends JPanel {
   }
 
   void removeTile(Tile tile) {
-    Tile toBeDeleted = (Tile) getComponentAt(tile.getCenter());
-    if (toBeDeleted != null) {
-      Logger.trace("Deleting Tile " + tile.getId());
-      remove(toBeDeleted);
-      TileCache.deleteTile(tile);
+    if (getComponentAt(tile.getCenter()) instanceof Tile toBeDeleted) {
+      if (toBeDeleted != null) {
+        Logger.trace("Deleting Tile " + tile.getId());
+        remove(toBeDeleted);
+        TileCache.deleteTile(tile);
+      }
     }
   }
 
