@@ -37,7 +37,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -63,7 +65,6 @@ import static jcs.entities.TileBean.TileType.STRAIGHT;
 import static jcs.entities.TileBean.TileType.STRAIGHT_DIR;
 import static jcs.entities.TileBean.TileType.SWITCH;
 import jcs.persistence.PersistenceFactory;
-import static jcs.ui.layout.LayoutCanvas.Mode.CONTROL;
 import jcs.ui.layout.dialogs.BlockControlDialog;
 import jcs.ui.layout.dialogs.BlockDialog;
 import jcs.ui.layout.dialogs.SensorDialog;
@@ -86,12 +87,8 @@ public class LayoutCanvas extends JPanel {
 
   private static final long serialVersionUID = 9075914241802892566L;
 
-  public enum Mode {
-    SELECT,
-    ADD,
+  private enum Mode {
     EDIT,
-    MOVE,
-    DELETE,
     CONTROL
   }
 
@@ -136,7 +133,7 @@ public class LayoutCanvas extends JPanel {
     if (readonly) {
       mode = Mode.CONTROL;
     } else {
-      mode = Mode.SELECT;
+      mode = Mode.EDIT;
     }
 
     orientation = Orientation.EAST;
@@ -235,11 +232,10 @@ public class LayoutCanvas extends JPanel {
     gc.setPaint(p);
   }
 
-  void setMode(LayoutCanvas.Mode mode) {
-    this.mode = mode;
-    Logger.trace("Mode: " + mode);
-  }
-
+//  void setMode(LayoutCanvas.Mode mode) {
+//    this.mode = mode;
+//    Logger.trace("Mode: " + mode);
+//  }
   void setGridType(int gridType) {
     this.gridType = gridType;
     executor.execute((() -> repaint()));
@@ -327,7 +323,7 @@ public class LayoutCanvas extends JPanel {
 
     selectedTile = TileCache.findTile(snapPoint);
     //Only show selected tile in edit mode
-    if (selectedTile != null && CONTROL != mode) {
+    if (selectedTile != null && Mode.CONTROL != mode) {
       selectedTile.setSelected(true);
     }
 
@@ -350,8 +346,7 @@ public class LayoutCanvas extends JPanel {
           }
         }
       }
-      case ADD -> {
-        //Be aware of DnD
+      case EDIT -> {
         if (MouseEvent.BUTTON1 == evt.getButton() && selectedTile == null) {
           //Only add a new tile when there is no tile on the selected snapPoint
           Logger.trace("Adding a new tile: " + tileType + " @ (" + snapPoint.x + ", " + snapPoint.y + ")");
@@ -365,23 +360,25 @@ public class LayoutCanvas extends JPanel {
             Logger.debug("A tile exists at the selected position: " + selectedTile.getTileType() + " @ (" + snapPoint.x + ", " + snapPoint.y + ") id: " + selectedTile.getId());
           } else {
             // In Add mode position is free show the menu option to place a Track Component
-            this.addPopupMenu.show(this, evt.getX(), evt.getY());
-            Logger.warn("Found nothing (" + snapPoint.x + ", " + snapPoint.y + ")");
+            //remember the mouse location
+            mouseLocation = new Point(evt.getX(), evt.getY());
+            addPopupMenu.show(this, evt.getX(), evt.getY());
+            //Logger.warn("Found nothing (" + snapPoint.x + ", " + snapPoint.y + ")");
           }
         }
         if (MouseEvent.BUTTON3 == evt.getButton() && selectedTile != null) {
           showOperationsPopupMenu(selectedTile, snapPoint);
         }
       }
-      case DELETE -> {
-        Component c = getComponentAt(snapPoint);
-        if (c != null && c instanceof Tile) {
-          Tile toBeDeleted = (Tile) c;
-          removeTile(toBeDeleted);
-          repaint(toBeDeleted.getTileBounds());
-          selectedTile = null;
-        }
-      }
+//      case DELETE -> {
+//        Component c = getComponentAt(snapPoint);
+//        if (c != null && c instanceof Tile) {
+//          Tile toBeDeleted = (Tile) c;
+//          removeTile(toBeDeleted);
+//          repaint(toBeDeleted.getTileBounds());
+//          selectedTile = null;
+//        }
+//      }
       default -> {
         Logger.trace((selectedTile != null ? "Selected tile: " + selectedTile.getId() + ", " + selectedTile.xyToString() : "No tile @ (" + snapPoint.x + "," + snapPoint.y + ")"));
         if (MouseEvent.BUTTON3 == evt.getButton()) {
@@ -391,15 +388,35 @@ public class LayoutCanvas extends JPanel {
     }
   }
 
+  Tile addTile(TileType tileType, Direction direction) {
+    Point addPoint = LayoutUtil.snapToGrid(mouseLocation);
+    Logger.trace("Adding new: " + tileType + " @ (" + addPoint.x + "," + addPoint.y + ")");
+    return addTile(addPoint, tileType, getOrientation(), direction, true, showCenter);
+  }
+
   Tile addTile(Point p, TileType tileType, Orientation orientation, Direction direction, boolean selected, boolean showCenter) {
     Logger.trace("Adding: " + tileType + " @ " + p + " O: " + orientation + " D: " + direction);
     Tile tile = TileCache.createTile(tileType, orientation, direction, p);
+
+    //Set the "last" used properties
+    this.tileType = tileType;
+    this.orientation = orientation;
+    this.direction = direction;
 
     if (TileCache.canMoveTo(tile, p)) {
       tile.setSelected(selected);
       tile.setDrawCenterPoint(showCenter);
       add(tile);
       TileCache.addAndSaveTile(tile);
+
+      //unselect the previous selected tile if applicable 
+      if (selectedTile != null) {
+        selectedTile.setSelected(false);
+        repaint(selectedTile.getTileBounds());
+      }
+      selectedTile = tile;
+      repaint(selectedTile.getTileBounds());
+
       return tile;
     } else {
       Tile occ = TileCache.findTile(p);
@@ -408,13 +425,13 @@ public class LayoutCanvas extends JPanel {
       return null;
     }
   }
-  
+
   public void persistTile(Tile tile) {
-     TileCache.persistTile(tile);
+    TileCache.persistTile(tile);
   }
-  
+
   public void persistBlock(BlockBean blockBean) {
-     TileCache.persistBlock(blockBean);
+    TileCache.persistBlock(blockBean);
   }
 
   public boolean isSupported(List flavors) {
@@ -790,9 +807,21 @@ public class LayoutCanvas extends JPanel {
     removeLocMI = new JMenuItem();
     blockPropertiesMI = new JMenuItem();
     addPopupMenu = new JPopupMenu();
+    trackMenu = new JMenu();
     straightMI = new JMenuItem();
     straightDirectionMI = new JMenuItem();
     curvedMI = new JMenuItem();
+    sensorMI = new JMenuItem();
+    endTrackMI = new JMenuItem();
+    switchMenu = new JMenu();
+    turnoutLeftMI = new JMenuItem();
+    turnoutRightMI = new JMenuItem();
+    crossLeftMI = new JMenuItem();
+    crossRightMI = new JMenuItem();
+    signalMenu = new JMenu();
+    signalMI = new JMenuItem();
+    BlockMI = new JMenuItem();
+    crossingMI = new JMenuItem();
 
     verticalMI.setText("Vertical");
     verticalMI.addActionListener(new ActionListener() {
@@ -949,14 +978,125 @@ public class LayoutCanvas extends JPanel {
     });
     blockPopupMenu.add(blockPropertiesMI);
 
+    trackMenu.setText("Tracks");
+
+    straightMI.setIcon(new ImageIcon(getClass().getResource("/media/new-straight.png"))); // NOI18N
     straightMI.setText("add Straight");
-    addPopupMenu.add(straightMI);
+    straightMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        straightMIActionPerformed(evt);
+      }
+    });
+    trackMenu.add(straightMI);
 
+    straightDirectionMI.setIcon(new ImageIcon(getClass().getResource("/media/new-straightDirection.png"))); // NOI18N
     straightDirectionMI.setText("add Straight Direction");
-    addPopupMenu.add(straightDirectionMI);
+    straightDirectionMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        straightDirectionMIActionPerformed(evt);
+      }
+    });
+    trackMenu.add(straightDirectionMI);
 
+    curvedMI.setIcon(new ImageIcon(getClass().getResource("/media/new-diagonal.png"))); // NOI18N
     curvedMI.setText("add Curved");
-    addPopupMenu.add(curvedMI);
+    curvedMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        curvedMIActionPerformed(evt);
+      }
+    });
+    trackMenu.add(curvedMI);
+
+    sensorMI.setIcon(new ImageIcon(getClass().getResource("/media/new-straight-feedback.png"))); // NOI18N
+    sensorMI.setText("add Sensor");
+    sensorMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        sensorMIActionPerformed(evt);
+      }
+    });
+    trackMenu.add(sensorMI);
+
+    endTrackMI.setIcon(new ImageIcon(getClass().getResource("/media/new-end-track.png"))); // NOI18N
+    endTrackMI.setText("add End Track");
+    endTrackMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        endTrackMIActionPerformed(evt);
+      }
+    });
+    trackMenu.add(endTrackMI);
+
+    addPopupMenu.add(trackMenu);
+
+    switchMenu.setText("Switches");
+
+    turnoutLeftMI.setIcon(new ImageIcon(getClass().getResource("/media/new-L-turnout.png"))); // NOI18N
+    turnoutLeftMI.setText("add Left Turnout");
+    turnoutLeftMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        turnoutLeftMIActionPerformed(evt);
+      }
+    });
+    switchMenu.add(turnoutLeftMI);
+
+    turnoutRightMI.setIcon(new ImageIcon(getClass().getResource("/media/new-R-turnout.png"))); // NOI18N
+    turnoutRightMI.setText("add Right Turnout");
+    turnoutRightMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        turnoutRightMIActionPerformed(evt);
+      }
+    });
+    switchMenu.add(turnoutRightMI);
+
+    crossLeftMI.setIcon(new ImageIcon(getClass().getResource("/media/new-cross-L.png"))); // NOI18N
+    crossLeftMI.setText("add Left Cross");
+    crossLeftMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        crossLeftMIActionPerformed(evt);
+      }
+    });
+    switchMenu.add(crossLeftMI);
+
+    crossRightMI.setIcon(new ImageIcon(getClass().getResource("/media/new-cross-R.png"))); // NOI18N
+    crossRightMI.setText("add Right Cross");
+    crossRightMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        crossRightMIActionPerformed(evt);
+      }
+    });
+    switchMenu.add(crossRightMI);
+
+    addPopupMenu.add(switchMenu);
+
+    signalMenu.setText("Signals");
+
+    signalMI.setIcon(new ImageIcon(getClass().getResource("/media/new-straight-signal.png"))); // NOI18N
+    signalMI.setText("add Signal");
+    signalMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        signalMIActionPerformed(evt);
+      }
+    });
+    signalMenu.add(signalMI);
+
+    addPopupMenu.add(signalMenu);
+
+    BlockMI.setIcon(new ImageIcon(getClass().getResource("/media/new-block.png"))); // NOI18N
+    BlockMI.setText("add Block");
+    BlockMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        BlockMIActionPerformed(evt);
+      }
+    });
+    addPopupMenu.add(BlockMI);
+
+    crossingMI.setIcon(new ImageIcon(getClass().getResource("/media/new-crossing.png"))); // NOI18N
+    crossingMI.setText("add Crossing");
+    crossingMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        crossingMIActionPerformed(evt);
+      }
+    });
+    addPopupMenu.add(crossingMI);
 
     setBackground(new Color(255, 255, 255));
     setMinimumSize(new Dimension(1000, 760));
@@ -1038,7 +1178,7 @@ public class LayoutCanvas extends JPanel {
   }//GEN-LAST:event_flipVerticalMIActionPerformed
 
   private void moveMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_moveMIActionPerformed
-    this.mode = Mode.MOVE;
+    //this.mode = Mode.MOVE;
   }//GEN-LAST:event_moveMIActionPerformed
 
   private void deleteMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_deleteMIActionPerformed
@@ -1186,6 +1326,54 @@ public class LayoutCanvas extends JPanel {
     }
   }//GEN-LAST:event_resetGhostMIActionPerformed
 
+  private void sensorMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_sensorMIActionPerformed
+    addTile(TileType.SENSOR, Direction.CENTER);
+  }//GEN-LAST:event_sensorMIActionPerformed
+
+  private void straightMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_straightMIActionPerformed
+    addTile(TileType.STRAIGHT, Direction.CENTER);
+  }//GEN-LAST:event_straightMIActionPerformed
+
+  private void straightDirectionMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_straightDirectionMIActionPerformed
+    addTile(TileType.STRAIGHT_DIR, Direction.CENTER);
+  }//GEN-LAST:event_straightDirectionMIActionPerformed
+
+  private void curvedMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_curvedMIActionPerformed
+    addTile(TileType.CURVED, Direction.CENTER);
+  }//GEN-LAST:event_curvedMIActionPerformed
+
+  private void endTrackMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_endTrackMIActionPerformed
+    addTile(TileType.END, Direction.CENTER);
+  }//GEN-LAST:event_endTrackMIActionPerformed
+
+  private void turnoutLeftMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_turnoutLeftMIActionPerformed
+    addTile(TileType.SWITCH, Direction.LEFT);
+  }//GEN-LAST:event_turnoutLeftMIActionPerformed
+
+  private void turnoutRightMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_turnoutRightMIActionPerformed
+    addTile(TileType.SWITCH, Direction.RIGHT);
+  }//GEN-LAST:event_turnoutRightMIActionPerformed
+
+  private void crossLeftMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_crossLeftMIActionPerformed
+    addTile(TileType.CROSS, Direction.LEFT);
+  }//GEN-LAST:event_crossLeftMIActionPerformed
+
+  private void crossRightMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_crossRightMIActionPerformed
+    addTile(TileType.CROSS, Direction.RIGHT);
+  }//GEN-LAST:event_crossRightMIActionPerformed
+
+  private void signalMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_signalMIActionPerformed
+    addTile(TileType.SIGNAL, Direction.CENTER);
+  }//GEN-LAST:event_signalMIActionPerformed
+
+  private void BlockMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_BlockMIActionPerformed
+    addTile(TileType.BLOCK, Direction.CENTER);
+  }//GEN-LAST:event_BlockMIActionPerformed
+
+  private void crossingMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_crossingMIActionPerformed
+    addTile(TileType.CROSSING, Direction.CENTER);
+  }//GEN-LAST:event_crossingMIActionPerformed
+
   private class TileBeanDropHandler extends TransferHandler {
 
     private static final long serialVersionUID = -8292030226504385245L;
@@ -1212,20 +1400,8 @@ public class LayoutCanvas extends JPanel {
         Point dropPoint = LayoutUtil.snapToGrid(support.getDropLocation().getDropPoint());
 
         Logger.trace("Dropping: " + tb.getName() + " @ (" + dropPoint.x + "," + dropPoint.y + ")");
-
         Tile newTile = addTile(dropPoint, tileType, orientation, direction, true, showCenter);
-        if (newTile != null) {
-          if (selectedTile != null) {
-            selectedTile.setSelected(false);
-            repaint(selectedTile.getTileBounds());
-          }
-          selectedTile = newTile;
-          //selectedTile.setSelected(true);
-          repaint(selectedTile.getTileBounds());
-        }
-
         return newTile != null;
-
       } catch (UnsupportedFlavorException | IOException e) {
         // Handle potential exceptions.
         Logger.error(e);
@@ -1236,12 +1412,17 @@ public class LayoutCanvas extends JPanel {
 
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
+  private JMenuItem BlockMI;
   private JPopupMenu addPopupMenu;
   private JPopupMenu blockPopupMenu;
   private JMenuItem blockPropertiesMI;
+  private JMenuItem crossLeftMI;
+  private JMenuItem crossRightMI;
+  private JMenuItem crossingMI;
   private JMenuItem curvedMI;
   private JPopupMenu curvedPopupMenu;
   private JMenuItem deleteMI;
+  private JMenuItem endTrackMI;
   private JMenuItem flipHorizontalMI;
   private JMenuItem flipVerticalMI;
   private JMenuItem horizontalMI;
@@ -1255,13 +1436,20 @@ public class LayoutCanvas extends JPanel {
   private JMenuItem reverseArrivalSideMI;
   private JMenuItem rightMI;
   private JMenuItem rotateMI;
+  private JMenuItem sensorMI;
+  private JMenuItem signalMI;
+  private JMenu signalMenu;
   private JMenuItem startLocomotiveMI;
   private JMenuItem stopLocomotiveMI;
   private JMenuItem straightDirectionMI;
   private JMenuItem straightMI;
   private JPopupMenu straightPopupMenu;
+  private JMenu switchMenu;
   private JMenuItem toggleLocomotiveDirectionMI;
   private JMenuItem toggleOutOfOrderMI;
+  private JMenu trackMenu;
+  private JMenuItem turnoutLeftMI;
+  private JMenuItem turnoutRightMI;
   private JMenuItem verticalMI;
   private JMenuItem xyMI;
   // End of variables declaration//GEN-END:variables

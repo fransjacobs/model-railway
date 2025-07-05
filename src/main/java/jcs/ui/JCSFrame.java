@@ -1425,7 +1425,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     @Override
     public void actionPerformed(ActionEvent e) {
       if (editMode) {
-        layoutPanel.setMode(LayoutCanvas.Mode.SELECT);
+        //layoutPanel.setMode(LayoutCanvas.Mode.SELECT);
       }
     }
   }
@@ -1437,7 +1437,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     @Override
     public void actionPerformed(ActionEvent e) {
       if (editMode) {
-        layoutPanel.setMode(LayoutCanvas.Mode.ADD);
+        //layoutPanel.setMode(LayoutCanvas.Mode.ADD);
       }
     }
   }
@@ -1449,7 +1449,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     @Override
     public void actionPerformed(ActionEvent e) {
       if (editMode) {
-        layoutPanel.setMode(LayoutCanvas.Mode.DELETE);
+        //layoutPanel.setMode(LayoutCanvas.Mode.DELETE);
       }
     }
   }
