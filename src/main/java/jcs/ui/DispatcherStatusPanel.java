@@ -16,36 +16,55 @@
 package jcs.ui;
 
 import javax.swing.JPanel;
-import jcs.commandStation.events.RefreshEvent;
 import jcs.ui.util.LocomotiveSelectionChangedListener;
+import org.tinylog.Logger;
 
 /**
  *
  */
-public class DispatcherStatusPanel extends JPanel { //implements RefreshEventListener {
+public class DispatcherStatusPanel extends JPanel {
 
   private static final long serialVersionUID = 6158244271104499799L;
 
   public DispatcherStatusPanel() {
     initComponents();
+    //Do not show the componenents
+    tabsPane.remove(tileBeanTablePanel);
   }
 
   public void showDispatcherTab() {
+    int tabs = tabsPane.getTabCount();
+    if (tabs == 1) {
+      tabsPane.addTab("Locomotives", locomotiveTablePanel);
+      tabsPane.addTab("Dispatcher", dispatcherTablePanel);
+      tabsPane.remove(tileBeanTablePanel);
+    }
+
     tabsPane.setSelectedIndex(1);
   }
 
   public void showLocomotiveTab() {
+    int tabs = tabsPane.getTabCount();
+    if (tabs == 1) {
+      tabsPane.addTab("Locomotives", locomotiveTablePanel);
+      tabsPane.addTab("Dispatcher", dispatcherTablePanel);
+      tabsPane.remove(tileBeanTablePanel);
+    }
+
+    tabsPane.setSelectedIndex(0);
+  }
+
+  public void showComponentsTab() {
+    tabsPane.remove(locomotiveTablePanel);
+    tabsPane.remove(dispatcherTablePanel);
+
+    tabsPane.addTab("Components", tileBeanTablePanel);
     tabsPane.setSelectedIndex(0);
   }
 
   public void refresh() {
     locomotiveTablePanel.refresh();
   }
-
-//  @Override
-//  public void onChange(RefreshEvent event) {
-//    locomotiveTablePanel.onChange(event);
-//  }
 
   public void addLocomotiveSelectionChangeListener(LocomotiveSelectionChangedListener listener) {
     locomotiveTablePanel.addLocomotiveSelectionChangeListener(listener);
@@ -67,6 +86,7 @@ public class DispatcherStatusPanel extends JPanel { //implements RefreshEventLis
     tabsPane = new javax.swing.JTabbedPane();
     locomotiveTablePanel = new jcs.ui.panel.LocomotiveTablePanel();
     dispatcherTablePanel = new jcs.ui.panel.DispatcherTablePanel();
+    tileBeanTablePanel = new jcs.ui.panel.TileBeanTablePanel();
 
     setPreferredSize(new java.awt.Dimension(300, 450));
     setLayout(new java.awt.BorderLayout());
@@ -74,6 +94,7 @@ public class DispatcherStatusPanel extends JPanel { //implements RefreshEventLis
     tabsPane.setPreferredSize(new java.awt.Dimension(300, 440));
     tabsPane.addTab("Locomotives", locomotiveTablePanel);
     tabsPane.addTab("Dispatcher", dispatcherTablePanel);
+    tabsPane.addTab("Components", tileBeanTablePanel);
 
     add(tabsPane, java.awt.BorderLayout.CENTER);
   }// </editor-fold>//GEN-END:initComponents
@@ -83,6 +104,7 @@ public class DispatcherStatusPanel extends JPanel { //implements RefreshEventLis
   private jcs.ui.panel.DispatcherTablePanel dispatcherTablePanel;
   private jcs.ui.panel.LocomotiveTablePanel locomotiveTablePanel;
   private javax.swing.JTabbedPane tabsPane;
+  private jcs.ui.panel.TileBeanTablePanel tileBeanTablePanel;
   // End of variables declaration//GEN-END:variables
 
 }

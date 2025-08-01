@@ -50,12 +50,16 @@ public class LayoutPanelTester {
       }
 
       f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-      layoutPanel.loadLayout();
+      layoutPanel.loadLayoutInBackground();
       f.pack();
 
       Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
       f.setLocation(dim.width / 2 - f.getSize().width / 2, dim.height / 2 - f.getSize().height / 2);
       f.setVisible(true);
+
+      TrackTileDialogTester components = new TrackTileDialogTester(f, false);
+      components.setVisible(true);
+
     });
   }
 

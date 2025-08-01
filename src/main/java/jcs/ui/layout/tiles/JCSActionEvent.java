@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation.events;
+package jcs.ui.layout.tiles;
 
 /**
  *
@@ -26,5 +26,11 @@ public interface JCSActionEvent {
    * @return the id of the Object which requires an action
    */
   String getIdString();
+
+  /**
+   *
+   * @return the wrapped original Event Object
+   */
+  Object getEventObject();
 
 }

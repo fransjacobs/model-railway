@@ -63,6 +63,7 @@ public class Sensor extends Straight implements SensorEventListener {
   @Override
   public void onSensorChange(SensorEvent event) {
     SensorBean sensor = event.getSensorBean();
+    //TODO!
     if (sensor.equalsDeviceIdAndContactId(getSensorBean())) {
       setActive(sensor.isActive());
     }

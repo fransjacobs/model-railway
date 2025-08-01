@@ -214,26 +214,6 @@ public class CanMessageFactory implements MarklinCan {
     return cm;
   }
 
-//  public static CanMessage switchAccessory(int address, AccessoryValue value, boolean on, int gfpUid) {
-//    byte[] data = new byte[CanMessage.DATA_SIZE];
-//    //TODO support for DCC
-//    //localID = address - 1; // GUI-address is 1-based, protocol-address is 0-based
-//    //if (protocol == ProtocolDCC) { localID |= 0x3800; } else { localID |= 0x3000;}
-//    byte[] hash;
-//    if (gfpUid > 0) {
-//      hash = CanMessage.generateHash(gfpUid);
-//    } else {
-//      hash = MAGIC_HASH;
-//    }
-//
-//    data[ACCESSORY_CAN_ADDRESS_IDX] = ACCESSORY_CAN_ADDRESS;
-//    data[ACCESSORY_ADDRESS_IDX] = (byte) (address - 1);
-//    data[ACCESSORY_VALUE_IDX] = (byte) (AccessoryValue.GREEN.equals(value) ? 1 : 0);
-//    data[ACCESSORY_ACTIVE_IDX] = (byte) (on ? 1 : 0);
-//
-//    CanMessage cm = new CanMessage(PRIO_1, ACCESSORY_SWITCHING, hash, DLC_6, data);
-//    return cm;
-//  }
   public static CanMessage switchAccessory(int address, AccessoryValue value, boolean on, int switchTime, int gfpUid) {
     byte[] data = new byte[CanMessage.DATA_SIZE];
     byte[] hash;
@@ -328,7 +308,6 @@ public class CanMessageFactory implements MarklinCan {
     return cm;
   }
 
-  
   //  private int getLocoAddres(int address, DecoderType decoderType) {
 //    int locoAddress;
 //    locoAddress = switch (decoderType) {
@@ -346,7 +325,6 @@ public class CanMessageFactory implements MarklinCan {
 //
 //    return locoAddress;
 //  }
-  
   public static CanMessage setDirection(int address, int csdirection, int gfpUid) {
     byte[] data = new byte[CanMessage.DATA_SIZE];
     byte[] hash;
@@ -448,6 +426,7 @@ public class CanMessageFactory implements MarklinCan {
   }
 
   //Mainly for testing....
+  //TODO move to a test class
   public static void main(String[] a) {
     System.out.println("getMobAppPingReq:   " + getMobileAppPingRequest());
     System.out.println("getMembersPing:     " + getMembersPing());

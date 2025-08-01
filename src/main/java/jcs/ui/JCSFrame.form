@@ -2,6 +2,13 @@
 
 <Form version="1.8" maxVersion="1.9" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
   <NonVisualComponents>
+    <Component class="javax.swing.JFileChooser" name="backupRestoreFileDialog">
+      <Properties>
+        <Property name="currentDirectory" type="java.io.File" value="null"/>
+        <Property name="dialogTitle" type="java.lang.String" value="Backup JCS Database"/>
+        <Property name="name" type="java.lang.String" value="backupRestoreFileDialog" noResource="true"/>
+      </Properties>
+    </Component>
     <Menu class="javax.swing.JMenuBar" name="jcsMenuBar">
       <Properties>
         <Property name="name" type="java.lang.String" value="jcsMenuBar" noResource="true"/>
@@ -13,6 +20,24 @@
             <Property name="name" type="java.lang.String" value="fileMenu" noResource="true"/>
           </Properties>
           <SubComponents>
+            <MenuItem class="javax.swing.JMenuItem" name="backupMI">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Backup"/>
+                <Property name="name" type="java.lang.String" value="backupMI" noResource="true"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="backupMIActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="restoreMI">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Restore"/>
+                <Property name="name" type="java.lang.String" value="restoreMI" noResource="true"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="restoreMIActionPerformed"/>
+              </Events>
+            </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="quitMI">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Quit"/>
@@ -20,54 +45,6 @@
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="quitMIActionPerformed"/>
-              </Events>
-            </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="connectMI">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Connect"/>
-                <Property name="name" type="java.lang.String" value="connectMI" noResource="true"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="connectMIActionPerformed"/>
-              </Events>
-            </MenuItem>
-            <MenuItem class="javax.swing.JCheckBoxMenuItem" name="virtualCBMI">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Virtual Connection"/>
-                <Property name="name" type="java.lang.String" value="virtualCBMI" noResource="true"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="virtualCBMIActionPerformed"/>
-              </Events>
-            </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="autoPilotMI">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Autopilot"/>
-                <Property name="toolTipText" type="java.lang.String" value="Switch Autopilot on"/>
-                <Property name="name" type="java.lang.String" value="autoPilotMI" noResource="true"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="autoPilotMIActionPerformed"/>
-              </Events>
-            </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="startAllLocsMI">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Start All Locomotives"/>
-                <Property name="toolTipText" type="java.lang.String" value="Start All Locomotives"/>
-                <Property name="name" type="java.lang.String" value="startAllLocsMI" noResource="true"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="startAllLocsMIActionPerformed"/>
-              </Events>
-            </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="resetAutopilotMI">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Reset Autopilot"/>
-                <Property name="toolTipText" type="java.lang.String" value="Reset Autopilot"/>
-                <Property name="name" type="java.lang.String" value="resetAutopilotMI" noResource="true"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="resetAutopilotMIActionPerformed"/>
               </Events>
             </MenuItem>
           </SubComponents>
@@ -121,10 +98,74 @@
             </MenuItem>
           </SubComponents>
         </Menu>
-        <Menu class="javax.swing.JMenu" name="windowMenu">
+        <Menu class="javax.swing.JMenu" name="commandStationMenu">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Window"/>
-            <Property name="name" type="java.lang.String" value="windowMenu" noResource="true"/>
+            <Property name="text" type="java.lang.String" value="Command Station"/>
+            <Property name="name" type="java.lang.String" value="commandStationMenu" noResource="true"/>
+          </Properties>
+          <SubComponents>
+            <MenuItem class="javax.swing.JMenuItem" name="connectMI">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Connect"/>
+                <Property name="name" type="java.lang.String" value="connectMI" noResource="true"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="connectMIActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JCheckBoxMenuItem" name="virtualCBMI">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Virtual Connection"/>
+                <Property name="name" type="java.lang.String" value="virtualCBMI" noResource="true"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="virtualCBMIActionPerformed"/>
+              </Events>
+            </MenuItem>
+          </SubComponents>
+        </Menu>
+        <Menu class="javax.swing.JMenu" name="autopilotMenu">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Auto Pilot"/>
+            <Property name="name" type="java.lang.String" value="autopilotMenu" noResource="true"/>
+          </Properties>
+          <SubComponents>
+            <MenuItem class="javax.swing.JMenuItem" name="autoPilotMI">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Autopilot"/>
+                <Property name="toolTipText" type="java.lang.String" value="Switch Autopilot on"/>
+                <Property name="name" type="java.lang.String" value="autoPilotMI" noResource="true"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="autoPilotMIActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="startAllLocsMI">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Start All Locomotives"/>
+                <Property name="toolTipText" type="java.lang.String" value="Start All Locomotives"/>
+                <Property name="name" type="java.lang.String" value="startAllLocsMI" noResource="true"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="startAllLocsMIActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="resetAutopilotMI">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Reset Autopilot"/>
+                <Property name="toolTipText" type="java.lang.String" value="Reset Autopilot"/>
+                <Property name="name" type="java.lang.String" value="resetAutopilotMI" noResource="true"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="resetAutopilotMIActionPerformed"/>
+              </Events>
+            </MenuItem>
+          </SubComponents>
+        </Menu>
+        <Menu class="javax.swing.JMenu" name="viewMenu">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="View"/>
+            <Property name="name" type="java.lang.String" value="viewMenu" noResource="true"/>
           </Properties>
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="showHome">

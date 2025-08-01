@@ -21,6 +21,8 @@ import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import java.awt.Point;
+import java.awt.datatransfer.DataFlavor;
+import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,11 +30,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.swing.ImageIcon;
 import jcs.entities.AccessoryBean.SignalType;
+import jcs.persistence.util.ColumnPosition;
 
 @Table(name = "tiles", indexes = {
   @Index(name = "tile_x_y", columnList = "x, y", unique = true)})
-public class TileBean implements Comparable {
+public class TileBean implements Comparable, Serializable {
+
+  public static DataFlavor TILE_BEAN_FLAVOR = new DataFlavor(TileBean.class, "TileBean");
+  private static final long serialVersionUID = -6044905850510989317L;
 
   protected String id;
   protected Integer x;
@@ -50,6 +57,12 @@ public class TileBean implements Comparable {
 
   protected SensorBean sensorBean;
   protected BlockBean blockBean;
+
+  protected String icon;
+  //protected Image tileIcon;
+  protected ImageIcon tileIcon;
+
+  protected String name;
 
   public TileBean() {
     this(null, TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 0, 0, null, null, null);
@@ -261,6 +274,37 @@ public class TileBean implements Comparable {
     } else {
       return resx;
     }
+  }
+
+  @Transient
+  public String getIcon() {
+    return icon;
+  }
+
+  public void setIcon(String icon) {
+    this.icon = icon;
+  }
+
+  @Transient
+  @ColumnPosition(position = 1)
+  @Column(name = "image")
+  public ImageIcon getTileIcon() {
+    return tileIcon;
+  }
+
+  public void setTileIcon(ImageIcon tileIcon) {
+    this.tileIcon = tileIcon;
+  }
+
+  @Transient
+  @ColumnPosition(position = 0)
+  @Column(name = "name")
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
   }
 
   @Override

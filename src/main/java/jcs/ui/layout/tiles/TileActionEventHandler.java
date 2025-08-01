@@ -20,7 +20,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import jcs.JCS;
 import jcs.commandStation.FeedbackController;
 import jcs.commandStation.events.AccessoryEvent;
-import jcs.commandStation.events.JCSActionEvent;
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.AccessoryBean;
 import org.tinylog.Logger;
@@ -61,8 +60,9 @@ class TileActionEventHandler extends Thread {
 
     while (isRunning()) {
       try {
-        JCSActionEvent event = eventQueue.poll();
-        if (event != null) {
+        JCSActionEvent actionEvent = eventQueue.poll();
+        if (actionEvent != null) {
+          Object event = actionEvent.getEventObject();
           if (event instanceof SensorEvent sensorEvent) {
             fireSensorEvent(sensorEvent);
           }

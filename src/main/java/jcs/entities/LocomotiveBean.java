@@ -19,7 +19,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
-import java.awt.Image;
+import java.awt.datatransfer.DataFlavor;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -28,10 +28,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.swing.ImageIcon;
 import jcs.persistence.util.ColumnPosition;
 
 @Table(name = "locomotives")
 public class LocomotiveBean implements Serializable {
+
+  private static final long serialVersionUID = 7349932263484026161L;
+
+  public static DataFlavor LOCOMOTIVE_BEAN_FLAVOR = new DataFlavor(LocomotiveBean.class, "LocomotiveBean");
 
   private Long id;
   private String name;
@@ -59,7 +64,7 @@ public class LocomotiveBean implements Serializable {
   private Integer speedThree;
   private Integer speedFour;
 
-  private Image locIcon;
+  private ImageIcon locIcon;
   private CommandStationBean commandStationBean;
 
   private final Map<Integer, FunctionBean> functions;
@@ -298,11 +303,11 @@ public class LocomotiveBean implements Serializable {
   @Transient
   @Column(name = "image")
   @ColumnPosition(position = 1)
-  public Image getLocIcon() {
+  public ImageIcon getLocIcon() {
     return locIcon;
   }
 
-  public void setLocIcon(Image locIcon) {
+  public void setLocIcon(ImageIcon locIcon) {
     this.locIcon = locIcon;
   }
 

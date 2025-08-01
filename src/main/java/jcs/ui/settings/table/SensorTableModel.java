@@ -25,6 +25,7 @@ import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.SensorBean;
 import jcs.persistence.PersistenceFactory;
+import org.tinylog.Logger;
 
 /**
  * @author frans
@@ -64,19 +65,29 @@ public class SensorTableModel extends BeanTableModel<SensorBean> implements Sens
   @Override
   public void onSensorChange(SensorEvent event) {
     SensorBean sensor = event.getSensorBean();
-    Integer key = sensor.getDeviceId() + sensor.getContactId();
-    if (sensorBeanCache.containsKey(key)) {
-      SensorBean csb = sensorBeanCache.get(key);
-      csb.setStatus(sensor.getStatus());
-      csb.setPreviousStatus(sensor.getPreviousStatus());
-      csb.setMillis(sensor.getMillis());
-      csb.setLastUpdated(sensor.getLastUpdated());
-    } else {
-      sensorBeanCache.put(key, sensor);
-      beans.add(sensor);
+    Integer key = null;
+    if (sensor.getId() != null) {
+      key = sensor.getId();
+    } else if (sensor.getDeviceId() != null && sensor.getContactId() != null) {
+      key = sensor.getDeviceId() + sensor.getContactId();
     }
 
-    this.fireTableDataChanged();
+    if (key != null) {
+      if (sensorBeanCache.containsKey(key)) {
+        SensorBean csb = sensorBeanCache.get(key);
+        csb.setStatus(sensor.getStatus());
+        csb.setPreviousStatus(sensor.getPreviousStatus());
+        csb.setMillis(sensor.getMillis());
+        csb.setLastUpdated(sensor.getLastUpdated());
+      } else {
+        sensorBeanCache.put(key, sensor);
+        beans.add(sensor);
+      }
+
+      this.fireTableDataChanged();
+    } else {
+      Logger.warn("Sensor `event without a identifiable key " + sensor);
+    }
   }
 
   @Override

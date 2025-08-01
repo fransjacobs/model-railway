@@ -30,6 +30,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import jcs.entities.AccessoryBean;
 import jcs.entities.BlockBean;
 import jcs.entities.CommandStationBean;
@@ -425,7 +426,7 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public Image getLocomotiveImage(String imageName) {
+  public ImageIcon getLocomotiveImage(String imageName) {
     if (!imageCache.containsKey(imageName)) {
       // Try to load the image from the file cache
       Image image = readImage(imageName, false);
@@ -435,11 +436,16 @@ public class H2PersistenceService implements PersistenceService {
         imageCache.put(imageName, image.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH));
       }
     }
-    return imageCache.get(imageName);
+    Image img = imageCache.get(imageName);
+    if (img != null) {
+      return new ImageIcon(img);
+    } else {
+      return null;
+    }
   }
 
   @Override
-  public Image getFunctionImage(String imageName) {
+  public ImageIcon getFunctionImage(String imageName) {
     if (!functionImageCache.containsKey(imageName)) {
       // Try to load the image from the file cache
       Image image = readImage(imageName, true);
@@ -449,7 +455,12 @@ public class H2PersistenceService implements PersistenceService {
         functionImageCache.put(imageName, image.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH));
       }
     }
-    return functionImageCache.get(imageName);
+    Image img = functionImageCache.get(imageName);
+    if (img != null) {
+      return new ImageIcon(img);
+    } else {
+      return null;
+    }
   }
 
   @Override

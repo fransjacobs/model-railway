@@ -18,15 +18,22 @@ package jcs.ui.panel;
 import com.twelvemonkeys.image.ImageUtil;
 import java.awt.Component;
 import java.awt.Image;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
+import javax.swing.TransferHandler;
+import static javax.swing.TransferHandler.COPY;
 import javax.swing.event.RowSorterEvent;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableRowSorter;
@@ -40,7 +47,7 @@ import jcs.ui.util.LocomotiveSelectionChangedListener;
 import org.tinylog.Logger;
 
 /**
- * Panel to show locomotives in tabular format 
+ * Panel to show locomotives in tabular format
  */
 public class LocomotiveTablePanel extends JPanel implements RefreshEventListener {
 
@@ -53,7 +60,8 @@ public class LocomotiveTablePanel extends JPanel implements RefreshEventListener
 
     locomotiveBeanTableModel = new LocomotiveBeanTableModel();
     initComponents();
-    locomotiveTable.setDefaultRenderer(Image.class, new LocIconRenderer());
+
+    locomotiveTable.setDefaultRenderer(ImageIcon.class, new LocIconRenderer());
     locomotiveTable.getRowSorter().addRowSorterListener((RowSorterEvent e) -> {
       //Logger.trace(e.getType() + "," + e.getSource().getSortKeys());// Sorting changed
     });
@@ -65,6 +73,37 @@ public class LocomotiveTablePanel extends JPanel implements RefreshEventListener
     if (PersistenceFactory.getService() != null) {
       refresh();
     }
+    locomotiveTable.setDragEnabled(true);
+
+    locomotiveTable.setTransferHandler(new TransferHandler() {
+      private static final long serialVersionUID = -7249852729273226500L;
+
+      @Override
+      public int getSourceActions(JComponent c) {
+        // We specify that the data can be COPIED.
+        return COPY;
+      }
+
+      @Override
+      protected Transferable createTransferable(JComponent c) {
+        JTable table = (JTable) c;
+        int selectedRow = table.getSelectedRow();
+        if (selectedRow < 0) {
+          return null; // No selection, so nothing to transfer.
+        }
+
+        LocomotiveBeanTableModel model = (LocomotiveBeanTableModel) locomotiveTable.getModel();
+        LocomotiveBean locomotiveBean = model.getBeanAt(selectedRow);
+
+        if (locomotiveBean.getLocIcon() != null) {
+          setDragImage(locomotiveBean.getLocIcon().getImage());
+        }
+
+        Logger.trace("LocomotiveBean: " + locomotiveBean);
+        return new LocomotiveTablePanel.LocomotiveBeanTransferable(locomotiveBean);
+      }
+    });
+
   }
 
   @Override
@@ -86,9 +125,12 @@ public class LocomotiveTablePanel extends JPanel implements RefreshEventListener
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
       super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
       if (value != null) {
-        Image img = (Image) value;
+        ImageIcon imgIcon = (ImageIcon) value;
+        Image img = imgIcon.getImage();
+        float h = img.getHeight(null);
+        float w = img.getWidth(null);
         int size = 40;
-        float aspect = (float) img.getHeight(null) / (float) img.getWidth(null);
+        float aspect = h / w;
         img = img.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH);
         BufferedImage bi = ImageUtil.toBuffered(img);
         setIcon(new ImageIcon(bi));
@@ -119,6 +161,7 @@ public class LocomotiveTablePanel extends JPanel implements RefreshEventListener
     locomotiveTable.setDoubleBuffered(true);
     locomotiveTable.setDragEnabled(true);
     locomotiveTable.setRowSorter(new TableRowSorter<>(locomotiveBeanTableModel));
+    locomotiveTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
     locomotiveTable.setShowGrid(true);
     locomotiveTable.addMouseListener(new java.awt.event.MouseAdapter() {
       public void mouseReleased(java.awt.event.MouseEvent evt) {
@@ -145,7 +188,7 @@ public class LocomotiveTablePanel extends JPanel implements RefreshEventListener
   private void fireSelectionChangedListeners(LocomotiveBean locomotive) {
     if (locomotive.getId() != null) {
       Long locomotiveId = locomotive.getId();
-      Logger.trace("Notify "+locomotiveSelectionChangedListeners.size()+" of selection change to locomotiveId: "+locomotiveId);
+      Logger.trace("Notify " + locomotiveSelectionChangedListeners.size() + " of selection change to locomotiveId: " + locomotiveId);
       for (LocomotiveSelectionChangedListener listener : locomotiveSelectionChangedListeners) {
         listener.selectionChanged(locomotiveId);
       }
@@ -174,6 +217,34 @@ public class LocomotiveTablePanel extends JPanel implements RefreshEventListener
     driverDialog.setVisible(true);
     driverDialog.setResizable(false);
     driverDialog.toFront();
+  }
+
+  static class LocomotiveBeanTransferable implements Transferable {
+
+    private final LocomotiveBean locomotiveBean;
+
+    public LocomotiveBeanTransferable(LocomotiveBean locomotiveBean) {
+      this.locomotiveBean = locomotiveBean;
+    }
+
+    @Override
+    public DataFlavor[] getTransferDataFlavors() {
+      return new DataFlavor[]{LocomotiveBean.LOCOMOTIVE_BEAN_FLAVOR};
+    }
+
+    @Override
+    public boolean isDataFlavorSupported(DataFlavor flavor) {
+      return LocomotiveBean.LOCOMOTIVE_BEAN_FLAVOR.equals(flavor);
+    }
+
+    @Override
+    public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+      if (isDataFlavorSupported(flavor)) {
+        return locomotiveBean;
+      } else {
+        throw new UnsupportedFlavorException(flavor);
+      }
+    }
   }
 
 

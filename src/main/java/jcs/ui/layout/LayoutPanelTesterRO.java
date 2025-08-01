@@ -50,12 +50,16 @@ public class LayoutPanelTesterRO {
       }
 
       f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-      //layoutPanel.loadLayout();
+      layoutPanel.loadLayout();
       f.pack();
 
       Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
       f.setLocation(dim.width / 2 - f.getSize().width / 2, dim.height / 2 - f.getSize().height / 2);
       f.setVisible(true);
+
+      DispatcherDialogTester locomotives = new DispatcherDialogTester(f, false);
+      locomotives.setVisible(true);
+
     });
   }
 

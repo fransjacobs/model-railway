@@ -33,6 +33,8 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -40,6 +42,7 @@ import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -60,7 +63,6 @@ import jcs.commandStation.events.ConnectionEvent;
 import jcs.commandStation.events.PowerEvent;
 import jcs.commandStation.entities.InfoBean;
 import jcs.persistence.PersistenceFactory;
-import jcs.ui.layout.LayoutCanvas;
 import jcs.ui.layout.LayoutPanel;
 import jcs.ui.panel.SmallDriverCabPanel;
 import jcs.ui.settings.AccessoryDialog;
@@ -76,11 +78,11 @@ import jcs.util.SerialPortUtil;
 import jcs.util.VersionInfo;
 import org.tinylog.Logger;
 import jcs.commandStation.events.ConnectionEventListener;
+import jcs.persistence.util.Backup;
 import jcs.util.Ping;
 
 /**
- *
- * @author frans
+ * JCS Main Frame
  */
 public class JCSFrame extends JFrame implements UICallback, ConnectionEventListener {
 
@@ -98,11 +100,14 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
 
   private SettingsDialog settingsDialog;
 
+  private final ExecutorService executor;
+
   /**
    * Creates new form JCSFrame
    */
   public JCSFrame() {
     actionMap = new HashMap<>();
+    executor = Executors.newCachedThreadPool();
     initComponents();
 
     if (RunUtil.isMacOSX()) {
@@ -205,10 +210,19 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   }
 
   public void showOverviewPanel() {
+    Logger.trace("Show ReadOnly Canvas");
     CardLayout card = (CardLayout) centerPanel.getLayout();
     card.show(centerPanel, "overviewPanel");
     editMode = false;
-    overviewPanel.loadLayout();
+    overviewPanel.loadLayoutInBackground();
+
+    if (autoPilotBtn.isSelected()) {
+      dispatcherStatusPanel.showDispatcherTab();
+    } else {
+      dispatcherStatusPanel.showLocomotiveTab();
+    }
+    
+    overviewPanel.repaint();
   }
 
   private void showLocomotives() {
@@ -271,7 +285,9 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     if (!AutoPilot.isAutoModeActive()) {
       CardLayout card = (CardLayout) centerPanel.getLayout();
       card.show(centerPanel, "designPanel");
-      layoutPanel.loadLayout();
+
+      dispatcherStatusPanel.showComponentsTab();
+      layoutPanel.loadLayoutInBackground();
       editMode = true;
     }
   }
@@ -309,6 +325,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
   private void initComponents() {
 
+    backupRestoreFileDialog = new JFileChooser();
     toolbarPanel = new JPanel();
     jcsToolBar = new JToolBar();
     powerButton = new JToggleButton();
@@ -342,18 +359,22 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     smallDriverCabPanel = new SmallDriverCabPanel();
     jcsMenuBar = new JMenuBar();
     fileMenu = new JMenu();
+    backupMI = new JMenuItem();
+    restoreMI = new JMenuItem();
     quitMI = new JMenuItem();
-    connectMI = new JMenuItem();
-    virtualCBMI = new JCheckBoxMenuItem();
-    autoPilotMI = new JMenuItem();
-    startAllLocsMI = new JMenuItem();
-    resetAutopilotMI = new JMenuItem();
     editMenu = new JMenu();
     rotateTileMI = new JMenuItem();
     flipTileHorizontallyMI = new JMenuItem();
     flipTileVerticallyMI = new JMenuItem();
     deleteTileMI = new JMenuItem();
-    windowMenu = new JMenu();
+    commandStationMenu = new JMenu();
+    connectMI = new JMenuItem();
+    virtualCBMI = new JCheckBoxMenuItem();
+    autopilotMenu = new JMenu();
+    autoPilotMI = new JMenuItem();
+    startAllLocsMI = new JMenuItem();
+    resetAutopilotMI = new JMenuItem();
+    viewMenu = new JMenu();
     showHome = new JMenuItem();
     editLayout = new JMenuItem();
     vncMI = new JMenuItem();
@@ -367,6 +388,10 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     showPropertiesMI = new JMenuItem();
     helpMenu = new JMenu();
     aboutMI = new JMenuItem();
+
+    backupRestoreFileDialog.setCurrentDirectory(null);
+    backupRestoreFileDialog.setDialogTitle("Backup JCS Database");
+    backupRestoreFileDialog.setName("backupRestoreFileDialog"); // NOI18N
 
     setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
     setTitle("Java Central Station");
@@ -668,6 +693,24 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     fileMenu.setText("File");
     fileMenu.setName("fileMenu"); // NOI18N
 
+    backupMI.setText("Backup");
+    backupMI.setName("backupMI"); // NOI18N
+    backupMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        backupMIActionPerformed(evt);
+      }
+    });
+    fileMenu.add(backupMI);
+
+    restoreMI.setText("Restore");
+    restoreMI.setName("restoreMI"); // NOI18N
+    restoreMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        restoreMIActionPerformed(evt);
+      }
+    });
+    fileMenu.add(restoreMI);
+
     quitMI.setText("Quit");
     quitMI.setName("quitMI"); // NOI18N
     quitMI.addActionListener(new ActionListener() {
@@ -676,54 +719,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
       }
     });
     fileMenu.add(quitMI);
-
-    connectMI.setText("Connect");
-    connectMI.setName("connectMI"); // NOI18N
-    connectMI.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        connectMIActionPerformed(evt);
-      }
-    });
-    fileMenu.add(connectMI);
-
-    virtualCBMI.setText("Virtual Connection");
-    virtualCBMI.setName("virtualCBMI"); // NOI18N
-    virtualCBMI.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        virtualCBMIActionPerformed(evt);
-      }
-    });
-    fileMenu.add(virtualCBMI);
-
-    autoPilotMI.setText("Autopilot");
-    autoPilotMI.setToolTipText("Switch Autopilot on");
-    autoPilotMI.setName("autoPilotMI"); // NOI18N
-    autoPilotMI.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        autoPilotMIActionPerformed(evt);
-      }
-    });
-    fileMenu.add(autoPilotMI);
-
-    startAllLocsMI.setText("Start All Locomotives");
-    startAllLocsMI.setToolTipText("Start All Locomotives");
-    startAllLocsMI.setName("startAllLocsMI"); // NOI18N
-    startAllLocsMI.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        startAllLocsMIActionPerformed(evt);
-      }
-    });
-    fileMenu.add(startAllLocsMI);
-
-    resetAutopilotMI.setText("Reset Autopilot");
-    resetAutopilotMI.setToolTipText("Reset Autopilot");
-    resetAutopilotMI.setName("resetAutopilotMI"); // NOI18N
-    resetAutopilotMI.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        resetAutopilotMIActionPerformed(evt);
-      }
-    });
-    fileMenu.add(resetAutopilotMI);
 
     jcsMenuBar.add(fileMenu);
 
@@ -773,8 +768,66 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
 
     jcsMenuBar.add(editMenu);
 
-    windowMenu.setText("Window");
-    windowMenu.setName("windowMenu"); // NOI18N
+    commandStationMenu.setText("Command Station");
+    commandStationMenu.setName("commandStationMenu"); // NOI18N
+
+    connectMI.setText("Connect");
+    connectMI.setName("connectMI"); // NOI18N
+    connectMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        connectMIActionPerformed(evt);
+      }
+    });
+    commandStationMenu.add(connectMI);
+
+    virtualCBMI.setText("Virtual Connection");
+    virtualCBMI.setName("virtualCBMI"); // NOI18N
+    virtualCBMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        virtualCBMIActionPerformed(evt);
+      }
+    });
+    commandStationMenu.add(virtualCBMI);
+
+    jcsMenuBar.add(commandStationMenu);
+
+    autopilotMenu.setText("Auto Pilot");
+    autopilotMenu.setName("autopilotMenu"); // NOI18N
+
+    autoPilotMI.setText("Autopilot");
+    autoPilotMI.setToolTipText("Switch Autopilot on");
+    autoPilotMI.setName("autoPilotMI"); // NOI18N
+    autoPilotMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        autoPilotMIActionPerformed(evt);
+      }
+    });
+    autopilotMenu.add(autoPilotMI);
+
+    startAllLocsMI.setText("Start All Locomotives");
+    startAllLocsMI.setToolTipText("Start All Locomotives");
+    startAllLocsMI.setName("startAllLocsMI"); // NOI18N
+    startAllLocsMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        startAllLocsMIActionPerformed(evt);
+      }
+    });
+    autopilotMenu.add(startAllLocsMI);
+
+    resetAutopilotMI.setText("Reset Autopilot");
+    resetAutopilotMI.setToolTipText("Reset Autopilot");
+    resetAutopilotMI.setName("resetAutopilotMI"); // NOI18N
+    resetAutopilotMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        resetAutopilotMIActionPerformed(evt);
+      }
+    });
+    autopilotMenu.add(resetAutopilotMI);
+
+    jcsMenuBar.add(autopilotMenu);
+
+    viewMenu.setText("View");
+    viewMenu.setName("viewMenu"); // NOI18N
 
     showHome.setMnemonic('H');
     showHome.setText("Home");
@@ -785,7 +838,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
         showHomeActionPerformed(evt);
       }
     });
-    windowMenu.add(showHome);
+    viewMenu.add(showHome);
 
     editLayout.setMnemonic('E');
     editLayout.setText("Edit Layout");
@@ -796,7 +849,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
         editLayoutActionPerformed(evt);
       }
     });
-    windowMenu.add(editLayout);
+    viewMenu.add(editLayout);
 
     vncMI.setMnemonic('V');
     vncMI.setText("VNC");
@@ -807,7 +860,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
         vncMIActionPerformed(evt);
       }
     });
-    windowMenu.add(vncMI);
+    viewMenu.add(vncMI);
 
     showKeyboard.setMnemonic('K');
     showKeyboard.setText("Keyboard");
@@ -818,7 +871,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
         showKeyboardActionPerformed(evt);
       }
     });
-    windowMenu.add(showKeyboard);
+    viewMenu.add(showKeyboard);
 
     showSensorMonitor.setMnemonic('M');
     showSensorMonitor.setText("Sensor Monitor");
@@ -828,7 +881,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
         showSensorMonitorActionPerformed(evt);
       }
     });
-    windowMenu.add(showSensorMonitor);
+    viewMenu.add(showSensorMonitor);
 
     showRoutesMI.setText("Show Routes");
     showRoutesMI.setToolTipText("Show Routes");
@@ -838,9 +891,9 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
         showRoutesMIActionPerformed(evt);
       }
     });
-    windowMenu.add(showRoutesMI);
+    viewMenu.add(showRoutesMI);
 
-    jcsMenuBar.add(windowMenu);
+    jcsMenuBar.add(viewMenu);
 
     settingsMenu.setText("Settings");
     settingsMenu.setName("settingsMenu"); // NOI18N
@@ -1133,6 +1186,42 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     showRoutes();
   }//GEN-LAST:event_showRoutesMIActionPerformed
 
+  private void backupMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_backupMIActionPerformed
+    String path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + Backup.DEFAULT_BACKUP_FILENAME;
+
+    backupRestoreFileDialog.setSelectedFile(new File(path));
+    backupRestoreFileDialog.showSaveDialog(this);
+
+    File backupFile = backupRestoreFileDialog.getSelectedFile();
+    Logger.trace("Backup JCS database to " + backupFile.getAbsolutePath());
+
+    executor.execute(() -> {
+      Backup.backup(backupFile);
+
+      java.awt.EventQueue.invokeLater(() -> {
+        JOptionPane.showMessageDialog(this, "Created a backup of the current JCS database in file: " + backupFile.getAbsolutePath(), "JCS Backup", JOptionPane.INFORMATION_MESSAGE);
+      });
+    });
+  }//GEN-LAST:event_backupMIActionPerformed
+
+  private void restoreMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_restoreMIActionPerformed
+    String path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + Backup.DEFAULT_BACKUP_FILENAME;
+
+    backupRestoreFileDialog.setSelectedFile(new File(path));
+    backupRestoreFileDialog.showOpenDialog(this);
+
+    File backupFile = backupRestoreFileDialog.getSelectedFile();
+    Logger.trace("Restoring JCS database from file " + backupFile.getAbsolutePath());
+
+    executor.execute(() -> {
+      Backup.restore(backupFile);
+
+      java.awt.EventQueue.invokeLater(() -> {
+        JOptionPane.showMessageDialog(this, "Restored JCS database.\nPlease Restart JCS!", "RESTART JCS!", JOptionPane.WARNING_MESSAGE);
+      });
+    });
+  }//GEN-LAST:event_restoreMIActionPerformed
+
   private void startAllLocomotives() {
     int result = JOptionPane.showConfirmDialog(this, "Are you sure you want to start All Locomotives?", "Start ALL Locomotives", JOptionPane.YES_NO_OPTION);
     if (result == JOptionPane.YES_OPTION) {
@@ -1216,7 +1305,11 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   private JMenuItem aboutMI;
   private JToggleButton autoPilotBtn;
   private JMenuItem autoPilotMI;
+  private JMenu autopilotMenu;
+  private JMenuItem backupMI;
+  private JFileChooser backupRestoreFileDialog;
   private JPanel centerPanel;
+  private JMenu commandStationMenu;
   private CommandStationPanel commandStationPanel;
   private JToggleButton connectButton;
   private JMenuItem connectMI;
@@ -1246,6 +1339,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   private JToggleButton powerButton;
   private JMenuItem quitMI;
   private JMenuItem resetAutopilotMI;
+  private JMenuItem restoreMI;
   private JMenuItem rotateTileMI;
   private JMenu settingsMenu;
   private JPanel settingsPanel;
@@ -1267,10 +1361,10 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   private JMenuItem startAllLocsMI;
   private StatusPanel statusPanel;
   private JPanel toolbarPanel;
+  private JMenu viewMenu;
   private JCheckBoxMenuItem virtualCBMI;
   private JMenuItem vncMI;
   private VNCPanel vncPanel;
-  private JMenu windowMenu;
   // End of variables declaration//GEN-END:variables
 
   private class PowerAction extends AbstractAction {
@@ -1330,7 +1424,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     @Override
     public void actionPerformed(ActionEvent e) {
       if (editMode) {
-        layoutPanel.setMode(LayoutCanvas.Mode.SELECT);
+        //layoutPanel.setMode(LayoutCanvas.Mode.SELECT);
       }
     }
   }
@@ -1342,7 +1436,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     @Override
     public void actionPerformed(ActionEvent e) {
       if (editMode) {
-        layoutPanel.setMode(LayoutCanvas.Mode.ADD);
+        //layoutPanel.setMode(LayoutCanvas.Mode.ADD);
       }
     }
   }
@@ -1354,7 +1448,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     @Override
     public void actionPerformed(ActionEvent e) {
       if (editMode) {
-        layoutPanel.setMode(LayoutCanvas.Mode.DELETE);
+        //layoutPanel.setMode(LayoutCanvas.Mode.DELETE);
       }
     }
   }

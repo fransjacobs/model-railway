@@ -27,6 +27,7 @@ import org.tinylog.Logger;
 public class LocomotiveBeanTableModel extends AbstractBeanTableModel<LocomotiveBean> {
 
   private static final String[] DISPLAY_COLUMNS = new String[]{"image", "name", "address"};
+  private static final long serialVersionUID = 5525083196000156106L;
 
   public LocomotiveBeanTableModel() {
     super(LocomotiveBean.class, DISPLAY_COLUMNS);
@@ -42,7 +43,7 @@ public class LocomotiveBeanTableModel extends AbstractBeanTableModel<LocomotiveB
           activeLocos.add(loco);
         }
       }
-      
+
       Logger.trace("In total there are " + allLocos.size() + " Locomotives of which there are " + activeLocos.size() + " shown");
 
       this.setBeans(activeLocos);

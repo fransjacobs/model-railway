@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JToggleButton;
 import javax.swing.UIManager;
@@ -38,6 +37,8 @@ import org.tinylog.Logger;
  * @author fransjacobs
  */
 public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunctionEventListener {
+
+  private static final long serialVersionUID = 7352399254308200936L;
 
   private final Map<Integer, JToggleButton> buttons;
   private LocomotiveBean locomotive;
@@ -151,14 +152,14 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
         //Logger.trace("Function: " + fb.getNumber() + " Type: " + fb.getFunctionType() + " Value: " + fb.getValue() + " isMomentary: " + fb.isMomentary());
         if (fb.getInActiveIconImage() != null) {
-          btn.setIcon(new ImageIcon(fb.getInActiveIconImage()));
+          btn.setIcon(fb.getInActiveIconImage());
         } else {
           btn.setText("F" + fb.getNumber());
           //Logger.trace("Missing Icon: " + fb.getInActiveIcon() + " Button Text: " + btn.getText());
         }
 
         if (fb.getActiveIconImage() != null) {
-          btn.setSelectedIcon(new ImageIcon(fb.getActiveIconImage()));
+          btn.setSelectedIcon(fb.getActiveIconImage());
         } else {
           btn.setText("F" + fb.getNumber());
           //Logger.trace("Missing Icon: " + fb.getActiveIcon() + " Button Text: " + btn.getText());

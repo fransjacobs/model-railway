@@ -51,7 +51,7 @@ public class DispatcherTablePanel extends JPanel implements AutoPilotStatusListe
     locomotiveSelectionChangedListeners = new ArrayList<>();
     initComponents();
 
-    dispatcherTable.setDefaultRenderer(Image.class, new LocIconRenderer());
+    dispatcherTable.setDefaultRenderer(ImageIcon.class, new LocIconRenderer());
 
     dispatcherTable.getRowSorter().addRowSorterListener((RowSorterEvent e) -> {
       //Logger.trace(e.getType() + "," + e.getSource().getSortKeys());// Sorting changed
@@ -80,7 +80,8 @@ public class DispatcherTablePanel extends JPanel implements AutoPilotStatusListe
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
       super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
       if (value != null) {
-        Image img = (Image) value;
+        ImageIcon imgIcon = (ImageIcon) value;
+        Image img = imgIcon.getImage();
         int size = 40;
         float aspect = (float) img.getHeight(null) / (float) img.getWidth(null);
         img = img.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH);
