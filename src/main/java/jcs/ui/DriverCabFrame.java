@@ -170,9 +170,9 @@ public class DriverCabFrame extends JFrame implements LocomotiveDirectionEventLi
       this.setTitle(locomotive.getName());
 
       if (locomotive.getLocIcon() != null) {
-        Image img = locomotive.getLocIcon();
+        Image img = locomotive.getLocIcon().getImage();
         if (Direction.BACKWARDS == locomotive.getDirection()) {
-          img = ImageUtil.flipVertically(locomotive.getLocIcon());
+          img = ImageUtil.flipVertically(locomotive.getLocIcon().getImage());
           this.locoLabel.setIcon(new ImageIcon(img));
         } else {
           this.locoLabel.setIcon(new ImageIcon(img));
@@ -194,10 +194,11 @@ public class DriverCabFrame extends JFrame implements LocomotiveDirectionEventLi
   public void onDirectionChange(LocomotiveDirectionEvent directionEvent) {
     LocomotiveBean locomotive = (LocomotiveBean) this.locomotiveComboBoxModel.getSelectedItem();
 
-    Image img = locomotive.getLocIcon();
-    if (img != null) {
+    ImageIcon imgIcon = locomotive.getLocIcon();
+    if (imgIcon != null) {
+      Image img = imgIcon.getImage();
       if (Direction.BACKWARDS == locomotive.getDirection()) {
-        img = ImageUtil.flipVertically(locomotive.getLocIcon());
+        img = ImageUtil.flipVertically(locomotive.getLocIcon().getImage());
         this.locoLabel.setIcon(new ImageIcon(img));
       } else {
         this.locoLabel.setIcon(new ImageIcon(img));
@@ -224,6 +225,8 @@ public class DriverCabFrame extends JFrame implements LocomotiveDirectionEventLi
   }
 
   class LocomotiveBeanComboBoxModel extends DefaultComboBoxModel<LocomotiveBean> {
+
+    private static final long serialVersionUID = 9220517038992199058L;
 
     private final List<LocomotiveBean> model;
 
@@ -311,8 +314,7 @@ public class DriverCabFrame extends JFrame implements LocomotiveDirectionEventLi
       if (plaf != null) {
         UIManager.setLookAndFeel(plaf);
       }
-    }
-    catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
+    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
       Logger.error(ex);
     }
 
@@ -331,8 +333,7 @@ public class DriverCabFrame extends JFrame implements LocomotiveDirectionEventLi
         try {
           BufferedImage img = ImageIO.read(DriverCabFrame.class.getResource(frameImageUrl));
           taskbar.setIconImage(img);
-        }
-        catch (IOException | UnsupportedOperationException | SecurityException ex) {
+        } catch (IOException | UnsupportedOperationException | SecurityException ex) {
           Logger.warn("Error: " + ex.getMessage());
         }
       }

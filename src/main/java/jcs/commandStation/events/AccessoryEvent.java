@@ -19,7 +19,7 @@ import jcs.entities.AccessoryBean;
 import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.AccessoryBean.SignalValue;
 
-public class AccessoryEvent implements JCSActionEvent {
+public class AccessoryEvent {
 
   private final AccessoryBean accessoryBean;
 
@@ -60,11 +60,6 @@ public class AccessoryEvent implements JCSActionEvent {
 
   public Integer getAddress() {
     return accessoryBean.getAddress();
-  }
-
-  @Override
-  public String getIdString() {
-    return accessoryBean.getId();
   }
 
 }

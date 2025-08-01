@@ -43,17 +43,19 @@ public class MeasuredChannels {
   }
 
   public void addMeasurement(MeasurementBean measurement) {
-    switch (measurement.getName()) {
-      case "MAIN" ->
-        this.main = measurement;
-      case "PROG" ->
-        this.prog = measurement;
-      case "VOLT" ->
-        this.volt = measurement;
-      case "TEMP" ->
-        this.temp = measurement;
-      default ->
-        Logger.error("Unknown measurement " + measurement);
+    if (measurement != null && measurement.getName() != null) {
+      switch (measurement.getName()) {
+        case "MAIN" ->
+          this.main = measurement;
+        case "PROG" ->
+          this.prog = measurement;
+        case "VOLT" ->
+          this.volt = measurement;
+        case "TEMP" ->
+          this.temp = measurement;
+        default ->
+          Logger.error("Unknown measurement " + measurement);
+      }
     }
   }
 

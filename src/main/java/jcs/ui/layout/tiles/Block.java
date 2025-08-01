@@ -18,11 +18,17 @@ package jcs.ui.layout.tiles;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.TransferHandler;
 import javax.swing.UIManager;
+import jcs.entities.BlockBean;
+import jcs.entities.BlockBean.BlockState;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.TileBean;
 import jcs.entities.TileBean.Orientation;
@@ -31,16 +37,21 @@ import static jcs.entities.TileBean.Orientation.NORTH;
 import static jcs.entities.TileBean.Orientation.SOUTH;
 import static jcs.entities.TileBean.Orientation.WEST;
 import jcs.entities.TileBean.TileType;
+import jcs.ui.layout.LayoutCanvas;
+import jcs.ui.layout.LayoutUtil;
 import static jcs.ui.layout.tiles.Tile.DEFAULT_HEIGHT;
 import static jcs.ui.layout.tiles.Tile.DEFAULT_WIDTH;
 import static jcs.ui.layout.tiles.Tile.GRID;
 import jcs.ui.layout.tiles.ui.StraightUI;
 import jcs.ui.layout.tiles.ui.TileUI;
+import org.tinylog.Logger;
 
 /**
  * Representation of a Block on the layout
  */
 public class Block extends Tile {
+
+  private static final long serialVersionUID = -2059351727943354743L;
 
   public static final int BLOCK_WIDTH = DEFAULT_WIDTH * 3;
   public static final int BLOCK_HEIGHT = DEFAULT_HEIGHT * 3;
@@ -49,6 +60,11 @@ public class Block extends Tile {
     super(tileBean);
     setModel(new DefaultTileModel(tileBean.getOrientation()));
     populateModel();
+
+    if (this.blockBean == null) {
+      createBlockBean();
+    }
+
     initUI();
   }
 
@@ -63,11 +79,30 @@ public class Block extends Tile {
   public Block(Orientation orientation, int x, int y, int width, int height) {
     super(TileType.BLOCK, orientation, x, y, width, height);
     setModel(new DefaultTileModel(orientation));
+
+    if (blockBean == null) {
+      createBlockBean();
+    }
+
     initUI();
+  }
+
+  private void createBlockBean() {
+    BlockBean bb = new BlockBean();
+    bb.setTileId(getId());
+    bb.setBlockState(BlockBean.BlockState.FREE);
+    bb.setMinWaitTime(10);
+    bb.setReverseArrival(false);
+    bb.setRandomWait(false);
+    bb.setAlwaysStop(true);
+    bb.setAllowCommuterOnly(false);
+    setBlockBean(bb);
+    bb.setTile(getTileBean());
   }
 
   private void initUI() {
     updateUI();
+    setTransferHandler(new Block.LocomotiveBeanDropHandler());
   }
 
   @Override
@@ -376,8 +411,48 @@ public class Block extends Tile {
     } else {
       int renderWidth = getUI().getRenderWidth();
       int renderHeight = getUI().getRenderHeight();
-
       return new Rectangle(xx, yy, renderWidth, renderHeight);
+    }
+  }
+
+  private class LocomotiveBeanDropHandler extends TransferHandler {
+
+    private static final long serialVersionUID = -1556738612609648531L;
+
+    @Override
+    public boolean canImport(TransferHandler.TransferSupport support) {
+      return support.isDataFlavorSupported(LocomotiveBean.LOCOMOTIVE_BEAN_FLAVOR);
+    }
+
+    @Override
+    public boolean importData(TransferHandler.TransferSupport support) {
+      if (!canImport(support)) {
+        return false;
+      }
+
+      try {
+        Transferable transferable = support.getTransferable();
+        LocomotiveBean lb = (LocomotiveBean) transferable.getTransferData(LocomotiveBean.LOCOMOTIVE_BEAN_FLAVOR);
+
+        Point dropPoint = LayoutUtil.snapToGrid(support.getDropLocation().getDropPoint());
+
+        Logger.trace("Dropping: " + lb + " @ (" + dropPoint.x + "," + dropPoint.y + ")");
+
+        setLocomotive(lb);
+        setBlockState(BlockState.OCCUPIED);
+
+        BlockBean bb = getBlockBean();
+        if (getParent() instanceof LayoutCanvas) {
+          ((LayoutCanvas) getParent()).persistBlock(bb);
+        }
+
+        repaint();
+        return lb != null;
+
+      } catch (UnsupportedFlavorException | IOException e) {
+        Logger.error(e);
+        return false;
+      }
     }
   }
 

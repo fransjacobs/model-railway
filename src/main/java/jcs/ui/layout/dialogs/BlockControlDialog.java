@@ -19,7 +19,6 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.ImageIcon;
 import jcs.commandStation.autopilot.AutoPilot;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
@@ -32,6 +31,8 @@ import org.tinylog.Logger;
  *
  */
 public class BlockControlDialog extends javax.swing.JDialog {
+
+  private static final long serialVersionUID = -5384666778324369564L;
 
   private final Block block;
 
@@ -108,7 +109,7 @@ public class BlockControlDialog extends javax.swing.JDialog {
         }
 
         if (bb.getLocomotive().getLocIcon() != null) {
-          locomotiveIconLbl.setIcon(new ImageIcon(bb.getLocomotive().getLocIcon()));
+          locomotiveIconLbl.setIcon(bb.getLocomotive().getLocIcon());
           locomotiveIconLbl.setText(null);
         } else {
           locomotiveIconLbl.setText(bb.getLocomotive().getName());
@@ -458,7 +459,7 @@ public class BlockControlDialog extends javax.swing.JDialog {
     }
 
     if (selected.getLocIcon() != null) {
-      locomotiveIconLbl.setIcon(new ImageIcon(selected.getLocIcon()));
+      locomotiveIconLbl.setIcon(selected.getLocIcon());
       locomotiveIconLbl.setText(null);
     } else {
       locomotiveIconLbl.setText(selected.getName());

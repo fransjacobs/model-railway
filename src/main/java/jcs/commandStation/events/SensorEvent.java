@@ -20,7 +20,7 @@ import jcs.entities.SensorBean;
 /**
  * Value change happened on a Sensor.
  */
-public class SensorEvent implements JCSActionEvent {
+public class SensorEvent { 
 
   private final SensorBean sensorBean;
   private final boolean newValue;
@@ -42,11 +42,11 @@ public class SensorEvent implements JCSActionEvent {
     return sensorBean.getId();
   }
 
-  @Deprecated
-  @Override
-  public String getIdString() {
-    return sensorBean.getId().toString();
-  }
+//  @Deprecated
+//  @Override
+//  public String getIdString() {
+//    return sensorBean.getId().toString();
+//  }
 
   public Integer getDeviceId() {
     return sensorBean.getDeviceId();
@@ -68,7 +68,7 @@ public class SensorEvent implements JCSActionEvent {
 
   @Override
   public String toString() {
-    return "SensorEvent{" + "id=" + getIdString() + ", active=" + (isActive() ? "1" : "0") + "}";
+    return "SensorEvent{" + "id=" + sensorBean.getId() + ", active=" + (isActive() ? "1" : "0") + "}";
   }
 
 }

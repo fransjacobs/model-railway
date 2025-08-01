@@ -16,13 +16,10 @@
 package jcs.ui.layout.tiles;
 
 import java.awt.Image;
-import java.awt.image.BufferedImage;
-import java.io.File;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import jcs.entities.BlockBean;
@@ -32,7 +29,10 @@ import jcs.entities.TileBean.Orientation;
 import jcs.ui.util.ImageUtil;
 import org.tinylog.Logger;
 
-public class UnscaledBlockTester extends JFrame { //implements PropertyChangeListener {
+public class UnscaledBlockTester extends JFrame { 
+
+  private static final long serialVersionUID = -1080995511537881069L;
+//implements PropertyChangeListener {
 
   private final Tile blockTile;
 
@@ -95,7 +95,7 @@ public class UnscaledBlockTester extends JFrame { //implements PropertyChangeLis
     lb.setIcon(imgPath);
     Image locImage = ImageUtil.readImage(imgPath);
     locImage = ImageUtil.scaleImage(locImage, 100);
-    lb.setLocIcon(locImage);
+    lb.setLocIcon(new ImageIcon(locImage));
 
     if (backwardsRB.isSelected()) {
       lb.setDirection(LocomotiveBean.Direction.BACKWARDS);
@@ -223,7 +223,6 @@ public class UnscaledBlockTester extends JFrame { //implements PropertyChangeLis
     });
     nPanel.add(reverseArrivalCB);
 
-    showLocCB.setText("");
     showLocCB.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         showLocCBActionPerformed(evt);

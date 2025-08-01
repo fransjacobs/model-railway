@@ -139,7 +139,7 @@ public class LocomotiveSettingsPanel extends JPanel implements PropertyChangeLis
       String icon = selectedLocomotive.getIcon();
       this.iconTF.setText(icon);
 
-      Image locIcon = selectedLocomotive.getLocIcon();
+      ImageIcon locIcon = selectedLocomotive.getLocIcon();
       if (locIcon == null) {
         if (commandStationBean.isDecoderControlSupport() && commandStationBean.isLocomotiveImageSynchronizationSupport() && icon != null) {
           locIcon = PersistenceFactory.getService().getLocomotiveImage(icon);
@@ -150,7 +150,7 @@ public class LocomotiveSettingsPanel extends JPanel implements PropertyChangeLis
       }
 
       if (locIcon != null) {
-        this.imageLbl.setIcon(new ImageIcon(locIcon));
+        this.imageLbl.setIcon(locIcon);
         this.imageLbl.setText("");
       } else {
         this.imageLbl.setIcon(null);
@@ -836,14 +836,21 @@ public class LocomotiveSettingsPanel extends JPanel implements PropertyChangeLis
     File iconFile = fileDialog.getSelectedIconFile();
     if (iconFile != null) {
       iconTF.setText(iconFile.getPath());
-      this.selectedLocomotive.setIcon(iconFile.getPath());
+      selectedLocomotive.setIcon(iconFile.getPath());
 
       //try to show the image also
       Image img = PersistenceFactory.getService().readImage(iconFile.getPath(), false);
+      ImageIcon imgIcon;
       if (img != null) {
-        img = PersistenceFactory.getService().getLocomotiveImage(iconFile.getPath());
-        this.selectedLocomotive.setLocIcon(img);
-        this.imageLbl.setIcon(new ImageIcon(img));
+        imgIcon = new ImageIcon(img);
+        selectedLocomotive.setLocIcon(imgIcon);
+      } else {
+        imgIcon = PersistenceFactory.getService().getLocomotiveImage(iconFile.getPath());
+        if (imgIcon != null) {
+          selectedLocomotive.setLocIcon(imgIcon);
+        }
+
+        imageLbl.setIcon(imgIcon);
       }
     }
   }//GEN-LAST:event_iconFileDialogBtnActionPerformed
@@ -888,11 +895,11 @@ public class LocomotiveSettingsPanel extends JPanel implements PropertyChangeLis
   private void iconTFFocusLost(FocusEvent evt) {//GEN-FIRST:event_iconTFFocusLost
     this.selectedLocomotive.setIcon(this.iconTF.getText());
     if (this.selectedLocomotive.getIcon() != null) {
-      String icon = this.selectedLocomotive.getIcon();
-      Image locIcon = PersistenceFactory.getService().getLocomotiveImage(icon);
+      String icon = selectedLocomotive.getIcon();
+      ImageIcon locIcon = PersistenceFactory.getService().getLocomotiveImage(icon);
       if (locIcon != null) {
         this.selectedLocomotive.setLocIcon(locIcon);
-        this.imageLbl.setIcon(new ImageIcon(locIcon));
+        this.imageLbl.setIcon(locIcon);
         this.imageLbl.setText("");
       } else {
         this.imageLbl.setIcon(null);

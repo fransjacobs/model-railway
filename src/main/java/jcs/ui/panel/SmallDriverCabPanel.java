@@ -51,6 +51,8 @@ import org.tinylog.Logger;
 public class SmallDriverCabPanel extends JPanel implements LocomotiveSelectionChangedListener,
         LocomotiveDirectionEventListener, LocomotiveFunctionEventListener, LocomotiveSpeedEventListener {
 
+  private static final long serialVersionUID = -7861849821871355547L;
+
   private final Map<Integer, JToggleButton> buttons;
   private LocomotiveBean locomotiveBean;
   private boolean initButtons = false;
@@ -182,7 +184,9 @@ public class SmallDriverCabPanel extends JPanel implements LocomotiveSelectionCh
         locomotiveBean = PersistenceFactory.getService().getLocomotive(locomotiveId);
 
         nameLbl.setText(locomotiveBean.getName());
-        setLocomotiveImage(locomotiveBean.getLocIcon());
+        if (locomotiveBean.getLocIcon() != null) {
+          setLocomotiveImage(locomotiveBean.getLocIcon().getImage());
+        }
 
         double max = 100;
         if (locomotiveBean.getTachoMax() != null) {
@@ -207,14 +211,14 @@ public class SmallDriverCabPanel extends JPanel implements LocomotiveSelectionCh
 
           //Logger.trace("Function: " + fb.getNumber() + " Type: " + fb.getFunctionType() + " Value: " + fb.getValue() + " isMomentary: " + fb.isMomentary());
           if (fb.getInActiveIconImage() != null) {
-            btn.setIcon(new ImageIcon(fb.getInActiveIconImage()));
+            btn.setIcon(fb.getInActiveIconImage());
           } else {
             btn.setText("F" + fb.getNumber());
             //Logger.trace("Missing Icon: " + fb.getInActiveIcon() + " Button Text: " + btn.getText());
           }
 
           if (fb.getActiveIconImage() != null) {
-            btn.setSelectedIcon(new ImageIcon(fb.getActiveIconImage()));
+            btn.setSelectedIcon(fb.getActiveIconImage());
           } else {
             btn.setText("F" + fb.getNumber());
             //Logger.trace("Missing Icon: " + fb.getActiveIcon() + " Button Text: " + btn.getText());
@@ -1287,13 +1291,13 @@ public class SmallDriverCabPanel extends JPanel implements LocomotiveSelectionCh
     if (!slider.getValueIsAdjusting()) {
       Logger.trace("Change speed of ");
       if (!disableListener && locomotiveBean != null) {
-         int max = locomotiveBean.getTachoMax();
+        int max = locomotiveBean.getTachoMax();
         double value = slider.getValue();
         //Velocity is always between 0 and 1000
         int velocity = (int) Math.round(value / max * 1000);
         //executor.execute(() -> changeVelocity(velocity, locomotiveBean));
-       Logger.trace("Changing speed to "+velocity+" for "+locomotiveBean.getId());
- 
+        Logger.trace("Changing speed to " + velocity + " for " + locomotiveBean.getId());
+
         changeVelocity(velocity, locomotiveBean);
       }
     }

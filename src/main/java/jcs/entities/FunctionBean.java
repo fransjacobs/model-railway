@@ -21,10 +21,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
-import java.awt.Image;
 
 import java.io.Serializable;
 import java.util.Objects;
+import javax.swing.ImageIcon;
 
 /**
  * Represents a locomotive function
@@ -34,6 +34,8 @@ import java.util.Objects;
 @Table(name = "locomotive_functions", indexes = {
   @Index(name = "lofu_loco_func_idx", columnList = "locomotive_id, number", unique = true)})
 public class FunctionBean implements Serializable {
+
+  private static final long serialVersionUID = 7557036009757178184L;
 
   private Long id;
   private Long locomotiveId;
@@ -53,8 +55,8 @@ public class FunctionBean implements Serializable {
   //private final String IMG_GREY = "gr_";
   private final static String NMB_FORMAT = "%02d";
 
-  private Image inActiveIconImage;
-  private Image activeIconImage;
+  private ImageIcon inActiveIconImage;
+  private ImageIcon activeIconImage;
 
   private String commandStationId;
   private String decoderTypeString;
@@ -237,20 +239,20 @@ public class FunctionBean implements Serializable {
   }
 
   @Transient
-  public Image getInActiveIconImage() {
+  public ImageIcon getInActiveIconImage() {
     return inActiveIconImage;
   }
 
-  public void setInActiveIconImage(Image inActiveIconImage) {
+  public void setInActiveIconImage(ImageIcon inActiveIconImage) {
     this.inActiveIconImage = inActiveIconImage;
   }
 
   @Transient
-  public Image getActiveIconImage() {
+  public ImageIcon getActiveIconImage() {
     return activeIconImage;
   }
 
-  public void setActiveIconImage(Image activeIconImage) {
+  public void setActiveIconImage(ImageIcon activeIconImage) {
     this.activeIconImage = activeIconImage;
   }
 

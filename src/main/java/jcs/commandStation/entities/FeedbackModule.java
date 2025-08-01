@@ -201,31 +201,33 @@ public class FeedbackModule implements Comparable<FeedbackModule> {
     int sid;
     int offset = 0;
     String name;
-    if (busNumber == null || busNumber < 0) {
-      //Not part of a Bus. Check the Address offset if it need an offset
-      if (addressOffset != null) {
-        offset = addressOffset;
-      }
-      sid = offset + (moduleNumber - 1) * portCount + port;
-      name = "M" + String.format("%02d", moduleNumber) + "-C" + String.format("%02d", port + 1);
-    } else {
-      //Part of a bus, there should be an offset...  
-      if (addressOffset != null) {
-        offset = addressOffset;
-      } else {
-        Logger.warn("Module connected to bus " + busNumber + " but bus address offset is not specified!");
-      }
-      sid = offset + (moduleNumber - 1) * portCount + port;
-      name = "B" + busNumber.toString() + "-M" + String.format("%02d", moduleNumber) + "-C" + String.format("%02d", port + 1);
-    }
 
-    int status = ports[port];
-    int prevStatus = prevPorts[port];
+    int sensorOffset = 0;
+    if ("marklin.cs".equals(commandStationId)) {
+      sensorOffset = 1;
+    }
 
     int busNr = 0;
     if (busNumber != null) {
       busNr = busNumber;
     }
+
+    if (addressOffset != null) {
+      offset = addressOffset;
+    } else {
+      if ("marklin.cs".equals(commandStationId) && addressOffset == null) {
+        Logger.warn("Module connected to bus " + busNumber + " but bus address offset is not specified!");
+      }
+    }
+    sid = offset + (moduleNumber - 1) * portCount + port + sensorOffset;
+    name = "M" + String.format("%02d", moduleNumber) + "-C" + String.format("%02d", port + 1);
+
+    if ("marklin.cs".equals(commandStationId)) {
+      name = "B" + busNumber.toString() + "-" + name;
+    }
+
+    int status = ports[port];
+    int prevStatus = prevPorts[port];
 
     SensorBean sb = new SensorBean(sid, moduleNumber, port + 1, identifier, status, prevStatus, commandStationId, busNr);
     sb.setName(name);

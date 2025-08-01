@@ -175,23 +175,31 @@ public class CanMessage implements MarklinCan {
   }
 
   public CanMessage getResponse() {
-    //Figure out the best response for the message as there could be multiple responses...
-    int txUid = this.getDeviceUidNumberFromMessage();
-    for (int i = 0; i < responses.size(); i++) {
-      CanMessage resp = responses.get(i);
-      int rxUid = resp.getDeviceUidNumberFromMessage();
-      if (txUid == rxUid) {
-        //found a response with same uid as sent
-        if (txUid == 0) {
-          //lets continue
-        } else {
-          return resp;
+    if (responses.isEmpty()) {
+      return this;
+    } else {
+      if (responses.size() > 1) {
+        //Figure out the best response for the message as there could be multiple responses...
+        int txUid = getDeviceUidNumberFromMessage();
+        for (int i = 0; i < responses.size(); i++) {
+          CanMessage resp = responses.get(i);
+          int rxUid = resp.getDeviceUidNumberFromMessage();
+          if (txUid == rxUid) {
+            //found a response with same uid as sent
+            if (txUid == 0) {
+              //lets continue
+            } else {
+              return resp;
+            }
+          } else {
+            return resp;
+          }
         }
       } else {
-        return resp;
+        return getResponse(0);
       }
     }
-    return this.getResponse(0);
+    return null;
   }
 
   public int getPriority() {
@@ -457,7 +465,7 @@ public class CanMessage implements MarklinCan {
    * 0x00 0x00 0x07 0x69 0x04 0x00 0x00 0x00 0x00 0x00 0xab 0x00 0xfc
    *
    * @param message a CAN message with content as in the given String
-   * @return 
+   * @return
    */
   public static CanMessage parse(String message) {
     return parse(message, false);

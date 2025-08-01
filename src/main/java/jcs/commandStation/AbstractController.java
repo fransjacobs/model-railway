@@ -63,7 +63,7 @@ public abstract class AbstractController implements GenericController {
     this.commandStationBean = commandStation;
 
     debug = System.getProperty("message.debug", "false").equalsIgnoreCase("true");
-    defaultSwitchTime = Integer.getInteger("default.switchtime", 250);
+    defaultSwitchTime = Integer.getInteger("default.switchtime", 100);
 
     powerEventListeners = new LinkedList<>();
     sensorEventListeners = new LinkedList<>();

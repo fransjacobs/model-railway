@@ -53,6 +53,15 @@
             </Constraint>
           </Constraints>
         </Component>
+        <Component class="jcs.ui.panel.TileBeanTablePanel" name="tileBeanTablePanel">
+          <Constraints>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+              <JTabbedPaneConstraints tabName="Components">
+                <Property name="tabTitle" type="java.lang.String" value="Components"/>
+              </JTabbedPaneConstraints>
+            </Constraint>
+          </Constraints>
+        </Component>
       </SubComponents>
     </Container>
   </SubComponents>

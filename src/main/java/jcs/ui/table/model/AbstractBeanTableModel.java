@@ -24,8 +24,7 @@ import org.tinylog.Logger;
 
 /**
  *
- * @author Frans Jacobs
- * @param <T>
+ * @param <T> the Bean to show in a table
  */
 public abstract class AbstractBeanTableModel<T> extends AbstractTableModel {
 
@@ -39,7 +38,15 @@ public abstract class AbstractBeanTableModel<T> extends AbstractTableModel {
   }
 
   public AbstractBeanTableModel(Class T, String[] displayColumnNames) {
-    beanInfo = new EntityInfo<>(T, displayColumnNames, true);
+    this(T, displayColumnNames, false);
+  }
+
+  public AbstractBeanTableModel(Class T, String[] displayColumnNames, boolean ignoreDuplicates) {
+    this(T, displayColumnNames, true, ignoreDuplicates);
+  }
+
+  public AbstractBeanTableModel(Class T, String[] displayColumnNames, boolean ignoreTransient, boolean ignoreDuplicates) {
+    beanInfo = new EntityInfo<>(T, displayColumnNames, ignoreTransient, ignoreDuplicates);
   }
 
   public List<T> getBeans() {

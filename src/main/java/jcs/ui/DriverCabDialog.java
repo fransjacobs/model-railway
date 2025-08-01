@@ -33,6 +33,8 @@ import org.tinylog.Logger;
  */
 public class DriverCabDialog extends javax.swing.JDialog implements LocomotiveDirectionEventListener {
 
+  private static final long serialVersionUID = 4474469920406357799L;
+
   /**
    * Creates new form DrivedCabDialog
    *
@@ -47,7 +49,7 @@ public class DriverCabDialog extends javax.swing.JDialog implements LocomotiveDi
     super(parent, modal);
     initComponents();
     initListener();
-    
+
     if (locomotiveBean != null) {
       //Refresh settings
       LocomotiveBean locomotive = PersistenceFactory.getService().getLocomotive(locomotiveBean.getId());
@@ -55,9 +57,9 @@ public class DriverCabDialog extends javax.swing.JDialog implements LocomotiveDi
       this.driverCabPanel.setLocomotiveBean(locomotive);
 
       if (locomotive.getLocIcon() != null) {
-        Image img = locomotive.getLocIcon();
+        Image img = locomotive.getLocIcon().getImage();
         if (LocomotiveBean.Direction.BACKWARDS == locomotive.getDirection()) {
-          img = ImageUtil.flipVertically(locomotive.getLocIcon());
+          img = ImageUtil.flipVertically(locomotive.getLocIcon().getImage());
           this.imageLabel.setIcon(new ImageIcon(img));
         } else {
           this.imageLabel.setIcon(new ImageIcon(img));
@@ -80,10 +82,11 @@ public class DriverCabDialog extends javax.swing.JDialog implements LocomotiveDi
   public void onDirectionChange(LocomotiveDirectionEvent directionEvent) {
     LocomotiveBean locomotive = this.driverCabPanel.getLocomotiveBean();
 
-    Image img = locomotive.getLocIcon();
-    if (img != null) {
+    ImageIcon imgIcon = locomotive.getLocIcon();
+    if (imgIcon != null) {
+      Image img = imgIcon.getImage();
       if (LocomotiveBean.Direction.BACKWARDS == locomotive.getDirection()) {
-        img = ImageUtil.flipVertically(locomotive.getLocIcon());
+        img = ImageUtil.flipVertically(locomotive.getLocIcon().getImage());
         this.imageLabel.setIcon(new ImageIcon(img));
       } else {
         this.imageLabel.setIcon(new ImageIcon(img));
