@@ -208,32 +208,29 @@ public class FeedbackModuleTest {
   @Test
   public void testGetSensorMarklin() {
     System.out.println("getSensorMarklin");
-    int port = 1;
+    int port = 2;
     FeedbackModule instance = new FeedbackModule();
     instance.setCommandStationId("marklin.cs");
     instance.setId(0);
     instance.setModuleNumber(1);
     instance.setPortCount(16);
-    instance.setAddressOffset(1000);
+    instance.setAddressOffset(2000);
     instance.setIdentifier(65);
-    instance.setBusNumber(1);
+    instance.setBusNumber(2);
 
     SensorBean expResult = new SensorBean();
-    expResult.setId(1001);
+    expResult.setId(2003);
 
     expResult.setCommandStationId("marklin.cs");
-    expResult.setContactId(2);
+    expResult.setContactId(port + 1);
     expResult.setDeviceId(1);
     expResult.setNodeId(65);
     expResult.setStatus(0);
     expResult.setPreviousStatus(0);
-    expResult.setName("B1-M01-C02");
-    expResult.setBusNr(1);
+    expResult.setName("B2-M01-C03");
+    expResult.setBusNr(2);
 
     SensorBean result = instance.getSensor(port);
-//expected: <SensorBean{id=1001, name=B1-M01-C02, deviceId=1, contactId=2, nodeId=65, status=0, previousStatus=0, millis=null, lastUpdated=null, commandStationId=marklin.cs, busNr=0}> 
-// but was: <SensorBean{id=1001, name=B1-M01-C02, deviceId=1, contactId=2, nodeId=65, status=0, previousStatus=0, millis=null, lastUpdated=null, commandStationId=marklin.cs, busNr=1}>
-
     assertEquals(expResult, result);
   }
 
@@ -259,6 +256,35 @@ public class FeedbackModuleTest {
     expResult.setStatus(1);
     expResult.setPreviousStatus(0);
     expResult.setName("M02-C06");
+
+    SensorBean result = instance.getSensor(port);
+    assertEquals(expResult, result);
+  }
+
+  @Test
+  public void testGetSensor1Bus1Marklin() {
+    System.out.println("getSensor1Bus1Marklin");
+    int port = 1; // 2nd port
+    FeedbackModule instance = new FeedbackModule();
+    instance.setCommandStationId("marklin.cs");
+    instance.setId(1);
+    instance.setModuleNumber(1);
+    instance.setPortCount(16);
+    instance.setAddressOffset(1000);
+    instance.setIdentifier(65);
+    instance.setPortValue(1, true);
+    instance.setBusNumber(1);
+
+    SensorBean expResult = new SensorBean();
+    expResult.setId(1002);
+    expResult.setCommandStationId("marklin.cs");
+    expResult.setContactId(port + 1);
+    expResult.setDeviceId(1);
+    expResult.setNodeId(65);
+    expResult.setStatus(1);
+    expResult.setPreviousStatus(0);
+    expResult.setName("B1-M01-C02");
+    expResult.setBusNr(1);
 
     SensorBean result = instance.getSensor(port);
     assertEquals(expResult, result);
@@ -292,6 +318,38 @@ public class FeedbackModuleTest {
 
     List<SensorBean> result = instance.getSensors();
 
+    assertEquals(expResult, result);
+  }
+
+  @Test
+  public void testGetSensorsMarklin() {
+    System.out.println("getSensorsMarklin");
+    FeedbackModule instance = new FeedbackModule();
+    instance.setCommandStationId("marklin.cs");
+    instance.setId(1);
+    instance.setIdentifier(65);
+    instance.setBusNumber(1);
+    instance.setModuleNumber(1);
+    instance.setPortCount(FeedbackModule.DEFAULT_PORT_COUNT);
+    instance.setAddressOffset(1000);
+
+    List<SensorBean> expResult = new ArrayList<>();
+
+    for (int i = 0; i < FeedbackModule.DEFAULT_PORT_COUNT; i++) {
+      SensorBean sb = new SensorBean();
+      sb.setCommandStationId("marklin.cs");
+      sb.setId(1000 + i + 1);
+      sb.setContactId(i + 1);
+      sb.setDeviceId(1);
+      sb.setStatus(0);
+      sb.setNodeId(65);
+      sb.setPreviousStatus(0);
+      sb.setName("B1-M01-C" + String.format("%02d", (i + 1)));
+      sb.setBusNr(1);
+      expResult.add(sb);
+    }
+
+    List<SensorBean> result = instance.getSensors();
     assertEquals(expResult, result);
   }
 
@@ -330,8 +388,6 @@ public class FeedbackModuleTest {
 
     expResult.add(expChangedResult);
 
-    //expected: <[SensorBean{id=5, name=M00-C06, deviceId=0, contactId=6, nodeId=0, status=1, previousStatus=0, millis=null, lastUpdated=null, commandStationId=esu-ecos}]> 
-    // but was: <[SensorBean{id=5, name=M01-C06, deviceId=1, contactId=6, nodeId=0, status=1, previousStatus=0, millis=null, lastUpdated=null, commandStationId=esu-ecos}]>
     assertEquals(expResult, result);
   }
 

@@ -483,7 +483,7 @@ public class LayoutCanvas extends JPanel {
     if (selectedTile != null) {
       int z = getComponentZOrder(selectedTile);
       setComponentZOrder(selectedTile, 0);
-      Logger.trace("Moving: " + selectedTile.getId() + " @ " + selectedTile.xyToString() + " P: " + snapPoint.x + "," + snapPoint.y + ")");
+      //Logger.trace("Moving: " + selectedTile.getId() + " @ " + selectedTile.xyToString() + " P: " + snapPoint.x + "," + snapPoint.y + ")");
 
       if (TileCache.canMoveTo(selectedTile, snapPoint)) {
         selectedTile.setSelectedColor(Tile.DEFAULT_SELECTED_COLOR);
@@ -716,7 +716,7 @@ public class LayoutCanvas extends JPanel {
     String extra = "";
     if (tile instanceof Sensor s) {
       if (s.getSensorBean() != null) {
-        extra = " " + s.getSensorBean().getName();
+        extra = " " + s.getSensorBean().toString();
       }
     }
 

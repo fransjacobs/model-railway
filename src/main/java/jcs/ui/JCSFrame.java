@@ -63,7 +63,6 @@ import jcs.commandStation.events.ConnectionEvent;
 import jcs.commandStation.events.PowerEvent;
 import jcs.commandStation.entities.InfoBean;
 import jcs.persistence.PersistenceFactory;
-import jcs.ui.layout.LayoutCanvas;
 import jcs.ui.layout.LayoutPanel;
 import jcs.ui.panel.SmallDriverCabPanel;
 import jcs.ui.settings.AccessoryDialog;

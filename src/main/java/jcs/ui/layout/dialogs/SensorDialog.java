@@ -60,12 +60,13 @@ public class SensorDialog extends javax.swing.JDialog {
 
   private void postInit() {
     setLocationRelativeTo(null);
-    String text = this.headingLbl.getText() + " " + sensor.getId();
-    this.headingLbl.setText(text);
+    String text = headingLbl.getText() + " " + sensor.getId();
+    headingLbl.setText(text);
 
     List<SensorBean> sensors = PersistenceFactory.getService().getSensors();
     List<TileBean> sensorTiles = PersistenceFactory.getService().getTileBeansByTileType(TileBean.TileType.SENSOR);
 
+    // Sort?
     Set<Integer> usedSensorIds = new HashSet<>();
     for (TileBean tb : sensorTiles) {
       if (tb.getSensorId() != null) {
@@ -85,7 +86,7 @@ public class SensorDialog extends javax.swing.JDialog {
     } else {
       if (sensor.getSensorId() != null && sensor.getSensorBean() == null) {
         sensor.setSensorBean(PersistenceFactory.getService().getSensor(sensor.getSensorId()));
-        filtered.add(this.sensor.getSensorBean());
+        filtered.add(sensor.getSensorBean());
       }
     }
 
@@ -97,33 +98,33 @@ public class SensorDialog extends javax.swing.JDialog {
     sensorComboBoxModel.addAll(filtered);
     sensorCB.setModel(sensorComboBoxModel);
 
-    SensorBean sb = this.sensor.getSensorBean();
+    SensorBean sb = sensor.getSensorBean();
     if (sb == null) {
       sb = emptyBean;
       //Use the SensorTileId as id sequence
-      sb.setId(TileCache.getIdSeq(sensor.getId()));
+      //sb.setId(TileCache.getIdSeq(sensor.getId()));
     }
 
     sensor.setSensorBean(sb);
     sensorComboBoxModel.setSelectedItem(sb);
 
     if (sensor.getSensorBean().getName() != null) {
-      nameTF.setText(this.sensor.getSensorBean().getName());
+      nameTF.setText(sensor.getSensorBean().getName());
     } else {
       //Use the tile name
       nameTF.setText(sensor.getTileBean().getId());
     }
 
     if (sensor.getSensorBean().getDeviceId() != null) {
-      deviceIdSpinner.setValue(this.sensor.getSensorBean().getDeviceId());
+      deviceIdSpinner.setValue(sensor.getSensorBean().getDeviceId());
     }
     if (this.sensor.getSensorBean().getContactId() != null) {
-      contactIdSpinner.setValue(this.sensor.getSensorBean().getContactId());
+      contactIdSpinner.setValue(sensor.getSensorBean().getContactId());
     }
 
     if (JCS.getJcsCommandStation() != null) {
       //Unregister as properties might change
-      JCS.getJcsCommandStation().removeSensorEventListener(this.sensor);
+      JCS.getJcsCommandStation().removeSensorEventListener(sensor);
     }
   }
 
@@ -254,12 +255,12 @@ public class SensorDialog extends javax.swing.JDialog {
   }// </editor-fold>//GEN-END:initComponents
 
     private void saveExitBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveExitBtnActionPerformed
-      if (this.sensor != null && this.sensor.getSensorBean() != null) {
-        SensorBean sensorBean = this.sensor.getSensorBean();
+      if (sensor != null && sensor.getSensorBean() != null) {
+        SensorBean sensorBean = sensor.getSensorBean();
 
-        sensorBean.setContactId((Integer) this.contactIdSpinner.getValue());
-        sensorBean.setDeviceId((Integer) this.deviceIdSpinner.getValue());
-        sensorBean.setName(this.nameTF.getText());
+        sensorBean.setContactId((Integer) contactIdSpinner.getValue());
+        sensorBean.setDeviceId((Integer) deviceIdSpinner.getValue());
+        sensorBean.setName(nameTF.getText());
 
         sensor.setSensorBean(sensorBean);
 
@@ -269,7 +270,7 @@ public class SensorDialog extends javax.swing.JDialog {
           PersistenceFactory.getService().persist((sensor.getTileBean()));
           JCS.getJcsCommandStation().addSensorEventListener(sensor);
         }
-      } else if (this.sensor != null && this.sensor.getSensorBean() == null) {
+      } else if (sensor != null && sensor.getSensorBean() == null) {
 
         //TODO !!!!!
         SensorBean sensorBean = null; //new SensorBean(this.nameTF.getText(), (Integer) this.deviceIdSpinner.getValue(), (Integer) contactIdSpinner.getValue());

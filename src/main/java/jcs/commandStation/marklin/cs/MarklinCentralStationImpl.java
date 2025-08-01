@@ -506,7 +506,8 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     //Link S88
     List<FeedbackModule> feedbackModules = new ArrayList<>();
     CanDevice links88 = getCanDevice(CanDevice.FEEDBACK_DEVICE_NAME);
-    int bus1Len = 0, bus2Len = 0, bus3Len = 0, nodeId = 0;
+    int bus1Len = 0, bus2Len = 0, bus3Len = 0, nodeId;
+
     if (links88 != null) {
       nodeId = links88.getIdentifierInt() + 1;
       for (ConfigChannel cc : links88.getConfigChannels()) {
@@ -520,6 +521,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
           bus3Len = cc.getActualValue();
         }
       }
+
       Logger.trace("nodeId: " + nodeId + ", bus1Len: " + bus1Len + ", bus2Len: " + bus2Len + ", bus3Len: " + bus3Len);
 
       //Link S88 has 16 sensors starting from 0
@@ -789,6 +791,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       if (switchTime == null || switchTime == 0) {
         st = defaultSwitchTime / 10;
       } else {
+        //CS 2/3 Switchtime is in 10 ms increments!
         st = switchTime / 10;
       }
 
@@ -797,11 +800,16 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
         adr = address - 1;
         adr = adr + CanMessage.DCC_ACCESSORY_OFFSET;
       } else {
+        //assume MM
         adr = address - 1;
+        adr = adr + CanMessage.MM_ACCESSORY_OFFSET;
       }
-      //CS 2/3 Switchtime is in 10 ms increments!
-      st = st / 10;
-      CanMessage message = sendMessage(CanMessageFactory.switchAccessory(adr, value, true, st, this.csUid));
+
+      CanMessage switchMessage = CanMessageFactory.switchAccessory(adr, value, true, st, csUid);
+
+      Logger.trace("Switching accessory " + adr + " to: " + value + " Message: " + switchMessage);
+
+      CanMessage message = sendMessage(switchMessage);
       //Notify listeners
       AccessoryEvent ae = AccessoryMessage.parse(message);
       notifyAccessoryEventListeners(ae);
@@ -868,15 +876,18 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   List<AccessoryBean> getAccessoriesViaHttp() {
     CSHTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
     if (isCS3() && System.getProperty("accessory.list.via", "JSON").equalsIgnoreCase("JSON")) {
+      Logger.trace("Obtaining accessory data via JSON...");
       String json = httpCon.getAccessoriesJSON();
       return AccessoryBeanParser.parseAccessoryJSON(json, commandStationBean.getId(), commandStationBean.getShortName());
     } else {
+      Logger.trace("Obtaining accessory data via file...");
       String file = httpCon.getAccessoriesFile();
       return AccessoryBeanParser.parseAccessoryFile(file, commandStationBean.getId(), commandStationBean.getShortName());
     }
   }
 
   List<AccessoryBean> getAccessoriesViaCan() {
+    Logger.trace("Obtaining accessory data via CAN...");
     CanMessage message = CanMessageFactory.requestConfigData(csUid, "mags");
     this.connection.sendCanMessage(message);
     String canFile = MessageInflator.inflateConfigDataStream(message, "magnetartikel");
@@ -1047,6 +1058,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
                 Logger.trace("FeedbackSensorEvent RX: " + eventMessage);
 
                 SensorBean sb = FeedbackEventMessage.parse(eventMessage, new Date());
+                Logger.trace("Sensor " + sb.getId() + " value " + sb.getStatus());
                 SensorEvent sme = new SensorEvent(sb);
                 if (sme.getSensorBean() != null) {
                   fireSensorEventListeners(sme);
@@ -1160,7 +1172,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 
     WatchdogTask(MarklinCentralStationImpl commandStation) {
       this.commandStation = commandStation;
-      checkInterval = Long.parseLong(System.getProperty("connection.watchdog.interval", "10")) * 1000;
+      checkInterval = Long.parseLong(System.getProperty("connection.watchdog.interval", "30")) * 1000;
     }
 
     @Override
@@ -1213,11 +1225,15 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     @Override
     public void run() {
       if (commandStation.isConnected() && !virtual) {
-        if (commandStation.isSupportTrackMeasurements()) {
-          commandStation.performMeasurements();
-        } else {
-          Logger.debug("Track Measurement are not supported. Cancelling the Measurements schedule...");
-          measurementTimer.cancel();
+        try {
+          if (commandStation.isSupportTrackMeasurements()) {
+            commandStation.performMeasurements();
+          } else {
+            Logger.debug("Track Measurement are not supported. Cancelling the Measurements schedule...");
+            measurementTimer.cancel();
+          }
+        } catch (Exception e) {
+          Logger.error(e);
         }
       }
     }
@@ -1235,6 +1251,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     csb.setShortName("CS");
     csb.setClassName("jcs.commandStation.marklin.cs.MarklinCentralStationImpl");
     csb.setConnectVia("NETWORK");
+    csb.setIpAddress("192.168.1.180");
     csb.setDecoderControlSupport(true);
     csb.setAccessorySynchronizationSupport(true);
     csb.setFeedbackSupport(true);
@@ -1256,24 +1273,26 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 //      Logger.debug("Power is " + (cs.isPower() ? "ON" : "Off"));
 //      cs.power(false);
 //      Logger.debug("Power is " + (cs.isPower() ? "ON" : "Off"));
-//      cs.power(true);
-//
+      cs.power(true);
+      cs.pause(1000);
 //      Logger.debug("Switch Accessory 2 to Red");
-//      //cs.switchAccessory(2, AccessoryValue.RED, 250);
+      cs.switchAccessory(1, "MM", AccessoryValue.RED, 200);
+      cs.pause(1000);
+      cs.switchAccessory(1, "MM", AccessoryValue.GREEN, 200);
+
 //
 //      Logger.debug("Switch Accessory 2 to Green");
       //cs.switchAccessory(2, AccessoryValue.GREEN, 250);
-      List<FeedbackModule> feedbackModules = cs.getFeedbackModules();
-      Logger.trace("There are " + feedbackModules + " Feedback Modules");
-      for (FeedbackModule fm : feedbackModules) {
-        Logger.trace("Module id: " + fm.getId() + " Module nr: " + fm.getModuleNumber() + " ports: " + fm.getPortCount() + " NodeId: " + fm.getIdentifier() + " BusNr: " + fm.getBusNumber());
-        Logger.trace("FBModule id: " + fm.getId() + " S 1 id:" + fm.getSensor(0).getId() + " contactId: " + fm.getSensor(0).getContactId() + " ModuleNr: " + fm.getSensor(0).getDeviceId() + " Name " + fm.getSensor(0).getName());
-        Logger.trace("FBModule id: " + fm.getId() + " S 15 id:" + fm.getSensor(15).getId() + " contactId: " + fm.getSensor(15).getContactId() + " ModuleNr: " + fm.getSensor(15).getDeviceId() + " Name " + fm.getSensor(15).getName());
-      }
-
+//      List<FeedbackModule> feedbackModules = cs.getFeedbackModules();
+//      Logger.trace("There are " + feedbackModules + " Feedback Modules");
+//      for (FeedbackModule fm : feedbackModules) {
+//        Logger.trace("Module id: " + fm.getId() + " Module nr: " + fm.getModuleNumber() + " ports: " + fm.getPortCount() + " NodeId: " + fm.getIdentifier() + " BusNr: " + fm.getBusNumber());
+//        Logger.trace("FBModule id: " + fm.getId() + " S 1 id:" + fm.getSensor(0).getId() + " contactId: " + fm.getSensor(0).getContactId() + " ModuleNr: " + fm.getSensor(0).getDeviceId() + " Name " + fm.getSensor(0).getName());
+//        Logger.trace("FBModule id: " + fm.getId() + " S 15 id:" + fm.getSensor(15).getId() + " contactId: " + fm.getSensor(15).getContactId() + " ModuleNr: " + fm.getSensor(15).getDeviceId() + " Name " + fm.getSensor(15).getName());
+//      }
       //cs.getLocomotivesViaCAN();
       //cs.getAccessoriesViaCan();
-      //cs.pause(2000);
+//      
       //cs.getMembers();
       //cs.memberPing();
       //Logger.trace("getStatusDataConfig CS3");

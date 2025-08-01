@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 import jcs.JCS;
+import jcs.commandStation.events.AccessoryEvent;
 import jcs.commandStation.events.AccessoryEventListener;
 import jcs.entities.TileBean;
 import jcs.persistence.PersistenceFactory;
@@ -41,7 +42,7 @@ import static jcs.entities.TileBean.TileType.SIGNAL;
 import static jcs.entities.TileBean.TileType.STRAIGHT;
 import static jcs.entities.TileBean.TileType.STRAIGHT_DIR;
 import static jcs.entities.TileBean.TileType.SWITCH;
-import jcs.commandStation.events.JCSActionEvent;
+import jcs.commandStation.events.SensorEvent;
 import jcs.entities.BlockBean;
 import static jcs.ui.layout.tiles.Tile.GRID;
 
@@ -556,8 +557,21 @@ public class TileCache {
     return tile;
   }
 
-  public static void enqueTileAction(JCSActionEvent jcsEvent) {
-    eventsQueue.offer(jcsEvent);
+//  public static void enqueTileAction(JCSActionEvent jcsEvent) {
+//    eventsQueue.offer(jcsEvent);
+//    synchronized (TileCache.actionEventQueueHandler) {
+//      actionEventQueueHandler.notifyAll();
+//    }
+//  }
+  public static void enqueTileAction(AccessoryEvent accessoryEvent) {
+    eventsQueue.offer(new ActionEventWrapper(accessoryEvent));
+    synchronized (TileCache.actionEventQueueHandler) {
+      actionEventQueueHandler.notifyAll();
+    }
+  }
+
+  public static void enqueTileAction(SensorEvent sensorEvent) {
+    eventsQueue.offer(new ActionEventWrapper(sensorEvent));
     synchronized (TileCache.actionEventQueueHandler) {
       actionEventQueueHandler.notifyAll();
     }
@@ -580,4 +594,33 @@ public class TileCache {
     }
   }
 
+  private static class ActionEventWrapper implements JCSActionEvent {
+
+    private final Object eventObject;
+
+    ActionEventWrapper(Object eventObject) {
+      this.eventObject = eventObject;
+    }
+
+    @Override
+    public Object getEventObject() {
+      return eventObject;
+    }
+
+    @Override
+    public String getIdString() {
+      switch (eventObject) {
+        case SensorEvent sensorEvent -> {
+          return sensorEvent.getSensorId().toString();
+        }
+        case AccessoryEvent accessoryEvent -> {
+          return accessoryEvent.getAccessoryBean().getId();
+        }
+        default -> {
+          return null;
+        }
+      }
+    }
+
+  }
 }

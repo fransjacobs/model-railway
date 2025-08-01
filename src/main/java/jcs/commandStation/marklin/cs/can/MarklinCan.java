@@ -181,5 +181,6 @@ interface MarklinCan {
   public static final byte[] MAGIC_HASH = new byte[]{0x07, 0x69};
 
   public static final int DCC_ACCESSORY_OFFSET = 14336;
+  public static final int MM_ACCESSORY_OFFSET = 12288;
 
 }

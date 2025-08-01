@@ -371,8 +371,19 @@ public class SensorBean {
 
   @Override
   public String toString() {
-    return name;
-    //return toLogString();
+    StringBuilder sb = new StringBuilder();
+    if (name != null) {
+      sb.append(name);
+    } else {
+      sb.append("-");
+    }
+    if (id != null) {
+      sb.append(" (");
+      sb.append(id);
+      sb.append(")");
+    }
+
+    return sb.toString();
   }
 
   public String toLogString() {

@@ -27,11 +27,11 @@ public class AccessoryMessage {
   }
 
   public static AccessoryEvent parse(CanMessage message) {
-    if(message == null) {
+    if (message == null) {
       return null;
     }
     CanMessage msg;
-    if (!message.isResponseMessage()) {
+    if (message.isResponseMessage()) {
       msg = message.getResponse();
     } else {
       msg = message;
@@ -52,24 +52,22 @@ public class AccessoryMessage {
       } else {
         protocol = "mm";
         address = address + 1;
+        address = address - CanMessage.MM_ACCESSORY_OFFSET;
       }
 
-      //int address = data[3];
       int position = data[4];
 
       String id = Integer.toString(address);
       AccessoryBean accessoryBean = new AccessoryBean(id, address, null, null, position, null, protocol, null, CanMessage.MARKLIN_COMMANDSTATION_ID);
 
-      //TODO DCC support
-      ///RX: 0x00 0x16 0x37 0x7e 0x06 0x00 0x00 0x38 0x00 0x01 0x00 0x00 0x00
-      //RX: 0x00 0x16 0x37 0x7e 0x06 0x00 0x00 0x38 0x01 0x00 0x01 0x00 0x00
-      
-      
       if (CanMessage.DLC_8 == dlc) {
         int switchTime = CanMessage.toInt(new byte[]{data[6], data[7]});
         switchTime = switchTime * 10;
         accessoryBean.setSwitchTime(switchTime);
       }
+
+      //Do we have to do something with the accessory power on and off bit,
+      //as every accessory change will send 2 message one with power on one with power off
       return new AccessoryEvent(accessoryBean);
     } else {
       Logger.warn("Can't parse message, not an Accessory Message! " + message);

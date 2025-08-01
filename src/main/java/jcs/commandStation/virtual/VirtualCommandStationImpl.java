@@ -280,7 +280,7 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   private void fireAllAccessoryEventListeners(final AccessoryEvent accessoryEvent) {
     for (AccessoryEventListener listener : this.accessoryEventListeners) {
       listener.onAccessoryChange(accessoryEvent);
-      Logger.trace("Fired accessory listener " + accessoryEvent.getIdString());
+      Logger.trace("Fired accessory listener " + accessoryEvent.getAccessoryBean().getId());
     }
   }
 

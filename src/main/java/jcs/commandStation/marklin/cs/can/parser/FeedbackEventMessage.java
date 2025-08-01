@@ -60,6 +60,7 @@ public class FeedbackEventMessage {
         busNumber = 3;
       }
 
+      //SensorBean sensorBean = new SensorBean(contactId, null, null, null, identifier, status, previousStatus, millis, System.currentTimeMillis(), MARKLIN_CS, busNumber);
       SensorBean sensorBean = new SensorBean(contactId, null, null, null, identifier, status, previousStatus, millis, System.currentTimeMillis(), MARKLIN_CS, busNumber);
       return sensorBean;
     } else {
@@ -69,3 +70,12 @@ public class FeedbackEventMessage {
   }
 
 }
+
+//TRACE	2025-07-07 22:21:44.635 [CS-EVENT-MESSAGE-HANDLER] MarklinCentralStationImpl$EventMessageHandler.run(): FeedbackSensorEvent RX: 0x00 0x23 0x3f 0x3c 0x08 0x00 0x41 0x07 0xd1 0x00 0x01 0x04 0xb0
+//TRACE	2025-07-07 22:21:44.635 [CS-EVENT-MESSAGE-HANDLER] MarklinCentralStationImpl$EventMessageHandler.run(): Sensor 2001 value 1
+//TRACE	2025-07-07 22:21:45.354 [CS-EVENT-MESSAGE-HANDLER] MarklinCentralStationImpl$EventMessageHandler.run(): FeedbackSensorEvent RX: 0x00 0x23 0x3f 0x3c 0x08 0x00 0x41 0x07 0xd1 0x01 0x00 0x00 0x46
+//TRACE	2025-07-07 22:21:45.355 [CS-EVENT-MESSAGE-HANDLER] MarklinCentralStationImpl$EventMessageHandler.run(): Sensor 2001 value 0
+//TRACE	2025-07-07 22:21:48.144 [CS-EVENT-MESSAGE-HANDLER] MarklinCentralStationImpl$EventMessageHandler.run(): FeedbackSensorEvent RX: 0x00 0x23 0x3f 0x3c 0x08 0x00 0x41 0x07 0xd2 0x00 0x01 0x08 0xc0
+//TRACE	2025-07-07 22:21:48.144 [CS-EVENT-MESSAGE-HANDLER] MarklinCentralStationImpl$EventMessageHandler.run(): Sensor 2002 value 1
+//TRACE	2025-07-07 22:21:48.844 [CS-EVENT-MESSAGE-HANDLER] MarklinCentralStationImpl$EventMessageHandler.run(): FeedbackSensorEvent RX: 0x00 0x23 0x3f 0x3c 0x08 0x00 0x41 0x07 0xd2 0x01 0x00 0x00 0x46
+//TRACE	2025-07-07 22:21:48.844 [CS-EVENT-MESSAGE-HANDLER] MarklinCentralStationImpl$EventMessageHandler.run(): Sensor 2002 value 0
