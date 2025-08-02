@@ -188,6 +188,36 @@ public class LocomotiveSettingsPanel extends JPanel implements PropertyChangeLis
       this.synchronizeCB.setSelected(synch);
 
       String commandStationId = selectedLocomotive.getCommandStationId();
+
+      Integer speed1 = selectedLocomotive.getSpeedOne();
+      Integer speed2 = selectedLocomotive.getSpeedTwo();
+      Integer speed3 = selectedLocomotive.getSpeedThree();
+      Integer speed4 = selectedLocomotive.getSpeedFour();
+
+      if (speed1 != null) {
+        this.speed1Spinner.setValue(speed1);
+      } else {
+        this.speed1Spinner.setValue(0);
+      }
+
+      if (speed2 != null) {
+        this.speed2Spinner.setValue(speed2);
+      } else {
+        this.speed2Spinner.setValue(0);
+      }
+
+      if (speed3 != null) {
+        this.speed3Spinner.setValue(speed3);
+      } else {
+        this.speed3Spinner.setValue(0);
+      }
+
+      if (speed4 != null) {
+        this.speed4Spinner.setValue(speed4);
+      } else {
+        this.speed4Spinner.setValue(0);
+      }
+
     } else {
       //this.imageLbl.setText("ICON");
       this.addressSpinner.setValue(0);
@@ -624,6 +654,12 @@ public class LocomotiveSettingsPanel extends JPanel implements PropertyChangeLis
     speed1Lbl.setText("Speed 1:");
     speed1Lbl.setPreferredSize(new Dimension(100, 17));
     row6Panel.add(speed1Lbl);
+
+    speed1Spinner.addChangeListener(new ChangeListener() {
+      public void stateChanged(ChangeEvent evt) {
+        speed1SpinnerStateChanged(evt);
+      }
+    });
     row6Panel.add(speed1Spinner);
 
     speed2Lbl.setHorizontalAlignment(SwingConstants.TRAILING);
@@ -631,6 +667,12 @@ public class LocomotiveSettingsPanel extends JPanel implements PropertyChangeLis
     speed2Lbl.setText("Speed 2:");
     speed2Lbl.setPreferredSize(new Dimension(60, 17));
     row6Panel.add(speed2Lbl);
+
+    speed2Spinner.addChangeListener(new ChangeListener() {
+      public void stateChanged(ChangeEvent evt) {
+        speed2SpinnerStateChanged(evt);
+      }
+    });
     row6Panel.add(speed2Spinner);
 
     speed3Lbl.setHorizontalAlignment(SwingConstants.TRAILING);
@@ -638,6 +680,12 @@ public class LocomotiveSettingsPanel extends JPanel implements PropertyChangeLis
     speed3Lbl.setText("Speed 3:");
     speed3Lbl.setPreferredSize(new Dimension(60, 17));
     row6Panel.add(speed3Lbl);
+
+    speed3Spinner.addChangeListener(new ChangeListener() {
+      public void stateChanged(ChangeEvent evt) {
+        speed3SpinnerStateChanged(evt);
+      }
+    });
     row6Panel.add(speed3Spinner);
 
     speed4Lbl.setHorizontalAlignment(SwingConstants.TRAILING);
@@ -645,6 +693,12 @@ public class LocomotiveSettingsPanel extends JPanel implements PropertyChangeLis
     speed4Lbl.setText("Speed 4:");
     speed4Lbl.setPreferredSize(new Dimension(60, 17));
     row6Panel.add(speed4Lbl);
+
+    speed4Spinner.addChangeListener(new ChangeListener() {
+      public void stateChanged(ChangeEvent evt) {
+        speed4SpinnerStateChanged(evt);
+      }
+    });
     row6Panel.add(speed4Spinner);
 
     locoDetailPanel.add(row6Panel);
@@ -921,6 +975,26 @@ public class LocomotiveSettingsPanel extends JPanel implements PropertyChangeLis
   private void functionCountSpinnerStateChanged(ChangeEvent evt) {//GEN-FIRST:event_functionCountSpinnerStateChanged
 
   }//GEN-LAST:event_functionCountSpinnerStateChanged
+
+  private void speed1SpinnerStateChanged(ChangeEvent evt) {//GEN-FIRST:event_speed1SpinnerStateChanged
+    Integer speed1 = (Integer) speed1Spinner.getValue();
+    selectedLocomotive.setSpeedOne(speed1);
+  }//GEN-LAST:event_speed1SpinnerStateChanged
+
+  private void speed2SpinnerStateChanged(ChangeEvent evt) {//GEN-FIRST:event_speed2SpinnerStateChanged
+    Integer speed2 = (Integer) speed2Spinner.getValue();
+    selectedLocomotive.setSpeedTwo(speed2);
+  }//GEN-LAST:event_speed2SpinnerStateChanged
+
+  private void speed3SpinnerStateChanged(ChangeEvent evt) {//GEN-FIRST:event_speed3SpinnerStateChanged
+    Integer speed3 = (Integer) speed3Spinner.getValue();
+    selectedLocomotive.setSpeedThree(speed3);
+  }//GEN-LAST:event_speed3SpinnerStateChanged
+
+  private void speed4SpinnerStateChanged(ChangeEvent evt) {//GEN-FIRST:event_speed4SpinnerStateChanged
+    Integer speed4 = (Integer) speed4Spinner.getValue();
+    selectedLocomotive.setSpeedFour(speed4);
+  }//GEN-LAST:event_speed4SpinnerStateChanged
 
   private LocomotiveBean crudFunctionBeans(LocomotiveBean locomotiveBean) {
     int functionCount = (int) this.functionCountSpinner.getValue();
