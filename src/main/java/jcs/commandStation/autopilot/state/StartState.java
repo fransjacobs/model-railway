@@ -33,11 +33,13 @@ class StartState extends DispatcherState implements SensorEventListener {
   private boolean locomotiveStarted = false;
   private boolean canAdvanceToNextState = false;
   private Integer enterSensorId;
-  private Dispatcher dispatcher;
 
   @Override
   DispatcherState execute(Dispatcher dispatcher) {
+    //Register this state as a SensorEventListener, therefor a handle to the dispacher is needed
+    this.dispatcher = dispatcher;
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
+    
     if (!locomotiveStarted) {
       BlockBean departureBlock = dispatcher.getDepartureBlock();
       BlockBean destinationBlock = dispatcher.getDestinationBlock();
@@ -58,8 +60,6 @@ class StartState extends DispatcherState implements SensorEventListener {
       enterSensorId = dispatcher.getEnterSensorId();
       Logger.trace("Destination: " + destinationBlock.getId() + " Enter Sensor: " + enterSensorId + "...");
 
-      //Register this state as a SensorEventListener, therefor a handle to the dispacher is needed
-      this.dispatcher = dispatcher;
       JCS.getJcsCommandStation().addSensorEventListener(this);
 
       //Register the sensor also a an expected event
@@ -80,9 +80,16 @@ class StartState extends DispatcherState implements SensorEventListener {
 
       //TODO: for now rely on the acceleration delay of the loco decoder. Future make a smooth accelerator our selves..
       Logger.trace("Starting " + locomotive.getName() + " Direction " + locomotive.getDirection());
-      //Speed to 70%
-      //TODO: get the speed settings from locomotive
-      dispatcher.changeLocomotiveVelocity(locomotive, 700);
+      //Speed to 70% or speed 3
+      Integer speed3 = locomotive.getSpeedThree();
+      if(speed3 == null || speed3 == 0) {
+        speed3 = 70;
+      } 
+      
+      //1000 is full scale
+      //TODO: get the full scale from a global variable
+      Integer velocity = speed3/100 * 1000;
+      dispatcher.changeLocomotiveVelocity(locomotive, velocity);
 
       locomotiveStarted = true;
       Logger.trace("Waiting for the enter event from SensorId: " + enterSensorId + " Running loco: " + locomotive.getName() + " [" + locomotive.getDecoderType().getDecoderType() + " (" + locomotive.getAddress() + ")] Direction: " + locomotive.getDirection().getDirection() + " current velocity: " + locomotive.getVelocity());

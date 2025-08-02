@@ -23,6 +23,8 @@ import org.tinylog.Logger;
  */
 abstract class DispatcherState {
 
+  protected Dispatcher dispatcher;
+  
   protected DispatcherState() {
   }
 

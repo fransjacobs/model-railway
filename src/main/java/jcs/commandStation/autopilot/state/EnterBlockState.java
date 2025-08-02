@@ -57,7 +57,18 @@ class EnterBlockState extends DispatcherState implements SensorEventListener {
 
       //Slowdown
       Logger.trace("Slowdown " + locomotive.getName() + "...");
-      dispatcher.changeLocomotiveVelocity(locomotive, 100);
+
+      //Speed to 10% or speed 1
+      Integer speed1 = locomotive.getSpeedThree();
+      if (speed1 == null || speed1 == 0) {
+        speed1 = 10;
+      }
+
+      //1000 is full scale
+      //TODO: get the full scale from a global variable
+      Integer velocity = speed1 / 100 * 1000;
+
+      dispatcher.changeLocomotiveVelocity(locomotive, velocity);
       locomotiveBraking = true;
 
       //Change Block statuses 
