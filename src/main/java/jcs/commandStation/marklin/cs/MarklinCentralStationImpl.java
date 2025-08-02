@@ -1152,7 +1152,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   }
 
   private void startWatchdog() {
-    long checkInterval = Long.parseLong(System.getProperty("connection.watchdog.interval", "10"));
+    long checkInterval = Long.parseLong(System.getProperty("connection.watchdog.interval", "30"));
     checkInterval = checkInterval * 1000;
 
     if (checkInterval > 0 && !virtual) {

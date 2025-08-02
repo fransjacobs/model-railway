@@ -38,11 +38,19 @@ import org.tinylog.Logger;
  */
 public class KeyboardSensorPanel extends JPanel {
 
+  private static final long serialVersionUID = 3984321012712562834L;
+
   /**
    * Creates new form FeedbackMonitorPanel
    */
   public KeyboardSensorPanel() {
     initComponents();
+    //For now this feedback screen is disabled
+    if ("true".equals(System.getProperty("show.sensor.panels", "false"))) {
+      widgetPanel.remove(feedbackPanel);
+      feedbackPanel.setVisible(false);
+      widgetPanel.setVisible(false);
+    }
   }
 
   /**

@@ -40,6 +40,8 @@ import org.tinylog.Logger;
  */
 public class SensorPanelWide extends JPanel {
 
+  private static final long serialVersionUID = 3297338589539818945L;
+
   private final List<FeedbackPanel> feedbackPanels;
 
   /**
@@ -48,7 +50,11 @@ public class SensorPanelWide extends JPanel {
   public SensorPanelWide() {
     feedbackPanels = new ArrayList<>();
     initComponents();
-    postInit();
+    if ("true".equals(System.getProperty("show.sensor.panels", "false"))) {
+      postInit();
+    } else {
+      bus0Mod1Panel.setVisible(false);
+    }
   }
 
   private void postInit() {

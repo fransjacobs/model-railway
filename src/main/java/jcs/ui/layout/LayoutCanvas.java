@@ -232,10 +232,6 @@ public class LayoutCanvas extends JPanel {
     gc.setPaint(p);
   }
 
-//  void setMode(LayoutCanvas.Mode mode) {
-//    this.mode = mode;
-//    Logger.trace("Mode: " + mode);
-//  }
   void setGridType(int gridType) {
     this.gridType = gridType;
     executor.execute((() -> repaint()));

@@ -69,32 +69,32 @@ public class SensorBean {
     this.commandStationId = commandStationId;
     this.busNr = busNr;
 
-    //TODO!
-    if (name == null) {
-      //this.name = generateName();
-    }
+//    //TODO!
+//    if (name == null) {
+//      //this.name = generateName();
+//    }
   }
 
-  private String generateNameOld() {
-    if (deviceId != null && contactId != null && nodeId != null) {
-
-      String dn = deviceId.toString();
-      int dnl = dn.length();
-      for (int x = 0; x < 2 - dnl; x++) {
-        dn = "0" + dn;
-      }
-
-      String cn = contactId.toString();
-      int cnl = cn.length();
-      for (int x = 0; x < 4 - cnl; x++) {
-        cn = "0" + cn;
-      }
-
-      return dn + "-" + cn;
-    } else {
-      return null;
-    }
-  }
+//  private String generateNameOld() {
+//    if (deviceId != null && contactId != null && nodeId != null) {
+//
+//      String dn = deviceId.toString();
+//      int dnl = dn.length();
+//      for (int x = 0; x < 2 - dnl; x++) {
+//        dn = "0" + dn;
+//      }
+//
+//      String cn = contactId.toString();
+//      int cnl = cn.length();
+//      for (int x = 0; x < 4 - cnl; x++) {
+//        cn = "0" + cn;
+//      }
+//
+//      return dn + "-" + cn;
+//    } else {
+//      return null;
+//    }
+//  }
 
   @Id
   @Column(name = "id", nullable = false)
@@ -334,26 +334,26 @@ public class SensorBean {
     return Objects.equals(this.lastUpdated, other.lastUpdated);
   }
 
-  @Deprecated
-  public boolean equalsDeviceIdAndContactId(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    final SensorBean other = (SensorBean) obj;
-    if (!Objects.equals(this.commandStationId, other.commandStationId)) {
-      return false;
-    }
-    if (!Objects.equals(this.deviceId, other.deviceId)) {
-      return false;
-    }
-    return Objects.equals(this.contactId, other.contactId);
-  }
+//  @Deprecated
+//  public boolean equalsDeviceIdAndContactId(Object obj) {
+//    if (this == obj) {
+//      return true;
+//    }
+//    if (obj == null) {
+//      return false;
+//    }
+//    if (getClass() != obj.getClass()) {
+//      return false;
+//    }
+//    final SensorBean other = (SensorBean) obj;
+//    if (!Objects.equals(this.commandStationId, other.commandStationId)) {
+//      return false;
+//    }
+//    if (!Objects.equals(this.deviceId, other.deviceId)) {
+//      return false;
+//    }
+//    return Objects.equals(this.contactId, other.contactId);
+//  }
 
   public boolean equalsId(Object obj) {
     if (this == obj) {

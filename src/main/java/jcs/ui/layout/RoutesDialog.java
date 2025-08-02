@@ -122,15 +122,16 @@ public class RoutesDialog extends javax.swing.JDialog {
     for (RouteElementBean re : routeElements) {
       String tileId = re.getTileId();
       Tile tile = TileCache.findTile(tileId);
+      if (tile != null) {
+        if (tile.isBlock()) {
+          tile.setBlockState(BlockState.FREE);
+        }
+        if (tile.isJunction()) {
+          tile.setRouteValue(AccessoryBean.AccessoryValue.OFF);
+        }
 
-      if (tile.isBlock()) {
-        tile.setBlockState(BlockState.FREE);
+        tile.setShowRoute(false);
       }
-      if (tile.isJunction()) {
-        tile.setRouteValue(AccessoryBean.AccessoryValue.OFF);
-      }
-
-      tile.setShowRoute(false);
     }
   }
 
