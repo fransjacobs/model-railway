@@ -19,7 +19,6 @@ import java.awt.Point;
 import javax.swing.UIManager;
 import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
-import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
 import jcs.entities.TileBean.Orientation;
 import jcs.entities.TileBean.TileType;
@@ -30,6 +29,8 @@ import jcs.ui.layout.tiles.ui.TileUI;
  * Representation of a Sensor in a track on the layout
  */
 public class Sensor extends Straight implements SensorEventListener {
+
+  private static final long serialVersionUID = -4158589638254845760L;
 
   public Sensor(TileBean tileBean) {
     super(tileBean);
@@ -62,10 +63,8 @@ public class Sensor extends Straight implements SensorEventListener {
 
   @Override
   public void onSensorChange(SensorEvent event) {
-    SensorBean sensor = event.getSensorBean();
-    //TODO!
-    if (sensor.equalsDeviceIdAndContactId(getSensorBean())) {
-      setActive(sensor.isActive());
+    if (getSensorBean() != null && getSensorBean().getId() != null && getSensorBean().getId().equals(event.getSensorId())) {
+      setActive(event.isActive());
     }
   }
 

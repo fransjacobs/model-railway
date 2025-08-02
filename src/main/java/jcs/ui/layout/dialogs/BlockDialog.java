@@ -61,6 +61,7 @@ public class BlockDialog extends javax.swing.JDialog {
     initComponents();
 
     postInit();
+    pack();
   }
 
   private Set<Integer> getLinkedSensorIds() {
@@ -219,13 +220,13 @@ public class BlockDialog extends javax.swing.JDialog {
 
     setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
     setTitle("Block Properties");
-    setBounds(new java.awt.Rectangle(0, 25, 340, 250));
+    setBounds(new java.awt.Rectangle(0, 25, 450, 275));
     setMinimumSize(new java.awt.Dimension(340, 250));
-    setPreferredSize(new java.awt.Dimension(340, 250));
+    setPreferredSize(new java.awt.Dimension(450, 275));
     getContentPane().setLayout(new javax.swing.BoxLayout(getContentPane(), javax.swing.BoxLayout.Y_AXIS));
 
     headingPanel.setMinimumSize(new java.awt.Dimension(290, 40));
-    headingPanel.setPreferredSize(new java.awt.Dimension(290, 40));
+    headingPanel.setPreferredSize(new java.awt.Dimension(440, 40));
     headingPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
 
     headingLbl.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/new-block.png"))); // NOI18N
@@ -310,7 +311,7 @@ public class BlockDialog extends javax.swing.JDialog {
 
     getContentPane().add(autoLinkPanel);
 
-    sensorPanel.setPreferredSize(new java.awt.Dimension(290, 40));
+    sensorPanel.setPreferredSize(new java.awt.Dimension(450, 40));
     java.awt.FlowLayout flowLayout3 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
     flowLayout3.setAlignOnBaseline(true);
     sensorPanel.setLayout(flowLayout3);
@@ -322,6 +323,7 @@ public class BlockDialog extends javax.swing.JDialog {
     plusSensorLbl.setPreferredSize(new java.awt.Dimension(100, 17));
     sensorPanel.add(plusSensorLbl);
 
+    plusSensorCB.setPreferredSize(new java.awt.Dimension(150, 23));
     plusSensorCB.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         plusSensorCBActionPerformed(evt);
@@ -335,6 +337,7 @@ public class BlockDialog extends javax.swing.JDialog {
     minSensorLbl.setPreferredSize(new java.awt.Dimension(10, 17));
     sensorPanel.add(minSensorLbl);
 
+    minSensorCB.setPreferredSize(new java.awt.Dimension(150, 23));
     minSensorCB.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         minSensorCBActionPerformed(evt);

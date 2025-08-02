@@ -28,7 +28,6 @@ import jcs.JCS;
 import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.SensorBean;
-import org.tinylog.Logger;
 
 /**
  * Diagnostic panel for a feedback module
@@ -42,6 +41,7 @@ public class FeedbackPanel extends JPanel {
 
   private static final ImageIcon ICON_ON = new ImageIcon(FeedbackPanel.class.getResource(ICON_PATH_ON));
   private static final ImageIcon ICON_OFF = new ImageIcon(FeedbackPanel.class.getResource(ICON_PATH_OFF));
+  private static final long serialVersionUID = -2919295126319872964L;
 
   private int moduleNumber;
   private Integer deviceId;
@@ -243,17 +243,17 @@ public class FeedbackPanel extends JPanel {
       this.deviceId = deviceId;
       this.contactId = contactId;
 
-      this.label.setToolTipText("DeviceId: " + this.deviceId + " ContactId: " + this.contactId);
+      label.setToolTipText("DeviceId: " + this.deviceId + " ContactId: " + this.contactId);
     }
 
     @Override
     public void onSensorChange(SensorEvent event) {
       SensorBean sensor = event.getSensorBean();
 
-      if (this.deviceId.equals(sensor.getDeviceId()) && this.contactId.equals(sensor.getContactId())) {
-        this.value = sensor.isActive();
-        this.label.setIcon(value ? ICON_ON : ICON_OFF);
-        this.label.repaint();
+      if (deviceId.equals(event.getDeviceId()) && contactId.equals(event.getContactId())) {
+        value = sensor.isActive();
+        label.setIcon(value ? ICON_ON : ICON_OFF);
+        label.repaint();
       }
     }
   }

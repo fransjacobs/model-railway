@@ -680,7 +680,7 @@ public class JCSCommandStation {
       SensorBean dbsb = PersistenceFactory.getService().getSensor(event.getSensorId());
 
       if (dbsb == null) {
-        //Try using the deviceId and contactId
+        //Try using the deviceId and contactId and command station...
         dbsb = PersistenceFactory.getService().getSensor(sb.getDeviceId(), sb.getContactId());
       }
 
