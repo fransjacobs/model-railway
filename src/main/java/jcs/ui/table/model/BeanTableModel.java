@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.ui.settings.table;
+package jcs.ui.table.model;
 
 import java.io.Serializable;
 import java.util.List;

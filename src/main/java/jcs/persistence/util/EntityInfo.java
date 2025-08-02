@@ -71,7 +71,7 @@ public class EntityInfo<T> {
   }
 
   public EntityInfo(Class<?> clazz, String[] displayColumns, boolean ignoreTransient, boolean ignoreDuplicates) {
-    this(clazz, Arrays.asList(displayColumns), ignoreTransient, ignoreDuplicates);
+    this(clazz, (displayColumns == null ? Collections.<String>emptyList() : Arrays.asList(displayColumns)), ignoreTransient, ignoreDuplicates);
   }
 
   public EntityInfo(Class<?> clazz, List<String> displayColumnList, boolean ignoreTransient, boolean ignoreDuplicates) {

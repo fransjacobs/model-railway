@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.ui.settings.table;
+package jcs.ui.table.model;
 
+import jcs.ui.table.model.BeanTableModel;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,9 +26,9 @@ import jcs.persistence.PersistenceFactory;
 /**
  * @author frans
  */
-public class TurnoutTableModel extends BeanTableModel<AccessoryBean> {
+public class SignalTableModel extends BeanTableModel<AccessoryBean> {
 
-  public TurnoutTableModel() {
+  public SignalTableModel() {
     super();
   }
 
@@ -47,7 +48,7 @@ public class TurnoutTableModel extends BeanTableModel<AccessoryBean> {
   @Override
   protected List<AccessoryBean> getBeans() {
     if (PersistenceFactory.getService() != null) {
-      return PersistenceFactory.getService().getTurnouts();
+      return PersistenceFactory.getService().getSignals();
     } else {
       return Collections.EMPTY_LIST;
     }

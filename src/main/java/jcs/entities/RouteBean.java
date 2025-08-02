@@ -29,11 +29,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import jcs.persistence.util.ColumnPosition;
 import org.beryx.awt.color.ColorFactory;
 
 @Table(name = "routes", indexes = {
   @Index(name = "route_from_to_idx", columnList = "from_tile_id,from_suffix, to_tile_id,to_suffix", unique = true)})
 public class RouteBean implements Serializable {
+
+  private static final long serialVersionUID = 6833075339327805329L;
 
   private String id;
   private String fromTileId;
@@ -74,6 +77,7 @@ public class RouteBean implements Serializable {
 
   @Id
   @Column(name = "id", nullable = false)
+  @ColumnPosition(position = 0)
   public String getId() {
     return this.id;
   }
@@ -83,6 +87,7 @@ public class RouteBean implements Serializable {
   }
 
   @Column(name = "from_tile_id", nullable = false)
+  @ColumnPosition(position = 1)
   public String getFromTileId() {
     return fromTileId;
   }
@@ -92,6 +97,7 @@ public class RouteBean implements Serializable {
   }
 
   @Column(name = "from_suffix", nullable = false)
+  @ColumnPosition(position = 2)
   public String getFromSuffix() {
     return fromSuffix;
   }
@@ -101,6 +107,7 @@ public class RouteBean implements Serializable {
   }
 
   @Column(name = "to_tile_id", nullable = false)
+  @ColumnPosition(position = 3)
   public String getToTileId() {
     return toTileId;
   }
@@ -110,6 +117,7 @@ public class RouteBean implements Serializable {
   }
 
   @Column(name = "to_suffix", nullable = false)
+  @ColumnPosition(position = 4)
   public String getToSuffix() {
     return toSuffix;
   }
@@ -150,6 +158,7 @@ public class RouteBean implements Serializable {
   }
 
   @Column(name = "locked", nullable = false, columnDefinition = "locked bool default '0'")
+  @ColumnPosition(position = 5)
   public boolean isLocked() {
     return locked;
   }
@@ -175,6 +184,7 @@ public class RouteBean implements Serializable {
   }
 
   @Transient
+  @ColumnPosition(position = 6)
   public RouteState getRouteState() {
     if (this.status != null) {
       return RouteState.get(status);
