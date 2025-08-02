@@ -297,9 +297,10 @@ public class Dispatcher {
     JCS.getJcsCommandStation().switchAccessory(accessory, value);
   }
 
-  synchronized void changeLocomotiveVelocity(LocomotiveBean locomotive, int velocity) {
-    JCS.getJcsCommandStation().changeLocomotiveSpeed(velocity, locomotive);
-    locomotiveBean.setVelocity(velocity);
+  synchronized void changeLocomotiveVelocity(LocomotiveBean locomotive, double velocity) {
+    int commandStationVelocity = (int) velocity;
+    locomotiveBean.setVelocity(commandStationVelocity);
+    JCS.getJcsCommandStation().changeLocomotiveSpeed(commandStationVelocity, locomotive);
   }
 
   synchronized void changeLocomotiveDirection(LocomotiveBean locomotive, Direction newDirection) {

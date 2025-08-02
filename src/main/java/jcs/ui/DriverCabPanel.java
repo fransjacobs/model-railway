@@ -275,40 +275,60 @@ public class DriverCabPanel extends JPanel implements LocomotiveDirectionEventLi
   }//GEN-LAST:event_stopButtonActionPerformed
 
   private void speed4ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_speed4ButtonActionPerformed
-    if (this.locomotiveBean != null) {
-      int tachoMax = locomotiveBean.getTachoMax();
-      tachoMax = (tachoMax / 5) * 4; // 80 %
-      this.speedSlider.setValue(tachoMax);
+    if (locomotiveBean != null) {
+      Integer speed4 = locomotiveBean.getSpeedFour();
+      if (speed4 == null || speed4 == 0) {
+        speed4 = 90;
+      }
+
+      int fullscale = locomotiveBean.getTachoMax();
+      double velocity = (speed4 / (double) fullscale) * fullscale;
+      speedSlider.setValue((int) velocity);
     } else {
       Logger.trace(evt.getActionCommand());
     }
   }//GEN-LAST:event_speed4ButtonActionPerformed
 
   private void speed3ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_speed3ButtonActionPerformed
-    if (this.locomotiveBean != null) {
-      int tachoMax = locomotiveBean.getTachoMax();
-      tachoMax = (tachoMax / 5) * 3; // 60 %
-      this.speedSlider.setValue(tachoMax);
+    if (locomotiveBean != null) {
+      Integer speed3 = locomotiveBean.getSpeedThree();
+      if (speed3 == null || speed3 == 0) {
+        speed3 = 70;
+      }
+
+      int fullscale = locomotiveBean.getTachoMax();
+      double velocity = (speed3 / (double) fullscale) * fullscale;
+      speedSlider.setValue((int) velocity);
     } else {
       Logger.trace(evt.getActionCommand());
     }
   }//GEN-LAST:event_speed3ButtonActionPerformed
 
   private void speed2ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_speed2ButtonActionPerformed
-    if (this.locomotiveBean != null) {
-      int tachoMax = locomotiveBean.getTachoMax();
-      tachoMax = (tachoMax / 5) * 2; // 40 %
-      this.speedSlider.setValue(tachoMax);
+    if (locomotiveBean != null) {
+      Integer speed2 = locomotiveBean.getSpeedTwo();
+      if (speed2 == null || speed2 == 0) {
+        speed2 = 50;
+      }
+
+      int fullscale = locomotiveBean.getTachoMax();
+      double velocity = (speed2 / (double) fullscale) * fullscale;
+      speedSlider.setValue((int) velocity);
     } else {
       Logger.trace(evt.getActionCommand());
     }
   }//GEN-LAST:event_speed2ButtonActionPerformed
 
   private void speed1ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_speed1ButtonActionPerformed
-    if (this.locomotiveBean != null) {
-      int tachoMax = locomotiveBean.getTachoMax();
-      tachoMax = tachoMax / 5; // 20 %
-      this.speedSlider.setValue(tachoMax);
+    if (locomotiveBean != null) {
+      Integer speed1 = locomotiveBean.getSpeedOne();
+      if (speed1 == null || speed1 == 0) {
+        speed1 = 10;
+      }
+
+      int fullscale = locomotiveBean.getTachoMax();
+      double velocity = (speed1 / (double) fullscale) * fullscale;
+      speedSlider.setValue((int) velocity);
     } else {
       Logger.trace(evt.getActionCommand());
     }
@@ -426,12 +446,12 @@ public class DriverCabPanel extends JPanel implements LocomotiveDirectionEventLi
       } else {
         this.forwardButton.setSelected(true);
       }
-      
+
       if (this.directionListener != null) {
         this.directionListener.onDirectionChange(event);
       }
-      
-      disableListener = false;      
+
+      disableListener = false;
     }
   }
 

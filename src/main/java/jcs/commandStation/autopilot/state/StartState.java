@@ -80,15 +80,14 @@ class StartState extends DispatcherState implements SensorEventListener {
 
       //TODO: for now rely on the acceleration delay of the loco decoder. Future make a smooth accelerator our selves..
       Logger.trace("Starting " + locomotive.getName() + " Direction " + locomotive.getDirection());
-      //Speed to 70% or speed 3
+      //Speed to ~70% or speed 3
       Integer speed3 = locomotive.getSpeedThree();
-      if(speed3 == null || speed3 == 0) {
+      if (speed3 == null || speed3 == 0) {
         speed3 = 70;
-      } 
-      
-      //1000 is full scale
-      //TODO: get the full scale from a global variable
-      Integer velocity = speed3/100 * 1000;
+      }
+
+      int fullscale = locomotive.getTachoMax();
+      double velocity = (speed3 / (double) fullscale) * 1000;    
       dispatcher.changeLocomotiveVelocity(locomotive, velocity);
 
       locomotiveStarted = true;
