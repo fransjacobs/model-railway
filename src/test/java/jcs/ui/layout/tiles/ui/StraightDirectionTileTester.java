@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 fransjacobs.
+ * Copyright 2025 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,30 +13,63 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.ui.layout.tiles;
+package jcs.ui.layout.tiles.ui;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import jcs.entities.TileBean;
+import jcs.ui.layout.tiles.StraightDirection;
+import jcs.ui.layout.tiles.Tile;
 import org.tinylog.Logger;
 
-/**
- *
- * @author fransjacobs
- */
-public class TileTester extends javax.swing.JFrame {
+public class StraightDirectionTileTester extends javax.swing.JFrame {
+
+  private Tile trackEast;
+  private Tile trackSouth;
+  private Tile trackWest;
+  private Tile trackNorth;
 
   /**
    * Creates new form TileTester
+   *
    * @param title
    */
-  public TileTester(String title) {
+  public StraightDirectionTileTester(String title) {
     super(title);
     initComponents();
-    
+
+    createTiles();
+
     this.setVisible(true);
+  }
+
+  private void createTiles() {
+
+    trackEast = new StraightDirection(TileBean.Orientation.EAST, 40, 40);
+    trackEast.setId("east");
+    trackEast.setTrackRouteColor(Color.MAGENTA);
+
+    trackSouth = new StraightDirection(TileBean.Orientation.SOUTH, 120, 40);
+    trackSouth.setId("south");
+    trackSouth.setTrackRouteColor(Color.YELLOW);
+
+    trackWest = new StraightDirection(TileBean.Orientation.WEST, 200, 40);
+    trackWest.setId("west");
+    trackWest.setTrackRouteColor(Color.CYAN);
+
+    trackNorth = new StraightDirection(TileBean.Orientation.NORTH, 280, 40);
+    trackNorth.setId("north");
+    trackNorth.setTrackRouteColor(Color.blue);
+
+    dotGridCanvas.add(trackEast);
+
+    dotGridCanvas.add(trackSouth);
+    dotGridCanvas.add(trackWest);
+    dotGridCanvas.add(trackNorth);
   }
 
   /**
@@ -48,11 +81,13 @@ public class TileTester extends javax.swing.JFrame {
 
     toolbarPanel = new javax.swing.JPanel();
     toolBar = new javax.swing.JToolBar();
-    northTileBtn = new javax.swing.JToggleButton();
     eastTileBtn = new javax.swing.JToggleButton();
-    westTileBtn = new javax.swing.JToggleButton();
     southTileBtn = new javax.swing.JToggleButton();
-    dotGridCanvas = new jcs.ui.layout.tiles.DotGridCanvas();
+    westTileBtn = new javax.swing.JToggleButton();
+    northTileBtn = new javax.swing.JToggleButton();
+    selectSouthTileBtn = new javax.swing.JToggleButton();
+    drawCenterBtn = new javax.swing.JToggleButton();
+    dotGridCanvas = new jcs.ui.layout.tiles.ui.DotGridCanvas();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -61,17 +96,6 @@ public class TileTester extends javax.swing.JFrame {
     toolbarPanel.setLayout(flowLayout1);
 
     toolBar.setRollover(true);
-
-    northTileBtn.setText("North");
-    northTileBtn.setFocusable(false);
-    northTileBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    northTileBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    northTileBtn.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        northTileBtnActionPerformed(evt);
-      }
-    });
-    toolBar.add(northTileBtn);
 
     eastTileBtn.setText("East");
     eastTileBtn.setFocusable(false);
@@ -84,6 +108,17 @@ public class TileTester extends javax.swing.JFrame {
     });
     toolBar.add(eastTileBtn);
 
+    southTileBtn.setText("South");
+    southTileBtn.setFocusable(false);
+    southTileBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    southTileBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+    southTileBtn.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        southTileBtnActionPerformed(evt);
+      }
+    });
+    toolBar.add(southTileBtn);
+
     westTileBtn.setText("West");
     westTileBtn.setFocusable(false);
     westTileBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -95,16 +130,38 @@ public class TileTester extends javax.swing.JFrame {
     });
     toolBar.add(westTileBtn);
 
-    southTileBtn.setText("South");
-    southTileBtn.setFocusable(false);
-    southTileBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    southTileBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    southTileBtn.addActionListener(new java.awt.event.ActionListener() {
+    northTileBtn.setText("North");
+    northTileBtn.setFocusable(false);
+    northTileBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    northTileBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+    northTileBtn.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
-        southTileBtnActionPerformed(evt);
+        northTileBtnActionPerformed(evt);
       }
     });
-    toolBar.add(southTileBtn);
+    toolBar.add(northTileBtn);
+
+    selectSouthTileBtn.setText("Select Tile");
+    selectSouthTileBtn.setFocusable(false);
+    selectSouthTileBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    selectSouthTileBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+    selectSouthTileBtn.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        selectSouthTileBtnActionPerformed(evt);
+      }
+    });
+    toolBar.add(selectSouthTileBtn);
+
+    drawCenterBtn.setText("show Center");
+    drawCenterBtn.setFocusable(false);
+    drawCenterBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    drawCenterBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+    drawCenterBtn.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        drawCenterBtnActionPerformed(evt);
+      }
+    });
+    toolBar.add(drawCenterBtn);
 
     toolbarPanel.add(toolBar);
 
@@ -117,20 +174,29 @@ public class TileTester extends javax.swing.JFrame {
   }// </editor-fold>//GEN-END:initComponents
 
   private void northTileBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_northTileBtnActionPerformed
-    // TODO add your handling code here:
+    Logger.trace(trackNorth.getId() + "...");
+    this.trackNorth.setShowRoute(this.northTileBtn.isSelected());
   }//GEN-LAST:event_northTileBtnActionPerformed
 
   private void eastTileBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_eastTileBtnActionPerformed
-    // TODO add your handling code here:
+    this.trackEast.setShowRoute(this.eastTileBtn.isSelected());
   }//GEN-LAST:event_eastTileBtnActionPerformed
 
   private void westTileBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_westTileBtnActionPerformed
-    // TODO add your handling code here:
+    this.trackWest.setShowRoute(this.westTileBtn.isSelected());
   }//GEN-LAST:event_westTileBtnActionPerformed
 
   private void southTileBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_southTileBtnActionPerformed
-    // TODO add your handling code here:
+    this.trackSouth.setShowRoute(this.southTileBtn.isSelected());
   }//GEN-LAST:event_southTileBtnActionPerformed
+
+  private void selectSouthTileBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectSouthTileBtnActionPerformed
+    this.trackSouth.setSelected(this.selectSouthTileBtn.isSelected());
+  }//GEN-LAST:event_selectSouthTileBtnActionPerformed
+
+  private void drawCenterBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_drawCenterBtnActionPerformed
+    this.trackNorth.setDrawCenterPoint(this.drawCenterBtn.isSelected());
+  }//GEN-LAST:event_drawCenterBtnActionPerformed
 
   /**
    * @param args the command line arguments
@@ -138,7 +204,7 @@ public class TileTester extends javax.swing.JFrame {
   public static void main(String args[]) {
     try {
       UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
-      TileTester.setDefaultLookAndFeelDecorated(true);
+      StraightDirectionTileTester.setDefaultLookAndFeelDecorated(true);
 
     } catch (ClassNotFoundException
             | InstantiationException
@@ -149,19 +215,20 @@ public class TileTester extends javax.swing.JFrame {
 
     /* Create and display the form */
     java.awt.EventQueue.invokeLater(() -> {
-      TileTester app = new TileTester("Tile Tester");
+      StraightDirectionTileTester app = new StraightDirectionTileTester("StraightDirTile Tester");
       app.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
       Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-      //app.setPreferredSize(new Dimension(360, 150));
       app.setLocation(dim.width / 2 - app.getSize().width / 2, dim.height / 2 - app.getSize().height / 2);
       app.pack();
     });
   }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
-  private jcs.ui.layout.tiles.DotGridCanvas dotGridCanvas;
+  private jcs.ui.layout.tiles.ui.DotGridCanvas dotGridCanvas;
+  private javax.swing.JToggleButton drawCenterBtn;
   private javax.swing.JToggleButton eastTileBtn;
   private javax.swing.JToggleButton northTileBtn;
+  private javax.swing.JToggleButton selectSouthTileBtn;
   private javax.swing.JToggleButton southTileBtn;
   private javax.swing.JToolBar toolBar;
   private javax.swing.JPanel toolbarPanel;

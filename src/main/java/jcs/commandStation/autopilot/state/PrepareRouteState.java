@@ -85,7 +85,10 @@ class PrepareRouteState extends DispatcherState {
     Orientation blockOrientation = tileBean.getOrientation();
     boolean reverseArrival = departureBlock.isReverseArrival();
 
-    String departureSuffix = Block.getDepartureSuffix(blockOrientation, reverseArrival, logicalDirection);
+    String departureSuffix = departureBlock.getDepartureSuffix();
+    if(departureSuffix == null) {
+        departureSuffix = Block.getDepartureSuffix(blockOrientation, reverseArrival, logicalDirection);
+    }    
 
     Logger.trace("Loco " + locomotive.getName() + " is in block " + departureBlock.getId() + ". Direction " + logicalDirection.getDirection() + ". DepartureSuffix " + departureSuffix + "...");
 

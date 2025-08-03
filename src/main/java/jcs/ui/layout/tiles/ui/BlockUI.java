@@ -132,7 +132,7 @@ public class BlockUI extends TileUI {
       departureSuffix = Block.getDepartureSuffix(tileOrientation, reverseArrival, logicalDirection);
     }
 
-    //Logger.trace(this.getId()+" LogicalDirection is " + (bb.getLogicalDirection() != null ? "Set" : "Not Set") + " Dir: " + logicalDirection.getDirection() + " Orientation: " + orientation.getOrientation() + " departureSuffix: " + departureSuffix);
+    Logger.trace("LogicalDirection is " + (bb.getLogicalDirection() != null ? "Set" : "Not Set") + " Dir: " + logicalDirection.getDirection() + " Orientation: " + tile.getOrientation() + " departureSuffix: " + departureSuffix);
     if ("+".equals(departureSuffix)) {
       if (TileBean.Orientation.EAST == tileOrientation || TileBean.Orientation.SOUTH == tileOrientation) {
         switch (logicalDirection) {
@@ -155,16 +155,16 @@ public class BlockUI extends TileUI {
         switch (logicalDirection) {
           case LocomotiveBean.Direction.BACKWARDS -> {
             if (reverseArrival) {
-              renderLeftArrow(g2);
-            } else {
               renderRightArrow(g2);
+            } else {
+              renderLeftArrow(g2);
             }
           }
           case LocomotiveBean.Direction.FORWARDS -> {
             if (reverseArrival) {
-              renderRightArrow(g2);
-            } else {
               renderLeftArrow(g2);
+            } else {
+              renderRightArrow(g2);
             }
           }
         }
@@ -191,9 +191,9 @@ public class BlockUI extends TileUI {
         switch (logicalDirection) {
           case LocomotiveBean.Direction.BACKWARDS -> {
             if (reverseArrival) {
-              renderLeftArrow(g2);
-            } else {
               renderRightArrow(g2);
+            } else {
+              renderLeftArrow(g2);
             }
           }
           case LocomotiveBean.Direction.FORWARDS -> {
@@ -235,6 +235,14 @@ public class BlockUI extends TileUI {
     int ww = tileImage.getWidth();
     int hh = tileImage.getHeight();
     TileBean.Orientation tileOrientation = model.getTileOrienation();
+    boolean reverseArrival = model.isReverseArrival();
+
+    LocomotiveBean.Direction logicalDirection;
+    if (model.getLogicalDirection() != null) {
+      logicalDirection = model.getLogicalDirection();
+    } else {
+      logicalDirection = model.getLocomotive().getDirection();
+    }
 
     BufferedImage overlay = new BufferedImage(ww, hh, BufferedImage.TYPE_INT_ARGB);
     Graphics2D g2i = overlay.createGraphics();
@@ -248,7 +256,18 @@ public class BlockUI extends TileUI {
 
     if (locImage != null) {
       String departureSuffix = model.getDepartureSuffix();
-      boolean reverseImage = model.isReverseArrival();
+      if (departureSuffix == null) {
+        departureSuffix = Block.getDepartureSuffix(tileOrientation, reverseArrival, logicalDirection);
+      }
+
+      String defaultDepartureSuffix = Block.getDepartureSuffix(tileOrientation, reverseArrival, logicalDirection);
+
+      boolean reverseImage = !departureSuffix.equals(defaultDepartureSuffix);
+
+      LocomotiveBean.Direction dir = model.getLogicalDirection();
+      if (dir == null) {
+        dir = model.getLocomotive().getDirection();
+      }
 
       Logger.trace("LocImage w: " + locImage.getWidth(null) + " h: " + locImage.getHeight(null));
       // scale it to max h of 45
@@ -265,21 +284,21 @@ public class BlockUI extends TileUI {
           w = locImage.getWidth(null);
           h = locImage.getHeight(null);
 
-          if (null == departureSuffix) {
-            xx = BLOCK_WIDTH / 2 - tile.getWidth() / 2 + w;
-          } else {
-            switch (departureSuffix) {
-              case "+" -> {
-                xx = BLOCK_WIDTH / 2 - tile.getWidth() / 2 + w - 25;
-              }
-              default -> {
-                xx = BLOCK_WIDTH / 2 - tile.getWidth() / 2 + w + 10;
-              }
+          //if (null == departureSuffix) {
+          //  xx = BLOCK_WIDTH / 2 - tile.getWidth() / 2 + w;
+          //} else {
+          switch (departureSuffix) {
+            case "+" -> {
+              xx = BLOCK_WIDTH / 2 - tile.getWidth() / 2 + w - 25;
+            }
+            default -> {
+              xx = BLOCK_WIDTH / 2 - tile.getWidth() / 2 + w + 10;
             }
           }
+          //}
           yy = DEFAULT_HEIGHT / 2 - h / 2;
 
-          if (reverseImage) {
+          if (!reverseArrival || !reverseImage) {
             locImage = ImageUtil.flipVertically(locImage);
           }
         }
@@ -291,68 +310,74 @@ public class BlockUI extends TileUI {
           h = locImage.getHeight(null);
           xx = DEFAULT_WIDTH / 2 - w / 2;
 
-          if (null == departureSuffix) {
-            yy = BLOCK_HEIGHT / 2 - tile.getHeight() / 2 + h;
-          } else {
-            switch (departureSuffix) {
-              case "-" -> {
-                yy = BLOCK_HEIGHT / 2 - tile.getHeight() / 2 + h - 25;
-              }
-              default -> {
-                yy = BLOCK_HEIGHT / 2 - tile.getHeight() / 2 + h + 10;
-              }
+          //if (null == departureSuffix) {
+          //  yy = BLOCK_HEIGHT / 2 - tile.getHeight() / 2 + h;
+          //} else {
+          switch (departureSuffix) {
+            case "-" -> {
+              yy = BLOCK_HEIGHT / 2 - tile.getHeight() / 2 + h - 25;
+            }
+            default -> {
+              yy = BLOCK_HEIGHT / 2 - tile.getHeight() / 2 + h + 10;
             }
           }
-          if (reverseImage) {
+          //}
+          if (reverseArrival || reverseImage) {
             locImage = ImageUtil.flipHorizontally(locImage);
           }
         }
         case NORTH -> {
           locImage = ImageUtil.flipHorizontally(locImage);
-          locImage = ImageUtil.rotate(locImage, 90);
+
+          if (reverseImage) {
+            locImage = ImageUtil.rotate(locImage, -90);
+          } else {
+            locImage = ImageUtil.rotate(locImage, 90);
+          }
 
           w = locImage.getWidth(null);
           h = locImage.getHeight(null);
           xx = DEFAULT_WIDTH / 2 - w / 2;
 
-          if (null == departureSuffix) {
-            int minY = BLOCK_HEIGHT / 2 - tile.getHeight() / 2 + h;
-            yy = minY;
-          } else {
-            switch (departureSuffix) {
-              case "+" -> {
-                yy = BLOCK_HEIGHT / 2 - tile.getHeight() / 2 + h - 25;
-              }
-              default -> {
-                yy = BLOCK_HEIGHT / 2 - tile.getHeight() / 2 + h + 10;
-              }
+          //if (null == departureSuffix) {
+          int minY = BLOCK_HEIGHT / 2 - tile.getHeight() / 2 + h;
+          //  yy = minY;
+          //} else {
+          switch (departureSuffix) {
+            case "+" -> {
+              yy = BLOCK_HEIGHT / 2 - tile.getHeight() / 2 + h - 25;
+            }
+            default -> {
+              yy = BLOCK_HEIGHT / 2 - tile.getHeight() / 2 + h + 10;
             }
           }
-          if (reverseImage) {
+          //}
+          if (!reverseArrival) {
             locImage = ImageUtil.flipHorizontally(locImage);
           }
         }
         default -> {
           w = locImage.getWidth(null);
           h = locImage.getHeight(null);
-          if (null == departureSuffix) {
-            xx = BLOCK_WIDTH / 2 - tile.getWidth() / 2 + w;
-          } else {
-            switch (departureSuffix) {
-              case "-" -> {
-                xx = BLOCK_WIDTH / 2 - tile.getWidth() / 2 + w - 25;
-              }
-              default -> {
-                xx = BLOCK_WIDTH / 2 - tile.getWidth() / 2 + w + 10;
-              }
+          //if (null == departureSuffix) {
+          //  xx = BLOCK_WIDTH / 2 - tile.getWidth() / 2 + w;
+          //} else {
+          switch (departureSuffix) {
+            case "-" -> {
+              xx = BLOCK_WIDTH / 2 - tile.getWidth() / 2 + w - 25;
+            }
+            default -> {
+              xx = BLOCK_WIDTH / 2 - tile.getWidth() / 2 + w + 10;
             }
           }
+          //}
           yy = DEFAULT_HEIGHT / 2 - h / 2;
 
-          if (reverseImage) {
+          if (reverseArrival || reverseImage) {
             locImage = ImageUtil.flipVertically(locImage);
           }
         }
+
       }
 
       g2i.drawImage(tileImage, 0, 0, null);

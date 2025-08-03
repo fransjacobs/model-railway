@@ -188,7 +188,7 @@
         </CodeStatement>
       </LayoutCode>
     </Container>
-    <Container class="jcs.ui.layout.tiles.DotGridCanvas" name="dotGridCanvas">
+    <Container class="jcs.ui.layout.tiles.ui.DotGridCanvas" name="dotGridCanvas">
       <Properties>
         <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
           <Dimension value="[480, 320]"/>

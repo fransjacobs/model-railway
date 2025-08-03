@@ -360,36 +360,80 @@ public class Block extends Tile {
     return model.getTileOrienation();
   }
 
+  /**
+   * By Definition, when the locomotive direction is Forward<br>
+   * In case a block is drawn in the East orientation, the departure suffix is in the Block orientation direction<br>
+   * East or +.<br>
+   *
+   * @param tileOrientation the orientation of the Tile (E,S,W or N)
+   * @param reverseArrival whether the block direction is reversed
+   * @param direction the Locomotive direction
+   * @return
+   */
   public static String getDepartureSuffix(Orientation tileOrientation, boolean reverseArrival, LocomotiveBean.Direction direction) {
-    if (LocomotiveBean.Direction.FORWARDS == direction) {
-      if (Orientation.EAST == tileOrientation || Orientation.SOUTH == tileOrientation) {
-        if (reverseArrival) {
-          return "-";
+    switch (tileOrientation) {
+      case WEST -> {
+        if (LocomotiveBean.Direction.FORWARDS == direction) {
+          return reverseArrival ? "-" : "+";
         } else {
-          return "+";
-        }
-      } else {
-        if (reverseArrival) {
-          return "+";
-        } else {
-          return "-";
+          return reverseArrival ? "+" : "-";
         }
       }
-    } else {
-      if (Orientation.EAST == tileOrientation || Orientation.SOUTH == tileOrientation) {
-        if (reverseArrival) {
-          return "+";
+      case NORTH -> {
+        if (LocomotiveBean.Direction.FORWARDS == direction) {
+          return reverseArrival ? "-" : "+";
         } else {
-          return "-";
+          return reverseArrival ? "+" : "-";
         }
-      } else {
-        if (reverseArrival) {
-          return "-";
+
+      }
+      case SOUTH -> {
+        if (LocomotiveBean.Direction.FORWARDS == direction) {
+          return reverseArrival ? "-" : "+";
         } else {
-          return "+";
+          return reverseArrival ? "+" : "-";
+        }
+
+      }
+      default -> {
+        //EAST
+        if (LocomotiveBean.Direction.FORWARDS == direction) {
+          return reverseArrival ? "-" : "+";
+        } else {
+          return reverseArrival ? "+" : "-";
         }
       }
     }
+
+//    if (LocomotiveBean.Direction.FORWARDS == direction) {
+//      if (Orientation.EAST == tileOrientation || Orientation.SOUTH == tileOrientation) {
+//        if (reverseArrival) {
+//          return "-";
+//        } else {
+//          return "+";
+//        }
+//      } else {
+//        if (reverseArrival) {
+//          return "+";
+//        } else {
+//          return "-";
+//        }
+//      }
+//    } else {
+//      if (Orientation.EAST == tileOrientation || Orientation.SOUTH == tileOrientation) {
+//        if (reverseArrival) {
+//          return "+";
+//        } else {
+//          return "-";
+//        }
+//      } else {
+//        if (reverseArrival) {
+//          return "-";
+//        } else {
+//          return "+";
+//        }
+//      }
+//    }
   }
 
   @Override
@@ -442,8 +486,8 @@ public class Block extends Tile {
         setBlockState(BlockState.OCCUPIED);
 
         BlockBean bb = getBlockBean();
-        if (getParent() instanceof LayoutCanvas) {
-          ((LayoutCanvas) getParent()).persistBlock(bb);
+        if (getParent() instanceof LayoutCanvas layoutCanvas) {
+          layoutCanvas.persistBlock(bb);
         }
 
         repaint();

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.ui.layout.tiles;
+package jcs.ui.layout.tiles.ui;
 
 import java.awt.Image;
 import javax.swing.ComboBoxModel;
@@ -26,6 +26,8 @@ import jcs.entities.BlockBean;
 import jcs.entities.BlockBean.BlockState;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.TileBean.Orientation;
+import jcs.ui.layout.tiles.Block;
+import jcs.ui.layout.tiles.Tile;
 import jcs.ui.util.ImageUtil;
 import org.tinylog.Logger;
 
@@ -161,7 +163,7 @@ public class UnscaledBlockTester extends JFrame {
     forwardsRB = new javax.swing.JRadioButton();
     showCenterCB = new javax.swing.JCheckBox();
     centerSP = new javax.swing.JScrollPane();
-    canvas = new jcs.ui.layout.tiles.UnscaledBlockCanvas();
+    canvas = new jcs.ui.layout.tiles.ui.UnscaledBlockCanvas();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
     setPreferredSize(new java.awt.Dimension(1250, 500));
@@ -420,7 +422,7 @@ public class UnscaledBlockTester extends JFrame {
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JRadioButton backwardsRB;
-  private jcs.ui.layout.tiles.UnscaledBlockCanvas canvas;
+  private jcs.ui.layout.tiles.ui.UnscaledBlockCanvas canvas;
   private javax.swing.JScrollPane centerSP;
   private javax.swing.JComboBox<String> departureSideCB;
   private javax.swing.JRadioButton forwardsRB;

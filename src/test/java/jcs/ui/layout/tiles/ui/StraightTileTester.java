@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.ui.layout.tiles;
+package jcs.ui.layout.tiles.ui;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -22,6 +22,8 @@ import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import jcs.entities.TileBean;
+import jcs.ui.layout.tiles.Straight;
+import jcs.ui.layout.tiles.Tile;
 import org.tinylog.Logger;
 
 public class StraightTileTester extends javax.swing.JFrame {
@@ -84,7 +86,7 @@ public class StraightTileTester extends javax.swing.JFrame {
     northTileBtn = new javax.swing.JToggleButton();
     selectSouthTileBtn = new javax.swing.JToggleButton();
     drawCenterBtn = new javax.swing.JToggleButton();
-    dotGridCanvas = new jcs.ui.layout.tiles.DotGridCanvas();
+    dotGridCanvas = new jcs.ui.layout.tiles.ui.DotGridCanvas();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -171,7 +173,7 @@ public class StraightTileTester extends javax.swing.JFrame {
   }// </editor-fold>//GEN-END:initComponents
 
   private void northTileBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_northTileBtnActionPerformed
-    Logger.trace(trackNorth.id + "...");
+    Logger.trace(trackNorth.getId() + "...");
     this.trackNorth.setShowRoute(this.northTileBtn.isSelected());
   }//GEN-LAST:event_northTileBtnActionPerformed
 
@@ -222,7 +224,7 @@ public class StraightTileTester extends javax.swing.JFrame {
   }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
-  private jcs.ui.layout.tiles.DotGridCanvas dotGridCanvas;
+  private jcs.ui.layout.tiles.ui.DotGridCanvas dotGridCanvas;
   private javax.swing.JToggleButton drawCenterBtn;
   private javax.swing.JToggleButton eastTileBtn;
   private javax.swing.JToggleButton northTileBtn;

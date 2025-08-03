@@ -1229,6 +1229,10 @@ public class LayoutCanvas extends JPanel {
       locomotive.setDispatcherDirection(null);
 
       selectedTile.setLocomotive(null);
+      //Set all default which belong to a free block
+      selectedTile.setBlockState(BlockState.FREE);
+      selectedTile.setDepartureSuffix(null);
+      selectedTile.setReverseArrival(false);
 
       executor.execute(() -> {
         PersistenceFactory.getService().persist(selectedTile.getBlockBean());

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.ui.layout.tiles;
+package jcs.ui.layout.tiles.ui;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -22,13 +22,15 @@ import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import jcs.entities.TileBean;
+import jcs.ui.layout.tiles.Curved;
+import jcs.ui.layout.tiles.Tile;
 import org.tinylog.Logger;
 
 /**
  *
  * @author fransjacobs
  */
-public class EndTileTester extends javax.swing.JFrame {
+public class CurvedTileTester extends javax.swing.JFrame {
 
   private Tile trackEast;
   private Tile trackSouth;
@@ -40,7 +42,7 @@ public class EndTileTester extends javax.swing.JFrame {
    *
    * @param title
    */
-  public EndTileTester(String title) {
+  public CurvedTileTester(String title) {
     super(title);
     initComponents();
 
@@ -51,24 +53,24 @@ public class EndTileTester extends javax.swing.JFrame {
 
   private void createTiles() {
 
-    trackEast = new End(TileBean.Orientation.EAST, 40, 40);
+    trackEast = new Curved(TileBean.Orientation.EAST, 40, 40);
     trackEast.setId("east");
     trackEast.setTrackRouteColor(Color.MAGENTA);
 
-    trackSouth = new End(TileBean.Orientation.SOUTH, 120, 40);
+    trackSouth = new Curved(TileBean.Orientation.SOUTH, 120, 40);
     trackSouth.setId("south");
     trackSouth.setTrackRouteColor(Color.YELLOW);
 
-    trackWest = new End(TileBean.Orientation.WEST, 200, 40);
+    trackWest = new Curved(TileBean.Orientation.WEST, 200, 40);
     trackWest.setId("west");
     trackWest.setTrackRouteColor(Color.CYAN);
 
-    trackNorth = new End(TileBean.Orientation.NORTH, 280, 40);
+    trackNorth = new Curved(TileBean.Orientation.NORTH, 280, 40);
     trackNorth.setId("north");
     trackNorth.setTrackRouteColor(Color.blue);
 
     dotGridCanvas.add(trackEast);
-
+ 
     dotGridCanvas.add(trackSouth);
     dotGridCanvas.add(trackWest);
     dotGridCanvas.add(trackNorth);
@@ -89,7 +91,7 @@ public class EndTileTester extends javax.swing.JFrame {
     northTileBtn = new javax.swing.JToggleButton();
     selectSouthTileBtn = new javax.swing.JToggleButton();
     drawCenterBtn = new javax.swing.JToggleButton();
-    dotGridCanvas = new jcs.ui.layout.tiles.DotGridCanvas();
+    dotGridCanvas = new jcs.ui.layout.tiles.ui.DotGridCanvas();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -176,7 +178,7 @@ public class EndTileTester extends javax.swing.JFrame {
   }// </editor-fold>//GEN-END:initComponents
 
   private void northTileBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_northTileBtnActionPerformed
-    Logger.trace(trackNorth.id + "...");
+    Logger.trace(trackNorth.getId() + "...");
     this.trackNorth.setShowRoute(this.northTileBtn.isSelected());
   }//GEN-LAST:event_northTileBtnActionPerformed
 
@@ -206,7 +208,7 @@ public class EndTileTester extends javax.swing.JFrame {
   public static void main(String args[]) {
     try {
       UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
-      EndTileTester.setDefaultLookAndFeelDecorated(true);
+      CurvedTileTester.setDefaultLookAndFeelDecorated(true);
 
     } catch (ClassNotFoundException
             | InstantiationException
@@ -217,7 +219,7 @@ public class EndTileTester extends javax.swing.JFrame {
 
     /* Create and display the form */
     java.awt.EventQueue.invokeLater(() -> {
-      EndTileTester app = new EndTileTester("EndTile Tester");
+      CurvedTileTester app = new CurvedTileTester("CurvedTile Tester");
       app.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
       Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
       app.setLocation(dim.width / 2 - app.getSize().width / 2, dim.height / 2 - app.getSize().height / 2);
@@ -226,7 +228,7 @@ public class EndTileTester extends javax.swing.JFrame {
   }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
-  private jcs.ui.layout.tiles.DotGridCanvas dotGridCanvas;
+  private jcs.ui.layout.tiles.ui.DotGridCanvas dotGridCanvas;
   private javax.swing.JToggleButton drawCenterBtn;
   private javax.swing.JToggleButton eastTileBtn;
   private javax.swing.JToggleButton northTileBtn;

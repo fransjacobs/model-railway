@@ -98,8 +98,8 @@ public abstract class TileUI extends ComponentUI {
   abstract void renderTile(Graphics2D g2d, JComponent c);
 
   abstract void renderTileRoute(Graphics2D g2d, JComponent c);
-
-  public int getRenderWidth() {
+  
+   public int getRenderWidth() {
     return renderWidth;
   }
 

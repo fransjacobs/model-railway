@@ -36,7 +36,7 @@ public class Signal extends Straight implements AccessoryEventListener {
     super(tileBean);
   }
 
-  Signal(Orientation orientation, int x, int y, SignalType signalType) {
+  public Signal(Orientation orientation, int x, int y, SignalType signalType) {
     this(orientation, new Point(x, y), signalType);
   }
 
