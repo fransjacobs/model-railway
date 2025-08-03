@@ -276,7 +276,7 @@ public class StateMachineStepByStepTest {
 
     //Loc should start
     assertEquals(700, dispatcher.getLocomotiveBean().getVelocity());
-    assertEquals(LocomotiveBean.Direction.FORWARDS, dispatcher.getLocomotiveBean().getDirection());
+    assertEquals(LocomotiveBean.Direction.BACKWARDS, dispatcher.getLocomotiveBean().getDirection());
 
     //State should stay the same as the enter sensor of the destination is not hit.
     assertEquals("StartState", stateMachine.getDispatcherStateName());
@@ -300,7 +300,7 @@ public class StateMachineStepByStepTest {
 
     //Loc should be slowing down
     assertEquals(100, dispatcher.getLocomotiveBean().getVelocity());
-    assertEquals(LocomotiveBean.Direction.FORWARDS, dispatcher.getLocomotiveBean().getDirection());
+    assertEquals(LocomotiveBean.Direction.BACKWARDS, dispatcher.getLocomotiveBean().getDirection());
 
     //Departure block state
     block1 = ps.getBlockByTileId("bk-1");
@@ -334,7 +334,7 @@ public class StateMachineStepByStepTest {
 
     //Loc should be stopped
     assertEquals(0, dispatcher.getLocomotiveBean().getVelocity());
-    assertEquals(LocomotiveBean.Direction.FORWARDS, dispatcher.getLocomotiveBean().getDirection());
+    assertEquals(LocomotiveBean.Direction.BACKWARDS, dispatcher.getLocomotiveBean().getDirection());
 
     //Departure block state
     block1 = ps.getBlockByTileId("bk-1");
@@ -345,7 +345,7 @@ public class StateMachineStepByStepTest {
     assertEquals(BlockBean.BlockState.OCCUPIED, block4.getBlockState());
 
     assertEquals(NS_DHG_6505, block4.getLocomotiveId());
-    assertEquals(LocomotiveBean.Direction.FORWARDS, dispatcher.getLocomotiveBean().getDirection());
+    assertEquals(LocomotiveBean.Direction.BACKWARDS, dispatcher.getLocomotiveBean().getDirection());
 
     assertNull(dispatcher.getRouteBean());
     assertNull(dispatcher.getDestinationBlock());
@@ -475,7 +475,7 @@ public class StateMachineStepByStepTest {
 
     //Loc should start
     assertEquals(700, dispatcher.getLocomotiveBean().getVelocity());
-    assertEquals(LocomotiveBean.Direction.FORWARDS, dispatcher.getLocomotiveBean().getDirection());
+    assertEquals(LocomotiveBean.Direction.BACKWARDS, dispatcher.getLocomotiveBean().getDirection());
 
     //State should stay the same as the enter sensor of the destination is not hit.
     assertEquals("StartState", stateMachine.getDispatcherStateName());
@@ -498,7 +498,7 @@ public class StateMachineStepByStepTest {
 
     //Loc should be slowing down
     assertEquals(100, dispatcher.getLocomotiveBean().getVelocity());
-    assertEquals(LocomotiveBean.Direction.FORWARDS, dispatcher.getLocomotiveBean().getDirection());
+    assertEquals(LocomotiveBean.Direction.BACKWARDS, dispatcher.getLocomotiveBean().getDirection());
 
     //Departure block state
     block1 = ps.getBlockByTileId("bk-1");
@@ -531,7 +531,7 @@ public class StateMachineStepByStepTest {
 
     //Loc should be stopped
     assertEquals(0, dispatcher.getLocomotiveBean().getVelocity());
-    assertEquals(LocomotiveBean.Direction.FORWARDS, dispatcher.getLocomotiveBean().getDirection());
+    assertEquals(LocomotiveBean.Direction.BACKWARDS, dispatcher.getLocomotiveBean().getDirection());
 
     //Departure block state
     block1 = ps.getBlockByTileId("bk-1");
@@ -542,7 +542,7 @@ public class StateMachineStepByStepTest {
     assertEquals(BlockBean.BlockState.OCCUPIED, block4.getBlockState());
 
     assertEquals(NS_DHG_6505, block4.getLocomotiveId());
-    assertEquals(LocomotiveBean.Direction.FORWARDS, dispatcher.getLocomotiveBean().getDirection());
+    assertEquals(LocomotiveBean.Direction.BACKWARDS, dispatcher.getLocomotiveBean().getDirection());
 
     assertTrue(block4.isAlwaysStop());
 
@@ -581,7 +581,7 @@ public class StateMachineStepByStepTest {
     assertEquals(BlockBean.BlockState.FREE, block1.getBlockState());
 
     assertEquals(NS_DHG_6505, block4.getLocomotiveId());
-    assertEquals(LocomotiveBean.Direction.FORWARDS, dispatcher.getLocomotiveBean().getDirection());
+    assertEquals(LocomotiveBean.Direction.BACKWARDS, dispatcher.getLocomotiveBean().getDirection());
 
     //Execute the 2nd PrepareRoute the way back...
     stateMachine.handleState();
@@ -623,7 +623,7 @@ public class StateMachineStepByStepTest {
     assertEquals(BlockBean.BlockState.LOCKED, block1.getBlockState());
 
     assertEquals(700, dispatcher.getLocomotiveBean().getVelocity());
-    assertEquals(LocomotiveBean.Direction.BACKWARDS, dispatcher.getLocomotiveBean().getDirection());
+    assertEquals(LocomotiveBean.Direction.FORWARDS, dispatcher.getLocomotiveBean().getDirection());
 
     assertEquals(NS_DHG_6505, block1.getLocomotiveId());
 
@@ -648,7 +648,7 @@ public class StateMachineStepByStepTest {
 
     //Loc should be slowing down
     assertEquals(100, dispatcher.getLocomotiveBean().getVelocity());
-    assertEquals(LocomotiveBean.Direction.BACKWARDS, dispatcher.getLocomotiveBean().getDirection());
+    assertEquals(LocomotiveBean.Direction.FORWARDS, dispatcher.getLocomotiveBean().getDirection());
 
     //Departure block state
     block4 = ps.getBlockByTileId("bk-4");
@@ -677,7 +677,7 @@ public class StateMachineStepByStepTest {
 
     //Loc should be stopped
     assertEquals(0, dispatcher.getLocomotiveBean().getVelocity());
-    assertEquals(LocomotiveBean.Direction.BACKWARDS, dispatcher.getLocomotiveBean().getDirection());
+    assertEquals(LocomotiveBean.Direction.FORWARDS, dispatcher.getLocomotiveBean().getDirection());
 
     //Departure block state
     block4 = ps.getBlockByTileId("bk-4");
@@ -688,7 +688,7 @@ public class StateMachineStepByStepTest {
     assertEquals(BlockBean.BlockState.OCCUPIED, block1.getBlockState());
 
     assertEquals(NS_DHG_6505, block1.getLocomotiveId());
-    assertEquals(LocomotiveBean.Direction.BACKWARDS, dispatcher.getLocomotiveBean().getDirection());
+    assertEquals(LocomotiveBean.Direction.FORWARDS, dispatcher.getLocomotiveBean().getDirection());
 
     assertNull(dispatcher.getRouteBean());
     assertNull(dispatcher.getDestinationBlock());
