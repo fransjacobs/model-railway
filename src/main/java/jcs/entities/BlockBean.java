@@ -24,6 +24,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import jcs.entities.TileBean.Orientation;
+import jcs.ui.layout.tiles.Block;
 
 @Table(name = "blocks")
 public class BlockBean {
@@ -339,15 +341,35 @@ public class BlockBean {
 
   @Transient
   public String getDepartureSuffix() {
-    String departureSuffix = null;
+    String departureSuffix;
     if (arrivalSuffix != null) {
       if ("-".equals(arrivalSuffix)) {
         departureSuffix = "+";
       } else {
         departureSuffix = "-";
       }
-    }
+    } else {
+      // return the default...
+      Orientation o;
+      if (tileBean != null && tileBean.tileDirection != null) {
+        o = Orientation.get(tileBean.tileOrientation);
+      } else {
+        //default
+        o = Orientation.EAST;
+      }
 
+      LocomotiveBean.Direction dir;
+      if (this.logicalDirection != null) {
+        dir = LocomotiveBean.Direction.get(this.logicalDirection);
+      } else if (this.locomotive != null) {
+        dir = locomotive.getDirection();
+      } else {
+        //default
+        dir = LocomotiveBean.Direction.FORWARDS;
+      }
+
+      departureSuffix = Block.getDepartureSuffix(o, reverseArrival, dir);
+    }
     return departureSuffix;
   }
 

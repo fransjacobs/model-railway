@@ -252,8 +252,12 @@ public class LayoutCanvas extends JPanel {
       if (this.readonly) {
         Logger.trace("Loaded " + tiles.size() + " from database...");
       }
+
       java.awt.EventQueue.invokeLater(() -> {
         loadTiles(tiles);
+
+        validate();
+        repaint();
       });
     });
   }
@@ -298,8 +302,7 @@ public class LayoutCanvas extends JPanel {
         tile.setDrawCenterPoint(showCenter);
       }
     }
-    validate();
-    repaint();
+
   }
 
   private void mouseMoveAction(MouseEvent evt) {
@@ -1233,6 +1236,7 @@ public class LayoutCanvas extends JPanel {
       selectedTile.setBlockState(BlockState.FREE);
       selectedTile.setDepartureSuffix(null);
       selectedTile.setReverseArrival(false);
+      selectedTile.setLogicalDirection(null);
 
       executor.execute(() -> {
         PersistenceFactory.getService().persist(selectedTile.getBlockBean());

@@ -486,13 +486,14 @@ public class Block extends Tile {
         setBlockState(BlockState.OCCUPIED);
 
         BlockBean bb = getBlockBean();
+        bb.setDepartureSuffix(Block.getDepartureSuffix(getOrientation(), false, lb.getDirection()));
+
         if (getParent() instanceof LayoutCanvas layoutCanvas) {
           layoutCanvas.persistBlock(bb);
         }
 
         repaint();
-        return lb != null;
-
+        return true;
       } catch (UnsupportedFlavorException | IOException e) {
         Logger.error(e);
         return false;

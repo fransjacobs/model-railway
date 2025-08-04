@@ -476,7 +476,11 @@ public abstract class Tile extends JComponent implements Serializable {
   public void setLogicalDirection(LocomotiveBean.Direction logicalDirection) {
     model.setLogicalDirection(logicalDirection);
     if (blockBean != null) {
-      blockBean.setLogicalDirection(logicalDirection.getDirection());
+      if (logicalDirection != null) {
+        blockBean.setLogicalDirection(logicalDirection.getDirection());
+      } else {
+        blockBean.setLogicalDirection(null);
+      }
     } else {
       Logger.warn("Blockbean for " + id + " is NOT set!");
     }

@@ -174,9 +174,11 @@ public class BlockUI extends TileUI {
         switch (logicalDirection) {
           case LocomotiveBean.Direction.FORWARDS -> {
             if (reverseArrival) {
-              renderLeftArrow(g2);
-            } else {
+              //renderLeftArrow(g2);
               renderRightArrow(g2);
+            } else {
+              //renderRightArrow(g2);
+              renderLeftArrow(g2);
             }
           }
           case LocomotiveBean.Direction.BACKWARDS -> {
