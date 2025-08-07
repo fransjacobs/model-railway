@@ -45,7 +45,7 @@ public class UnscaledBlockTester extends JFrame {
     initComponents();
 
     this.orientationCB.setModel(createOrientationComboBoxModel());
-    this.departureSideCB.setSelectedItem("");
+    this.arrivalSideCB.setSelectedItem("");
     this.stateCB.setModel(createStateComboBoxModel());
 
     blockTile = createBlock();
@@ -123,7 +123,7 @@ public class UnscaledBlockTester extends JFrame {
     blockBean.setTileId(block.getId());
     blockBean.setDescription("Blok 1");
     blockBean.setDepartureSuffix(null);
-    blockBean.setDepartureSuffix((String) this.departureSideCB.getSelectedItem());
+    blockBean.setDepartureSuffix((String) this.arrivalSideCB.getSelectedItem());
 
     if (showLocCB.isSelected()) {
       blockBean.setLocomotive(createLocomotiveBean());
@@ -155,7 +155,7 @@ public class UnscaledBlockTester extends JFrame {
     orientationCB = new javax.swing.JComboBox<>();
     stateCB = new javax.swing.JComboBox<>();
     incomingSuffix = new javax.swing.JLabel();
-    departureSideCB = new javax.swing.JComboBox<>();
+    arrivalSideCB = new javax.swing.JComboBox<>();
     reverseArrivalCB = new javax.swing.JCheckBox();
     showLocCB = new javax.swing.JCheckBox();
     jLabel1 = new javax.swing.JLabel();
@@ -205,17 +205,17 @@ public class UnscaledBlockTester extends JFrame {
     });
     nPanel.add(stateCB);
 
-    incomingSuffix.setText("Departure Suffix");
+    incomingSuffix.setText("Arrival side");
     nPanel.add(incomingSuffix);
 
-    departureSideCB.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "+", "-", "" }));
-    departureSideCB.setPreferredSize(new java.awt.Dimension(50, 22));
-    departureSideCB.addActionListener(new java.awt.event.ActionListener() {
+    arrivalSideCB.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "+", "-", "" }));
+    arrivalSideCB.setPreferredSize(new java.awt.Dimension(50, 22));
+    arrivalSideCB.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
-        departureSideCBActionPerformed(evt);
+        arrivalSideCBActionPerformed(evt);
       }
     });
-    nPanel.add(departureSideCB);
+    nPanel.add(arrivalSideCB);
 
     reverseArrivalCB.setText("Reverse Arrival Side");
     reverseArrivalCB.addActionListener(new java.awt.event.ActionListener() {
@@ -320,15 +320,15 @@ public class UnscaledBlockTester extends JFrame {
     changeOrientation();
   }//GEN-LAST:event_orientationCBActionPerformed
 
-  private void departureSideCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_departureSideCBActionPerformed
+  private void arrivalSideCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_arrivalSideCBActionPerformed
     if (blockTile != null) {
-      if ("".equals(departureSideCB.getSelectedItem())) {
-        blockTile.setDepartureSuffix(null);
+      if ("".equals(arrivalSideCB.getSelectedItem())) {
+        blockTile.setArrivalSuffix(null);
       } else {
-        blockTile.setDepartureSuffix(departureSideCB.getSelectedItem().toString());
+        blockTile.setArrivalSuffix(arrivalSideCB.getSelectedItem().toString());
       }
     }
-  }//GEN-LAST:event_departureSideCBActionPerformed
+  }//GEN-LAST:event_arrivalSideCBActionPerformed
 
   private void stateCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stateCBActionPerformed
     blockTile.setBlockState((BlockState) stateCB.getSelectedItem());
@@ -421,10 +421,10 @@ public class UnscaledBlockTester extends JFrame {
   }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
+  private javax.swing.JComboBox<String> arrivalSideCB;
   private javax.swing.JRadioButton backwardsRB;
   private jcs.ui.layout.tiles.ui.UnscaledBlockCanvas canvas;
   private javax.swing.JScrollPane centerSP;
-  private javax.swing.JComboBox<String> departureSideCB;
   private javax.swing.JRadioButton forwardsRB;
   private javax.swing.JLabel incomingSuffix;
   private javax.swing.JLabel jLabel1;

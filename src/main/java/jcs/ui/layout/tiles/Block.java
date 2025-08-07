@@ -370,6 +370,52 @@ public class Block extends Tile {
    * @param direction the Locomotive direction
    * @return
    */
+  public static String getDefaulArrivalSuffix(Orientation blockOrientation, LocomotiveBean.Direction direction, boolean reverseArrival) {
+    switch (blockOrientation) {
+      case WEST -> {
+        if (LocomotiveBean.Direction.FORWARDS == direction) {
+          return reverseArrival ? "+" : "-";
+        } else {
+          return reverseArrival ? "-" : "+";
+        }
+      }
+      case NORTH -> {
+        if (LocomotiveBean.Direction.FORWARDS == direction) {
+          return reverseArrival ? "+" : "-";
+        } else {
+          return reverseArrival ? "-" : "+";
+        }
+
+      }
+      case SOUTH -> {
+        if (LocomotiveBean.Direction.FORWARDS == direction) {
+          return reverseArrival ? "+" : "-";
+        } else {
+          return reverseArrival ? "-" : "+";
+        }
+
+      }
+      default -> {
+        //EAST
+        if (LocomotiveBean.Direction.FORWARDS == direction) {
+          return reverseArrival ? "+" : "-";
+        } else {
+          return reverseArrival ? "-" : "+";
+        }
+      }
+    }
+  }
+
+  /**
+   * By Definition, when the locomotive direction is Forward<br>
+   * In case a block is drawn in the East orientation, the departure suffix is in the Block orientation direction<br>
+   * East or +.<br>
+   *
+   * @param tileOrientation the orientation of the Tile (E,S,W or N)
+   * @param reverseArrival whether the block direction is reversed
+   * @param direction the Locomotive direction
+   * @return
+   */
   public static String getDepartureSuffix(Orientation tileOrientation, boolean reverseArrival, LocomotiveBean.Direction direction) {
     switch (tileOrientation) {
       case WEST -> {

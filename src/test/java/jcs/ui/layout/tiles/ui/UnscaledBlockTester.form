@@ -99,10 +99,10 @@
         </Component>
         <Component class="javax.swing.JLabel" name="incomingSuffix">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Departure Suffix"/>
+            <Property name="text" type="java.lang.String" value="Arrival side"/>
           </Properties>
         </Component>
-        <Component class="javax.swing.JComboBox" name="departureSideCB">
+        <Component class="javax.swing.JComboBox" name="arrivalSideCB">
           <Properties>
             <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
               <StringArray count="3">
@@ -116,7 +116,7 @@
             </Property>
           </Properties>
           <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="departureSideCBActionPerformed"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="arrivalSideCBActionPerformed"/>
           </Events>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>

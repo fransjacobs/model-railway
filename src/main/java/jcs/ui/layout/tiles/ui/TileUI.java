@@ -49,6 +49,8 @@ public abstract class TileUI extends ComponentUI {
   protected static final int RENDER_GRID = GRID * 10;
   protected static final int RENDER_WIDTH = RENDER_GRID * 2;
   protected static final int RENDER_HEIGHT = RENDER_GRID * 2;
+  
+  protected static final int LOC_IMAGE_WIDTH = 45;
 
   public static final String UI_CLASS_ID = "jcs.ui.layout.tiles.ui.TileUI";
 
@@ -213,6 +215,7 @@ public abstract class TileUI extends ComponentUI {
     } else {
       tileImage = bf;
     }
+    
     g2di.dispose();
   }
 
