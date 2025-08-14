@@ -43,21 +43,16 @@ public class BlockTest {
   @AfterEach
   public void tearDown() {
   }
-  
-  
+
   @Test
   public void testGetDepartureSuffixWest() {
     System.out.println("getDepartureSuffixWest");
     Orientation tileOrientation = Orientation.WEST;
-    boolean reverseArrival = false;
     LocomotiveBean.Direction direction = LocomotiveBean.Direction.FORWARDS;
     String expResult = "+";
-    String result = Block.getDepartureSuffix(tileOrientation, reverseArrival, direction);
+    String result = Block.getDepartureSuffix(tileOrientation, direction);
     assertEquals(expResult, result);
   }
-
-  
-  
 
   /**
    * Test of getUIClassID method, of class Block.
@@ -259,7 +254,6 @@ public class BlockTest {
     fail("The test case is a prototype.");
   }
 
-  
   /**
    * Test of getTileBounds method, of class Block.
    */

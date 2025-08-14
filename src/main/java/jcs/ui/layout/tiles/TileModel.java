@@ -100,9 +100,9 @@ public interface TileModel extends Serializable {
 
   public void setDepartureSuffix(String suffix);
 
-  boolean isReverseArrival();
+  //boolean isReverseArrival();
 
-  public void setReverseArrival(boolean reverseArrival);
+  public void reverseArrival();
 
   LocomotiveBean.Direction getLogicalDirection();
 

@@ -68,7 +68,6 @@ public class StateMachineStepByStepTest {
       block.setLocomotive(null);
       block.setBlockState(BlockBean.BlockState.FREE);
       block.setArrivalSuffix(null);
-      block.setReverseArrival(false);
       ps.persist(block);
     }
 

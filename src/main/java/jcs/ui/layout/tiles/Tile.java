@@ -456,14 +456,14 @@ public abstract class Tile extends JComponent implements Serializable {
     }
   }
 
-  public boolean isReverseArrival() {
-    return model.isReverseArrival();
-  }
+//  public boolean isReverseArrival() {
+//    return model.isReverseArrival();
+//  }
 
-  public void setReverseArrival(boolean reverseArrival) {
-    model.setReverseArrival(reverseArrival);
+  public void reverseArrival() {
+    model.reverseArrival();
     if (blockBean != null) {
-      blockBean.setReverseArrival(reverseArrival);
+      blockBean.reverseArrival();
     } else {
       Logger.warn("Blockbean for " + id + " is NOT set!");
     }

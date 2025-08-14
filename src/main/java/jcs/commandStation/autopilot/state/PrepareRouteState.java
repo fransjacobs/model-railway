@@ -83,11 +83,10 @@ class PrepareRouteState extends DispatcherState {
 
     TileBean tileBean = PersistenceFactory.getService().getTileBean(departureBlock.getTileId());
     Orientation blockOrientation = tileBean.getOrientation();
-    boolean reverseArrival = departureBlock.isReverseArrival();
 
     String departureSuffix = departureBlock.getDepartureSuffix();
     if(departureSuffix == null) {
-        departureSuffix = Block.getDepartureSuffix(blockOrientation, reverseArrival, logicalDirection);
+        departureSuffix = Block.getDepartureSuffix(blockOrientation, logicalDirection);
     }    
 
     Logger.trace("Loco " + locomotive.getName() + " is in block " + departureBlock.getId() + ". Direction " + logicalDirection.getDirection() + ". DepartureSuffix " + departureSuffix + "...");
@@ -198,7 +197,6 @@ class PrepareRouteState extends DispatcherState {
     destinationBlock.setBlockState(BlockBean.BlockState.LOCKED);
     destinationBlock.setLocomotive(locomotive);
     destinationBlock.setArrivalSuffix(arrivalSuffix);
-    destinationBlock.setReverseArrival(departureBlock.isReverseArrival());
     destinationBlock.setLogicalDirection(departureBlock.getLogicalDirection());
 
     // Set Turnouts in the right state

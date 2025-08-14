@@ -31,7 +31,7 @@ import jcs.ui.layout.tiles.Tile;
 import jcs.ui.util.ImageUtil;
 import org.tinylog.Logger;
 
-public class UnscaledBlockTester extends JFrame { 
+public class UnscaledBlockTester extends JFrame {
 
   private static final long serialVersionUID = -1080995511537881069L;
 //implements PropertyChangeListener {
@@ -57,12 +57,9 @@ public class UnscaledBlockTester extends JFrame {
 
     //String imgPath = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "images" + File.separator + "DHG 6505.png";
     //Image locImage = ImageUtil.readImage(imgPath);
-
     //locImage = ImageUtil.scaleImage(locImage, 100);
     //JLabel c = new JLabel(new ImageIcon(locImage));
-
     //canvas.add(c);
-
     centerSP.getViewport().validate();
     pack();
     setVisible(true);
@@ -93,7 +90,7 @@ public class UnscaledBlockTester extends JFrame {
 
   private LocomotiveBean createLocomotiveBean() {
     LocomotiveBean lb = new LocomotiveBean(8L, "NS DHG 6505", 8L, 8, "", "dcc", 100, 0, 0, 1, true, true);
-    String imgPath = getClass().getResource("/images/DHG 6505.png").getFile().replaceAll("%20"," ");
+    String imgPath = getClass().getResource("/images/DHG 6505.png").getFile().replaceAll("%20", " ");
     lb.setIcon(imgPath);
     Image locImage = ImageUtil.readImage(imgPath);
     locImage = ImageUtil.scaleImage(locImage, 100);
@@ -339,7 +336,7 @@ public class UnscaledBlockTester extends JFrame {
   }//GEN-LAST:event_showCenterCBActionPerformed
 
   private void reverseArrivalCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reverseArrivalCBActionPerformed
-    blockTile.setReverseArrival(reverseArrivalCB.isSelected());
+    blockTile.reverseArrival();
   }//GEN-LAST:event_reverseArrivalCBActionPerformed
 
   private void backwardsRBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backwardsRBActionPerformed

@@ -43,9 +43,6 @@ class InBlockState extends DispatcherState {
     destinationBlock.setLocomotive(locomotive);
     destinationBlock.setBlockState(BlockBean.BlockState.OCCUPIED);
     destinationBlock.setLogicalDirection(locomotive.getDirection().getDirection());
-    
-    destinationBlock.setReverseArrival(departureBlock.isReverseArrival());
-    
     destinationBlock.setArrivalSuffix(dispatcher.getRouteBean().getToSuffix());
 
     boolean alwaysStop = destinationBlock.isAlwaysStop();
@@ -57,7 +54,6 @@ class InBlockState extends DispatcherState {
 
     departureBlock.setBlockState(BlockBean.BlockState.FREE);
     departureBlock.setLocomotive(null);
-    departureBlock.setReverseArrival(false);
     departureBlock.setArrivalSuffix(null);
     departureBlock.setLogicalDirection(null);
 

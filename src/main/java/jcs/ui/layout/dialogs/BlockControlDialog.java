@@ -426,7 +426,6 @@ public class BlockControlDialog extends javax.swing.JDialog {
         } else {
           bb.setLogicalDirection(null);
         }
-        bb.setReverseArrival(block.isReverseArrival());
         bb.setArrivalSuffix(block.getArrivalSuffix());
 
         PersistenceFactory.getService().persist(bb);
@@ -501,7 +500,6 @@ public class BlockControlDialog extends javax.swing.JDialog {
     } else {
       block.setArrivalSuffix("+");
     }
-    block.setReverseArrival(!block.isReverseArrival());
   }//GEN-LAST:event_reverseArrivalBtnActionPerformed
 
   private void backwardsRBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backwardsRBActionPerformed

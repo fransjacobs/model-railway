@@ -92,7 +92,6 @@ public class Block extends Tile {
     bb.setTileId(getId());
     bb.setBlockState(BlockBean.BlockState.FREE);
     bb.setMinWaitTime(10);
-    bb.setReverseArrival(false);
     bb.setRandomWait(false);
     bb.setAlwaysStop(true);
     bb.setAllowCommuterOnly(false);
@@ -370,37 +369,37 @@ public class Block extends Tile {
    * @param direction the Locomotive direction
    * @return
    */
-  public static String getDefaulArrivalSuffix(Orientation blockOrientation, LocomotiveBean.Direction direction, boolean reverseArrival) {
+  public static String getDefaulArrivalSuffix(Orientation blockOrientation, LocomotiveBean.Direction direction) {
     switch (blockOrientation) {
       case WEST -> {
         if (LocomotiveBean.Direction.FORWARDS == direction) {
-          return reverseArrival ? "+" : "-";
+          return "-";
         } else {
-          return reverseArrival ? "-" : "+";
+          return "+";
         }
       }
       case NORTH -> {
         if (LocomotiveBean.Direction.FORWARDS == direction) {
-          return reverseArrival ? "+" : "-";
+          return "-";
         } else {
-          return reverseArrival ? "-" : "+";
+          return "+";
         }
 
       }
       case SOUTH -> {
         if (LocomotiveBean.Direction.FORWARDS == direction) {
-          return reverseArrival ? "+" : "-";
+          return "-";
         } else {
-          return reverseArrival ? "-" : "+";
+          return "+";
         }
 
       }
       default -> {
         //EAST
         if (LocomotiveBean.Direction.FORWARDS == direction) {
-          return reverseArrival ? "+" : "-";
+          return "-";
         } else {
-          return reverseArrival ? "-" : "+";
+          return "+";
         }
       }
     }
@@ -416,72 +415,45 @@ public class Block extends Tile {
    * @param direction the Locomotive direction
    * @return
    */
-  public static String getDepartureSuffix(Orientation tileOrientation, boolean reverseArrival, LocomotiveBean.Direction direction) {
+  public static String getDepartureSuffix(Orientation tileOrientation, LocomotiveBean.Direction direction) {
     switch (tileOrientation) {
       case WEST -> {
         if (LocomotiveBean.Direction.FORWARDS == direction) {
-          return reverseArrival ? "-" : "+";
+          return "+";
         } else {
-          return reverseArrival ? "+" : "-";
+          return "-";
         }
       }
       case NORTH -> {
         if (LocomotiveBean.Direction.FORWARDS == direction) {
-          return reverseArrival ? "-" : "+";
+          return "+";
         } else {
-          return reverseArrival ? "+" : "-";
+          return "-";
         }
 
       }
       case SOUTH -> {
         if (LocomotiveBean.Direction.FORWARDS == direction) {
-          return reverseArrival ? "-" : "+";
+          return "+";
         } else {
-          return reverseArrival ? "+" : "-";
+          return "-";
         }
 
       }
       default -> {
         //EAST
         if (LocomotiveBean.Direction.FORWARDS == direction) {
-          return reverseArrival ? "-" : "+";
+          return "+";
         } else {
-          return reverseArrival ? "+" : "-";
+          return "-";
         }
       }
     }
-
-//    if (LocomotiveBean.Direction.FORWARDS == direction) {
-//      if (Orientation.EAST == tileOrientation || Orientation.SOUTH == tileOrientation) {
-//        if (reverseArrival) {
-//          return "-";
-//        } else {
-//          return "+";
-//        }
-//      } else {
-//        if (reverseArrival) {
-//          return "+";
-//        } else {
-//          return "-";
-//        }
-//      }
-//    } else {
-//      if (Orientation.EAST == tileOrientation || Orientation.SOUTH == tileOrientation) {
-//        if (reverseArrival) {
-//          return "+";
-//        } else {
-//          return "-";
-//        }
-//      } else {
-//        if (reverseArrival) {
-//          return "-";
-//        } else {
-//          return "+";
-//        }
-//      }
-//    }
   }
 
+  
+  
+  
   @Override
   public Rectangle getTileBounds() {
     int multiplier = (model.isScaleImage() ? 1 : 10);
@@ -520,6 +492,8 @@ public class Block extends Tile {
         return false;
       }
 
+      Orientation blockOrientation = getOrientation();
+
       try {
         Transferable transferable = support.getTransferable();
         LocomotiveBean lb = (LocomotiveBean) transferable.getTransferData(LocomotiveBean.LOCOMOTIVE_BEAN_FLAVOR);
@@ -532,7 +506,10 @@ public class Block extends Tile {
         setBlockState(BlockState.OCCUPIED);
 
         BlockBean bb = getBlockBean();
-        bb.setDepartureSuffix(Block.getDepartureSuffix(getOrientation(), false, lb.getDirection()));
+
+        String arrivalSide = Block.getDefaulArrivalSuffix(blockOrientation, lb.getDirection());
+
+        bb.setArrivalSuffix(arrivalSide);
 
         if (getParent() instanceof LayoutCanvas layoutCanvas) {
           layoutCanvas.persistBlock(bb);

@@ -38,7 +38,7 @@ public class BlockBean {
   private String plusSignalId;
   private String minSignalId;
   private Long locomotiveId;
-  private boolean reverseArrival;
+  //private boolean reverseArrival;
   private String status;
   private String arrivalSuffix;
 
@@ -212,13 +212,18 @@ public class BlockBean {
     this.locomotiveId = locomotiveId;
   }
 
-  @Column(name = "reverse_arrival_side", nullable = false, columnDefinition = "reverse_arrival_side bool default '1'")
-  public boolean isReverseArrival() {
-    return reverseArrival;
-  }
-
-  public void setReverseArrival(boolean reverseArrival) {
-    this.reverseArrival = reverseArrival;
+  //@Column(name = "reverse_arrival_side", nullable = false, columnDefinition = "reverse_arrival_side bool default '1'")
+  //public boolean isReverseArrival() {
+  //  return reverseArrival;
+  //}
+  public void reverseArrival() {
+    if (arrivalSuffix != null) {
+      if ("-".equals(this.arrivalSuffix)) {
+        this.arrivalSuffix = "+";
+      } else {
+        this.arrivalSuffix = "-";
+      }
+    }
   }
 
   @Column(name = "status", length = 255)
@@ -359,16 +364,16 @@ public class BlockBean {
       }
 
       LocomotiveBean.Direction dir;
-      if (this.logicalDirection != null) {
-        dir = LocomotiveBean.Direction.get(this.logicalDirection);
-      } else if (this.locomotive != null) {
+      if (logicalDirection != null) {
+        dir = LocomotiveBean.Direction.get(logicalDirection);
+      } else if (locomotive != null) {
         dir = locomotive.getDirection();
       } else {
         //default
         dir = LocomotiveBean.Direction.FORWARDS;
       }
 
-      departureSuffix = Block.getDepartureSuffix(o, reverseArrival, dir);
+      departureSuffix = Block.getDepartureSuffix(o, dir);
     }
     return departureSuffix;
   }
