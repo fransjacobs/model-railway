@@ -30,6 +30,7 @@ import jcs.JCS;
 import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.BlockBean;
+import jcs.entities.BlockBean.BlockState;
 import static jcs.entities.BlockBean.BlockState.LOCKED;
 import jcs.entities.CommandStationBean;
 import jcs.entities.LocomotiveBean;
@@ -357,27 +358,34 @@ public final class AutoPilot {
     for (BlockBean block : blocks) {
       Tile tile = TileCache.findTile(block.getTileId());
       if (block.getLocomotiveId() != null) {
-        if (null == block.getBlockState()) {
-          if (BlockBean.BlockState.OCCUPIED == block.getBlockState()) {
+        if (block.getBlockState() != null) {
+          if (BlockState.OCCUPIED == block.getBlockState()) {
             occupiedBlockCounter++;
           }
         } else {
           switch (block.getBlockState()) {
             case LOCKED, INBOUND -> {
-              //destinations block, reset!
+              //reserved block, reset!
               tile.setLocomotive(null);
-              tile.setBlockState(BlockBean.BlockState.FREE);
+              tile.setBlockState(BlockState.FREE);
               tile.setArrivalSuffix(null);
               freeBlockCounter++;
             }
             case OUTBOUND -> {
-              tile.setBlockState(BlockBean.BlockState.OCCUPIED);
+              //
+              tile.setBlockState(BlockState.OCCUPIED);
               tile.setArrivalSuffix(null);
               occupiedBlockCounter++;
             }
+            case OUT_OF_ORDER -> {
+              //Keep as is
+            }
             default -> {
-              if (BlockBean.BlockState.OCCUPIED == block.getBlockState()) {
+              if (BlockState.OCCUPIED == block.getBlockState()) {
+                //TODO...
                 tile.setArrivalSuffix(null);
+                //arrival suffix should be set to the default also...
+
                 occupiedBlockCounter++;
               }
             }
@@ -385,6 +393,7 @@ public final class AutoPilot {
         }
       } else {
         tile.setBlockState(BlockBean.BlockState.FREE);
+        tile.setArrivalSuffix(null);
         freeBlockCounter++;
       }
       PersistenceFactory.getService().persist(tile.getBlockBean());
@@ -489,7 +498,7 @@ public final class AutoPilot {
     if (event.isChanged()) {
       SensorEventHandler sh = sensorHandlers.get(event.getSensorId());
       Boolean registered = sh != null;
-      
+
       Logger.trace((registered ? "Registered " : "") + event.getSensorId() + " has changed " + event.isChanged());
 
       if (sh != null) {
