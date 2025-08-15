@@ -27,8 +27,11 @@ drop index sens_deid_coid_un_idx;
 alter table sensors add constraint sens_deid_coid_un unique (device_id,contact_id,bus_nr,command_station_id);
 
 alter table tiles alter sensor_id integer;
+
 alter table blocks alter plus_sensor_id integer;
 alter table blocks alter min_sensor_id integer;
+
+alter table blocks alter column reverse_arrival_side rename to allow_non_commuter_only;
 
 alter table locomotives drop constraint loco_addr_dety_un;
 drop index loco_addr_dety_un_idx;

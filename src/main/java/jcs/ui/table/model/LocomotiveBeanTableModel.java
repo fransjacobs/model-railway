@@ -17,6 +17,7 @@ package jcs.ui.table.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.ImageIcon;
 import jcs.entities.LocomotiveBean;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
@@ -26,7 +27,7 @@ import org.tinylog.Logger;
  */
 public class LocomotiveBeanTableModel extends AbstractBeanTableModel<LocomotiveBean> {
 
-  private static final String[] DISPLAY_COLUMNS = new String[]{"image", "name", "address"};
+  private static final String[] DISPLAY_COLUMNS = new String[]{"image", "name", "address", "direction"};
   private static final long serialVersionUID = 5525083196000156106L;
 
   public LocomotiveBeanTableModel() {
@@ -48,6 +49,46 @@ public class LocomotiveBeanTableModel extends AbstractBeanTableModel<LocomotiveB
 
       this.setBeans(activeLocos);
     }
+  }
+
+  @Override
+  public Object getValueAt(int row, int column) {
+    if (beans != null && row < beans.size()) {
+      LocomotiveBean b = beans.get(row);
+
+      if (b != null) {
+        return switch (column) {
+          case 0 ->
+            b.getLocIcon();
+          case 1 ->
+            b.getName();
+          case 2 ->
+            b.getAddress();
+          case 3 ->
+            (LocomotiveBean.Direction.FORWARDS == b.getDirection() ? ">>" : "<<");
+          default ->
+            null;
+        };
+      }
+    }
+    return null;
+  }
+
+  @Override
+  public Class<?> getColumnClass(int columnIndex) {
+    return switch (columnIndex) {
+      case 0 ->
+        ImageIcon.class;
+      case 1 ->
+        String.class;
+      case 2 ->
+        String.class;
+      case 3 ->
+        Integer.class;
+      //String.class;
+      default ->
+        String.class;
+    };
   }
 
 }

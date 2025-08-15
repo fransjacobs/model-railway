@@ -82,8 +82,10 @@ public class DispatcherTablePanel extends JPanel implements AutoPilotStatusListe
       if (value != null) {
         ImageIcon imgIcon = (ImageIcon) value;
         Image img = imgIcon.getImage();
+        float h = img.getHeight(null);
+        float w = img.getWidth(null);
         int size = 40;
-        float aspect = (float) img.getHeight(null) / (float) img.getWidth(null);
+        float aspect = h / w;
         img = img.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH);
         BufferedImage bi = ImageUtil.toBuffered(img);
         setIcon(new ImageIcon(bi));

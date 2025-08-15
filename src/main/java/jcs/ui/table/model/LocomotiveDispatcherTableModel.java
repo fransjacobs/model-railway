@@ -15,7 +15,7 @@
  */
 package jcs.ui.table.model;
 
-import java.awt.Image;
+import javax.swing.ImageIcon;
 import jcs.commandStation.autopilot.AutoPilot;
 import jcs.commandStation.autopilot.state.Dispatcher;
 import jcs.commandStation.autopilot.state.StateEventListener;
@@ -118,7 +118,7 @@ public class LocomotiveDispatcherTableModel extends AbstractBeanTableModel<Dispa
           case 2 ->
             b.getStateName();
           case 3 ->
-            (Direction.FORWARDS == b.getLocomotiveBean().getDirection() ? ">>" : "<<") + " " + ((Long) Math.round((b.getLocomotiveBean().getVelocity() / 1024.0) * 100)).intValue();
+            (Direction.FORWARDS == b.getLocomotiveBean().getDirection() ? ">>" : "<<") + " " + ((Long) Math.round((b.getLocomotiveBean().getVelocity() / 1000.0) * 100)).intValue();
           default ->
             null;
         };
@@ -131,7 +131,7 @@ public class LocomotiveDispatcherTableModel extends AbstractBeanTableModel<Dispa
   public Class<?> getColumnClass(int columnIndex) {
     return switch (columnIndex) {
       case 0 ->
-        Image.class;
+        ImageIcon.class;
       case 1 ->
         String.class;
       case 2 ->

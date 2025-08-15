@@ -101,7 +101,7 @@ INSERT INTO tiles (id,tile_type,orientation,direction,x,y,signal_type,accessory_
 	 ('bk-4','Block','West','Center',740,100,NULL,NULL,NULL);
 commit;
 
-INSERT INTO blocks (id,tile_id,description,plus_sensor_id,min_sensor_id,plus_signal_id,min_signal_id,locomotive_id,reverse_arrival_side,status,incoming_suffix, always_stop) VALUES
+INSERT INTO blocks (id,tile_id,description,plus_sensor_id,min_sensor_id,plus_signal_id,min_signal_id,locomotive_id,allow_non_commuter_only,status,incoming_suffix, always_stop) VALUES
 	 ('bk-1','bk-1','Blok 1',1,2,NULL,NULL,NULL,false,'Free',NULL,true),
 	 ('bk-2','bk-2','Blok 2',4,3,NULL,NULL,NULL,false,'Free',null,true),
 	 ('bk-3','bk-3','Blok 3',10,11,NULL,NULL,NULL,false,'Free',null,true),

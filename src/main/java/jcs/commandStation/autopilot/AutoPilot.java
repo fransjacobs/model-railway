@@ -392,9 +392,16 @@ public final class AutoPilot {
           }
         }
       } else {
-        tile.setBlockState(BlockBean.BlockState.FREE);
-        tile.setArrivalSuffix(null);
-        freeBlockCounter++;
+        BlockState blockState = block.getBlockState();
+        if (!BlockState.OUT_OF_ORDER.equals(blockState)) {
+          tile.setBlockState(BlockBean.BlockState.FREE);
+          tile.setArrivalSuffix(null);
+          freeBlockCounter++;
+        } else {
+          if(!blockState.equals(tile.getBlockState())) {
+            tile.setBlockBean(block);
+          }
+        }
       }
       PersistenceFactory.getService().persist(tile.getBlockBean());
     }

@@ -38,7 +38,6 @@ public class BlockBean {
   private String plusSignalId;
   private String minSignalId;
   private Long locomotiveId;
-  //private boolean reverseArrival;
   private String status;
   private String arrivalSuffix;
 
@@ -47,6 +46,7 @@ public class BlockBean {
   private boolean randomWait;
   private boolean alwaysStop;
   private boolean allowCommuterOnly;
+  private boolean allowNonCommuterOnly;
 
   private String logicalDirection;
 
@@ -212,10 +212,6 @@ public class BlockBean {
     this.locomotiveId = locomotiveId;
   }
 
-  //@Column(name = "reverse_arrival_side", nullable = false, columnDefinition = "reverse_arrival_side bool default '1'")
-  //public boolean isReverseArrival() {
-  //  return reverseArrival;
-  //}
   public void reverseArrival() {
     if (arrivalSuffix != null) {
       if ("-".equals(this.arrivalSuffix)) {
@@ -282,6 +278,15 @@ public class BlockBean {
 
   public void setAlwaysStop(boolean alwaysStop) {
     this.alwaysStop = alwaysStop;
+  }
+
+  @Column(name = "allow_non_commuter_only", nullable = false, columnDefinition = "allow_commuter_only bool default '0'")
+  public boolean isAllowNonCommuterOnly() {
+    return allowNonCommuterOnly;
+  }
+
+  public void setAllowNonCommuterOnly(boolean allowNonCommuterOnly) {
+    this.allowNonCommuterOnly = allowNonCommuterOnly;
   }
 
   @Column(name = "allow_commuter_only", nullable = false, columnDefinition = "allow_commuter_only bool default '0'")

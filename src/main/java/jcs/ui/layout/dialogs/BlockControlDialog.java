@@ -31,11 +31,11 @@ import org.tinylog.Logger;
  *
  */
 public class BlockControlDialog extends javax.swing.JDialog {
-
+  
   private static final long serialVersionUID = -5384666778324369564L;
-
+  
   private final Block block;
-
+  
   private ComboBoxModel<LocomotiveBean> locomotiveComboBoxModel;
 
   /**
@@ -48,16 +48,16 @@ public class BlockControlDialog extends javax.swing.JDialog {
     super(parent, true);
     this.block = block;
     initComponents();
-
+    
     postInit();
   }
-
+  
   private void postInit() {
     setLocationRelativeTo(null);
     if (block != null) {
       String text = headingLbl.getText() + " " + block.getId();
       headingLbl.setText(text);
-
+      
       List<LocomotiveBean> locos = new LinkedList<>();
       LocomotiveBean emptyBean = new LocomotiveBean();
       locos.add(emptyBean);
@@ -66,7 +66,7 @@ public class BlockControlDialog extends javax.swing.JDialog {
       //Only Loc's which should be shown
       locomotiveComboBoxModel = new DefaultComboBoxModel(locos.toArray());
       locomotiveCB.setModel(locomotiveComboBoxModel);
-
+      
       BlockBean bb = block.getBlockBean();
       if (bb == null) {
         bb = PersistenceFactory.getService().getBlockByTileId(block.getId());
@@ -79,54 +79,65 @@ public class BlockControlDialog extends javax.swing.JDialog {
           bb.setBlockState(BlockBean.BlockState.FREE);
           bb.setMaxWaitTime(0);
           bb.setMinWaitTime(10);
+          bb.setAllowCommuterOnly(true);
+          bb.setAllowNonCommuterOnly(true);
         }
         block.setBlockBean(bb);
+      } else {
+        if(bb.isAllowCommuterOnly() == bb.isAllowNonCommuterOnly() && bb.isAllowCommuterOnly() == false) {
+          //Both are false invert both for clearnes as it means both are allowed
+          bb.setAllowCommuterOnly(true);
+          bb.setAllowNonCommuterOnly(true);
+        }
       }
-
+      
       blockIdTF.setText(block.getId());
       blockNameTF.setText(bb.getDescription());
-
+      
+      allowCommutersCB.setSelected(bb.isAllowCommuterOnly());
+      allowNonCommutersCB.setSelected(bb.isAllowNonCommuterOnly());
+      
       if (bb.getLocomotiveId() != null && bb.getLocomotive() == null) {
         bb.setLocomotive(PersistenceFactory.getService().getLocomotive(bb.getLocomotiveId()));
         startLocButton.setEnabled(true);
       }
-
+      
       if (bb.getMinWaitTime() != null) {
         minWaitSpinner.setValue(bb.getMinWaitTime());
       }
-
+      
       if (bb.getMaxWaitTime() != null) {
         maxWaitSpinner.setValue(bb.getMaxWaitTime());
       }
-
+      
       alwaysStopCB.setSelected(bb.isAlwaysStop());
       randomWaitCB.setSelected(bb.isRandomWait());
-
+      
       if (bb.getLocomotive() != null) {
         locomotiveCB.setSelectedItem(bb.getLocomotive());
         if (bb.getBlockState() == null) {
           bb.setBlockState(BlockBean.BlockState.OCCUPIED);
         }
-
+        
         if (bb.getLocomotive().getLocIcon() != null) {
           locomotiveIconLbl.setIcon(bb.getLocomotive().getLocIcon());
           locomotiveIconLbl.setText(null);
         } else {
           locomotiveIconLbl.setText(bb.getLocomotive().getName());
         }
-
+        
         if (LocomotiveBean.Direction.BACKWARDS == bb.getLocomotive().getDirection()) {
           backwardsRB.setSelected(true);
         } else {
           forwardsRB.setSelected(true);
         }
-
+        
         startLocButton.setEnabled(AutoPilot.isAutoModeActive());
         startLocButton.setSelected(AutoPilot.isRunning(bb.getLocomotive()));
       } else {
         locomotiveCB.setSelectedItem(emptyBean);
         startLocButton.setEnabled(false);
-
+        
         if (block.getBlockState() == null) {
           block.setBlockState(BlockBean.BlockState.FREE);
         }
@@ -176,6 +187,13 @@ public class BlockControlDialog extends javax.swing.JDialog {
     maxTimePanel = new javax.swing.JPanel();
     maxWaitLbl = new javax.swing.JLabel();
     maxWaitSpinner = new javax.swing.JSpinner();
+    permissionsPanel = new javax.swing.JPanel();
+    permissionPropPanel = new javax.swing.JPanel();
+    allowNonCommutersCB = new javax.swing.JCheckBox();
+    filler4 = new javax.swing.Box.Filler(new java.awt.Dimension(20, 0), new java.awt.Dimension(60, 0), new java.awt.Dimension(20, 32767));
+    allowCommutersCB = new javax.swing.JCheckBox();
+    futurePermissionPanel1 = new javax.swing.JPanel();
+    futurePermissionPanel2 = new javax.swing.JPanel();
     bottomPanel = new javax.swing.JPanel();
     saveExitBtn = new javax.swing.JButton();
     filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(20, 0), new java.awt.Dimension(20, 0), new java.awt.Dimension(20, 32767));
@@ -389,6 +407,47 @@ public class BlockControlDialog extends javax.swing.JDialog {
 
     propertiesTP.addTab("Wait Times", waitPanel);
 
+    permissionsPanel.setLayout(new javax.swing.BoxLayout(permissionsPanel, javax.swing.BoxLayout.Y_AXIS));
+
+    java.awt.FlowLayout flowLayout6 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
+    flowLayout6.setAlignOnBaseline(true);
+    permissionPropPanel.setLayout(flowLayout6);
+
+    allowNonCommutersCB.setSelected(true);
+    allowNonCommutersCB.setToolTipText("Allow Non Commuter Trains Only");
+    allowNonCommutersCB.setLabel("Allow Non Commuters");
+    allowNonCommutersCB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        allowNonCommutersCBActionPerformed(evt);
+      }
+    });
+    permissionPropPanel.add(allowNonCommutersCB);
+    permissionPropPanel.add(filler4);
+
+    allowCommutersCB.setSelected(true);
+    allowCommutersCB.setToolTipText("Allow Commutor Trains Only");
+    allowCommutersCB.setLabel("Allow Commuters");
+    allowCommutersCB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        allowCommutersCBActionPerformed(evt);
+      }
+    });
+    permissionPropPanel.add(allowCommutersCB);
+
+    permissionsPanel.add(permissionPropPanel);
+
+    java.awt.FlowLayout flowLayout7 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
+    flowLayout7.setAlignOnBaseline(true);
+    futurePermissionPanel1.setLayout(flowLayout7);
+    permissionsPanel.add(futurePermissionPanel1);
+
+    java.awt.FlowLayout flowLayout8 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
+    flowLayout8.setAlignOnBaseline(true);
+    futurePermissionPanel2.setLayout(flowLayout8);
+    permissionsPanel.add(futurePermissionPanel2);
+
+    propertiesTP.addTab("Permissions", permissionsPanel);
+
     getContentPane().add(propertiesTP, java.awt.BorderLayout.CENTER);
 
     bottomPanel.setPreferredSize(new java.awt.Dimension(290, 50));
@@ -427,19 +486,19 @@ public class BlockControlDialog extends javax.swing.JDialog {
           bb.setLogicalDirection(null);
         }
         bb.setArrivalSuffix(block.getArrivalSuffix());
-
+        
         PersistenceFactory.getService().persist(bb);
-
+        
         if (bb.getLocomotive() != null && bb.getLocomotive().getName() != null) {
           LocomotiveBean loc = bb.getLocomotive();
           PersistenceFactory.getService().persist(loc);
-
+          
           AutoPilot.addLocomotive(loc);
         }
-
+        
         TileCache.findTile(bb.getTileId()).setBlockBean(bb);
       }
-
+      
       setVisible(false);
       dispose();
       Logger.trace(evt.getActionCommand() + "Block " + block.getId() + " Locomotive: " + this.block.getBlockBean().getLocomotive());
@@ -447,35 +506,35 @@ public class BlockControlDialog extends javax.swing.JDialog {
 
   private void locomotiveCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_locomotiveCBActionPerformed
     Logger.trace(evt.getActionCommand() + " -> " + locomotiveComboBoxModel.getSelectedItem());
-
+    
     LocomotiveBean selected = (LocomotiveBean) locomotiveComboBoxModel.getSelectedItem();
-
+    
     LocomotiveBean previous = block.getLocomotive();
     if (selected.getId() != null) {
       block.setLocomotive(selected);
     } else {
       block.setLocomotive(null);
     }
-
+    
     if (selected.getLocIcon() != null) {
       locomotiveIconLbl.setIcon(selected.getLocIcon());
       locomotiveIconLbl.setText(null);
     } else {
       locomotiveIconLbl.setText(selected.getName());
     }
-
+    
     if (LocomotiveBean.Direction.BACKWARDS == selected.getDirection()) {
       backwardsRB.setSelected(true);
     } else {
       forwardsRB.setSelected(true);
     }
-
+    
     if (block.getLocomotive() != null) {
       startLocButton.setEnabled(true);
     } else {
       startLocButton.setEnabled(false);
     }
-
+    
     if (previous != null && previous.getId() != null && !previous.getId().equals(selected.getId())) {
       AutoPilot.removeLocomotive(previous);
     }
@@ -526,7 +585,17 @@ public class BlockControlDialog extends javax.swing.JDialog {
     block.getBlockBean().setMaxWaitTime((Integer) maxWaitSpinner.getValue());
   }//GEN-LAST:event_maxWaitSpinnerStateChanged
 
+  private void allowNonCommutersCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_allowNonCommutersCBActionPerformed
+    block.getBlockBean().setAllowNonCommuterOnly(allowNonCommutersCB.isSelected());
+  }//GEN-LAST:event_allowNonCommutersCBActionPerformed
+
+  private void allowCommutersCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_allowCommutersCBActionPerformed
+    block.getBlockBean().setAllowCommuterOnly(allowCommutersCB.isSelected());
+  }//GEN-LAST:event_allowCommutersCBActionPerformed
+
   // Variables declaration - do not modify//GEN-BEGIN:variables
+  javax.swing.JCheckBox allowCommutersCB;
+  javax.swing.JCheckBox allowNonCommutersCB;
   javax.swing.JCheckBox alwaysStopCB;
   javax.swing.JPanel arrivalPanel;
   javax.swing.JRadioButton backwardsRB;
@@ -540,7 +609,10 @@ public class BlockControlDialog extends javax.swing.JDialog {
   javax.swing.Box.Filler filler1;
   javax.swing.Box.Filler filler2;
   javax.swing.Box.Filler filler3;
+  javax.swing.Box.Filler filler4;
   javax.swing.JRadioButton forwardsRB;
+  javax.swing.JPanel futurePermissionPanel1;
+  javax.swing.JPanel futurePermissionPanel2;
   javax.swing.JLabel headingLbl;
   javax.swing.JPanel headingPanel;
   javax.swing.JPanel imagePanel;
@@ -557,6 +629,8 @@ public class BlockControlDialog extends javax.swing.JDialog {
   javax.swing.JLabel minWaitLbl;
   javax.swing.JSpinner minWaitSpinner;
   javax.swing.JPanel namePanel;
+  javax.swing.JPanel permissionPropPanel;
+  javax.swing.JPanel permissionsPanel;
   javax.swing.JPanel propPanel;
   javax.swing.JTabbedPane propertiesTP;
   javax.swing.JCheckBox randomWaitCB;
