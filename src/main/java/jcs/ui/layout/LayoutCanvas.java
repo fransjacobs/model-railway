@@ -1263,6 +1263,7 @@ public class LayoutCanvas extends JPanel {
       Block block = (Block) selectedTile;
 
       block.reverseArrival();
+      //logicaldirection?
       //this.executor.execute(() -> {
       PersistenceFactory.getService().persist(block.getBlockBean());
       //});
@@ -1283,10 +1284,12 @@ public class LayoutCanvas extends JPanel {
       LocomotiveBean.Direction newDir = LocomotiveBean.toggle(curDir);
       block.setLogicalDirection(newDir);
       Logger.trace(block.getId() + " LogicalDir changed from " + curDir + " to " + newDir + " for " + locomotive.getName());
-
-      this.executor.execute(() -> {
+      locomotive.setDirection(newDir);
+      
+      //this.executor.execute(() -> {
         PersistenceFactory.getService().persist(block.getTileBean());
-      });
+        PersistenceFactory.getService().persist(locomotive);
+      //});
     }
   }//GEN-LAST:event_toggleLocomotiveDirectionMIActionPerformed
 

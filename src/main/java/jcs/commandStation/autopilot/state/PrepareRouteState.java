@@ -113,12 +113,12 @@ class PrepareRouteState extends DispatcherState {
       departureBlock.setLogicalDirection(newDirection.getDirection());
       //blockBean.setLocomotive(locomotive);
 
-//      //Now flip the departure direction
-//      if ("-".equals(departureSuffix)) {
-//        departureSuffix = "+";
-//      } else {
-//        departureSuffix = "-";
-//      }
+      //Now flip the departure direction
+      if ("-".equals(departureSuffix)) {
+        departureSuffix = "+";
+      } else {
+        departureSuffix = "-";
+      }
 
       Logger.trace("2nd attempt for Loco " + locomotive.getName() + " is in block " + departureBlock.getId() + ". Direction " + newDirection.getDirection() + ". DepartureSuffix " + departureSuffix + "...");
       routes = PersistenceFactory.getService().getRoutes(departureBlock.getId(), departureSuffix);
