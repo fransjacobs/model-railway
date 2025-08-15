@@ -753,8 +753,8 @@ public class JCSCommandStation {
         }
 
         PersistenceFactory.getService().persist(ab);
-
-        for (AccessoryEventListener al : this.trackService.accessoryEventListeners) {
+        
+        for (AccessoryEventListener al : trackService.accessoryEventListeners) {
           al.onAccessoryChange(event);
         }
       }

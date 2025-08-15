@@ -57,7 +57,7 @@ class PrepareRouteState extends DispatcherState {
         Logger.trace("##### Released ####");
       }
     } else {
-      Logger.trace("No Semaphore avalaible");
+      Logger.trace("No Semaphore available");
       canAdvanceToNextState = false;
     }
 
@@ -85,9 +85,9 @@ class PrepareRouteState extends DispatcherState {
     Orientation blockOrientation = tileBean.getOrientation();
 
     String departureSuffix = departureBlock.getDepartureSuffix();
-    if(departureSuffix == null) {
-        departureSuffix = Block.getDepartureSuffix(blockOrientation, logicalDirection);
-    }    
+    if (departureSuffix == null) {
+      departureSuffix = Block.getDepartureSuffix(blockOrientation, logicalDirection);
+    }
 
     Logger.trace("Loco " + locomotive.getName() + " is in block " + departureBlock.getId() + ". Direction " + logicalDirection.getDirection() + ". DepartureSuffix " + departureSuffix + "...");
 
@@ -97,9 +97,11 @@ class PrepareRouteState extends DispatcherState {
 
     List<RouteBean> checkedRoutes = new ArrayList<>();
 
+    boolean commuter = locomotive.isCommuter();
+
     //No routes found or possible. When the Locomotive is a commuter train it can reverse direction.
     //Lets try that...
-    if (routes.isEmpty() && locomotive.isCommuter()) {
+    if (routes.isEmpty() && commuter) {
       Direction oldDirection = logicalDirection;
       //Direction newDirection = locomotive.toggleDispatcherDirection();
       Direction newDirection = LocomotiveBean.toggle(oldDirection);
@@ -111,12 +113,12 @@ class PrepareRouteState extends DispatcherState {
       departureBlock.setLogicalDirection(newDirection.getDirection());
       //blockBean.setLocomotive(locomotive);
 
-      //Now flip the departure direction
-      if ("-".equals(departureSuffix)) {
-        departureSuffix = "+";
-      } else {
-        departureSuffix = "-";
-      }
+//      //Now flip the departure direction
+//      if ("-".equals(departureSuffix)) {
+//        departureSuffix = "+";
+//      } else {
+//        departureSuffix = "-";
+//      }
 
       Logger.trace("2nd attempt for Loco " + locomotive.getName() + " is in block " + departureBlock.getId() + ". Direction " + newDirection.getDirection() + ". DepartureSuffix " + departureSuffix + "...");
       routes = PersistenceFactory.getService().getRoutes(departureBlock.getId(), departureSuffix);
@@ -124,7 +126,7 @@ class PrepareRouteState extends DispatcherState {
       Logger.trace("After the 2nd attempt, there " + (routes.size() == 1 ? "is" : "are") + " " + routes.size() + " possible route(s). " + (!routes.isEmpty() ? "Direction of " + locomotive.getName() + " must be swapped!" : ""));
     }
 
-    //Found possible routes check on the destination for the sensors
+    //Found possible routes check on the destination for the sensors and permissions
     for (RouteBean route : routes) {
       String DestinationTileId = route.getToTileId();
       BlockBean destinationBlock = PersistenceFactory.getService().getBlockByTileId(DestinationTileId);
@@ -132,9 +134,14 @@ class PrepareRouteState extends DispatcherState {
       boolean plusInActive = !destinationBlock.getPlusSensorBean().isActive();
       boolean minInActive = !destinationBlock.getMinSensorBean().isActive();
 
-      Logger.trace("Destination " + destinationBlock.getId() + " + sensor: " + (plusInActive ? "Free" : "Occupied") + " - sensor: " + (minInActive ? "Free" : "Occupied"));
+      boolean allowCommuter = destinationBlock.isAllowCommuterOnly();
+      boolean allowNonCommuter = destinationBlock.isAllowNonCommuterOnly();
 
-      if (plusInActive && minInActive && turnoutsNotLocked(route)) {
+      boolean allowed = isAllowed(allowCommuter, allowNonCommuter, commuter);
+
+      Logger.trace("Destination " + destinationBlock.getId() + " Train type commuter: " + commuter + " Permission " + allowed + " sensor: " + (plusInActive ? "Free" : "Occupied") + " - sensor: " + (minInActive ? "Free" : "Occupied"));
+
+      if (plusInActive && minInActive && allowed && turnoutsNotLocked(route)) {
         checkedRoutes.add(route);
       }
     }
@@ -169,6 +176,26 @@ class PrepareRouteState extends DispatcherState {
     }
     dispatcher.setRouteBean(route);
     return route != null;
+  }
+
+  boolean isAllowed(boolean allowCommuter, boolean allowNonCommuter, boolean commuter) {
+    //both flags are the same → all trains allowed
+    if (allowCommuter == allowNonCommuter) {
+      return true;
+    }
+
+    // only non-commuter allowed
+    if (!allowCommuter && allowNonCommuter) {
+      return !commuter;
+    }
+
+    // only commuter allowed
+    if (allowCommuter && !allowNonCommuter) {
+      return commuter;
+    }
+
+    // Should never happen, but default deny
+    return false;
   }
 
   boolean reserveRoute(Dispatcher dispatcher) {
