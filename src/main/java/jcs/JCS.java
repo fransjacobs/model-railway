@@ -250,7 +250,6 @@ public class JCS extends Thread {
     }
   }
 
-  
   //TODO
   private static void shutdown() {
 

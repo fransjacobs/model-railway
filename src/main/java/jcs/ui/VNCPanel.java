@@ -69,8 +69,11 @@ public class VNCPanel extends JPanel {
 
   private void initVnc() {
     try {
-      if (JCS.getJcsCommandStation() != null) {
-        if (!JCS.getJcsCommandStation().getCommandStationBean().isVirtual()) {
+      if (JCS.getJcsCommandStation() != null) {        
+        boolean virtual = "virtual".equals(JCS.getJcsCommandStation().getCommandStationBean().getId());       
+        virtual = virtual || JCS.getJcsCommandStation().getCommandStationBean().isVirtual();
+        
+        if (!virtual) {
           addDrawingSurface();
           //clipboardMonitor.start();
           initialiseVernacularClient();

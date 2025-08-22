@@ -124,7 +124,6 @@ public class JCSCommandStation {
     long timemax = now + 3000;
 
     executor.execute(() -> connect());
-
     boolean con = false;
     if (decoderController != null) {
       con = decoderController.isConnected();
@@ -448,7 +447,7 @@ public class JCSCommandStation {
   }
 
   public void changeLocomotiveDirection(Direction newDirection, LocomotiveBean locomotive) {
-    Logger.debug("Changing direction to " + newDirection + " for: " + locomotive.getName() + " id: " + locomotive.getId() + " velocity: "+ locomotive.getVelocity());
+    Logger.debug("Changing direction to " + newDirection + " for: " + locomotive.getName() + " id: " + locomotive.getId() + " velocity: " + locomotive.getVelocity());
 
     int address;
     if ("marklin.cs".equals(locomotive.getCommandStationId()) || "esu-ecos".equals(locomotive.getCommandStationId())) {
@@ -753,7 +752,7 @@ public class JCSCommandStation {
         }
 
         PersistenceFactory.getService().persist(ab);
-        
+
         for (AccessoryEventListener al : trackService.accessoryEventListeners) {
           al.onAccessoryChange(event);
         }
