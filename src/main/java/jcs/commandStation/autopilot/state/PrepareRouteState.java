@@ -128,8 +128,8 @@ class PrepareRouteState extends DispatcherState {
 
     //Found possible routes check on the destination for the sensors and permissions
     for (RouteBean route : routes) {
-      String DestinationTileId = route.getToTileId();
-      BlockBean destinationBlock = PersistenceFactory.getService().getBlockByTileId(DestinationTileId);
+      String destinationTileId = route.getToTileId();
+      BlockBean destinationBlock = PersistenceFactory.getService().getBlockByTileId(destinationTileId);
       //Check the sensors 
       boolean plusInActive = !destinationBlock.getPlusSensorBean().isActive();
       boolean minInActive = !destinationBlock.getMinSensorBean().isActive();
@@ -176,26 +176,6 @@ class PrepareRouteState extends DispatcherState {
     }
     dispatcher.setRouteBean(route);
     return route != null;
-  }
-
-  boolean isAllowed(boolean allowCommuter, boolean allowNonCommuter, boolean commuter) {
-    //both flags are the same → all trains allowed
-    if (allowCommuter == allowNonCommuter) {
-      return true;
-    }
-
-    // only non-commuter allowed
-    if (!allowCommuter && allowNonCommuter) {
-      return !commuter;
-    }
-
-    // only commuter allowed
-    if (allowCommuter && !allowNonCommuter) {
-      return commuter;
-    }
-
-    // Should never happen, but default deny
-    return false;
   }
 
   boolean reserveRoute(Dispatcher dispatcher) {
@@ -302,34 +282,4 @@ class PrepareRouteState extends DispatcherState {
       return false;
     }
   }
-
-  boolean turnoutsNotLocked(RouteBean route) {
-    List<RouteElementBean> turnouts = getTurnouts(route);
-
-    boolean switchesNotLocked = true;
-    for (RouteElementBean reb : turnouts) {
-      AccessoryValue av = reb.getAccessoryValue();
-      AccessoryBean turnout = reb.getTileBean().getAccessoryBean();
-      //check if the accessory is not set by an other reserved route
-      boolean locked = PersistenceFactory.getService().isAccessoryLocked(turnout.getId());
-      if (locked) {
-        Logger.debug("Turnout " + turnout.getName() + " [" + turnout.getAddress() + "] is locked!");
-        return false;
-      }
-    }
-    Logger.trace("There are " + turnouts.size() + " free turnouts in this route");
-    return switchesNotLocked;
-  }
-
-  private List<RouteElementBean> getTurnouts(RouteBean routeBean) {
-    List<RouteElementBean> rel = routeBean.getRouteElements();
-    List<RouteElementBean> turnouts = new ArrayList<>();
-    for (RouteElementBean reb : rel) {
-      if (reb.isTurnout()) {
-        turnouts.add(reb);
-      }
-    }
-    return turnouts;
-  }
-
 }

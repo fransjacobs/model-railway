@@ -15,6 +15,12 @@
  */
 package jcs.commandStation.autopilot.state;
 
+import java.util.ArrayList;
+import java.util.List;
+import jcs.entities.AccessoryBean;
+import jcs.entities.RouteBean;
+import jcs.entities.RouteElementBean;
+import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
 /**
@@ -24,7 +30,7 @@ import org.tinylog.Logger;
 abstract class DispatcherState {
 
   protected Dispatcher dispatcher;
-  
+
   protected DispatcherState() {
   }
 
@@ -46,4 +52,54 @@ abstract class DispatcherState {
       Logger.error(e);
     }
   }
+
+  protected boolean isAllowed(boolean allowCommuter, boolean allowNonCommuter, boolean commuter) {
+    //both flags are the same → all trains allowed
+    if (allowCommuter == allowNonCommuter) {
+      return true;
+    }
+
+    // only non-commuter allowed
+    if (!allowCommuter && allowNonCommuter) {
+      return !commuter;
+    }
+
+    // only commuter allowed
+    if (allowCommuter && !allowNonCommuter) {
+      return commuter;
+    }
+
+    // Should never happen, but default deny
+    return false;
+  }
+
+  protected boolean turnoutsNotLocked(RouteBean route) {
+    List<RouteElementBean> turnouts = getTurnouts(route);
+
+    boolean switchesNotLocked = true;
+    for (RouteElementBean reb : turnouts) {
+      AccessoryBean.AccessoryValue av = reb.getAccessoryValue();
+      AccessoryBean turnout = reb.getTileBean().getAccessoryBean();
+      //check if the accessory is not set by an other reserved nextRoute
+      boolean locked = PersistenceFactory.getService().isAccessoryLocked(turnout.getId());
+      if (locked) {
+        Logger.debug("Turnout " + turnout.getName() + " [" + turnout.getAddress() + "] is locked!");
+        return false;
+      }
+    }
+    Logger.trace("There are " + turnouts.size() + " free turnouts in this route");
+    return switchesNotLocked;
+  }
+
+  protected List<RouteElementBean> getTurnouts(RouteBean routeBean) {
+    List<RouteElementBean> rel = routeBean.getRouteElements();
+    List<RouteElementBean> turnouts = new ArrayList<>();
+    for (RouteElementBean reb : rel) {
+      if (reb.isTurnout()) {
+        turnouts.add(reb);
+      }
+    }
+    return turnouts;
+  }
+
 }

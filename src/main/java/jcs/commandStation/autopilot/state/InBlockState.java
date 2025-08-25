@@ -15,6 +15,7 @@
  */
 package jcs.commandStation.autopilot.state;
 
+import java.awt.Color;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.RouteBean;
@@ -30,10 +31,6 @@ class InBlockState extends DispatcherState {
   @Override
   DispatcherState execute(Dispatcher dispatcher) {
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
-
-    //Stop the locomotive
-    dispatcher.changeLocomotiveVelocity(locomotive, 0);
-    Logger.trace("Locomotive " + locomotive.getName() + " is stopped....");
 
     BlockBean destinationBlock = dispatcher.getDestinationBlock();
     BlockBean departureBlock = dispatcher.getDepartureBlock();
@@ -70,24 +67,72 @@ class InBlockState extends DispatcherState {
     Dispatcher.resetRoute(route);
     dispatcher.setRouteBean(null);
 
-    //Wait a short while...
-    if (alwaysStop) {
-      pause(250);
-    }
-
-    DispatcherState newState;
     if (dispatcher.isLocomotiveAutomodeOn()) {
-      if (alwaysStop) {
-        newState = new WaitState();
+      if (dispatcher.getNextRouteBean() != null) {
+
+        //Now setup the next route which is current rout from now on
+        //departureBlock = dispatcher.getDestinationBlock();
+        //destinationBlock = dispatcher.getNextDestinationBlock();
+        route = dispatcher.getNextRouteBean();
+        dispatcher.setRouteBean(route);
+        // New Departure and destination block should be set...
+        departureBlock = dispatcher.getDepartureBlock();
+        destinationBlock = dispatcher.getDestinationBlock();
+
+        //String destinationTileId = route.getToTileId();
+        String arrivalSuffix = route.getToSuffix();
+        String departureSuffix = route.getFromSuffix();
+
+        //Now that we have set the next route lets determine which sensors are playing a role.
+        //On the departure side we have the OccupiedSensor, ie the IN sensor when arriving.
+        //The exit sensor i.e the last sensor to leave the departure block.
+        Integer occupancySensorId, exitSensorId;
+        if ("+".equals(departureSuffix)) {
+          occupancySensorId = departureBlock.getMinSensorId();
+          exitSensorId = departureBlock.getPlusSensorId();
+        } else {
+          occupancySensorId = departureBlock.getPlusSensorId();
+          exitSensorId = departureBlock.getMinSensorId();
+        }
+        dispatcher.setOccupationSensorId(occupancySensorId);
+        dispatcher.setExitSensorId(exitSensorId);
+
+        //On the destination side we have the enterSensor end the IN sensor.
+        //From which side on the block is the train expected to arrive?
+        Integer enterSensorId, inSensorId;
+        if ("+".equals(arrivalSuffix)) {
+          enterSensorId = destinationBlock.getPlusSensorId();
+          inSensorId = destinationBlock.getMinSensorId();
+        } else {
+          enterSensorId = destinationBlock.getMinSensorId();
+          inSensorId = destinationBlock.getPlusSensorId();
+        }
+
+        dispatcher.setEnterSensorId(enterSensorId);
+        dispatcher.setInSensorId(inSensorId);
+
+        Logger.trace("Departure: " + departureBlock.getId() + " Occupancy Sensor: " + occupancySensorId + " Exit Sensor: " + exitSensorId);
+        Logger.trace("Destination: " + destinationBlock.getId() + " Enter Sensor: " + enterSensorId + " In Sensor: " + inSensorId);
+
+        PersistenceFactory.getService().persist(departureBlock);
+        PersistenceFactory.getService().persist(destinationBlock);
+
+        dispatcher.showRoute(route, Color.green);
+
+        //Clear the next routes
+        dispatcher.setNextRouteBean(null);
+
+        return new StartState();
       } else {
-        //Do not wait if possible
-        newState = new PrepareRouteState();
+        if (alwaysStop) {
+          return new WaitState();
+        } else {
+          return new PrepareRouteState();
+        }
       }
     } else {
-      newState = new IdleState();
+      return new IdleState();
     }
-
-    return newState;
   }
 
 }
