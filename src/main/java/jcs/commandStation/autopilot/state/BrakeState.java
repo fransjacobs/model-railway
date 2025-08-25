@@ -15,6 +15,7 @@
  */
 package jcs.commandStation.autopilot.state;
 
+import java.awt.Color;
 import jcs.JCS;
 import jcs.commandStation.autopilot.AutoPilot;
 import jcs.commandStation.autopilot.ExpectedSensorEventHandler;
@@ -22,6 +23,8 @@ import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
+import jcs.entities.RouteBean;
+import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
 class BrakeState extends DispatcherState implements SensorEventListener {
@@ -33,11 +36,9 @@ class BrakeState extends DispatcherState implements SensorEventListener {
   @Override
   DispatcherState execute(Dispatcher dispatcher) {
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
-
-    //BlockBean departureBlock = dispatcher.getDepartureBlock();
+    BlockBean departureBlock = dispatcher.getDepartureBlock();
     BlockBean destinationBlock = dispatcher.getDestinationBlock();
-    //RouteBean route = dispatcher.getRouteBean();
-
+    RouteBean route = dispatcher.getRouteBean();
     Logger.trace("Locomotive " + locomotive.getName() + " has entered destination " + destinationBlock.getDescription() + " and prepares to stop...");
 
     inSensorId = dispatcher.getInSensorId();
@@ -66,31 +67,29 @@ class BrakeState extends DispatcherState implements SensorEventListener {
 
     dispatcher.changeLocomotiveVelocity(locomotive, velocity);
 
-//    //Change Block statuses 
-//    departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
-//    destinationBlock.setBlockState(BlockBean.BlockState.INBOUND);
-//
-//    PersistenceFactory.getService().persist(departureBlock);
-//    PersistenceFactory.getService().persist(destinationBlock);
-//
-//    dispatcher.showBlockState(departureBlock);
-//    dispatcher.showRoute(route, Color.magenta);
-//    dispatcher.showBlockState(destinationBlock);
+    //Change Block statuses 
+    departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
+    destinationBlock.setBlockState(BlockBean.BlockState.INBOUND);
+
+    PersistenceFactory.getService().persist(departureBlock);
+    PersistenceFactory.getService().persist(destinationBlock);
+
+    dispatcher.showBlockState(departureBlock);
+    dispatcher.showRoute(route, Color.magenta);
+    dispatcher.showBlockState(destinationBlock);
     //Wait until the in sensor is hit by the locomotive
     //TODO: Timeout detection in case the locomotive has stopped....
     if (canAdvanceToNextState) {
-      DispatcherState newState = new InBlockState();
       //Remove handler as the state will now change
       JCS.getJcsCommandStation().removeSensorEventListener(this);
-
-      return newState;
+      return new InBlockState();
     } else {
       if ("true".equals(System.getProperty("state.machine.stepTest", "false"))) {
         Logger.debug("StateMachine StepTest is enabled. Dispatcher: " + dispatcher.getName() + " State: " + dispatcher.getStateName());
       } else {
         try {
           synchronized (this) {
-            //TODO: the wait time are very long to detect errors make then shorter....
+            //TODO: the wait times are very long to detect errors make then shorter....
             wait(10000);
           }
         } catch (InterruptedException ex) {

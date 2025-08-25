@@ -59,13 +59,29 @@ class PrepareNextRouteState extends DispatcherState {
       foundNextRoute = false;
     }
 
-    DispatcherState newState;
-    if (foundNextRoute) {
-      newState = new ContinueState();
+    if (dispatcher.isLocomotiveAutomodeOn()) {
+      if (foundNextRoute) {
+        return new ContinueState();
+      } else {
+        return new BrakeState();
+      }
     } else {
-      newState = new BrakeState();
+      //Rollback changes
+      RouteBean nextRoute = dispatcher.getNextRouteBean();
+      if (nextRoute != null) {
+        nextRoute.setLocked(false);
+        String nextDestinationTileId = nextRoute.getToTileId();
+        BlockBean nextDestinationBlock = PersistenceFactory.getService().getBlockByTileId(nextDestinationTileId);
+        nextDestinationBlock.setBlockState(BlockBean.BlockState.FREE);
+        nextDestinationBlock.setArrivalSuffix(null);
+        nextDestinationBlock.setLocomotive(null);
+        PersistenceFactory.getService().persist(nextRoute);
+        PersistenceFactory.getService().persist(nextDestinationBlock);
+        dispatcher.showBlockState(nextDestinationBlock);
+        Dispatcher.resetRoute(nextRoute);
+      }
+      return new BrakeState();
     }
-    return newState;
   }
 
   boolean searchNextRoute(Dispatcher dispatcher) {

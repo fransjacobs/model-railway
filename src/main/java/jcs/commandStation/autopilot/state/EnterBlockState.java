@@ -31,10 +31,8 @@ class EnterBlockState extends DispatcherState {
     BlockBean departureBlock = dispatcher.getDepartureBlock();
     BlockBean destinationBlock = dispatcher.getDestinationBlock();
     RouteBean route = dispatcher.getRouteBean();
-
-    Logger.trace("Locomotive " + locomotive.getName() + " has entered destination " + destinationBlock.getDescription() + "...");
-
     boolean startBraking = destinationBlock.isAlwaysStop();
+    Logger.trace("Locomotive " + locomotive.getName() + " has entered destination " + destinationBlock.getDescription() + " Must stop: " + startBraking);
 
     //Change Block statuses 
     departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
@@ -47,11 +45,15 @@ class EnterBlockState extends DispatcherState {
     dispatcher.showRoute(route, Color.magenta);
     dispatcher.showBlockState(destinationBlock);
 
-    if (startBraking) {
-      return new BrakeState();
+    if (dispatcher.isLocomotiveAutomodeOn()) {
+      if (startBraking) {
+        return new BrakeState();
+      } else {
+        //Lets check wheter there is a next available route to continue....
+        return new PrepareNextRouteState();
+      }
     } else {
-      //Lets check wheter there is a next available route to continue....
-      return new PrepareNextRouteState();
+      return new BrakeState();
     }
   }
 
