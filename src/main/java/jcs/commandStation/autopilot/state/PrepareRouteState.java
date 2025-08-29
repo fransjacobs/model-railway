@@ -99,8 +99,8 @@ class PrepareRouteState extends DispatcherState {
 
     boolean commuter = locomotive.isCommuter();
 
-    //No routes found or possible. When the Locomotive is a commuter train it can reverse direction.
-    //Lets try that...
+    //No routes found or possible.
+    //When the Locomotive is a commuter train it can reverse direction. Lets try that...
     if (routes.isEmpty() && commuter) {
       Direction oldDirection = logicalDirection;
       //Direction newDirection = locomotive.toggleDispatcherDirection();
@@ -109,10 +109,7 @@ class PrepareRouteState extends DispatcherState {
 
       swapLocomotiveDirection = true;
       //Do NOT persist the direction yet, just test....
-      //locomotive.setDispatcherDirection(newDirection);
       departureBlock.setLogicalDirection(newDirection.getDirection());
-      //blockBean.setLocomotive(locomotive);
-
       //Now flip the departure direction
       if ("-".equals(departureSuffix)) {
         departureSuffix = "+";
@@ -170,8 +167,6 @@ class PrepareRouteState extends DispatcherState {
         Direction oldDirection = LocomotiveBean.toggle(Direction.get(departureBlock.getLogicalDirection()));
         Logger.trace("Rollback Locomotive reverse to " + oldDirection + "...");
         departureBlock.setLogicalDirection(oldDirection.getDirection());
-        //Direction oldDirection = locomotive.toggleDispatcherDirection();
-        //locomotive.setDispatcherDirection(oldDirection);
       }
     }
     dispatcher.setRouteBean(route);
@@ -227,9 +222,8 @@ class PrepareRouteState extends DispatcherState {
       PersistenceFactory.getService().persist(departureBlock);
       PersistenceFactory.getService().persist(destinationBlock);
 
-      //Now that we have reserved the route lets determine which sensors
-      //Are playing a role.
-      //On the departure side we have the OccupiedSensor, ie the IN sensor when arriving.
+      //Now that we have reserved the route lets determine which sensors are playing a role.
+      //On the departure side we have the OccupiedSensor, i.e. the IN sensor when arriving.
       //The exit sensor i.e the last sensor to leave the departure block.
       Integer occupancySensorId, exitSensorId;
       if ("+".equals(departureSuffix)) {
@@ -263,7 +257,6 @@ class PrepareRouteState extends DispatcherState {
       Logger.trace(route + " Locked");
 
       if (swapLocomotiveDirection) {
-        //Direction newDir = locomotive.getDispatcherDirection();
         Direction newDir = Direction.get(departureBlock.getLogicalDirection());
         Logger.trace("Changing Direction to " + newDir);
         dispatcher.changeLocomotiveDirection(locomotive, newDir);

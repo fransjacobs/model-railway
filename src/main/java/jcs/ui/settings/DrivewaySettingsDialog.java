@@ -23,14 +23,14 @@ import org.tinylog.Logger;
  *
  * @author frans
  */
-public class RoutesDialog extends javax.swing.JDialog {
+public class DrivewaySettingsDialog extends javax.swing.JDialog {
 
-  private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(RoutesDialog.class.getName());
+  private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(DrivewaySettingsDialog.class.getName());
 
   /**
    * Creates new form RoutesDialog
    */
-  public RoutesDialog(java.awt.Frame parent, boolean modal) {
+  public DrivewaySettingsDialog(java.awt.Frame parent, boolean modal) {
     super(parent, modal);
     initComponents();
   }
@@ -42,12 +42,11 @@ public class RoutesDialog extends javax.swing.JDialog {
   // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
   private void initComponents() {
 
-    routesPanel1 = new jcs.ui.settings.RoutesPanel();
+    drivewaySettingsPanel = new jcs.ui.settings.DrivewaySettingsPanel();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-    setTitle("Routes");
-    setPreferredSize(new java.awt.Dimension(1000, 600));
-    getContentPane().add(routesPanel1, java.awt.BorderLayout.CENTER);
+    setTitle("Driveways");
+    getContentPane().add(drivewaySettingsPanel, java.awt.BorderLayout.CENTER);
 
     pack();
   }// </editor-fold>//GEN-END:initComponents
@@ -69,7 +68,7 @@ public class RoutesDialog extends javax.swing.JDialog {
     java.awt.EventQueue.invokeLater(new Runnable() {
       @Override
       public void run() {
-        RoutesDialog dialog = new RoutesDialog(new javax.swing.JFrame(), true);
+        DrivewaySettingsDialog dialog = new DrivewaySettingsDialog(new javax.swing.JFrame(), true);
         dialog.addWindowListener(new java.awt.event.WindowAdapter() {
           @Override
           public void windowClosing(java.awt.event.WindowEvent e) {
@@ -85,6 +84,6 @@ public class RoutesDialog extends javax.swing.JDialog {
   }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
-  private jcs.ui.settings.RoutesPanel routesPanel1;
+  private jcs.ui.settings.DrivewaySettingsPanel drivewaySettingsPanel;
   // End of variables declaration//GEN-END:variables
 }

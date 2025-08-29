@@ -190,8 +190,10 @@ public class BlockControlDialog extends javax.swing.JDialog {
     permissionsPanel = new javax.swing.JPanel();
     permissionPropPanel = new javax.swing.JPanel();
     allowNonCommutersCB = new javax.swing.JCheckBox();
+    allowNonCommutersLbl = new javax.swing.JLabel();
     filler4 = new javax.swing.Box.Filler(new java.awt.Dimension(20, 0), new java.awt.Dimension(60, 0), new java.awt.Dimension(20, 32767));
     allowCommutersCB = new javax.swing.JCheckBox();
+    allowCommutersLbl = new javax.swing.JLabel();
     futurePermissionPanel1 = new javax.swing.JPanel();
     futurePermissionPanel2 = new javax.swing.JPanel();
     bottomPanel = new javax.swing.JPanel();
@@ -415,24 +417,30 @@ public class BlockControlDialog extends javax.swing.JDialog {
 
     allowNonCommutersCB.setSelected(true);
     allowNonCommutersCB.setToolTipText("Allow Non Commuter Trains Only");
-    allowNonCommutersCB.setLabel("Allow Non Commuters");
     allowNonCommutersCB.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         allowNonCommutersCBActionPerformed(evt);
       }
     });
     permissionPropPanel.add(allowNonCommutersCB);
+
+    allowNonCommutersLbl.setLabelFor(allowNonCommutersCB);
+    allowNonCommutersLbl.setText("Allow Non Commuters");
+    permissionPropPanel.add(allowNonCommutersLbl);
     permissionPropPanel.add(filler4);
 
     allowCommutersCB.setSelected(true);
     allowCommutersCB.setToolTipText("Allow Commutor Trains Only");
-    allowCommutersCB.setLabel("Allow Commuters");
     allowCommutersCB.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         allowCommutersCBActionPerformed(evt);
       }
     });
     permissionPropPanel.add(allowCommutersCB);
+
+    allowCommutersLbl.setLabelFor(allowCommutersCB);
+    allowCommutersLbl.setText("Allow Commuters");
+    permissionPropPanel.add(allowCommutersLbl);
 
     permissionsPanel.add(permissionPropPanel);
 
@@ -595,7 +603,9 @@ public class BlockControlDialog extends javax.swing.JDialog {
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   javax.swing.JCheckBox allowCommutersCB;
+  javax.swing.JLabel allowCommutersLbl;
   javax.swing.JCheckBox allowNonCommutersCB;
+  javax.swing.JLabel allowNonCommutersLbl;
   javax.swing.JCheckBox alwaysStopCB;
   javax.swing.JPanel arrivalPanel;
   javax.swing.JRadioButton backwardsRB;

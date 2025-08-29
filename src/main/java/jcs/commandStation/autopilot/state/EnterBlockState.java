@@ -49,7 +49,7 @@ class EnterBlockState extends DispatcherState {
       if (startBraking) {
         return new BrakeState();
       } else {
-        //Lets check wheter there is a next available route to continue....
+        //Lets check whether there is a next available route to continue....
         return new PrepareNextRouteState();
       }
     } else {

@@ -89,21 +89,21 @@ import org.tinylog.Logger;
 public class CommandStationPanel extends JPanel implements TreeSelectionListener {
 
   private static final long serialVersionUID = -6257688549267578845L;
-  
+
   private ComboBoxModel<CommandStationBean> commandStationCBM;
   private ComboBoxModel<CommandStationBean> feedbackCBM;
   private ComboBoxModel<String> serialPortCBM;
   private ComboBoxModel<String> fbpSerialPortCBM;
   private CommandStationBean selectedCommandStation;
   private CommandStationBean selectedFeedbackProvider;
-  
+
   private final ExecutorService executor;
-  
+
   private CommandStationBean emptyCS;
   private CommandStationBean emptyFB;
-  
+
   private DecoderController controller;
-  
+
   public CommandStationPanel() {
     initComponents();
     executor = Executors.newSingleThreadExecutor();
@@ -111,23 +111,23 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
       initModels(null);
     }
   }
-  
+
   private void initModels(CommandStationBean selected) {
     if (selected == null) {
       selectedCommandStation = PersistenceFactory.getService().getDefaultCommandStation();
     } else {
       selectedCommandStation = selected;
     }
-    
+
     if (selectedCommandStation != null && !selectedCommandStation.isFeedbackSupport()) {
       selectedFeedbackProvider = PersistenceFactory.getService().getEnabledFeedbackProvider();
     }
-    
+
     List<CommandStationBean> allCommandStations = PersistenceFactory.getService().getCommandStations();
-    
+
     List<CommandStationBean> commandStations = new ArrayList<>();
     List<CommandStationBean> feedbackProviders = new ArrayList<>();
-    
+
     for (CommandStationBean csb : allCommandStations) {
       if (csb.isDecoderControlSupport()) {
         commandStations.add(csb);
@@ -135,47 +135,47 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
         feedbackProviders.add(csb);
       }
     }
-    
+
     emptyCS = new CommandStationBean();
     emptyCS.setDecoderControlSupport(true);
     emptyFB = new CommandStationBean();
     emptyFB.setFeedbackSupport(true);
-    
+
     commandStations.add(emptyCS);
     feedbackProviders.add(emptyFB);
-    
+
     if (selectedCommandStation == null) {
       selectedCommandStation = emptyCS;
     }
-    
+
     if (selectedFeedbackProvider == null) {
       selectedFeedbackProvider = emptyFB;
     }
-    
+
     CommandStationBean[] csba = new CommandStationBean[commandStations.size()];
     CommandStationBean[] fbpa = new CommandStationBean[feedbackProviders.size()];
     commandStations.toArray(csba);
     feedbackProviders.toArray(fbpa);
-    
+
     commandStationCBM = new DefaultComboBoxModel<>(csba);
     commandStationCBM.setSelectedItem(selectedCommandStation);
     commandStationCB.setModel(commandStationCBM);
-    
+
     feedbackCBM = new DefaultComboBoxModel<>(fbpa);
     feedbackCBM.setSelectedItem(selectedFeedbackProvider);
     feedbackCB.setModel(feedbackCBM);
-    
+
     SerialPort comPorts[] = SerialPort.getCommPorts();
     String[] ports = new String[comPorts.length];
     for (int i = 0; i < comPorts.length; i++) {
       ports[i] = comPorts[i].getSystemPortName();
     }
-    
+
     serialPortCBM = new DefaultComboBoxModel<>(ports);
     fbpSerialPortCBM = new DefaultComboBoxModel<>(ports);
     serialCB.setModel(serialPortCBM);
     fbpSerialCB.setModel(fbpSerialPortCBM);
-    
+
     if (CommandStationBean.ConnectionType.SERIAL == selectedCommandStation.getConnectionType()) {
       String port = selectedCommandStation.getSerialPort();
       serialCB.setSelectedItem(port);
@@ -183,12 +183,12 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
     } else {
       networkRB.setSelected(true);
     }
-    
+
     if (selectedFeedbackProvider.getConnectionType() != null && CommandStationBean.ConnectionType.SERIAL == selectedFeedbackProvider.getConnectionType()) {
       String port = selectedFeedbackProvider.getSerialPort();
       fbpSerialCB.setSelectedItem(port);
     }
-    
+
     setComponents();
     if (!selectedCommandStation.isVirtual() && CommandStationBean.ConnectionType.NETWORK == selectedCommandStation.getConnectionType() && selectedCommandStation.getIpAddress() != null && selectedCommandStation.getIpAddress().length() > 8) {
       executor.execute(() -> checkConnection(selectedCommandStation));
@@ -602,27 +602,27 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
     controllerLbl.setVisible(selectedCommandStation.isDecoderControlSupport());
     accessoryControllerLbl.setVisible(selectedCommandStation.isAccessoryControlSupport());
     feedbackProviderLbl.setVisible(selectedCommandStation.isFeedbackSupport());
-    
+
     virtualCB.setSelected(selectedCommandStation.isVirtual());
-    
+
     discoverBtn.setVisible(selectedCommandStation.isIpAutoConfiguration());
     ipTF.setText(selectedCommandStation.getIpAddress());
-    
+
     serialCB.setVisible(CommandStationBean.ConnectionType.SERIAL == selectedCommandStation.getConnectionType());
     ipTF.setVisible(CommandStationBean.ConnectionType.NETWORK == selectedCommandStation.getConnectionType());
-    
+
     networkRB.setVisible(selectedCommandStation.getSupportedConnectionTypes().size() > 1);
     serialRB.setVisible(selectedCommandStation.getSupportedConnectionTypes().size() > 1);
     networkRB.setSelected(CommandStationBean.ConnectionType.NETWORK == selectedCommandStation.getConnectionType());
-    
+
     if (serialCB.isVisible()) {
       ipOrPortLbl.setText("Serial Port:");
     } else {
       ipOrPortLbl.setText("ip Address:");
     }
-    
+
     checkBtn.setVisible(CommandStationBean.ConnectionType.NETWORK == selectedCommandStation.getConnectionType() && selectedCommandStation.getIpAddress() != null && selectedCommandStation.getIpAddress().length() > 8);
-    
+
     if (selectedCommandStation.getIpAddress() == null || selectedCommandStation.getIpAddress().length() > 8) {
       ipTF.setBackground(new java.awt.Color(255, 255, 255));
       connectBtn.setEnabled(true);
@@ -634,45 +634,45 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
     feedbackCB.setVisible(!selectedCommandStation.isFeedbackSupport());
     feedbackCB.setEnabled(!selectedCommandStation.isFeedbackSupport());
     feedbackLbl.setVisible(!selectedCommandStation.isFeedbackSupport());
-    
+
     secondfbpLbl.setVisible(!selectedCommandStation.isFeedbackSupport() && selectedFeedbackProvider.isFeedbackSupport() && selectedFeedbackProvider.getId() != null);
-    
+
     fbpSerialCB.setVisible(!selectedCommandStation.isFeedbackSupport());
     fbpSerialCB.setEnabled(!selectedCommandStation.isFeedbackSupport());
     fbpSerialLbl.setVisible(!selectedCommandStation.isFeedbackSupport());
-    
+
     if (controller != null && controller.isConnected()) {
       InfoBean ib = controller.getCommandStationInfo();
       connectedToLbl.setText("Connected to : " + ib.getProductName());
       connectedToLbl.setVisible(true);
-      
+
       serialLbl.setText("Serial: " + ib.getSerialNumber());
       serialLbl.setVisible(true);
-      
+
       if (ib.getSoftwareVersion() != null) {
         swVersionLbl.setText("Software version: " + ib.getSoftwareVersion());
         swVersionLbl.setVisible(true);
       } else {
         swVersionLbl.setVisible(false);
       }
-      
+
       if (ib.getHardwareVersion() != null) {
         hwVersionLbl.setText(("Hardware version: " + ib.getHardwareVersion()));
         hwVersionLbl.setVisible(true);
       } else {
         hwVersionLbl.setVisible(false);
       }
-      
+
       connectBtn.setText("Disconnect");
 
       //feedback settings
       List<FeedbackModule> modules = ((FeedbackController) controller).getFeedbackModules();
-      
+
       mainLbl.setVisible(true);
       mainSpinner.setVisible(true);
-      
+
       updateBtn.setVisible(true);
-      
+
       for (FeedbackModule fbm : modules) {
         Integer busNr = fbm.getBusNumber();
         if (busNr == null) {
@@ -694,7 +694,7 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
           }
         }
       }
-      
+
       if (selectedCommandStation.getId().equals(CommandStationBean.MARKLIN_CS)) {
         bus1Lbl.setVisible(true);
         bus1Spinner.setVisible(true);
@@ -734,7 +734,7 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
       //Feedback modules
       mainLbl.setVisible(false);
       mainSpinner.setVisible(false);
-      
+
       bus1Lbl.setVisible(false);
       bus1Spinner.setVisible(false);
       bus2Lbl.setVisible(false);
@@ -743,10 +743,10 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
       bus3Spinner.setVisible(false);
       updateBtn.setVisible(false);
     }
-    
+
     buildTree();
   }
-  
+
   private void buildTree() {
     Logger.trace("build tree");
     String rootDesc;
@@ -755,29 +755,29 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
     } else {
       rootDesc = "";
     }
-    
+
     DefaultMutableTreeNode root = new DefaultMutableTreeNode(rootDesc);
     createNodes(root);
-    
+
     DefaultTreeModel model = new DefaultTreeModel(root);
-    
+
     devicesTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
     devicesTree.addTreeSelectionListener(this);
-    
+
     devicesTree.setModel(model);
   }
-  
+
   private void createNodes(DefaultMutableTreeNode root) {
     Logger.trace("Create feedback nodes");
     if (controller == null) {
       return;
     }
-    
+
     List<Device> devices = controller.getDevices();
-    
+
     for (Device d : devices) {
       DefaultMutableTreeNode deviceNode = new DefaultMutableTreeNode(d.getId() + " " + d.getName());
-      
+
       if (d.isFeedback()) {
         List<FeedbackModule> modules = ((FeedbackController) controller).getFeedbackModules();
         Collections.sort(modules);
@@ -797,50 +797,50 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
           }
           sb.append(" module: ");
           sb.append(fm.getModuleNumber());
-          
+
           DefaultMutableTreeNode moduleNode = new DefaultMutableTreeNode(sb);
           Logger.trace("M " + sb.toString());
-          
+
           deviceNode.add(moduleNode);
         }
-        
+
       }
-      
+
       root.add(deviceNode);
     }
-    
+
   }
-  
+
   //TODO
   public void valueChanged(TreeSelectionEvent e) {
     DefaultMutableTreeNode node = (DefaultMutableTreeNode) devicesTree.getLastSelectedPathComponent();
-    
+
     if (node == null) {
       return;
     }
-    
+
     Object nodeInfo = node.getUserObject();
-    
+
     if (node.isLeaf()) {
-      
+
     } else {
     }
   }
-  
+
   private void changeDefaultCommandStation(final CommandStationBean newDefault) {
     PersistenceFactory.getService().changeDefaultCommandStation(newDefault);
     java.awt.EventQueue.invokeLater(() -> {
       setComponents();
     });
   }
-  
+
   private void persistCommandStation(final CommandStationBean commandStation) {
     PersistenceFactory.getService().persist(commandStation);
     java.awt.EventQueue.invokeLater(() -> {
       setComponents();
     });
   }
-  
+
 
   private void commandStationCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_commandStationCBActionPerformed
     CommandStationBean newSelectedCommandStation = (CommandStationBean) commandStationCBM.getSelectedItem();
@@ -860,12 +860,12 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
     } else {
       selectedCommandStation = newSelectedCommandStation;
     }
-    
+
     selectedCommandStation = (CommandStationBean) commandStationCBM.getSelectedItem();
     selectedCommandStation.setEnabled(true);
     selectedCommandStation.setDefault(true);
     executor.execute(() -> changeDefaultCommandStation(selectedCommandStation));
-    
+
     Logger.trace("Selected CS: " + selectedCommandStation.getDescription());
   }//GEN-LAST:event_commandStationCBActionPerformed
 
@@ -953,7 +953,7 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
 
   private void connectBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_connectBtnActionPerformed
     Logger.trace("Try to connect to " + selectedCommandStation.getDescription());
-    
+
     if ("Connect".equals(connectBtn.getText())) {
       executor.execute(() -> connect(selectedCommandStation));
     } else {
@@ -967,10 +967,10 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
       updateSensors();
     });
   }//GEN-LAST:event_updateBtnActionPerformed
-  
+
   private void updateSensors() {
     List<FeedbackModule> modules = ((FeedbackController) controller).getFeedbackModules();
-    
+
     Logger.trace("There are " + modules.size() + " feedback modules");
     //Catch errors if any...
     try {
@@ -984,16 +984,16 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
     } catch (Exception e) {
       Logger.error("Error updating sensors! " + e);
     }
-    
+
     java.awt.EventQueue.invokeLater(() -> {
       setComponents();
       updateBtn.setEnabled(true);
     });
   }
-  
+
   private List<FeedbackModule> getFeedbackModules(String commandStationId) {
     List<SensorBean> sensors = PersistenceFactory.getService().getSensorsByCommandStationId(commandStationId);
-    
+
     List<FeedbackModule> modules = new ArrayList<>();
     if (!sensors.isEmpty()) {
       Integer id = -1;
@@ -1007,52 +1007,55 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
         }
       }
     }
-    
+
     return modules;
   }
-  
+
   private InetAddress discover(final CommandStationBean commandStation) {
     final JOptionPane optionPane = new JOptionPane("Try to discovering a " + commandStation.getDescription(),
             JOptionPane.INFORMATION_MESSAGE,
             JOptionPane.DEFAULT_OPTION);
-    
+
     final JDialog discoverDialog = new JDialog((JDialog) null, "Discovering...");
     discoverDialog.setContentPane(optionPane);
     discoverDialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
     discoverDialog.pack();
     discoverDialog.setLocationRelativeTo(null);
     discoverDialog.setVisible(true);
-    
+
     InetAddress inetAddress = null;
     if (MARKLIN_CS.equals(commandStation.getId())) {
       inetAddress = CSConnectionFactory.discoverCs();
     } else if (ESU_ECOS.equals(commandStation.getId())) {
       inetAddress = EcosConnectionFactory.discoverEcos();
     }
-    
+
     if (inetAddress != null) {
       Logger.trace("Discovered host " + inetAddress.getHostAddress() + " for " + commandStation.getDescription());
       commandStation.setIpAddress(inetAddress.getHostAddress());
       persistCommandStation(commandStation);
     }
-    
+
     java.awt.EventQueue.invokeLater(() -> {
       discoverDialog.setVisible(false);
       discoverDialog.dispose();
     });
-    
+
     return inetAddress;
   }
-  
+
   private JFrame getParentFrame() {
-    JFrame frame = (JFrame) SwingUtilities.getRoot(this);
-    return frame;
+    if (SwingUtilities.getRoot(this) instanceof JFrame frame) {
+      return frame;
+    } else {
+      return null;
+    }
   }
-  
+
   private void checkConnection(final CommandStationBean commandStation) {
     String ip = commandStation.getIpAddress();
     boolean canConnect = Ping.IsReachable(ip);
-    
+
     java.awt.EventQueue.invokeLater(() -> {
       if (canConnect) {
         ipTF.setBackground(new java.awt.Color(204, 255, 204));
@@ -1070,30 +1073,30 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
       }
     });
   }
-  
+
   private void disconnect() {
     if (controller != null) {
       controller.disconnect();
       controller = null;
-      
+
       java.awt.EventQueue.invokeLater(() -> {
         setComponents();
       });
     }
   }
-  
+
   private void connect(final CommandStationBean commandStation) {
     final JOptionPane optionPane = new JOptionPane("Try to connect to " + commandStation.getDescription(),
             JOptionPane.INFORMATION_MESSAGE,
             JOptionPane.DEFAULT_OPTION);
-    
+
     final JDialog connectingDialog = new JDialog((JDialog) null, "Connecting...");
     connectingDialog.setContentPane(optionPane);
     connectingDialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
     connectingDialog.pack();
     connectingDialog.setLocationRelativeTo(null);
     connectingDialog.setVisible(true);
-    
+
     if (null == commandStation.getId()) {
       Logger.trace("Unknown Controller!");
     } else {
@@ -1110,31 +1113,31 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
           Logger.trace("Unknown Controller!");
       }
     }
-    
+
     if (controller == null) {
       return;
     }
-    
+
     controller.connect();
     if (controller.isConnected()) {
       //Obtain some info from the controller
       Logger.trace("Connected to " + controller.getCommandStationInfo());
-      
+
       java.awt.EventQueue.invokeLater(() -> {
         setComponents();
       });
     }
-    
+
     java.awt.EventQueue.invokeLater(() -> {
       connectingDialog.setVisible(false);
       connectingDialog.dispose();
     });
   }
-  
+
   @Override
   public void setVisible(boolean b) {
     super.setVisible(b);
-    
+
     if (!b && this.controller != null) {
       if (controller.isConnected()) {
         controller.disconnect();

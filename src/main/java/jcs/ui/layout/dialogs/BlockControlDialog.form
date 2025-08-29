@@ -1082,11 +1082,18 @@
                   <Properties>
                     <Property name="selected" type="boolean" value="true"/>
                     <Property name="toolTipText" type="java.lang.String" value="Allow Non Commuter Trains Only"/>
-                    <Property name="label" type="java.lang.String" value="Allow Non Commuters"/>
                   </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="allowNonCommutersCBActionPerformed"/>
                   </Events>
+                </Component>
+                <Component class="javax.swing.JLabel" name="allowNonCommutersLbl">
+                  <Properties>
+                    <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                      <ComponentRef name="allowNonCommutersCB"/>
+                    </Property>
+                    <Property name="text" type="java.lang.String" value="Allow Non Commuters"/>
+                  </Properties>
                 </Component>
                 <Component class="javax.swing.Box$Filler" name="filler4">
                   <Properties>
@@ -1108,11 +1115,18 @@
                   <Properties>
                     <Property name="selected" type="boolean" value="true"/>
                     <Property name="toolTipText" type="java.lang.String" value="Allow Commutor Trains Only"/>
-                    <Property name="label" type="java.lang.String" value="Allow Commuters"/>
                   </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="allowCommutersCBActionPerformed"/>
                   </Events>
+                </Component>
+                <Component class="javax.swing.JLabel" name="allowCommutersLbl">
+                  <Properties>
+                    <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                      <ComponentRef name="allowCommutersCB"/>
+                    </Property>
+                    <Property name="text" type="java.lang.String" value="Allow Commuters"/>
+                  </Properties>
                 </Component>
               </SubComponents>
               <LayoutCode>
@@ -1190,7 +1204,23 @@
                     <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
                   </StatementProvider>
                   <Parameters>
-                    <CodeExpression id="52_filler4">
+                    <CodeExpression id="52_allowNonCommutersLbl">
+                      <CodeVariable name="allowNonCommutersLbl" type="8192" declaredType="javax.swing.JLabel"/>
+                      <ExpressionOrigin>
+                        <ExpressionProvider type="ComponentRef">
+                          <ComponentRef name="allowNonCommutersLbl"/>
+                        </ExpressionProvider>
+                      </ExpressionOrigin>
+                    </CodeExpression>
+                  </Parameters>
+                </CodeStatement>
+                <CodeStatement>
+                  <CodeExpression id="50_permissionPropPanel"/>
+                  <StatementProvider type="CodeMethod">
+                    <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
+                  </StatementProvider>
+                  <Parameters>
+                    <CodeExpression id="53_filler4">
                       <CodeVariable name="filler4" type="8192" declaredType="javax.swing.Box$Filler"/>
                       <ExpressionOrigin>
                         <ExpressionProvider type="ComponentRef">
@@ -1206,11 +1236,27 @@
                     <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
                   </StatementProvider>
                   <Parameters>
-                    <CodeExpression id="53_allowCommutersCB">
+                    <CodeExpression id="54_allowCommutersCB">
                       <CodeVariable name="allowCommutersCB" type="8192" declaredType="javax.swing.JCheckBox"/>
                       <ExpressionOrigin>
                         <ExpressionProvider type="ComponentRef">
                           <ComponentRef name="allowCommutersCB"/>
+                        </ExpressionProvider>
+                      </ExpressionOrigin>
+                    </CodeExpression>
+                  </Parameters>
+                </CodeStatement>
+                <CodeStatement>
+                  <CodeExpression id="50_permissionPropPanel"/>
+                  <StatementProvider type="CodeMethod">
+                    <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
+                  </StatementProvider>
+                  <Parameters>
+                    <CodeExpression id="55_allowCommutersLbl">
+                      <CodeVariable name="allowCommutersLbl" type="8192" declaredType="javax.swing.JLabel"/>
+                      <ExpressionOrigin>
+                        <ExpressionProvider type="ComponentRef">
+                          <ComponentRef name="allowCommutersLbl"/>
                         </ExpressionProvider>
                       </ExpressionOrigin>
                     </CodeExpression>
@@ -1221,14 +1267,14 @@
             <Container class="javax.swing.JPanel" name="futurePermissionPanel1">
               <LayoutCode>
                 <CodeStatement>
-                  <CodeExpression id="54_flowLayout7">
+                  <CodeExpression id="56_flowLayout7">
                     <CodeVariable name="flowLayout7" type="4096" declaredType="java.awt.FlowLayout"/>
                     <ExpressionOrigin>
                       <ExpressionProvider type="CodeConstructor">
                         <CodeConstructor class="java.awt.FlowLayout" parameterTypes="int"/>
                       </ExpressionProvider>
                       <Parameters>
-                        <CodeExpression id="55">
+                        <CodeExpression id="57">
                           <ExpressionOrigin>
                             <Value type="int" value="0"/>
                           </ExpressionOrigin>
@@ -1237,19 +1283,19 @@
                     </ExpressionOrigin>
                   </CodeExpression>
                   <StatementProvider type="CodeExpression">
-                    <CodeExpression id="54_flowLayout7"/>
+                    <CodeExpression id="56_flowLayout7"/>
                   </StatementProvider>
                   <Parameters>
-                    <CodeExpression id="55"/>
+                    <CodeExpression id="57"/>
                   </Parameters>
                 </CodeStatement>
                 <CodeStatement>
-                  <CodeExpression id="54_flowLayout7"/>
+                  <CodeExpression id="56_flowLayout7"/>
                   <StatementProvider type="CodeMethod">
                     <CodeMethod name="setAlignOnBaseline" class="java.awt.FlowLayout" parameterTypes="boolean"/>
                   </StatementProvider>
                   <Parameters>
-                    <CodeExpression id="56">
+                    <CodeExpression id="58">
                       <ExpressionOrigin>
                         <Value type="boolean" value="true"/>
                       </ExpressionOrigin>
@@ -1257,7 +1303,7 @@
                   </Parameters>
                 </CodeStatement>
                 <CodeStatement>
-                  <CodeExpression id="57_futurePermissionPanel1">
+                  <CodeExpression id="59_futurePermissionPanel1">
                     <CodeVariable name="futurePermissionPanel1" type="8192" declaredType="javax.swing.JPanel"/>
                     <ExpressionOrigin>
                       <ExpressionProvider type="ComponentRef">
@@ -1269,7 +1315,7 @@
                     <CodeMethod name="setLayout" class="java.awt.Container" parameterTypes="java.awt.LayoutManager"/>
                   </StatementProvider>
                   <Parameters>
-                    <CodeExpression id="54_flowLayout7"/>
+                    <CodeExpression id="56_flowLayout7"/>
                   </Parameters>
                 </CodeStatement>
               </LayoutCode>
@@ -1277,14 +1323,14 @@
             <Container class="javax.swing.JPanel" name="futurePermissionPanel2">
               <LayoutCode>
                 <CodeStatement>
-                  <CodeExpression id="58_flowLayout8">
+                  <CodeExpression id="60_flowLayout8">
                     <CodeVariable name="flowLayout8" type="4096" declaredType="java.awt.FlowLayout"/>
                     <ExpressionOrigin>
                       <ExpressionProvider type="CodeConstructor">
                         <CodeConstructor class="java.awt.FlowLayout" parameterTypes="int"/>
                       </ExpressionProvider>
                       <Parameters>
-                        <CodeExpression id="59">
+                        <CodeExpression id="61">
                           <ExpressionOrigin>
                             <Value type="int" value="0"/>
                           </ExpressionOrigin>
@@ -1293,19 +1339,19 @@
                     </ExpressionOrigin>
                   </CodeExpression>
                   <StatementProvider type="CodeExpression">
-                    <CodeExpression id="58_flowLayout8"/>
+                    <CodeExpression id="60_flowLayout8"/>
                   </StatementProvider>
                   <Parameters>
-                    <CodeExpression id="59"/>
+                    <CodeExpression id="61"/>
                   </Parameters>
                 </CodeStatement>
                 <CodeStatement>
-                  <CodeExpression id="58_flowLayout8"/>
+                  <CodeExpression id="60_flowLayout8"/>
                   <StatementProvider type="CodeMethod">
                     <CodeMethod name="setAlignOnBaseline" class="java.awt.FlowLayout" parameterTypes="boolean"/>
                   </StatementProvider>
                   <Parameters>
-                    <CodeExpression id="60">
+                    <CodeExpression id="62">
                       <ExpressionOrigin>
                         <Value type="boolean" value="true"/>
                       </ExpressionOrigin>
@@ -1313,7 +1359,7 @@
                   </Parameters>
                 </CodeStatement>
                 <CodeStatement>
-                  <CodeExpression id="61_futurePermissionPanel2">
+                  <CodeExpression id="63_futurePermissionPanel2">
                     <CodeVariable name="futurePermissionPanel2" type="8192" declaredType="javax.swing.JPanel"/>
                     <ExpressionOrigin>
                       <ExpressionProvider type="ComponentRef">
@@ -1325,7 +1371,7 @@
                     <CodeMethod name="setLayout" class="java.awt.Container" parameterTypes="java.awt.LayoutManager"/>
                   </StatementProvider>
                   <Parameters>
-                    <CodeExpression id="58_flowLayout8"/>
+                    <CodeExpression id="60_flowLayout8"/>
                   </Parameters>
                 </CodeStatement>
               </LayoutCode>
@@ -1379,14 +1425,14 @@
       </SubComponents>
       <LayoutCode>
         <CodeStatement>
-          <CodeExpression id="62_flowLayout4">
+          <CodeExpression id="64_flowLayout4">
             <CodeVariable name="flowLayout4" type="4096" declaredType="java.awt.FlowLayout"/>
             <ExpressionOrigin>
               <ExpressionProvider type="CodeConstructor">
                 <CodeConstructor class="java.awt.FlowLayout" parameterTypes="int"/>
               </ExpressionProvider>
               <Parameters>
-                <CodeExpression id="63">
+                <CodeExpression id="65">
                   <ExpressionOrigin>
                     <Value type="int" value="2"/>
                   </ExpressionOrigin>
@@ -1395,19 +1441,19 @@
             </ExpressionOrigin>
           </CodeExpression>
           <StatementProvider type="CodeExpression">
-            <CodeExpression id="62_flowLayout4"/>
+            <CodeExpression id="64_flowLayout4"/>
           </StatementProvider>
           <Parameters>
-            <CodeExpression id="63"/>
+            <CodeExpression id="65"/>
           </Parameters>
         </CodeStatement>
         <CodeStatement>
-          <CodeExpression id="62_flowLayout4"/>
+          <CodeExpression id="64_flowLayout4"/>
           <StatementProvider type="CodeMethod">
             <CodeMethod name="setAlignOnBaseline" class="java.awt.FlowLayout" parameterTypes="boolean"/>
           </StatementProvider>
           <Parameters>
-            <CodeExpression id="64">
+            <CodeExpression id="66">
               <ExpressionOrigin>
                 <Value type="boolean" value="true"/>
               </ExpressionOrigin>
@@ -1415,7 +1461,7 @@
           </Parameters>
         </CodeStatement>
         <CodeStatement>
-          <CodeExpression id="65_bottomPanel">
+          <CodeExpression id="67_bottomPanel">
             <CodeVariable name="bottomPanel" type="8192" declaredType="javax.swing.JPanel"/>
             <ExpressionOrigin>
               <ExpressionProvider type="ComponentRef">
@@ -1427,16 +1473,16 @@
             <CodeMethod name="setLayout" class="java.awt.Container" parameterTypes="java.awt.LayoutManager"/>
           </StatementProvider>
           <Parameters>
-            <CodeExpression id="62_flowLayout4"/>
+            <CodeExpression id="64_flowLayout4"/>
           </Parameters>
         </CodeStatement>
         <CodeStatement>
-          <CodeExpression id="65_bottomPanel"/>
+          <CodeExpression id="67_bottomPanel"/>
           <StatementProvider type="CodeMethod">
             <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
           </StatementProvider>
           <Parameters>
-            <CodeExpression id="66_saveExitBtn">
+            <CodeExpression id="68_saveExitBtn">
               <CodeVariable name="saveExitBtn" type="8192" declaredType="javax.swing.JButton"/>
               <ExpressionOrigin>
                 <ExpressionProvider type="ComponentRef">
@@ -1447,12 +1493,12 @@
           </Parameters>
         </CodeStatement>
         <CodeStatement>
-          <CodeExpression id="65_bottomPanel"/>
+          <CodeExpression id="67_bottomPanel"/>
           <StatementProvider type="CodeMethod">
             <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
           </StatementProvider>
           <Parameters>
-            <CodeExpression id="67_filler1">
+            <CodeExpression id="69_filler1">
               <CodeVariable name="filler1" type="8192" declaredType="javax.swing.Box$Filler"/>
               <ExpressionOrigin>
                 <ExpressionProvider type="ComponentRef">

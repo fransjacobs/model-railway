@@ -436,6 +436,10 @@ public class BlockBean {
 
   @Override
   public String toString() {
+    return tileId;
+  }
+
+  public String toLogString() {
     return "BlockBean{"
             + "id="
             + id

@@ -59,7 +59,7 @@
           </Events>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
-              <BorderConstraints direction="Center"/>
+              <BorderConstraints direction="First"/>
             </Constraint>
           </Constraints>
 
@@ -85,6 +85,18 @@
                 <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
                   <JTabbedPaneConstraints tabName="Accessories">
                     <Property name="tabTitle" type="java.lang.String" value="Accessories"/>
+                  </JTabbedPaneConstraints>
+                </Constraint>
+              </Constraints>
+            </Component>
+            <Component class="jcs.ui.settings.DrivewaySettingsPanel" name="drivewaySettingsPanel1">
+              <Properties>
+                <Property name="name" type="java.lang.String" value="drivewaySettingsPanel1" noResource="true"/>
+              </Properties>
+              <Constraints>
+                <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+                  <JTabbedPaneConstraints tabName="Driveways">
+                    <Property name="tabTitle" type="java.lang.String" value="Driveways"/>
                   </JTabbedPaneConstraints>
                 </Constraint>
               </Constraints>

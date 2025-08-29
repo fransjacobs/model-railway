@@ -73,7 +73,7 @@ class InBlockState extends DispatcherState {
     Dispatcher.resetRoute(route);
     dispatcher.setRouteBean(null);
 
-    if (dispatcher.getNextRouteBean() != null && dispatcher.isLocomotiveAutomodeOn()) {
+    if (dispatcher.getNextRouteBean() != null) {
       //Now setup the next route
       route = dispatcher.getNextRouteBean();
       dispatcher.setRouteBean(route);
