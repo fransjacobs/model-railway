@@ -41,13 +41,18 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
+import javax.swing.JTabbedPane;
 import javax.swing.SpinnerListModel;
 import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import jcs.entities.AccessoryBean;
+import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.BlockBean;
 import jcs.entities.RouteBean;
 import jcs.entities.RouteBean.RouteState;
+import jcs.entities.RouteElementBean;
+import jcs.entities.TileBean;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
@@ -193,6 +198,7 @@ public class DrivewaySettingsPanel extends JPanel {
     rightPanel = new JPanel();
     newBtn = new JButton();
     deleteBtn = new JButton();
+    mainTP = new JTabbedPane();
     detailPanel = new JPanel();
     row0Panel = new JPanel();
     fromLbl = new JLabel();
@@ -218,6 +224,7 @@ public class DrivewaySettingsPanel extends JPanel {
     row7Panel = new JPanel();
     row9Panel = new JPanel();
     buttonPanel = new JPanel();
+    commandPanel = new JPanel();
     westPanel = new JPanel();
     routesSP = new JScrollPane();
     routeList = new JList<>();
@@ -433,7 +440,10 @@ public class DrivewaySettingsPanel extends JPanel {
     buttonPanel.setLayout(flowLayout10);
     detailPanel.add(buttonPanel);
 
-    add(detailPanel, BorderLayout.CENTER);
+    mainTP.addTab("Details", detailPanel);
+    mainTP.addTab("Commands", commandPanel);
+
+    add(mainTP, BorderLayout.CENTER);
 
     westPanel.setMinimumSize(new Dimension(175, 500));
     westPanel.setPreferredSize(new Dimension(175, 500));
@@ -522,6 +532,46 @@ public class DrivewaySettingsPanel extends JPanel {
   
   }//GEN-LAST:event_toBlockStateCBActionPerformed
 
+  
+  private List<RouteElementBean> getTurnouts(RouteBean routeBean) {
+    List<RouteElementBean> rel = routeBean.getRouteElements();
+    List<RouteElementBean> turnouts = new ArrayList<>();
+    for (RouteElementBean reb : rel) {
+      if (reb.isTurnout()) {
+        turnouts.add(reb);
+        
+        AccessoryBean.AccessoryValue av = reb.getAccessoryValue();
+        AccessoryBean turnout = reb.getTileBean().getAccessoryBean();
+        
+        TileBean tb = PersistenceFactory.getService().getTileBean(reb.getTileId());
+        AccessoryBean accessory = tb.getAccessoryBean();
+        
+      }
+    }
+    return turnouts;
+  }  
+  
+  class Turnout implements Comparator<Integer> {
+    private String tileId;
+    private String accessoryId;
+    private Integer address;
+    private String protocol;
+    private String name;    
+    private AccessoryValue value;
+    private Integer sortOrder;
+    
+    Turnout(String tileId,String accessoryId,Integer address,String protocol,String name,AccessoryValue value,Integer sortOrder) {
+      this.tileId = tileId;
+    } 
+
+    @Override
+    public int compare(Integer o1, Integer o2) {
+      return 0;
+    }
+    
+  }
+  
+  
   class RouteBeanByNameSorter implements Comparator<RouteBean> {
 
     @Override
@@ -634,6 +684,7 @@ public class DrivewaySettingsPanel extends JPanel {
   // Variables declaration - do not modify//GEN-BEGIN:variables
   JPanel bottomPanel;
   JPanel buttonPanel;
+  JPanel commandPanel;
   JButton deleteBtn;
   JPanel detailPanel;
   Box.Filler filler1;
@@ -645,6 +696,7 @@ public class DrivewaySettingsPanel extends JPanel {
   JLabel idLbl;
   JPanel leftPanel;
   JCheckBox lockedCB;
+  JTabbedPane mainTP;
   JLabel nameLbl;
   JButton newBtn;
   JPanel rightPanel;
