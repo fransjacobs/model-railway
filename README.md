@@ -78,7 +78,7 @@ By making JCS open source, I hope it can also inspire other hobbyists:
 
 | Main Screen Automatic Driving | Manual Driver Throttle |                        
 |-----------------|-----------------|
-|![Main Screen Automatic Driving](./assets/mainScreen-autopilot-running.png) | ![Driver Throttle ](./assets/drivercab-dialog.png) |
+|![Main Screen Automatic Driving](./assets/maincreen-autopilot-running.png) | ![Driver Throttle ](./assets/drivercab-dialog.png) |
 
 | Accessory Settings | Locomotive Settings |
 |-------------------|------------------|
