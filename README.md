@@ -74,7 +74,7 @@ By making JCS open source, I hope it can also inspire other hobbyists:
 
 | Main Screen Edit Layout | Main Screen VNC |                         
 |-----------------|-----------------|
-|![Main Screen Edit Layout](./assets/mainscreen-edit-layout.png) | ![Main Screen VNC](./assets/mainscreen-VNC.png) |
+|![Main Screen Edit Layout](./assets/mainscreen-edit-layout.png) | ![Main Screen VNC](./assets/mainScreen-VNC.png) |
 
 | Main Screen Automatic Driving | Manual Driver Throttle |                        
 |-----------------|-----------------|
