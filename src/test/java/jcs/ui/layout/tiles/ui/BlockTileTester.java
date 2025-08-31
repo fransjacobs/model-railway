@@ -1,0 +1,346 @@
+/*
+ * Copyright 2025 Frans Jacobs.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package jcs.ui.layout.tiles.ui;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.io.File;
+import java.util.Arrays;
+import java.util.List;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+import jcs.entities.BlockBean;
+import jcs.entities.BlockBean.BlockState;
+import jcs.entities.LocomotiveBean;
+import jcs.entities.TileBean;
+import jcs.ui.layout.tiles.Block;
+import jcs.ui.layout.tiles.Tile;
+import jcs.ui.util.ImageUtil;
+import org.tinylog.Logger;
+
+public class BlockTileTester extends javax.swing.JFrame {
+
+  private static final long serialVersionUID = 5683130151967672022L;
+
+  private Tile blockEast;
+  private Tile blockSouth;
+  private Tile blockWest;
+  private Tile blockNorth;
+
+  private final List<BlockState> blockStates = Arrays.stream(BlockState.values()).toList();
+  private int blockStateIndex = 0;
+
+  /**
+   * Creates new form TileTester
+   *
+   * @param title
+   */
+  public BlockTileTester(String title) {
+    super(title);
+    initComponents();
+    eastStateBtn.setText(this.blockStates.get(1).getState());
+    createTiles();
+    this.setVisible(true);
+  }
+
+  private void createTiles() {
+
+    blockEast = new Block(TileBean.Orientation.EAST, 220, 60);
+    blockEast.setId("east");
+    blockEast.setBlockState(blockStates.get(blockStateIndex));
+    blockEast.setBlockBean(createBlockBean(blockEast));
+    blockEast.setTrackRouteColor(Color.MAGENTA);
+
+    blockSouth = new Block(TileBean.Orientation.SOUTH, 360, 80);
+    blockSouth.setId("south");
+    blockSouth.setBlockState(blockStates.get(blockStateIndex + 1));
+
+    blockSouth.setTrackRouteColor(Color.YELLOW);
+
+    blockWest = new Block(TileBean.Orientation.WEST, 180, 140);
+    blockWest.setId("west");
+    blockSouth.setBlockState(blockStates.get(blockStateIndex + 1));
+    blockWest.setTrackRouteColor(Color.CYAN);
+
+    blockNorth = new Block(TileBean.Orientation.NORTH, 60, 100);
+    blockNorth.setId("north");
+    blockSouth.setBlockState(blockStates.get(blockStateIndex + 1));
+    blockNorth.setTrackRouteColor(Color.blue);
+
+    dotGridCanvas.add(blockEast);
+
+    dotGridCanvas.add(blockSouth);
+    dotGridCanvas.add(blockWest);
+    dotGridCanvas.add(blockNorth);
+  }
+
+  private BlockBean createBlockBean(Tile tile) {
+    BlockBean blockBean = new BlockBean();
+    blockBean.setId(tile.getId());
+    blockBean.setTileId(tile.getId());
+    blockBean.setDescription("Block-" + tile.getOrientation().getOrientation().toLowerCase());
+    blockBean.setDepartureSuffix(null);
+
+    blockBean.setBlockState(blockStates.get(blockStateIndex));
+
+//    if (this.showLocCB.isSelected()) {
+//      bbe.setLocomotive(createLocomotiveBean());
+//    } else {
+//      bbe.setLocomotive(null);
+//    }
+    return blockBean;
+  }
+
+  private LocomotiveBean createLocomotiveBean() {
+
+    //     LocomotiveBean lok2 = new LocomotiveBean(12L, "BR 141 015-08", 12L, 12, "DB BR 141 136-2", "mm_prg", 120, 0, 0, 2, false, true);
+    //  LocomotiveBean lok1 = new LocomotiveBean(8L, "NS DHG 6505", 8L, 8, "", "dcc", 100, 0, 0, 1, true, true);
+    //String imgPath = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + "dcc-ex" + File.separator + "ns dhg 6505.png";
+    //lok1.setIcon(imgPath);
+    //Image locImage = readImage(imgPath);
+    //lok1.setLocIcon(locImage);
+    //activateEastSensorBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/DHG 6505.png"))); // NOI18N
+    LocomotiveBean lb = new LocomotiveBean(8L, "NS DHG 6505", 8L, 8, "", "dcc", 100, 0, 0, 1, true, true);
+    String imgPath = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "images" + File.separator + "DHG 6505.png";
+    lb.setIcon(imgPath);
+    Image locImage = ImageUtil.readImage(imgPath);
+    //Image is sized by default so
+    locImage = ImageUtil.scaleImage(locImage, 100);
+    lb.setLocIcon(new ImageIcon(locImage));
+
+//    if (this.backwardsRB.isSelected()) {
+//      lb.setDirection(LocomotiveBean.Direction.BACKWARDS);
+//    } else {
+//      lb.setDirection(LocomotiveBean.Direction.FORWARDS);
+//    }
+    return lb;
+  }
+
+  /**
+   * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this code. The content of this method is always regenerated by the Form Editor.
+   */
+  @SuppressWarnings("unchecked")
+  // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+  private void initComponents() {
+
+    toolbarPanel = new javax.swing.JPanel();
+    toolBar = new javax.swing.JToolBar();
+    eastStateBtn = new javax.swing.JButton();
+    eastTileBtn = new javax.swing.JToggleButton();
+    southTileBtn = new javax.swing.JToggleButton();
+    westTileBtn = new javax.swing.JToggleButton();
+    northTileBtn = new javax.swing.JToggleButton();
+    selectSouthTileBtn = new javax.swing.JToggleButton();
+    drawCenterBtn = new javax.swing.JToggleButton();
+    activateEastSensorBtn = new javax.swing.JToggleButton();
+    dotGridCanvas = new jcs.ui.layout.tiles.ui.DotGridCanvas();
+
+    setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+    java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
+    flowLayout1.setAlignOnBaseline(true);
+    toolbarPanel.setLayout(flowLayout1);
+
+    toolBar.setRollover(true);
+
+    eastStateBtn.setText("State");
+    eastStateBtn.setFocusable(false);
+    eastStateBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    eastStateBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+    eastStateBtn.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        eastStateBtnActionPerformed(evt);
+      }
+    });
+    toolBar.add(eastStateBtn);
+
+    eastTileBtn.setText("East");
+    eastTileBtn.setToolTipText("");
+    eastTileBtn.setFocusable(false);
+    eastTileBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    eastTileBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+    eastTileBtn.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        eastTileBtnActionPerformed(evt);
+      }
+    });
+    toolBar.add(eastTileBtn);
+
+    southTileBtn.setText("South");
+    southTileBtn.setFocusable(false);
+    southTileBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    southTileBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+    southTileBtn.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        southTileBtnActionPerformed(evt);
+      }
+    });
+    toolBar.add(southTileBtn);
+
+    westTileBtn.setText("West");
+    westTileBtn.setFocusable(false);
+    westTileBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    westTileBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+    westTileBtn.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        westTileBtnActionPerformed(evt);
+      }
+    });
+    toolBar.add(westTileBtn);
+
+    northTileBtn.setText("North");
+    northTileBtn.setFocusable(false);
+    northTileBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    northTileBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+    northTileBtn.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        northTileBtnActionPerformed(evt);
+      }
+    });
+    toolBar.add(northTileBtn);
+
+    selectSouthTileBtn.setText("Select Tile");
+    selectSouthTileBtn.setFocusable(false);
+    selectSouthTileBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    selectSouthTileBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+    selectSouthTileBtn.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        selectSouthTileBtnActionPerformed(evt);
+      }
+    });
+    toolBar.add(selectSouthTileBtn);
+
+    drawCenterBtn.setText("show Center");
+    drawCenterBtn.setFocusable(false);
+    drawCenterBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    drawCenterBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+    drawCenterBtn.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        drawCenterBtnActionPerformed(evt);
+      }
+    });
+    toolBar.add(drawCenterBtn);
+
+    activateEastSensorBtn.setText("Icon");
+    activateEastSensorBtn.setFocusable(false);
+    activateEastSensorBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    activateEastSensorBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+    activateEastSensorBtn.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        activateEastSensorBtnActionPerformed(evt);
+      }
+    });
+    toolBar.add(activateEastSensorBtn);
+
+    toolbarPanel.add(toolBar);
+
+    getContentPane().add(toolbarPanel, java.awt.BorderLayout.NORTH);
+
+    dotGridCanvas.setPreferredSize(new java.awt.Dimension(360, 280));
+    getContentPane().add(dotGridCanvas, java.awt.BorderLayout.CENTER);
+
+    pack();
+  }// </editor-fold>//GEN-END:initComponents
+
+  private void northTileBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_northTileBtnActionPerformed
+    Logger.trace(blockNorth.getId() + "...");
+    blockNorth.setShowRoute(this.northTileBtn.isSelected());
+  }//GEN-LAST:event_northTileBtnActionPerformed
+
+  private void eastTileBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_eastTileBtnActionPerformed
+    blockEast.setShowRoute(this.eastTileBtn.isSelected());
+  }//GEN-LAST:event_eastTileBtnActionPerformed
+
+  private void westTileBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_westTileBtnActionPerformed
+    blockWest.setShowRoute(this.westTileBtn.isSelected());
+  }//GEN-LAST:event_westTileBtnActionPerformed
+
+  private void southTileBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_southTileBtnActionPerformed
+    blockSouth.setShowRoute(this.southTileBtn.isSelected());
+  }//GEN-LAST:event_southTileBtnActionPerformed
+
+  private void selectSouthTileBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectSouthTileBtnActionPerformed
+    blockSouth.setSelected(this.selectSouthTileBtn.isSelected());
+  }//GEN-LAST:event_selectSouthTileBtnActionPerformed
+
+  private void drawCenterBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_drawCenterBtnActionPerformed
+    blockEast.setDrawCenterPoint(this.drawCenterBtn.isSelected());
+    blockSouth.setDrawCenterPoint(this.drawCenterBtn.isSelected());
+  }//GEN-LAST:event_drawCenterBtnActionPerformed
+
+  private void activateEastSensorBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_activateEastSensorBtnActionPerformed
+    blockEast.setActive(this.activateEastSensorBtn.isSelected());
+  }//GEN-LAST:event_activateEastSensorBtnActionPerformed
+
+  private void eastStateBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_eastStateBtnActionPerformed
+    if (blockStateIndex + 1 < blockStates.size()) {
+      blockStateIndex++;
+    } else {
+      blockStateIndex = 0;
+    }
+    //Logger.trace("BlockStates: " + this.blockStates.size() + " index: " + this.blockStateIndex);
+    this.blockEast.setBlockState(this.blockStates.get(blockStateIndex));
+
+    if (blockStateIndex + 1 < blockStates.size()) {
+      this.eastStateBtn.setText(this.blockStates.get(blockStateIndex + 1).getState());
+    } else {
+      this.eastStateBtn.setText(this.blockStates.get(0).getState());
+    }
+  }//GEN-LAST:event_eastStateBtnActionPerformed
+
+  /**
+   * @param args the command line arguments
+   */
+  public static void main(String args[]) {
+    try {
+      UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
+      BlockTileTester.setDefaultLookAndFeelDecorated(true);
+
+    } catch (ClassNotFoundException
+            | InstantiationException
+            | IllegalAccessException
+            | UnsupportedLookAndFeelException ex) {
+      Logger.error(ex);
+    }
+
+    /* Create and display the form */
+    java.awt.EventQueue.invokeLater(() -> {
+      BlockTileTester app = new BlockTileTester("Sensor Tile Tester");
+      app.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+      Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+      app.setLocation(dim.width / 2 - app.getSize().width / 2, dim.height / 2 - app.getSize().height / 2);
+      app.pack();
+    });
+  }
+
+  // Variables declaration - do not modify//GEN-BEGIN:variables
+  private javax.swing.JToggleButton activateEastSensorBtn;
+  private jcs.ui.layout.tiles.ui.DotGridCanvas dotGridCanvas;
+  private javax.swing.JToggleButton drawCenterBtn;
+  private javax.swing.JButton eastStateBtn;
+  private javax.swing.JToggleButton eastTileBtn;
+  private javax.swing.JToggleButton northTileBtn;
+  private javax.swing.JToggleButton selectSouthTileBtn;
+  private javax.swing.JToggleButton southTileBtn;
+  private javax.swing.JToolBar toolBar;
+  private javax.swing.JPanel toolbarPanel;
+  private javax.swing.JToggleButton westTileBtn;
+  // End of variables declaration//GEN-END:variables
+}

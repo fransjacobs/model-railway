@@ -24,6 +24,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import jcs.entities.TileBean.Orientation;
+import jcs.ui.layout.tiles.Block;
 
 @Table(name = "blocks")
 public class BlockBean {
@@ -36,7 +38,6 @@ public class BlockBean {
   private String plusSignalId;
   private String minSignalId;
   private Long locomotiveId;
-  private boolean reverseArrival;
   private String status;
   private String arrivalSuffix;
 
@@ -45,6 +46,7 @@ public class BlockBean {
   private boolean randomWait;
   private boolean alwaysStop;
   private boolean allowCommuterOnly;
+  private boolean allowNonCommuterOnly;
 
   private String logicalDirection;
 
@@ -210,13 +212,14 @@ public class BlockBean {
     this.locomotiveId = locomotiveId;
   }
 
-  @Column(name = "reverse_arrival_side", nullable = false, columnDefinition = "reverse_arrival_side bool default '1'")
-  public boolean isReverseArrival() {
-    return reverseArrival;
-  }
-
-  public void setReverseArrival(boolean reverseArrival) {
-    this.reverseArrival = reverseArrival;
+  public void reverseArrival() {
+    if (arrivalSuffix != null) {
+      if ("-".equals(this.arrivalSuffix)) {
+        this.arrivalSuffix = "+";
+      } else {
+        this.arrivalSuffix = "-";
+      }
+    }
   }
 
   @Column(name = "status", length = 255)
@@ -275,6 +278,15 @@ public class BlockBean {
 
   public void setAlwaysStop(boolean alwaysStop) {
     this.alwaysStop = alwaysStop;
+  }
+
+  @Column(name = "allow_non_commuter_only", nullable = false, columnDefinition = "allow_commuter_only bool default '0'")
+  public boolean isAllowNonCommuterOnly() {
+    return allowNonCommuterOnly;
+  }
+
+  public void setAllowNonCommuterOnly(boolean allowNonCommuterOnly) {
+    this.allowNonCommuterOnly = allowNonCommuterOnly;
   }
 
   @Column(name = "allow_commuter_only", nullable = false, columnDefinition = "allow_commuter_only bool default '0'")
@@ -339,15 +351,35 @@ public class BlockBean {
 
   @Transient
   public String getDepartureSuffix() {
-    String departureSuffix = null;
+    String departureSuffix;
     if (arrivalSuffix != null) {
       if ("-".equals(arrivalSuffix)) {
         departureSuffix = "+";
       } else {
         departureSuffix = "-";
       }
-    }
+    } else {
+      // return the default...
+      Orientation o;
+      if (tileBean != null && tileBean.tileDirection != null) {
+        o = Orientation.get(tileBean.tileOrientation);
+      } else {
+        //default
+        o = Orientation.EAST;
+      }
 
+      LocomotiveBean.Direction dir;
+      if (logicalDirection != null) {
+        dir = LocomotiveBean.Direction.get(logicalDirection);
+      } else if (locomotive != null) {
+        dir = locomotive.getDirection();
+      } else {
+        //default
+        dir = LocomotiveBean.Direction.FORWARDS;
+      }
+
+      departureSuffix = Block.getDepartureSuffix(o, dir);
+    }
     return departureSuffix;
   }
 
@@ -404,6 +436,10 @@ public class BlockBean {
 
   @Override
   public String toString() {
+    return tileId;
+  }
+
+  public String toLogString() {
     return "BlockBean{"
             + "id="
             + id

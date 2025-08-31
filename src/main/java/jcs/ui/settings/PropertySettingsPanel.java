@@ -35,7 +35,7 @@ import javax.swing.ListSelectionModel;
 import jcs.JCS;
 import jcs.entities.JCSPropertyBean;
 import jcs.persistence.PersistenceFactory;
-import jcs.ui.settings.table.PropertiesTableModel;
+import jcs.ui.table.model.PropertiesTableModel;
 import org.tinylog.Logger;
 
 /**

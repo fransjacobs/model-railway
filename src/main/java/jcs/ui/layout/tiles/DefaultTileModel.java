@@ -33,6 +33,8 @@ import jcs.entities.TileBean.Orientation;
  */
 public class DefaultTileModel implements TileModel {
 
+  private static final long serialVersionUID = -4394129982618346359L;
+
   protected transient ChangeEvent changeEvent = null;
 
   protected EventListenerList listenerList = new EventListenerList();
@@ -55,7 +57,6 @@ public class DefaultTileModel implements TileModel {
 
   protected boolean showOutline = false;
 
-  protected boolean reverseArrival;
   protected String arrivalSuffix;
   protected boolean overlayImage = false;
   protected BlockState blockState;
@@ -168,7 +169,6 @@ public class DefaultTileModel implements TileModel {
       locomotive = blockBean.getLocomotive();
       logicalDirection = LocomotiveBean.Direction.get(blockBean.getLogicalDirection());
       arrivalSuffix = blockBean.getArrivalSuffix();
-      reverseArrival = blockBean.isReverseArrival();
       setBlockState(blockBean.getBlockState());
     }
   }
@@ -307,13 +307,14 @@ public class DefaultTileModel implements TileModel {
   }
 
   @Override
-  public boolean isReverseArrival() {
-    return reverseArrival;
-  }
-
-  @Override
-  public void setReverseArrival(boolean reverseArrival) {
-    this.reverseArrival = reverseArrival;
+  public void reverseArrival() {
+    if (arrivalSuffix != null) {
+      if ("-".equals(arrivalSuffix)) {
+        arrivalSuffix = "+";
+      } else {
+        arrivalSuffix = "-";
+      }
+    }
     fireStateChanged();
   }
 

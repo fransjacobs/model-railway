@@ -78,6 +78,15 @@ public class BlockUI extends TileUI {
     };
   }
 
+  /**
+   * A block is rendered in xx steps:<br>
+   * - 1 the block contour and background color, based on the block status.<br>
+   * - 2 in case the block is occupied or reserved by a locomotive, draw a travel direction arrow<br>. - 3 in case the block is Occupied or Reserved and a loc icon is available draw/overlay a loc icon
+   * in the block.<br>
+   *
+   * @param g2 the render graphics
+   * @param c to Block Component to render
+   */
   @Override
   public void renderTile(Graphics2D g2, JComponent c) {
     Tile tile = (Tile) c;
@@ -109,16 +118,15 @@ public class BlockUI extends TileUI {
     }
 
     drawName(g2, c);
+
   }
 
   private void renderDirectionArrow(Graphics2D g2, JComponent c) {
     Tile tile = (Tile) c;
     TileModel model = tile.getModel();
-
     //The default, forwards is in the direction of the block orientation, i.e. the +
-    TileBean.Orientation tileOrientation = model.getTileOrienation();
+    TileBean.Orientation blockOrientation = model.getTileOrienation();
     BlockBean bb = tile.getBlockBean();
-    boolean reverseArrival = model.isReverseArrival();
 
     LocomotiveBean.Direction logicalDirection;
     if (bb.getLogicalDirection() != null) {
@@ -127,41 +135,24 @@ public class BlockUI extends TileUI {
       logicalDirection = model.getLocomotive().getDirection();
     }
 
-    String departureSuffix = model.getDepartureSuffix();
-    if (departureSuffix == null) {
-      departureSuffix = Block.getDepartureSuffix(tileOrientation, reverseArrival, logicalDirection);
+    String arrivalSide = bb.getArrivalSuffix();
+    if (arrivalSide == null) {
+      //Use the default for the block which is from - to plus
+      arrivalSide = Block.getDefaulArrivalSuffix(blockOrientation, logicalDirection);
     }
 
-    //Logger.trace(this.getId()+" LogicalDirection is " + (bb.getLogicalDirection() != null ? "Set" : "Not Set") + " Dir: " + logicalDirection.getDirection() + " Orientation: " + orientation.getOrientation() + " departureSuffix: " + departureSuffix);
-    if ("+".equals(departureSuffix)) {
-      if (TileBean.Orientation.EAST == tileOrientation || TileBean.Orientation.SOUTH == tileOrientation) {
+    switch (blockOrientation) {
+      case TileBean.Orientation.WEST -> {
         switch (logicalDirection) {
           case LocomotiveBean.Direction.FORWARDS -> {
-            if (reverseArrival) {
-              renderLeftArrow(g2);
-            } else {
+            if ("-".equals(arrivalSide)) {
               renderRightArrow(g2);
+            } else {
+              renderLeftArrow(g2);
             }
           }
           case LocomotiveBean.Direction.BACKWARDS -> {
-            if (reverseArrival) {
-              renderRightArrow(g2);
-            } else {
-              renderLeftArrow(g2);
-            }
-          }
-        }
-      } else {
-        switch (logicalDirection) {
-          case LocomotiveBean.Direction.BACKWARDS -> {
-            if (reverseArrival) {
-              renderLeftArrow(g2);
-            } else {
-              renderRightArrow(g2);
-            }
-          }
-          case LocomotiveBean.Direction.FORWARDS -> {
-            if (reverseArrival) {
+            if ("-".equals(arrivalSide)) {
               renderRightArrow(g2);
             } else {
               renderLeftArrow(g2);
@@ -169,35 +160,54 @@ public class BlockUI extends TileUI {
           }
         }
       }
-    } else {
-      if (TileBean.Orientation.EAST == tileOrientation || TileBean.Orientation.SOUTH == tileOrientation) {
+      case TileBean.Orientation.NORTH -> {
         switch (logicalDirection) {
           case LocomotiveBean.Direction.FORWARDS -> {
-            if (reverseArrival) {
-              renderLeftArrow(g2);
-            } else {
+            if ("-".equals(arrivalSide)) {
               renderRightArrow(g2);
+            } else {
+              renderLeftArrow(g2);
             }
           }
           case LocomotiveBean.Direction.BACKWARDS -> {
-            if (reverseArrival) {
+            if ("-".equals(arrivalSide)) {
               renderRightArrow(g2);
             } else {
               renderLeftArrow(g2);
             }
           }
         }
-      } else {
+      }
+      case TileBean.Orientation.SOUTH -> {
         switch (logicalDirection) {
-          case LocomotiveBean.Direction.BACKWARDS -> {
-            if (reverseArrival) {
-              renderLeftArrow(g2);
-            } else {
+          case LocomotiveBean.Direction.FORWARDS -> {
+            if ("-".equals(arrivalSide)) {
               renderRightArrow(g2);
+            } else {
+              renderLeftArrow(g2);
             }
           }
+          case LocomotiveBean.Direction.BACKWARDS -> {
+            if ("-".equals(arrivalSide)) {
+              renderRightArrow(g2);
+            } else {
+              renderLeftArrow(g2);
+            }
+          }
+        }
+      }
+      default -> {
+        //East
+        switch (logicalDirection) {
           case LocomotiveBean.Direction.FORWARDS -> {
-            if (reverseArrival) {
+            if ("-".equals(arrivalSide)) {
+              renderRightArrow(g2);
+            } else {
+              renderLeftArrow(g2);
+            }
+          }
+          case LocomotiveBean.Direction.BACKWARDS -> {
+            if ("-".equals(arrivalSide)) {
               renderRightArrow(g2);
             } else {
               renderLeftArrow(g2);
@@ -228,13 +238,168 @@ public class BlockUI extends TileUI {
     }
   }
 
+  /**
+   * Called to draw the locomotive icon is a block.<br>
+   * The tile Image is already rendered, so the locomotive image is put on top.
+   *
+   * @param c the block component
+   */
   protected void overlayLocImage(JComponent c) {
+    Tile tile = (Tile) c;
+    TileModel model = tile.getModel();
+
+    Image locImage;
+    if (model.getLocomotive() != null && model.getLocomotive().getLocIcon() != null) {
+      locImage = model.getLocomotive().getLocIcon().getImage();
+    } else {
+      return;
+    }
+
+    Logger.trace("LocImage w: " + locImage.getWidth(null) + " h: " + locImage.getHeight(null));
+    // scale it to max w of 45
+    float ratio = (float) locImage.getHeight(null) / (float) locImage.getWidth(null);
+    //TODO: Use Scalr?
+    locImage = locImage.getScaledInstance(LOC_IMAGE_WIDTH, (int) (LOC_IMAGE_WIDTH * ratio), Image.SCALE_SMOOTH);
+
+    //for orientations E and W, N and S the image mus be rotated first
+    int w = locImage.getWidth(null);
+    int h = locImage.getHeight(null);
+
+    int tw = tileImage.getWidth();
+    int th = tileImage.getHeight();
+    BufferedImage overlay = new BufferedImage(tw, th, BufferedImage.TYPE_INT_ARGB);
+    Graphics2D g2i = overlay.createGraphics();
+
+    //The default, forwards is in the direction of the block orientation, i.e. the +
+    TileBean.Orientation blockOrientation = model.getTileOrienation();
+    BlockBean bb = tile.getBlockBean();
+
+    LocomotiveBean.Direction logicalDirection;
+    if (bb.getLogicalDirection() != null) {
+      logicalDirection = model.getLogicalDirection();
+    } else {
+      logicalDirection = model.getLocomotive().getDirection();
+    }
+
+    String arrivalSide = bb.getArrivalSuffix();
+    if (arrivalSide == null) {
+      //Use the default for the block which is from - to plus
+      arrivalSide = Block.getDefaulArrivalSuffix(blockOrientation, logicalDirection);
+    }
+
+    //Depending on the block orientation,
+    //travel direction and locomotive direction the image needs to be rotated and flipped
+    int xx, yy;
+    boolean reverseImage = LocomotiveBean.Direction.BACKWARDS == logicalDirection;
+    switch (blockOrientation) {
+      case TileBean.Orientation.SOUTH -> {
+        //Rotate the image 90 deg. to point to the South
+        locImage = ImageUtil.rotate(locImage, 90);
+
+        w = locImage.getWidth(null);
+        h = locImage.getHeight(null);
+
+        //Calculate the offset from center.
+        //When arrival is - place the image nearer to the + and vice versa
+        switch (arrivalSide) {
+          case "+" -> {
+            yy = BLOCK_HEIGHT / 2 - th / 2 + h - 25;
+            reverseImage = LocomotiveBean.Direction.FORWARDS == logicalDirection;
+          }
+          default -> {
+            yy = BLOCK_HEIGHT / 2 - th / 2 + h + 10;
+          }
+        }
+        xx = DEFAULT_WIDTH / 2 - w / 2;
+
+        if (reverseImage) {
+          locImage = ImageUtil.flipHorizontally(locImage);
+        }
+      }
+      case TileBean.Orientation.WEST -> {
+        //default should be flipped
+        locImage = ImageUtil.flipVertically(locImage);
+
+        switch (arrivalSide) {
+          case "-" -> {
+            xx = BLOCK_WIDTH / 2 - tw / 2 + w - 25;
+            reverseImage = LocomotiveBean.Direction.BACKWARDS == logicalDirection;
+          }
+          default -> {
+            xx = BLOCK_WIDTH / 2 - tw / 2 + w + 10;
+            reverseImage = LocomotiveBean.Direction.FORWARDS == logicalDirection;
+          }
+        }
+        yy = DEFAULT_HEIGHT / 2 - h / 2;
+
+        if (reverseImage) {
+          locImage = ImageUtil.flipVertically(locImage);
+        }
+      }
+      case TileBean.Orientation.NORTH -> {
+        locImage = ImageUtil.rotate(locImage, 270);
+        locImage = ImageUtil.flipVertically(locImage);
+
+        w = locImage.getWidth(null);
+        h = locImage.getHeight(null);
+
+        switch (arrivalSide) {
+          case "-" -> {
+            yy = BLOCK_HEIGHT / 2 - th / 2 + h - 25;
+            reverseImage = LocomotiveBean.Direction.BACKWARDS == logicalDirection;
+          }
+          default -> {
+            yy = BLOCK_HEIGHT / 2 - th / 2 + h + 10;
+            reverseImage = LocomotiveBean.Direction.FORWARDS == logicalDirection;
+          }
+        }
+        xx = DEFAULT_WIDTH / 2 - w / 2;
+
+        if (reverseImage) {
+          locImage = ImageUtil.flipHorizontally(locImage);
+        }
+      }
+
+      default -> {
+        //East
+        switch (arrivalSide) {
+          case "+" -> {
+            xx = BLOCK_WIDTH / 2 - tw / 2 + w - 25;
+            reverseImage = LocomotiveBean.Direction.FORWARDS == logicalDirection;
+          }
+          default -> {
+            xx = BLOCK_WIDTH / 2 - tw / 2 + w + 10;
+          }
+        }
+        yy = DEFAULT_HEIGHT / 2 - h / 2;
+
+        if (reverseImage) {
+          locImage = ImageUtil.flipVertically(locImage);
+        }
+      }
+    }
+
+    g2i.drawImage(tileImage, 0, 0, null);
+    g2i.drawImage(locImage, xx, yy, null);
+    g2i.dispose();
+
+    tileImage = overlay;
+  }
+
+  protected void overlayLocImageOld(JComponent c) {
     Tile tile = (Tile) c;
     TileModel model = tile.getModel();
 
     int ww = tileImage.getWidth();
     int hh = tileImage.getHeight();
     TileBean.Orientation tileOrientation = model.getTileOrienation();
+
+    LocomotiveBean.Direction logicalDirection;
+    if (model.getLogicalDirection() != null) {
+      logicalDirection = model.getLogicalDirection();
+    } else {
+      logicalDirection = model.getLocomotive().getDirection();
+    }
 
     BufferedImage overlay = new BufferedImage(ww, hh, BufferedImage.TYPE_INT_ARGB);
     Graphics2D g2i = overlay.createGraphics();
@@ -248,8 +413,18 @@ public class BlockUI extends TileUI {
 
     if (locImage != null) {
       String departureSuffix = model.getDepartureSuffix();
-      boolean reverseImage = model.isReverseArrival();
+      if (departureSuffix == null) {
+        departureSuffix = Block.getDepartureSuffix(tileOrientation, logicalDirection);
+      }
 
+      String defaultDepartureSuffix = Block.getDepartureSuffix(tileOrientation, logicalDirection);
+
+      boolean reverseImage = !departureSuffix.equals(defaultDepartureSuffix);
+
+//      LocomotiveBean.Direction dir = model.getLogicalDirection();
+//      if (dir == null) {
+//        dir = model.getLocomotive().getDirection();
+//      }
       Logger.trace("LocImage w: " + locImage.getWidth(null) + " h: " + locImage.getHeight(null));
       // scale it to max h of 45
       int size = 45;
@@ -265,21 +440,21 @@ public class BlockUI extends TileUI {
           w = locImage.getWidth(null);
           h = locImage.getHeight(null);
 
-          if (null == departureSuffix) {
-            xx = BLOCK_WIDTH / 2 - tile.getWidth() / 2 + w;
-          } else {
-            switch (departureSuffix) {
-              case "+" -> {
-                xx = BLOCK_WIDTH / 2 - tile.getWidth() / 2 + w - 25;
-              }
-              default -> {
-                xx = BLOCK_WIDTH / 2 - tile.getWidth() / 2 + w + 10;
-              }
+          //if (null == departureSuffix) {
+          //  xx = BLOCK_WIDTH / 2 - tile.getWidth() / 2 + w;
+          //} else {
+          switch (departureSuffix) {
+            case "+" -> {
+              xx = BLOCK_WIDTH / 2 - tile.getWidth() / 2 + w - 25;
+            }
+            default -> {
+              xx = BLOCK_WIDTH / 2 - tile.getWidth() / 2 + w + 10;
             }
           }
+          //}
           yy = DEFAULT_HEIGHT / 2 - h / 2;
 
-          if (reverseImage) {
+          if (!reverseImage) {
             locImage = ImageUtil.flipVertically(locImage);
           }
         }
@@ -291,62 +466,65 @@ public class BlockUI extends TileUI {
           h = locImage.getHeight(null);
           xx = DEFAULT_WIDTH / 2 - w / 2;
 
-          if (null == departureSuffix) {
-            yy = BLOCK_HEIGHT / 2 - tile.getHeight() / 2 + h;
-          } else {
-            switch (departureSuffix) {
-              case "-" -> {
-                yy = BLOCK_HEIGHT / 2 - tile.getHeight() / 2 + h - 25;
-              }
-              default -> {
-                yy = BLOCK_HEIGHT / 2 - tile.getHeight() / 2 + h + 10;
-              }
+          //if (null == departureSuffix) {
+          //  yy = BLOCK_HEIGHT / 2 - tile.getHeight() / 2 + h;
+          //} else {
+          switch (departureSuffix) {
+            case "-" -> {
+              yy = BLOCK_HEIGHT / 2 - tile.getHeight() / 2 + h - 25;
+            }
+            default -> {
+              yy = BLOCK_HEIGHT / 2 - tile.getHeight() / 2 + h + 10;
             }
           }
+          //}
           if (reverseImage) {
             locImage = ImageUtil.flipHorizontally(locImage);
           }
         }
         case NORTH -> {
           locImage = ImageUtil.flipHorizontally(locImage);
-          locImage = ImageUtil.rotate(locImage, 90);
+
+          if (reverseImage) {
+            locImage = ImageUtil.rotate(locImage, -90);
+          } else {
+            locImage = ImageUtil.rotate(locImage, 90);
+          }
 
           w = locImage.getWidth(null);
           h = locImage.getHeight(null);
           xx = DEFAULT_WIDTH / 2 - w / 2;
 
-          if (null == departureSuffix) {
-            int minY = BLOCK_HEIGHT / 2 - tile.getHeight() / 2 + h;
-            yy = minY;
-          } else {
-            switch (departureSuffix) {
-              case "+" -> {
-                yy = BLOCK_HEIGHT / 2 - tile.getHeight() / 2 + h - 25;
-              }
-              default -> {
-                yy = BLOCK_HEIGHT / 2 - tile.getHeight() / 2 + h + 10;
-              }
+          //if (null == departureSuffix) {
+          int minY = BLOCK_HEIGHT / 2 - tile.getHeight() / 2 + h;
+          //  yy = minY;
+          //} else {
+          switch (departureSuffix) {
+            case "+" -> {
+              yy = BLOCK_HEIGHT / 2 - tile.getHeight() / 2 + h - 25;
+            }
+            default -> {
+              yy = BLOCK_HEIGHT / 2 - tile.getHeight() / 2 + h + 10;
             }
           }
-          if (reverseImage) {
-            locImage = ImageUtil.flipHorizontally(locImage);
-          }
+          //}
+          locImage = ImageUtil.flipHorizontally(locImage);
         }
         default -> {
           w = locImage.getWidth(null);
           h = locImage.getHeight(null);
-          if (null == departureSuffix) {
-            xx = BLOCK_WIDTH / 2 - tile.getWidth() / 2 + w;
-          } else {
-            switch (departureSuffix) {
-              case "-" -> {
-                xx = BLOCK_WIDTH / 2 - tile.getWidth() / 2 + w - 25;
-              }
-              default -> {
-                xx = BLOCK_WIDTH / 2 - tile.getWidth() / 2 + w + 10;
-              }
+          //if (null == departureSuffix) {
+          //  xx = BLOCK_WIDTH / 2 - tile.getWidth() / 2 + w;
+          //} else {
+          switch (departureSuffix) {
+            case "-" -> {
+              xx = BLOCK_WIDTH / 2 - tile.getWidth() / 2 + w - 25;
+            }
+            default -> {
+              xx = BLOCK_WIDTH / 2 - tile.getWidth() / 2 + w + 10;
             }
           }
+          //}
           yy = DEFAULT_HEIGHT / 2 - h / 2;
 
           if (reverseImage) {
@@ -362,13 +540,6 @@ public class BlockUI extends TileUI {
     }
   }
 
-//  private Image getLocImage() {
-//    if (model.getLocomotive() != null && model.getLocomotive().getLocIcon() != null) {
-//      return model.getLocomotive().getLocIcon();
-//    } else {
-//      return null;
-//    }
-//  }
   public String getBlockText(Tile tile) {
     BlockBean blockBean = tile.getBlockBean();
     String blockText;
@@ -484,6 +655,7 @@ public class BlockUI extends TileUI {
 
     Graphics2D g2 = (Graphics2D) g.create();
     drawTile(g2, c);
+
     if (model.isOverlayImage()) {
       overlayLocImage(c);
     }

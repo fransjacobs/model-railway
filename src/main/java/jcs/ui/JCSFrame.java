@@ -33,6 +33,8 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.swing.AbstractAction;
@@ -79,6 +81,7 @@ import jcs.util.VersionInfo;
 import org.tinylog.Logger;
 import jcs.commandStation.events.ConnectionEventListener;
 import jcs.persistence.util.Backup;
+import jcs.ui.settings.DrivewaySettingsDialog;
 import jcs.util.Ping;
 
 /**
@@ -95,6 +98,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
 
   private LocomotiveDialog locomotiveDialog;
   private AccessoryDialog accessoryDialog;
+  private DrivewaySettingsDialog drivewaySettingsDialog;
   private CommandStationDialog commandStationDialog;
   private PropertiesDialog propertiesDialog;
 
@@ -143,7 +147,13 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
       //Show the default panel
       showOverviewPanel();
       editMode = false;
-      //JCS.addRefreshListener(dispatcherStatusPanel);
+      // Start a one-shot timer with 1 second delay to refresh the panel
+      new Timer().schedule(new TimerTask() {
+        @Override
+        public void run() {
+          showOverviewPanel();
+        }
+      }, 1000);
     }
   }
 
@@ -221,8 +231,12 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     } else {
       dispatcherStatusPanel.showLocomotiveTab();
     }
-    
-    overviewPanel.repaint();
+
+    java.awt.EventQueue.invokeLater(() -> {
+      overviewPanel.repaint();
+    });
+    //});
+
   }
 
   private void showLocomotives() {
@@ -243,6 +257,15 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
       accessoryDialog.setLocationRelativeTo(null);
     }
     accessoryDialog.setVisible(true);
+  }
+
+  private void showDriveways() {
+    if (drivewaySettingsDialog == null) {
+      drivewaySettingsDialog = new DrivewaySettingsDialog(this, true);
+      drivewaySettingsDialog.pack();
+      drivewaySettingsDialog.setLocationRelativeTo(null);
+    }
+    drivewaySettingsDialog.setVisible(true);
   }
 
   private void showProperties() {
@@ -384,6 +407,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     settingsMenu = new JMenu();
     showLocosMI = new JMenuItem();
     showAccessoryMI = new JMenuItem();
+    showDrivewaysMI = new JMenuItem();
     showCommandStationsMI = new JMenuItem();
     showPropertiesMI = new JMenuItem();
     helpMenu = new JMenu();
@@ -918,6 +942,15 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     });
     settingsMenu.add(showAccessoryMI);
 
+    showDrivewaysMI.setText("Driveways");
+    showDrivewaysMI.setName("showDrivewaysMI"); // NOI18N
+    showDrivewaysMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        showDrivewaysMIActionPerformed(evt);
+      }
+    });
+    settingsMenu.add(showDrivewaysMI);
+
     showCommandStationsMI.setText("Command Stations");
     showCommandStationsMI.setToolTipText("Commans Station Settings");
     showCommandStationsMI.setName("showCommandStationsMI"); // NOI18N
@@ -1222,6 +1255,10 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     });
   }//GEN-LAST:event_restoreMIActionPerformed
 
+  private void showDrivewaysMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showDrivewaysMIActionPerformed
+    showDriveways();
+  }//GEN-LAST:event_showDrivewaysMIActionPerformed
+
   private void startAllLocomotives() {
     int result = JOptionPane.showConfirmDialog(this, "Are you sure you want to start All Locomotives?", "Start ALL Locomotives", JOptionPane.YES_NO_OPTION);
     if (result == JOptionPane.YES_OPTION) {
@@ -1345,6 +1382,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   private JPanel settingsPanel;
   private JMenuItem showAccessoryMI;
   private JMenuItem showCommandStationsMI;
+  private JMenuItem showDrivewaysMI;
   private JButton showEditDesignBtn;
   private JButton showFeedbackMonitorBtn;
   private JMenuItem showHome;

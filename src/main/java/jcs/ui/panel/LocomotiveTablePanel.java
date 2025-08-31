@@ -94,6 +94,9 @@ public class LocomotiveTablePanel extends JPanel implements RefreshEventListener
 
         LocomotiveBeanTableModel model = (LocomotiveBeanTableModel) locomotiveTable.getModel();
         LocomotiveBean locomotiveBean = model.getBeanAt(selectedRow);
+        
+        //refresh the data as it might have changed...
+        locomotiveBean = PersistenceFactory.getService().getLocomotive(locomotiveBean.getId());
 
         if (locomotiveBean.getLocIcon() != null) {
           setDragImage(locomotiveBean.getLocIcon().getImage());

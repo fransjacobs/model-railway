@@ -327,6 +327,7 @@
                     <packaging>jar</packaging>
                 </configuration>
             </plugin>
+            <!-- Disabled as obtaining the licenses takes a lot of time. It is onley need when a release is pending.
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>license-maven-plugin</artifactId>
@@ -340,6 +341,7 @@
                     </execution>
                 </executions>
             </plugin>
+            -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-gpg-plugin</artifactId>
@@ -393,7 +395,9 @@
                         <additionalResource>${project.basedir}/README.md</additionalResource>
                         <additionalResource>${project.basedir}/JCS_SETUP.md</additionalResource>
                         <additionalResource>${project.basedir}/DRIVING.md</additionalResource>
+                        <!--
                         <additionalResource>${project.build.directory}/generated-resources/licenses</additionalResource>
+                        -->
                         <!--
                         <additionalResource>${project.basedir}/DESIGN.md</additionalResource>
                         <additionalResource>${project.basedir}/BUILDING.md</additionalResource>

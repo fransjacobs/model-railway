@@ -64,6 +64,7 @@ public class SettingsDialog extends javax.swing.JDialog {
     dialogTP = new JTabbedPane();
     locomotivePanel = new LocomotiveSettingsPanel();
     accessoryPreferencesPanel = new AccessorySettingsPanel();
+    drivewaySettingsPanel1 = new DrivewaySettingsPanel();
     commandStationPanel = new CommandStationPanel();
     propertiesPanel = new PropertySettingsPanel();
 
@@ -95,13 +96,16 @@ public class SettingsDialog extends javax.swing.JDialog {
     accessoryPreferencesPanel.setName("accessoryPreferencesPanel"); // NOI18N
     dialogTP.addTab("Accessories", accessoryPreferencesPanel);
 
+    drivewaySettingsPanel1.setName("drivewaySettingsPanel1"); // NOI18N
+    dialogTP.addTab("Driveways", drivewaySettingsPanel1);
+
     commandStationPanel.setName("commandStationPanel"); // NOI18N
     dialogTP.addTab("Command Stations", commandStationPanel);
 
     propertiesPanel.setName("propertiesPanel"); // NOI18N
     dialogTP.addTab("Properties", propertiesPanel);
 
-    centerPanel.add(dialogTP, BorderLayout.CENTER);
+    centerPanel.add(dialogTP, BorderLayout.PAGE_START);
     dialogTP.getAccessibleContext().setAccessibleName("Locomotives");
 
     getContentPane().add(centerPanel, BorderLayout.CENTER);
@@ -163,6 +167,7 @@ public class SettingsDialog extends javax.swing.JDialog {
   private JPanel centerPanel;
   private CommandStationPanel commandStationPanel;
   private JTabbedPane dialogTP;
+  private DrivewaySettingsPanel drivewaySettingsPanel1;
   private LocomotiveSettingsPanel locomotivePanel;
   private PropertySettingsPanel propertiesPanel;
   // End of variables declaration//GEN-END:variables

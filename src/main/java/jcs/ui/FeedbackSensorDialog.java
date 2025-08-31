@@ -27,7 +27,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.table.DefaultTableCellRenderer;
 import jcs.JCS;
-import jcs.ui.settings.table.SensorTableModel;
+import jcs.ui.table.model.SensorTableModel;
 import jcs.ui.util.FrameMonitor;
 import jcs.util.RunUtil;
 import org.tinylog.Logger;

@@ -167,7 +167,6 @@ class StateMachine extends Thread {
     destinationBlock.setBlockState(BlockBean.BlockState.FREE);
     destinationBlock.setLocomotive(null);
     destinationBlock.setArrivalSuffix(null);
-    destinationBlock.setReverseArrival(false);
 
     PersistenceFactory.getService().persist(departureBlock);
     PersistenceFactory.getService().persist(destinationBlock);

@@ -252,8 +252,12 @@ public class LayoutCanvas extends JPanel {
       if (this.readonly) {
         Logger.trace("Loaded " + tiles.size() + " from database...");
       }
+
       java.awt.EventQueue.invokeLater(() -> {
         loadTiles(tiles);
+
+        validate();
+        repaint();
       });
     });
   }
@@ -298,8 +302,7 @@ public class LayoutCanvas extends JPanel {
         tile.setDrawCenterPoint(showCenter);
       }
     }
-    validate();
-    repaint();
+
   }
 
   private void mouseMoveAction(MouseEvent evt) {
@@ -477,54 +480,56 @@ public class LayoutCanvas extends JPanel {
     //Logger.trace("@ (" + evt.getX() + "," + evt.getY() + ")");
     Point snapPoint = LayoutUtil.snapToGrid(evt.getPoint());
     if (selectedTile != null) {
-      int z = getComponentZOrder(selectedTile);
+      //int z = getComponentZOrder(selectedTile);
       setComponentZOrder(selectedTile, 0);
       //Logger.trace("Moving: " + selectedTile.getId() + " @ " + selectedTile.xyToString() + " P: " + snapPoint.x + "," + snapPoint.y + ")");
 
-      if (TileCache.canMoveTo(selectedTile, snapPoint)) {
-        selectedTile.setSelectedColor(Tile.DEFAULT_SELECTED_COLOR);
-      } else {
-        selectedTile.setSelectedColor(Tile.DEFAULT_WARN_COLOR);
-      }
-
-      int curX, curY;
-      switch (selectedTile.getTileType()) {
-        case BLOCK -> {
-          if (selectedTile.isHorizontal()) {
-            curX = snapPoint.x - Tile.GRID - Tile.GRID * 2;
-            curY = snapPoint.y - Tile.GRID;
-          } else {
-            curX = snapPoint.x - Tile.GRID;
-            curY = snapPoint.y - Tile.GRID - Tile.GRID * 2;
-          }
+      if (!readonly) {
+        if (TileCache.canMoveTo(selectedTile, snapPoint)) {
+          selectedTile.setSelectedColor(Tile.DEFAULT_SELECTED_COLOR);
+        } else {
+          selectedTile.setSelectedColor(Tile.DEFAULT_WARN_COLOR);
         }
-        case CROSS -> {
-          switch (selectedTile.getOrientation()) {
-            case SOUTH -> {
-              curX = snapPoint.x - Tile.GRID;
-              curY = snapPoint.y - Tile.GRID;
-            }
-            case WEST -> {
+
+        int curX, curY;
+        switch (selectedTile.getTileType()) {
+          case BLOCK -> {
+            if (selectedTile.isHorizontal()) {
               curX = snapPoint.x - Tile.GRID - Tile.GRID * 2;
               curY = snapPoint.y - Tile.GRID;
-            }
-            case NORTH -> {
+            } else {
               curX = snapPoint.x - Tile.GRID;
               curY = snapPoint.y - Tile.GRID - Tile.GRID * 2;
             }
-            default -> {
-              //East
-              curX = snapPoint.x - Tile.GRID;
-              curY = snapPoint.y - Tile.GRID;
+          }
+          case CROSS -> {
+            switch (selectedTile.getOrientation()) {
+              case SOUTH -> {
+                curX = snapPoint.x - Tile.GRID;
+                curY = snapPoint.y - Tile.GRID;
+              }
+              case WEST -> {
+                curX = snapPoint.x - Tile.GRID - Tile.GRID * 2;
+                curY = snapPoint.y - Tile.GRID;
+              }
+              case NORTH -> {
+                curX = snapPoint.x - Tile.GRID;
+                curY = snapPoint.y - Tile.GRID - Tile.GRID * 2;
+              }
+              default -> {
+                //East
+                curX = snapPoint.x - Tile.GRID;
+                curY = snapPoint.y - Tile.GRID;
+              }
             }
           }
+          default -> {
+            curX = snapPoint.x - Tile.GRID;
+            curY = snapPoint.y - Tile.GRID;
+          }
         }
-        default -> {
-          curX = snapPoint.x - Tile.GRID;
-          curY = snapPoint.y - Tile.GRID;
-        }
+        selectedTile.setBounds(curX, curY, selectedTile.getWidth(), selectedTile.getHeight());
       }
-      selectedTile.setBounds(curX, curY, selectedTile.getWidth(), selectedTile.getHeight());
     }
   }
 
@@ -1229,6 +1234,10 @@ public class LayoutCanvas extends JPanel {
       locomotive.setDispatcherDirection(null);
 
       selectedTile.setLocomotive(null);
+      //Set all default which belong to a free block
+      selectedTile.setBlockState(BlockState.FREE);
+      selectedTile.setDepartureSuffix(null);
+      selectedTile.setLogicalDirection(null);
 
       executor.execute(() -> {
         PersistenceFactory.getService().persist(selectedTile.getBlockBean());
@@ -1250,19 +1259,14 @@ public class LayoutCanvas extends JPanel {
   }//GEN-LAST:event_blockPropertiesMIActionPerformed
 
   private void reverseArrivalSideMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_reverseArrivalSideMIActionPerformed
-    if (this.selectedTile != null) {
+    if (selectedTile != null) {
       Block block = (Block) selectedTile;
 
-      String suffix = block.getArrivalSuffix();
-      if ("+".equals(suffix)) {
-        block.setArrivalSuffix("-");
-      } else {
-        block.setArrivalSuffix("+");
-      }
-      block.setReverseArrival(!block.isReverseArrival());
-      this.executor.execute(() -> {
-        PersistenceFactory.getService().persist(block.getBlockBean());
-      });
+      block.reverseArrival();
+      //logicaldirection?
+      //this.executor.execute(() -> {
+      PersistenceFactory.getService().persist(block.getBlockBean());
+      //});
     }
   }//GEN-LAST:event_reverseArrivalSideMIActionPerformed
 
@@ -1280,10 +1284,12 @@ public class LayoutCanvas extends JPanel {
       LocomotiveBean.Direction newDir = LocomotiveBean.toggle(curDir);
       block.setLogicalDirection(newDir);
       Logger.trace(block.getId() + " LogicalDir changed from " + curDir + " to " + newDir + " for " + locomotive.getName());
-
-      this.executor.execute(() -> {
+      locomotive.setDirection(newDir);
+      
+      //this.executor.execute(() -> {
         PersistenceFactory.getService().persist(block.getTileBean());
-      });
+        PersistenceFactory.getService().persist(locomotive);
+      //});
     }
   }//GEN-LAST:event_toggleLocomotiveDirectionMIActionPerformed
 
