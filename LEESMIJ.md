@@ -1,102 +1,119 @@
 # Java Central Station
 
-🎯 Een hobbyproject waarmee je modeltreinen zelfstandig kunt laten rijden — of ze zelf kunt besturen, helemaal in Java.
+🌐 **[Read this README in english](README.md)**
 
----
+🎯 Een hobbyproject om je modeltreinen zelfstandig te laten rijden — of om ze zelf te besturen, alles in Java.
 
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](#license)  
 [![Release](https://img.shields.io/github/v/release/fransjacobs/model-railway)](https://github.com/fransjacobs/model-railway/releases)  
-![Static Badge](https://img.shields.io/badge/Model_Railroad-Automation-blue)  
-![GitHub last commit](https://img.shields.io/github/last-commit/fransjacobs/model-railway)  
-![GitHub commit activity](https://img.shields.io/github/commit-activity/w/fransjacobs/model-railway)  
+[![GitHub issues](https://img.shields.io/github/issues-raw/fransjacobs/model-railway)](https://github.com/fransjacobs/model-railway/issues) <br>
+[![Model Railroad Automation](https://img.shields.io/badge/Model_Railroad-Automation-blue)]()  
 [![Java CI with Maven](https://github.com/fransjacobs/model-railway/actions/workflows/maven.yml/badge.svg?branch=master)](https://github.com/fransjacobs/model-railway/actions/workflows/maven.yml)  
-![GitHub Gist last commit](https://img.shields.io/github/last-commit/fransjacobs/model-railway)  
-![GitHub issues](https://img.shields.io/github/issues-raw/fransjacobs/model-railway)  
-![GitHub Release](https://img.shields.io/github/v/release/fransjacobs/model-railway)  
+[![GitHub last commit](https://img.shields.io/github/last-commit/fransjacobs/model-railway)]()
 
----
-
-## 🚂 Over JCS
+## 🚂 Over
 
 Java Central Station (JCS) is mijn persoonlijke passieproject om een modelspoorbaan tot leven te brengen met software.  
-Met JCS kun je je spoorbaan tekenen, treinen op de rails plaatsen en ze van blok naar blok zien bewegen — handmatig of volledig automatisch.  
+Met JCS kun je je layout tekenen, treinen op de rails plaatsen en zien hoe ze van blok naar blok rijden — onder handmatige bediening of volledig geautomatiseerd.  
 
-Ik ben dit project begonnen uit nieuwsgierigheid (en plezier!) om te zien hoe ver ik kon gaan met automatisering van een modelspoor zonder afhankelijk te zijn van gesloten commerciële systemen.  
-Onderweg is het uitgegroeid tot een volwaardige tool die:
+Ik ben dit project begonnen uit nieuwsgierigheid (en plezier!) om te ontdekken hoe ver ik automatisering op een modelspoorbaan kon brengen zonder afhankelijk te zijn van gesloten, commerciële systemen. Inmiddels is het uitgegroeid tot een volledige tool die:
 
-- Werkt met echte hardware zoals DCC-EX, Märklin CS2/CS3, ESU ECoS en HSI-S88  
-- Je laat rijden in Autopilot-modus of handmatig met een Driver Cab  
-- Live feedback van sensoren en wissels toont  
-- Een Virtual Command Station bevat, zodat je ook zonder hardware kunt testen  
+- Werkt met echte hardware zoals DCC-EX, Märklin CS2/CS3, ESU ECoS en HSI-S88.  
+- Je de mogelijkheid geeft om in Autopilot-modus te rijden of handmatig met de Driver Cab.  
+- Live feedback van sensoren en wissels op je layout toont.  
+- Een Virtueel Command Station bevat, zodat je ook zonder hardware kunt experimenteren.  
 
-Het doel is niet om professionele producten te vervangen, maar iets te creëren dat **open, uitbreidbaar en leuk** is — voor iedereen die van treinen en programmeren houdt. 🚉✨
-
----
+Het doel is niet om te concurreren met professionele producten, maar om iets open, uitbreidbaar en leuk te creëren — voor iedereen die graag met treinen en code knutselt. 🚉✨
 
 ## 🎯 Waarom dit project?
 
-De meeste commerciële oplossingen voor modelspoorautomatisering voelen als een **black box** — krachtig, maar gesloten, rigide en soms te complex voor hobbybanen.  
+De meeste commerciële oplossingen voor modelspoorautomatisering voelen als een **black box** — krachtig, maar gesloten, star en soms overkill voor hobby-layouts.  
 
-Ik ben **JCS** begonnen omdat ik iets anders wilde:  
+Ik begon **JCS** omdat ik iets anders wilde:  
 
-- Een project waar ik **kan leren door te bouwen**  
-- De kans om **vrij te experimenteren** met nieuwe ideeën  
-- En bovenal… **plezier hebben met het besturen van treinen** 🚂✨  
+- Een project waar ik kon **leren door te bouwen**.  
+- Een kans om **vrij te experimenteren** met nieuwe ideeën.  
+- En bovenal… om **plezier te hebben met het rijden van treinen**! 🚂✨  
 
 Door JCS open source te maken, hoop ik ook andere hobbyisten te inspireren:  
 
-- Knutselaars die willen zien hoe het werkt  
-- Bouwers die het willen uitbreiden met eigen functies  
-- Of gewoon iedereen die op zoek is naar een gratis en flexibel alternatief  
-
----
+- Knutselaars die onder de motorkap willen kijken.  
+- Bouwers die het willen uitbreiden met hun eigen functies.  
+- Of gewoon iedereen die een gratis en flexibele oplossing zoekt voor hun layout.  
 
 ## ✨ Belangrijkste functies
 
-- **Connectie met command stations**: Märklin CS2/CS3, ESU ECoS, DCC-EX, HSI-S88  
-- **Layout editor**: Interactieve grafische editor om sporen, blokken en sensoren te ontwerpen  
-- **Automatisch treinen laten rijden**: Autopilot regelt routing en blokcontrole  
-- **Handmatig besturen**: Gebruik de ingebouwde Throttle / Driver Cab  
-- **Realtime feedback**: Live sensoren, wissels en blokupdates  
-- **Testen zonder hardware**: Virtual Command Station voor simulatie  
-- **Remote zichtbaarheid**: VNC-viewer voor Märklin CS3 en ESU ECoS  
+- **Verbinding met centrales**: Märklin CS2/CS3, ESU ECoS, DCC-EX en HSI-S88.  
+- **Teken je layout**: Een interactieve grafische editor om sporen, blokken en sensoren te ontwerpen.  
+- **Automatisch treinen laten rijden**: Laat de Autopilot routing en blokbeheer regelen.  
+- **Of bestuur ze zelf**: Gebruik de ingebouwde Throttle / Driver Cab voor handmatige controle.  
+- **Live overzicht**: Zie realtime feedback van sensoren, wissels en blokken.  
+- **Test zonder hardware**: Het Virtuele Command Station laat je op het scherm experimenteren.  
+- **Externe toegang**: Ingebouwde VNC-viewer voor Märklin CS3 en ESU ECoS systemen.  
 
-> Of je nu de controle aan Autopilot geeft of zelf rijdt, JCS brengt je baan tot leven.
+> Of je de bediening nu aan Autopilot wilt overlaten, of zelf de controle houdt, JCS laat je layout tot leven komen.
 
----
+## 🖼️ Screenshots
 
-## Schermafbeeldingen & Demos
+| Hoofdscherm     |                        
+|-----------------|
+|![Hoofdscherm](./assets/mainscreen.png) | 
 
-- **Throttle / Driver Cab**: Locomotiefbesturing  
-- **Layout Editor & Autopilot**: Ontwerp je baan, plaats locomotieven en automatiseer ze  
-- **Sensor Monitor**: Live gegevens van sensoren bekijken  
-- **Keyboard Panel**: Handmatig accessoires bedienen of sensoren volgen  
-- **Preferences / Locomotive Import**: Importeren vanuit Märklin CS2/CS3 of iconen handmatig toevoegen  
+| Layout Bewerken | VNC Hoofdscherm |                         
+|-----------------|-----------------|
+|![Layout Bewerken](./assets/mainscreen-edit-layout.png) | ![VNC Hoofdscherm](./assets/mainScreen-VNC.png) |
 
----
+| Automatisch Rijden |                         
+|-----------------|
+|![Automatisch Rijden](./assets/maincreen-autopilot-running.png) | 
 
-## Ondersteunde Command Stations
+| Sensor Monitor | Handmatige Driver Throttle |                        
+|-----------------|-----------------|
+|![Sensor Monitor](./assets/sensor_monitor.png) | ![Driver Throttle](./assets/drivercab-dialog.png) |
 
-- [Märklin CS-3](https://www.marklin.nl/producten/details/article/60216)  
-- [Märklin CS-2](https://www.marklin.nl/producten/details/article/60215) — [Protocoldocumentatie](http://streaming.maerklin.de/public-media/cs2/cs2CAN-Protokoll-2_0.pdf)  
-- [ESU ECoS](https://www.esu.eu/) — [Protocoldocumentatie ESU](https://github.com/cbries/railessentials/blob/master/ecoslibNet48/Documentation/ecos_pc_interface3.pdf) — [Community-versie](https://github.com/TabalugaDrache/TCPEcos/files/13458970/Netzwerkspezifikation_2023.pdf)  
-- [DCC-EX](https://dcc-ex.com) — kan via seriële poort of netwerk worden aangesloten  
-- [HSI-S88](https://www.ldt-infocenter.com/dokuwiki/doku.php?id=en:hsi-88-usb) — of de [DIY-versie](https://mobatron.4lima.de/2020/05/s88-scanner-mit-arduino)  
+| Accessory Instellingen | Locomotief Instellingen |
+|-------------------|------------------|
+| ![Accessory Settings](./assets/accessorySettings.png) | ![Locomotive Settings](./assets/locomotiveSettings.png) |
 
----
+| Driveway Instellingen | Driveway Commando's |
+|------------------|-----------------|
+| ![Driveway Settings](./assets/drivewaySettings.png) | ![Driveway Commands](./assets/drivewayCommandSettings.png) |
 
-### Huidige status & roadmap
+| Command Station Instellingen (CS3) |
+|------------------|
+| ![Command Station Settings (CS3)](./assets/command-station-CS3.png) | 
 
-Actief in ontwikkeling:  
+## ⚙️ Ondersteunde Centrales
+
+JCS ondersteunt een reeks populaire centrales voor zowel commerciële als DIY-opstellingen:
+
+- **[Märklin CS-3](https://www.marklin.nl/producten/details/article/60216)**  
+  Volledig ondersteund; biedt volledige controle over locomotieven, wissels en accessoires.
+
+- **[Märklin CS-2](https://www.marklin.nl/producten/details/article/60215)** — [Protocol Documentatie](http://streaming.maerklin.de/public-media/cs2/cs2CAN-Protokoll-2_0.pdf)  
+  Ondersteund via CAN-bus; kan gebruikt worden voor realtime feedback en handmatig rijden.
+
+- **[ESU ECoS](https://www.esu.eu/)** — [Protocol Documentatie ESU](https://github.com/cbries/railessentials/blob/master/ecoslibNet48/Documentation/ecos_pc_interface3.pdf) — [Community Versie](https://github.com/TabalugaDrache/TCPEcos/files/13458970/Netzwerkspezifikation_2023.pdf)  
+  Ondersteunt TCP/IP-verbindingen; compatibel met zowel commerciële als community-protocollen.
+
+- **[DCC-EX](https://dcc-ex.com)**  
+  Kan worden verbonden via seriële poort of netwerk; biedt volledige DCC-controle voor locomotieven, blokken en accessoires.
+
+- **[HSI-S88](https://www.ldt-infocenter.com/dokuwiki/doku.php?id=en:hsi-88-usb)** — of de [DIY-versie](https://mobatron.4lima.de/2020/05/s88-scanner-mit-arduino)  
+  Feedbackmodule voor bloksensornetwerken; ondersteunt zowel officiële als zelfgebouwde oplossingen om treinbezetting te detecteren.
+
+## 🔧 Huidige status & Roadmap
+
+JCS is in actieve ontwikkeling! Je kunt voortgang volgen, issues melden of functies voorstellen op de [GitHub Issues pagina](https://github.com/fransjacobs/model-railway/issues).  
+
+Huidige focusgebieden:
 
 - Documentatie verbeteren  
 - GUI verbeteren  
-- Signaaldiplay in automatische modus toevoegen  
+- Signaalweergave toevoegen bij automatisch rijden  
 - Internationalisatie (meertalige ondersteuning)  
-- Meer unit tests  
+- Uitbreiden van unit tests  
 - Meer hardware-integraties  
-
----
 
 ## 🎮 Wil je het zelf proberen?
 
@@ -108,51 +125,66 @@ Voordat je begint, zorg ervoor dat je layout aan een paar eisen voldoet:
 - Een **wissel** mag geen onderdeel zijn van een blok.  
 - Je layout moet **minimaal 2 blokken** bevatten.  
 
-Als je layout klaar is, kun je beginnen met het verkennen van Autopilot en handmatig rijden met de Driver Cab.
+Zodra je layout klaar is, kun je beginnen met het verkennen van Autopilot en handmatig rijden met de Driver Cab.
 
-### Vereisten
+### 🛠 Vereisten
 
-- Java 21 (bijv. Temurin OpenJDK)  
-- Een ondersteund command station  
+Voordat je JCS start, zorg ervoor dat je het volgende hebt:
 
-### Download een prebuild release
+- **Java 21** geïnstalleerd (bijv. [Temurin OpenJDK](https://adoptium.net/temurin/releases/))  
+- Een **ondersteund commandostation** verbonden en geconfigureerd (zie [Ondersteunde Commandostations](#ondersteunde-commandostations))  
 
-De laatste versie is **v0.0.2** (27 september 2024):  
+> Tip: Zorg dat je Java-omgeving correct in je systeem-PATH staat om de applicatie via de command line te kunnen starten.
+
+### 💾 Download een Prebuilt Release
+
+De nieuwste stabiele versie is **v0.0.2** (uitgebracht op 27 september 2024):  
 
 - Eerste volledig geautomatiseerde rijversie  
-- Uitvoerbare bestanden voor Windows, macOS, Linux en Uber-JAR-bundel  
-- Volledige changelog: [Releases](https://github.com/fransjacobs/model-railway/releases)  
+- Uitvoerbare bestanden voor **Windows, macOS, Linux** en een **cross-platform Uber-JAR**  
+- Voor volledige release-notes en changelog, zie de [Releases sectie](https://github.com/fransjacobs/model-railway/releases)  
 
-### Build vanuit bron
+> Tip: De Uber-JAR kan direct gestart worden met `java -jar jcs-uber.jar` zonder extra dependencies.
 
-Zie [BUILDING.md](BUILDING.md) voor volledige buildinstructies.
+### 🏗 Build from Source
 
-### Setup en gebruik
+Als je JCS liever zelf bouwt:  
 
-- Walkthrough: [JCS_SETUP.md](JCS_SETUP.md)  
-- Rijden & automatiseringshandleiding: [DRIVING.md](DRIVING.md)  
-- Interface documentatie: [INTERFACES.md](INTERFACES.md)  
+- Zie [BUILDING.md](BUILDING.md) voor **volledige build-instructies**, inclusief benodigde libraries, Maven-commando’s en troubleshooting tips.  
+- Aanbevolen voor ontwikkelaars die de applicatie willen **aanpassen, uitbreiden of debuggen**.  
 
----
+### ⚙️ Setup en Gebruik
 
-## Bijdragen
+Begin snel met JCS met de volgende bronnen:
 
-Bijdragen, bugmeldingen of ideeën zijn zeer welkom!  
-Open issues, stel verbeteringen voor of dien pull requests in.
+- **Walkthrough**: [JCS_SETUP_NL.md](JCS_SETUP_NL.md) — Stapsgewijze instructies voor het klaarzetten van je layout en starten van de applicatie.  
+- **Rijden en Automatisering Gids**: [DRIVING_NL.md](DRIVING_NL.md) — Leer treinen handmatig of met Autopilot te besturen.  
+- **Interface Documentatie**: [INTERFACES.md](INTERFACES.md) — Gedetailleerde info over het aansluiten van commandostations, sensoren en blokken.  
 
----
-
-## Licentie
-
-Gelicenseerd onder Apache-2.0. Zie [LICENSE](LICENSE) voor details.  
+> Tip: Begin met een kleine layout en een paar treinen om functies te ontdekken voordat je opschaalt naar grotere layouts.
 
 ---
 
-Ik hoop dat je geïnspireerd raakt!  
+## 🤝 Bijdragen
 
-Frans
+Bijdragen zijn **altijd welkom**! Je kunt helpen door:
 
-## Bijdragers
+- Bugs of issues te melden op de [GitHub Issues pagina](https://github.com/fransjacobs/model-railway/issues)  
+- Nieuwe functies of verbeteringen voor te stellen  
+- Pull requests in te dienen met fixes of uitbreidingen  
+
+Jouw input helpt JCS beter te maken voor iedereen.  
+
+---
+
+## 📄 Licentie
+
+Dit project is gelicentieerd onder de **Apache-2.0 Licentie**.  
+Zie het [LICENSE](LICENSE) bestand voor volledige details.  
+
+## 🙌 Bijdragers
+
+Heel veel dank aan iedereen die dit project ondersteunt!  
 
 <table>
 <tr>
@@ -163,16 +195,30 @@ Frans
             <sub><b>Frans Jacobs</b></sub>
         </a>
     </td>
-    <td><a href="https://www.buymeacoffee.com/fransjacobs" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
+    <td align="center">
+        <a href="https://www.buymeacoffee.com/fransjacobs" target="_blank">
+            <img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Koop me een koffie" height="41" width="174"/>
+        </a>
+        <br />
+        <sub>Steun de ontwikkeling en houd de treinen rijdend!</sub>
     </td>
 </tr>
 </table>
 
-## Copyright 2019 - 2025 Frans Jacobs
+Ik hoop dat dit project je inspireert om **te experimenteren, knutselen en plezier te hebben met modeltreinen en code!**  
 
-Hierbij wordt toestemming verleend, kosteloos, aan iedereen die een kopie van deze software en bijbehorende documentatiebestanden verkrijgt (de "Software"),  
-om de Software te gebruiken, kopiëren, wijzigen, samenvoegen, publiceren, distribueren, sublicentiëren, en/of verkopen, en om personen aan wie de Software wordt verstrekt dit toe te staan, onder de volgende voorwaarden:
+— Frans
 
-Bovenstaande copyrightmelding en deze toestemmingsverklaring moeten in alle kopieën of substantiële delen van de Software worden opgenomen.
+---
 
-DE SOFTWARE WORDT "AS IS" GELEVERD, ZONDER ENIGE GARANTIE, UITDRUKKELIJK OF IMPLICIET, INCLUSIEF, MAAR NIET BEPERKT TOT DE GARANTIES VAN VERKOOPBAARHEID, GESCHIKTHEID VOOR EEN BEPAALD DOEL EN NIET-SCHENDING. IN GEEN GEVAL ZULLEN DE AUTEURS OF COPYRIGHTHOUDERS AANSPRAKELIJK ZIJN VOOR ENIGE CLAIM, SCHADE OF ANDERE AANSPRAKELIJKHEDEN, HETZIJ IN EEN CONTRACTUELE ACTIE, ONRECHTMATIGE DAAD, OF ANDERSZINS, DIE VOORTVLOEIEN UIT OF IN VERBAND MET DE SOFTWARE OF HET GEBRUIK OF ANDERE HANDELINGEN IN DE SOFTWARE.
+## 📜 Copyright 2019 - 2025 Frans Jacobs
+
+Hierbij wordt gratis toestemming verleend aan iedereen die een kopie van deze software en bijbehorende documentatiebestanden (de "Software") verkrijgt om te werken met de Software **zonder enige beperking**, inclusief de rechten om te gebruiken, kopiëren, wijzigen, samenvoegen, publiceren, distribueren, sublicentiëren en/of verkopen van kopieën van de Software, en om personen aan wie de Software wordt verstrekt dit te doen, onder de volgende voorwaarden:
+
+Bovenstaande copyrightvermelding en deze toestemming dienen te worden opgenomen in alle kopieën of substantieel delen van de Software.
+
+**DE SOFTWARE WORDT GELEVERD "AS IS", ZONDER ENIGE GARANTIE**, expliciet of impliciet, inclusief maar niet beperkt tot de garanties van verkoopbaarheid, geschiktheid voor een bepaald doel en niet-inbreuk. In geen geval zijn de auteurs of copyrighthouders aansprakelijk voor enige claim, schade of andere aansprakelijkheid, hetzij in een contractuele actie, onrechtmatige daad of anderszins, voortvloeiend uit of in verband met het gebruik van de Software.
+
+---
+
+> Bedankt dat je deel uitmaakt van de JCS-community — elke bijdrage, suggestie of kop koffie houdt dit hobbyproject in leven! 🚂✨
