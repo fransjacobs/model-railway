@@ -76,9 +76,13 @@ By making JCS open source, I hope it can also inspire other hobbyists:
 |-----------------|-----------------|
 |![Main Screen Edit Layout](./assets/mainscreen-edit-layout.png) | ![Main Screen VNC](./assets/mainScreen-VNC.png) |
 
-| Main Screen Automatic Driving | Manual Driver Throttle |                        
+| Main Screen Automatic Driving |                         
 |-----------------|-----------------|
-|![Main Screen Automatic Driving](./assets/maincreen-autopilot-running.png) | ![Driver Throttle ](./assets/drivercab-dialog.png) |
+|![Main Screen Automatic Driving](./assets/maincreen-autopilot-running.png) | 
+
+| Sensor Monitor | Manual Driver Throttle |                        
+|-----------------|-----------------|
+|![Sensor Monitor](./assets/sensor_monitor.png) | ![Driver Throttle ](./assets/drivercab-dialog.png) |
 
 | Accessory Settings | Locomotive Settings |
 |-------------------|------------------|
@@ -88,9 +92,9 @@ By making JCS open source, I hope it can also inspire other hobbyists:
 |------------------|-----------------|
 | ![Driveway Settings](./assets/drivewaySettings.png) | ![Driveway Commands](./assets/drivewayCommandSettings.png) |
 
-| Command Station Settings (CS3) | Sensor Monitor |
-|------------------|-----------------|
-| ![Command Station Settings (CS3)](./assets/command-station-CS3.png) | ![Sensor Monitor](./assets/sensor_monitor.png) |
+| Command Station Settings (CS3) |
+|------------------|
+| ![Command Station Settings (CS3)](./assets/command-station-CS3.png) | 
 
 
 
