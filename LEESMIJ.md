@@ -39,7 +39,7 @@ De meeste commerciële oplossingen voor modelspoorautomatisering voelen als een 
 
 Ik ben **JCS** begonnen omdat ik iets anders wilde:  
 
-- Een project waar ik **kon leren door te bouwen**  
+- Een project waar ik **kan leren door te bouwen**  
 - De kans om **vrij te experimenteren** met nieuwe ideeën  
 - En bovenal… **plezier hebben met het besturen van treinen** 🚂✨  
 

@@ -66,6 +66,18 @@ By making JCS open source, I hope it can also inspire other hobbyists:
 
 ## Screenshots & Demos
 
+## 🖼️ Screenshots & Demos
+
+| Accessory Settings | Locomotive Settings |
+|-------------------|------------------|
+| ![Accessory Settings](./assets/accessorySettings.png) | ![Locomotive Settings](./assets/locomotiveSettings.png) |
+
+| Driveway Settings | Driveway Commands |
+|------------------|-----------------|
+| ![Driveway Settings](./assets/drivewaySettings.png) | ![Driveway Commands](./assets/drivewayCommandSettings.png) |
+
+
+
 - **Throttle / Driver Cab**: Locomotive control interface  
 - **Layout Editor & Autopilot**: Design your layout, place locomotives, and automate them  
 - **Sensor Monitor**: View live track sensor data  
