@@ -68,17 +68,17 @@ By making JCS open source, I hope it can also inspire other hobbyists:
 
 ## 🖼️ Screenshots & Demos
 
-| Main Screen     |  Driver Throttle |                        
-|-----------------|-----------------|
-|![Main Screen](./assets/mainScreen.png) | ![Driver Throttle ](./assets/drivercab-dialog.png) |
-
-| Main Screen edit Layout | Main Screen VNC |                         
-|-----------------|-----------------|
-|![Main Screen Edit Layout](./assets/mainscreen_edit_layout.png) | ![Main Screen VNC](./assets/mainScreen-VNC.png) |
-
-| Main Screen Automatic Driving |                          
+| Main Screen     |                        
 |-----------------|
-|![Main Screen Automatice Driving](./assets/mainScreen-Autopilot-running.png) | 
+|![Main Screen](./assets/mainscreen.png) | 
+
+| Main Screen Edit Layout | Main Screen VNC |                         
+|-----------------|-----------------|
+|![Main Screen Edit Layout](./assets/mainscreen-edit-layout.png) | ![Main Screen VNC](./assets/mainscreen-VNC.png) |
+
+| Main Screen Automatic Driving | Manual Driver Throttle |                        
+|-----------------|-----------------|
+|![Main Screen Automatic Driving](./assets/mainScreen-autopilot-running.png) | ![Driver Throttle ](./assets/drivercab-dialog.png) |
 
 | Accessory Settings | Locomotive Settings |
 |-------------------|------------------|
