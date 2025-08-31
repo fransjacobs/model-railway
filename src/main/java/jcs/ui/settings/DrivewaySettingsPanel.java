@@ -42,18 +42,19 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
+import javax.swing.JTable;
 import javax.swing.SpinnerListModel;
 import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import jcs.entities.AccessoryBean;
-import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.BlockBean;
 import jcs.entities.RouteBean;
 import jcs.entities.RouteBean.RouteState;
 import jcs.entities.RouteElementBean;
 import jcs.entities.TileBean;
 import jcs.persistence.PersistenceFactory;
+import jcs.ui.table.model.DrivewayCommandTableModel;
 import org.tinylog.Logger;
 
 /**
@@ -118,6 +119,8 @@ public class DrivewaySettingsPanel extends JPanel {
       toBlockStateCBModel.addAll(Arrays.asList(BlockBean.BlockState.values()));
       toBlockStateCB.setModel(toBlockStateCBModel);
 
+      drivewayCommandTableModel.setRouteBean(selectedRoute);
+
       setFieldValues();
     }
   }
@@ -156,6 +159,9 @@ public class DrivewaySettingsPanel extends JPanel {
 
       RouteState routeState = selectedRoute.getRouteState();
       routeStateCBModel.setSelectedItem(routeState);
+
+      //drivewayCommandTableModel.refresh();
+      //this.drivewayCommandTable.
     } else {
       idLbl.setText(null);
       fromBlock = null;
@@ -167,6 +173,7 @@ public class DrivewaySettingsPanel extends JPanel {
       fromBlockCBModel.setSelectedItem(new BlockBean());
       toBlockCBModel.setSelectedItem(new BlockBean());
 
+      //drivewayCommandTableModel.setRouteBean(null);
     }
     enableFields(selectedRoute != null);
   }
@@ -178,11 +185,12 @@ public class DrivewaySettingsPanel extends JPanel {
     this.toSuffixSpinner.setEnabled(false);
     this.fromBlockStateCB.setEnabled(false);
     this.toBlockStateCB.setEnabled(false);
-    
+
     this.routeStateCB.setEnabled(enable);
     this.lockedCB.setEnabled(enable);
 
     this.saveBtn.setEnabled(enable);
+    this.mainTP.setEnabled(enable);
   }
 
   /**
@@ -192,6 +200,7 @@ public class DrivewaySettingsPanel extends JPanel {
   // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
   private void initComponents() {
 
+    drivewayCommandTableModel = new DrivewayCommandTableModel();
     topPanel = new JPanel();
     leftPanel = new JPanel();
     idLbl = new JLabel();
@@ -225,6 +234,8 @@ public class DrivewaySettingsPanel extends JPanel {
     row9Panel = new JPanel();
     buttonPanel = new JPanel();
     commandPanel = new JPanel();
+    drivewayTableSP = new JScrollPane();
+    drivewayCommandTable = new JTable();
     westPanel = new JPanel();
     routesSP = new JScrollPane();
     routeList = new JList<>();
@@ -441,6 +452,14 @@ public class DrivewaySettingsPanel extends JPanel {
     detailPanel.add(buttonPanel);
 
     mainTP.addTab("Details", detailPanel);
+
+    commandPanel.setLayout(new BorderLayout());
+
+    drivewayCommandTable.setModel(drivewayCommandTableModel);
+    drivewayTableSP.setViewportView(drivewayCommandTable);
+
+    commandPanel.add(drivewayTableSP, BorderLayout.CENTER);
+
     mainTP.addTab("Commands", commandPanel);
 
     add(mainTP, BorderLayout.CENTER);
@@ -491,12 +510,11 @@ public class DrivewaySettingsPanel extends JPanel {
 
   private void saveBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_saveBtnActionPerformed
     if (selectedRoute != null) {
-      
+
       selectedRoute.setLocked(lockedCB.isSelected());
-      if(RouteBean.RouteState.FREE == selectedRoute.getRouteState()) {
+      if (RouteBean.RouteState.FREE == selectedRoute.getRouteState()) {
         selectedRoute.setStatus(null);
       }
-      
 
       Logger.trace("Saving: " + selectedRoute.toLogString());
       selectedRoute = PersistenceFactory.getService().persist(selectedRoute);
@@ -513,6 +531,8 @@ public class DrivewaySettingsPanel extends JPanel {
   private void routeListValueChanged(ListSelectionEvent evt) {//GEN-FIRST:event_routeListValueChanged
     if (!evt.getValueIsAdjusting()) {
       selectedRoute = routeList.getSelectedValue();
+      drivewayCommandTableModel.setRouteBean(selectedRoute);
+      drivewayCommandTableModel.refresh();
       Logger.trace(selectedRoute);
       setFieldValues();
     }
@@ -520,58 +540,36 @@ public class DrivewaySettingsPanel extends JPanel {
 
   private void routeStateCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_routeStateCBActionPerformed
     if (selectedRoute != null) {
-          selectedRoute.setBlockState((RouteBean.RouteState) routeStateCB.getSelectedItem());
+      selectedRoute.setBlockState((RouteBean.RouteState) routeStateCB.getSelectedItem());
     }
   }//GEN-LAST:event_routeStateCBActionPerformed
 
   private void fromBlockStateCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_fromBlockStateCBActionPerformed
-    
+
   }//GEN-LAST:event_fromBlockStateCBActionPerformed
 
   private void toBlockStateCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_toBlockStateCBActionPerformed
-  
+
   }//GEN-LAST:event_toBlockStateCBActionPerformed
 
-  
   private List<RouteElementBean> getTurnouts(RouteBean routeBean) {
     List<RouteElementBean> rel = routeBean.getRouteElements();
     List<RouteElementBean> turnouts = new ArrayList<>();
     for (RouteElementBean reb : rel) {
       if (reb.isTurnout()) {
         turnouts.add(reb);
-        
+
         AccessoryBean.AccessoryValue av = reb.getAccessoryValue();
         AccessoryBean turnout = reb.getTileBean().getAccessoryBean();
-        
+
         TileBean tb = PersistenceFactory.getService().getTileBean(reb.getTileId());
         AccessoryBean accessory = tb.getAccessoryBean();
-        
+
       }
     }
     return turnouts;
-  }  
-  
-  class Turnout implements Comparator<Integer> {
-    private String tileId;
-    private String accessoryId;
-    private Integer address;
-    private String protocol;
-    private String name;    
-    private AccessoryValue value;
-    private Integer sortOrder;
-    
-    Turnout(String tileId,String accessoryId,Integer address,String protocol,String name,AccessoryValue value,Integer sortOrder) {
-      this.tileId = tileId;
-    } 
-
-    @Override
-    public int compare(Integer o1, Integer o2) {
-      return 0;
-    }
-    
   }
-  
-  
+
   class RouteBeanByNameSorter implements Comparator<RouteBean> {
 
     @Override
@@ -591,6 +589,8 @@ public class DrivewaySettingsPanel extends JPanel {
   }
 
   class RouteBeanListModel extends AbstractListModel<RouteBean> {
+
+    private static final long serialVersionUID = 7283441416133755341L;
 
     private final List<RouteBean> all;
 
@@ -677,9 +677,7 @@ public class DrivewaySettingsPanel extends JPanel {
       }
       return removed;
     }
-
   }
-
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   JPanel bottomPanel;
@@ -687,6 +685,9 @@ public class DrivewaySettingsPanel extends JPanel {
   JPanel commandPanel;
   JButton deleteBtn;
   JPanel detailPanel;
+  JTable drivewayCommandTable;
+  DrivewayCommandTableModel drivewayCommandTableModel;
+  JScrollPane drivewayTableSP;
   Box.Filler filler1;
   JComboBox<BlockBean.BlockState> fromBlockStateCB;
   JComboBox<BlockBean> fromCB;
