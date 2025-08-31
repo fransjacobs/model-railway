@@ -18,7 +18,7 @@ Met JCS kun je je layout tekenen, treinen op de rails plaatsen en zien hoe ze va
 
 Ik ben dit project begonnen uit nieuwsgierigheid (en plezier!) om te ontdekken hoe ver ik automatisering op een modelspoorbaan kon brengen zonder afhankelijk te zijn van gesloten, commerciële systemen. Inmiddels is het uitgegroeid tot een volledige tool die:
 
-- Werkt met echte hardware zoals DCC-EX, Märklin CS2/CS3, ESU ECoS en HSI-S88.  
+- Werkt met centrales zoals de Märklin CS2/CS3, ESU ECoS, DCC-EX en HSI-S88.  
 - Je de mogelijkheid geeft om in Autopilot-modus te rijden of handmatig met de Driver Cab.  
 - Live feedback van sensoren en wissels op je layout toont.  
 - Een Virtueel Command Station bevat, zodat je ook zonder hardware kunt experimenteren.  
@@ -27,7 +27,7 @@ Het doel is niet om te concurreren met professionele producten, maar om iets ope
 
 ## 🎯 Waarom dit project?
 
-De meeste commerciële oplossingen voor modelspoorautomatisering voelen als een **black box** — krachtig, maar gesloten, star en soms overkill voor hobby-layouts.  
+De meeste commerciële oplossingen voor modelspoorautomatisering voelen als een **black box** — krachtig, maar gesloten, star en overkill voor (mijn) hobby-layout(s).  
 
 Ik begon **JCS** omdat ik iets anders wilde:  
 
@@ -163,8 +163,6 @@ Begin snel met JCS met de volgende bronnen:
 
 > Tip: Begin met een kleine layout en een paar treinen om functies te ontdekken voordat je opschaalt naar grotere layouts.
 
----
-
 ## 🤝 Bijdragen
 
 Bijdragen zijn **altijd welkom**! Je kunt helpen door:
@@ -174,8 +172,6 @@ Bijdragen zijn **altijd welkom**! Je kunt helpen door:
 - Pull requests in te dienen met fixes of uitbreidingen  
 
 Jouw input helpt JCS beter te maken voor iedereen.  
-
----
 
 ## 📄 Licentie
 
@@ -197,7 +193,7 @@ Heel veel dank aan iedereen die dit project ondersteunt!
     </td>
     <td align="center">
         <a href="https://www.buymeacoffee.com/fransjacobs" target="_blank">
-            <img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Koop me een koffie" height="41" width="174"/>
+            <img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Trakteer me op een koffie" height="41" width="174"/>
         </a>
         <br />
         <sub>Steun de ontwikkeling en houd de treinen rijdend!</sub>
@@ -209,8 +205,6 @@ Ik hoop dat dit project je inspireert om **te experimenteren, knutselen en plezi
 
 — Frans
 
----
-
 ## 📜 Copyright 2019 - 2025 Frans Jacobs
 
 Hierbij wordt gratis toestemming verleend aan iedereen die een kopie van deze software en bijbehorende documentatiebestanden (de "Software") verkrijgt om te werken met de Software **zonder enige beperking**, inclusief de rechten om te gebruiken, kopiëren, wijzigen, samenvoegen, publiceren, distribueren, sublicentiëren en/of verkopen van kopieën van de Software, en om personen aan wie de Software wordt verstrekt dit te doen, onder de volgende voorwaarden:
@@ -218,7 +212,5 @@ Hierbij wordt gratis toestemming verleend aan iedereen die een kopie van deze so
 Bovenstaande copyrightvermelding en deze toestemming dienen te worden opgenomen in alle kopieën of substantieel delen van de Software.
 
 **DE SOFTWARE WORDT GELEVERD "AS IS", ZONDER ENIGE GARANTIE**, expliciet of impliciet, inclusief maar niet beperkt tot de garanties van verkoopbaarheid, geschiktheid voor een bepaald doel en niet-inbreuk. In geen geval zijn de auteurs of copyrighthouders aansprakelijk voor enige claim, schade of andere aansprakelijkheid, hetzij in een contractuele actie, onrechtmatige daad of anderszins, voortvloeiend uit of in verband met het gebruik van de Software.
-
----
 
 > Bedankt dat je deel uitmaakt van de JCS-community — elke bijdrage, suggestie of kop koffie houdt dit hobbyproject in leven! 🚂✨
