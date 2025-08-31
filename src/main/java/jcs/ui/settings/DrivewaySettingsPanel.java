@@ -47,22 +47,21 @@ import javax.swing.SpinnerListModel;
 import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import jcs.entities.AccessoryBean;
+import javax.swing.table.DefaultTableCellRenderer;
 import jcs.entities.BlockBean;
 import jcs.entities.RouteBean;
 import jcs.entities.RouteBean.RouteState;
-import jcs.entities.RouteElementBean;
-import jcs.entities.TileBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.table.model.DrivewayCommandTableModel;
 import org.tinylog.Logger;
 
 /**
- * Dialog panel for importing and editing locomotive settings
+ * Dialog panel viewing Driveway settings.
  *
- * @author Frans Jacobs
  */
 public class DrivewaySettingsPanel extends JPanel {
+
+  private static final long serialVersionUID = 5872167173368421060L;
 
   private final RouteBeanListModel routeListModel;
 
@@ -160,8 +159,7 @@ public class DrivewaySettingsPanel extends JPanel {
       RouteState routeState = selectedRoute.getRouteState();
       routeStateCBModel.setSelectedItem(routeState);
 
-      //drivewayCommandTableModel.refresh();
-      //this.drivewayCommandTable.
+      alignDrivewayCommandsTable();
     } else {
       idLbl.setText(null);
       fromBlock = null;
@@ -172,25 +170,21 @@ public class DrivewaySettingsPanel extends JPanel {
       selectedRoute = null;
       fromBlockCBModel.setSelectedItem(new BlockBean());
       toBlockCBModel.setSelectedItem(new BlockBean());
-
-      //drivewayCommandTableModel.setRouteBean(null);
     }
     enableFields(selectedRoute != null);
   }
 
   private void enableFields(boolean enable) {
-    this.fromCB.setEnabled(false);
-    this.toCB.setEnabled(false);
-    this.fromSuffixSpinner.setEnabled(false);
-    this.toSuffixSpinner.setEnabled(false);
-    this.fromBlockStateCB.setEnabled(false);
-    this.toBlockStateCB.setEnabled(false);
-
-    this.routeStateCB.setEnabled(enable);
-    this.lockedCB.setEnabled(enable);
-
-    this.saveBtn.setEnabled(enable);
-    this.mainTP.setEnabled(enable);
+    fromCB.setEnabled(false);
+    toCB.setEnabled(false);
+    fromSuffixSpinner.setEnabled(false);
+    toSuffixSpinner.setEnabled(false);
+    fromBlockStateCB.setEnabled(false);
+    toBlockStateCB.setEnabled(false);
+    routeStateCB.setEnabled(enable);
+    lockedCB.setEnabled(enable);
+    saveBtn.setEnabled(enable);
+    mainTP.setEnabled(enable);
   }
 
   /**
@@ -552,22 +546,11 @@ public class DrivewaySettingsPanel extends JPanel {
 
   }//GEN-LAST:event_toBlockStateCBActionPerformed
 
-  private List<RouteElementBean> getTurnouts(RouteBean routeBean) {
-    List<RouteElementBean> rel = routeBean.getRouteElements();
-    List<RouteElementBean> turnouts = new ArrayList<>();
-    for (RouteElementBean reb : rel) {
-      if (reb.isTurnout()) {
-        turnouts.add(reb);
-
-        AccessoryBean.AccessoryValue av = reb.getAccessoryValue();
-        AccessoryBean turnout = reb.getTileBean().getAccessoryBean();
-
-        TileBean tb = PersistenceFactory.getService().getTileBean(reb.getTileId());
-        AccessoryBean accessory = tb.getAccessoryBean();
-
-      }
-    }
-    return turnouts;
+  private void alignDrivewayCommandsTable() {
+    DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+    centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+    drivewayCommandTable.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
+    drivewayCommandTable.getColumnModel().getColumn(4).setCellRenderer(centerRenderer);
   }
 
   class RouteBeanByNameSorter implements Comparator<RouteBean> {

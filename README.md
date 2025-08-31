@@ -1,114 +1,145 @@
 # Java Central Station
 
-![Static Badge](https://img.shields.io/badge/Model_Railroad-Automation-blue) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) 
+🎯 A hobby project to let your model trains run themselves — or drive them yourself, all in Java.
 
-![GitHub commit activity](https://img.shields.io/github/commit-activity/w/fransjacobs/model-railway) 
-[![Java CI with Maven](https://github.com/fransjacobs/model-railway/actions/workflows/maven.yml/badge.svg?branch=master)](https://github.com/fransjacobs/model-railway/actions/workflows/maven.yml)
+---
 
-![GitHub Gist last commit](https://img.shields.io/github/last-commit/fransjacobs/model-railway)
-![GitHub issues](https://img.shields.io/github/issues-raw/fransjacobs/model-railway)
-![GitHub Release](https://img.shields.io/github/v/release/fransjacobs/model-railway)
-***
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](#license)  
+[![Release](https://img.shields.io/github/v/release/fransjacobs/model-railway)](https://github.com/fransjacobs/model-railway/releases)  
+![Static Badge](https://img.shields.io/badge/Model_Railroad-Automation-blue)  
+![GitHub last commit](https://img.shields.io/github/last-commit/fransjacobs/model-railway)  
+![GitHub commit activity](https://img.shields.io/github/commit-activity/w/fransjacobs/model-railway)  
+[![Java CI with Maven](https://github.com/fransjacobs/model-railway/actions/workflows/maven.yml/badge.svg?branch=master)](https://github.com/fransjacobs/model-railway/actions/workflows/maven.yml)  
+![GitHub Gist last commit](https://img.shields.io/github/last-commit/fransjacobs/model-railway)  
+![GitHub issues](https://img.shields.io/github/issues-raw/fransjacobs/model-railway)  
+![GitHub Release](https://img.shields.io/github/v/release/fransjacobs/model-railway)  
 
-## About the Project
+---
 
-JCS is a hobby project of me where I try to automate my Model Railway. Over the past years I have worked on and off on several aspects and modules of the software which are needed to drive automatically.
-A short summary of the topics which are needed and used to be able to drive trains automatically:
+## 🚂 About JCS
 
-- Connectivity to the Command Station hardware. (DCC-EX,HSI-S88, Marklin CS2/3 ESU Ecos)
-- Edit and display graphically a layout
-- With the layout be able to route all the possible drive ways
-- Show the routes and driveways in the layout screen
-- Graphically feedback events on track to the layout screen
-- Automatically run locomotives on the layout
-- Input dialogs to setup Accessories, Locomotives, Command stations, etc
-- Locomotive Drive Cap so tha you can manually run you locomotive
-- Virtual Command Station, to ease testing and simulate automatic driving 
-- Build in VNC viewer
-- Monitor Sensor events
+Java Central Station (JCS) is my personal passion project to bring a model railway to life with software.  
+With JCS you can draw your layout, place trains on the tracks, and watch them move from block to block — either under your manual control or fully automated.  
 
-I created a [short video](https://youtu.be/xP6eUdScMY0) demonstrating automatic running of locomotives. Also a [video of pysical locomotives running on the Test Layout](https://www.youtube.com/watch?v=CyLmGk6gfHA)
+I started this project out of curiosity (and fun!) to see how far I could take automation on a model railroad without relying on closed, commercial systems. Along the way, it has grown into a full tool that:
 
-## Why?
+- Works with real hardware like DCC-EX, Märklin CS2/CS3, ESU ECoS, and HSI-S88.  
+- Lets you run in Autopilot mode or drive manually with a Driver Cab.  
+- Shows live sensor and switch feedback on your layout.  
+- Includes a Virtual Command Station, so you can try things out even without hardware.  
 
-There are already many "out of the box" working products. I wanted to create my own to learn and to have FUN!
+The goal isn’t to compete with professional products, but to create something open, extendable, and fun — for anyone who loves tinkering with trains and code. 🚉✨
 
-As I am a great supporter of Open Source I have put the project on github with the purpose for others to use it, learn from it, or improve it.  
+---
 
-So I hope you get inspired!
+## 🎯 Why This Project?
 
-Frans
+Most commercial solutions for model railway automation feel like a **black box** — powerful, but closed, rigid, and sometimes overkill for hobby layouts.  
 
-## Guides
+I started **JCS** because I wanted something different:  
 
-- Setup : [JCS_SETUP](JCS_SETUP.md)
-- Driving : [DRIVING](DRIVING.md)
+- A project where I could **learn by building**.  
+- A chance to **experiment freely** with new ideas.  
+- And above all… to **have fun running trains**! 🚂✨  
 
-## Screenshots
+By making JCS open source, I hope it can also inspire other hobbyists:  
 
-So here are a few screenshots of the Project:
+- Tinkerers who want to peek under the hood.  
+- Builders who want to extend it with their own features.  
+- Or simply anyone looking for a free and flexible alternative for their layout.  
 
-### Thottle / Driver Cab
+---
 
-The Locomotive- and function images are displayed. Images are automatically downloaded from the Central Station.
-Or can be manually added.
+## ✨ Key Features
 
-![UI screenshot: JCS Throttle](assets/driver_cab.png?raw=true)
+- **Connects to command stations**: Märklin CS2/CS3, ESU ECoS, DCC-EX, and HSI-S88.  
+- **Draw your layout**: An interactive graphical editor to design your tracks, blocks, and sensors.  
+- **Run trains automatically**: Let the Autopilot handle routing and block control.  
+- **Or drive them yourself**: Use the built-in Throttle / Driver Cab for manual control.  
+- **See what’s happening in real time**: Live feedback from sensors, switches, and blocks.  
+- **Test without hardware**: A Virtual Command Station lets you experiment on screen.  
+- **Remote visibility**: Built-in VNC viewer for Märklin CS3 and ESU ECoS systems.  
 
-### Layout overview
+> Whether you want to hand the controls to Autopilot, or keep your hands on the throttle, JCS makes your layout come alive.
 
-The (schematic) layout is displayed. Locomotive can be Placed in a Block.
-When the AutoPilot is switched on Locomotive will drive from block to block.
-![UI screenshot: JCS Main Screen](assets/mainscreen.png?raw=true)
+---
 
-In Editmode you can draw a layout using pre defined Tiles.
-also the layout can be routed. (it the very first and early step for the preparation of automatic running).
-![UI screenshot: JCS Edit Screen](assets/mainscreen_edit_route.png?raw=true)
+## Screenshots & Demos
 
-### Sensor Monitor
+- **Throttle / Driver Cab**: Locomotive control interface  
+- **Layout Editor & Autopilot**: Design your layout, place locomotives, and automate them  
+- **Sensor Monitor**: View live track sensor data  
+- **Keyboard Panel**: Manually toggle accessories or follow sensor inputs  
+- **Preferences / Locomotive Import**: Import from Marklin CS2/3 or add icons manually  
 
-To debug or easly setup your feedback sensors 
-![UI screenshot: JCS Sensor Monitor](assets/sensor_monitor.png?raw=true)
+---
 
-### Keyboard Panel for switching accessories and viewing feedback sensor status
+## Supported Command Stations
 
-![UI screenshot: JCS keyboard Screen](assets/keyboard-panel.png?raw=true)
+- [Marklin CS-3](https://www.marklin.nl/producten/details/article/60216)  
+- [Marklin CS-2](https://www.marklin.nl/producten/details/article/60215) — [Protocol Documentation](http://streaming.maerklin.de/public-media/cs2/cs2CAN-Protokoll-2_0.pdf)  
+- [ESU ECoS](https://www.esu.eu/) — [Protocol Documentation ESU](https://github.com/cbries/railessentials/blob/master/ecoslibNet48/Documentation/ecos_pc_interface3.pdf) — [Community Version](https://github.com/TabalugaDrache/TCPEcos/files/13458970/Netzwerkspezifikation_2023.pdf)  
+- [DCC-EX](https://dcc-ex.com) — can be connected either via serial port or network  
+- [HSI-S88](https://www.ldt-infocenter.com/dokuwiki/doku.php?id=en:hsi-88-usb) — or the [DIY version](https://mobatron.4lima.de/2020/05/s88-scanner-mit-arduino)  
 
-### Import Locomotives from a CS-2 or CS-3
+---
 
-![UI screenshot: JCS Preferences Locomotives](assets/prefs_locomotives.png?raw=true)
+### Current Status & Roadmap
 
-## Releases
+Under active development:  
 
-- [Latest Release V 0.0.2](https://github.com/fransjacobs/model-railway/releases/tag/V0.0.2)
+- Improving documentation  
+- Enhancing the GUI  
+- Adding signal displays in automatic running  
+- Internationalization (multi-language support)  
+- Expanding unit tests  
+- More hardware integrations  
 
-## Supported Hardware
+---
 
-- [DCC-EX](https://dcc-ex.com) can be connected either via serial port or network
-- [Marklin CS-2](https://www.marklin.nl/producten/details/article/60215) [Protocol Documentation](http://streaming.maerklin.de/public-media/cs2/cs2CAN-Protokoll-2_0.pdf)
-- [Marklin CS-3](https://www.marklin.nl/producten/details/article/60216)
-- [HSI-S88](https://www.ldt-infocenter.com/dokuwiki/doku.php?id=en:hsi-88-usb) or the [DIY version](https://mobatron.4lima.de/2020/05/s88-scanner-mit-arduino) for feedback
-- [ESO EcoS](https://www.esu.eu/) [Protocol Documentation ESU](https://github.com/cbries/railessentials/blob/master/ecoslibNet48/Documentation/ecos_pc_interface3.pdf) [Community Version](https://github.com/TabalugaDrache/TCPEcos/files/13458970/Netzwerkspezifikation_2023.pdf)
+## Getting Started
 
+### Prerequisites
 
-## Current status
+- Java 21 (e.g. Temurin OpenJDK)  
+- A supported command station  
 
-Currently the following feature are in development:
+### Download a Prebuilt Release
 
-- Documentation
-- Enhance GUI
-- Show Signal aspects in automatic driving
-- Internationalization enable multiple languages
-- Add more Unit tests
-- ...
+The latest version is **v0.0.2** (released September 27, 2024):  
+
+- First fully automated driving version  
+- Included executables for Windows, macOS, Linux, and Uber-JAR bundle  
+- See full changelog in the [Releases section](https://github.com/fransjacobs/model-railway/releases)  
+
+### Build from Source
+
+See [BUILDING.md](BUILDING.md) for full build instructions.
+
+### Setup and Usage
+
+- Walkthrough: [JCS_SETUP.md](JCS_SETUP.md)  
+- Driving and automation guide: [DRIVING.md](DRIVING.md)  
+- Interface documentation: [INTERFACES.md](INTERFACES.md)  
+
+---
+
+## Contribution
+
+Contributions, bug reports, or general input are very welcome!  
+Feel free to open issues, propose enhancements, or submit pull requests.
+
+---
 
 ## License
 
-[LICENSE](LICENSE.md)
+Licensed under the Apache-2.0 License. See the [LICENSE](LICENSE) file for details.  
 
-## Build JCS from source
+---
 
-[BUILDING](BUILDING.md)
+I hope you get inspired!  
+
+Frans
 
 ## Contributors
 
