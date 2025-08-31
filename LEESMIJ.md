@@ -98,7 +98,17 @@ Actief in ontwikkeling:
 
 ---
 
-## Aan de slag
+## 🎮 Wil je het zelf proberen?
+
+Als je JCS zelf wilt uitproberen, wordt dat zeer gewaardeerd!  
+
+Voordat je begint, zorg ervoor dat je layout aan een paar eisen voldoet:
+
+- Elk blok moet **ten minste 2 feedbacksensoren** hebben.  
+- Een **wissel** mag geen onderdeel zijn van een blok.  
+- Je layout moet **minimaal 2 blokken** bevatten.  
+
+Als je layout klaar is, kun je beginnen met het verkennen van Autopilot en handmatig rijden met de Driver Cab.
 
 ### Vereisten
 

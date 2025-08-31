@@ -2,17 +2,20 @@
 
 🎯 A hobby project to let your model trains run themselves — or drive them yourself, all in Java.
 
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](#license)  
+[![Release](https://img.shields.io/github/v/release/fransjacobs/model-railway)](https://github.com/fransjacobs/model-railway/releases)  
+[![GitHub issues](https://img.shields.io/github/issues-raw/fransjacobs/model-railway)](https://github.com/fransjacobs/model-railway/issues)  
+
+![Static Badge](https://img.shields.io/badge/Model_Railroad-Automation-blue)  
+[![Java CI with Maven](https://github.com/fransjacobs/model-railway/actions/workflows/maven.yml/badge.svg?branch=master)](https://github.com/fransjacobs/model-railway/actions/workflows/maven.yml)  
+
+![GitHub last commit](https://img.shields.io/github/last-commit/fransjacobs/model-railway)  
+![GitHub commit activity](https://img.shields.io/github/commit-activity/w/fransjacobs/model-railway)  
+![GitHub Gist last commit](https://img.shields.io/github/last-commit/fransjacobs/model-railway)  
+
 ---
 
-[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](#license)  | [![Release](https://img.shields.io/github/v/release/fransjacobs/model-railway)](https://github.com/fransjacobs/model-railway/releases)  
-![Static Badge](https://img.shields.io/badge/Model_Railroad-Automation-blue)  | [![Java CI with Maven](https://github.com/fransjacobs/model-railway/actions/workflows/maven.yml/badge.svg?branch=master)](https://github.com/fransjacobs/model-railway/actions/workflows/maven.yml)
-![GitHub last commit](https://img.shields.io/github/last-commit/fransjacobs/model-railway) | ![GitHub commit activity](https://img.shields.io/github/commit-activity/w/fransjacobs/model-railway) | ![GitHub Gist last commit](https://img.shields.io/github/last-commit/fransjacobs/model-railway) 
- 
-![GitHub issues](https://img.shields.io/github/issues-raw/fransjacobs/model-railway)  
-
----
-
-## 🚂 About JCS
+## 🚂 About
 
 Java Central Station (JCS) is my personal passion project to bring a model railway to life with software.  
 With JCS you can draw your layout, place trains on the tracks, and watch them move from block to block — either under your manual control or fully automated.  
@@ -25,8 +28,6 @@ I started this project out of curiosity (and fun!) to see how far I could take a
 - Includes a Virtual Command Station, so you can try things out even without hardware.  
 
 The goal isn’t to compete with professional products, but to create something open, extendable, and fun — for anyone who loves tinkering with trains and code. 🚉✨
-
----
 
 ## 🎯 Why This Project?
 
@@ -44,8 +45,6 @@ By making JCS open source, I hope it can also inspire other hobbyists:
 - Builders who want to extend it with their own features.  
 - Or simply anyone looking for a free and flexible alternative for their layout.  
 
----
-
 ## ✨ Key Features
 
 - **Connects to command stations**: Märklin CS2/CS3, ESU ECoS, DCC-EX, and HSI-S88.  
@@ -60,9 +59,7 @@ By making JCS open source, I hope it can also inspire other hobbyists:
 
 ---
 
-## Screenshots & Demos
-
-## 🖼️ Screenshots & Demos
+## 🖼️ Screenshots
 
 | Main Screen     |                        
 |-----------------|
@@ -92,16 +89,6 @@ By making JCS open source, I hope it can also inspire other hobbyists:
 |------------------|
 | ![Command Station Settings (CS3)](./assets/command-station-CS3.png) | 
 
-
-
-- **Throttle / Driver Cab**: Locomotive control interface  
-- **Layout Editor & Autopilot**: Design your layout, place locomotives, and automate them  
-- **Sensor Monitor**: View live track sensor data  
-- **Keyboard Panel**: Manually toggle accessories or follow sensor inputs  
-- **Preferences / Locomotive Import**: Import from Marklin CS2/3 or add icons manually  
-
----
-
 ## Supported Command Stations
 
 - [Marklin CS-3](https://www.marklin.nl/producten/details/article/60216)  
@@ -110,9 +97,7 @@ By making JCS open source, I hope it can also inspire other hobbyists:
 - [DCC-EX](https://dcc-ex.com) — can be connected either via serial port or network  
 - [HSI-S88](https://www.ldt-infocenter.com/dokuwiki/doku.php?id=en:hsi-88-usb) — or the [DIY version](https://mobatron.4lima.de/2020/05/s88-scanner-mit-arduino)  
 
----
-
-### Current Status & Roadmap
+## Current Status & Roadmap
 
 Under active development:  
 
@@ -125,7 +110,17 @@ Under active development:
 
 ---
 
-## Getting Started
+## 🎮 Do You Want to Try It Yourself?
+
+If you’d like to try JCS yourself, it would be greatly appreciated!  
+
+Before you start, make sure your layout meets a few requirements:
+
+- Each block must have **at least 2 feedback sensors**.  
+- A **turnout (switch)** cannot be part of a block.  
+- Your layout should contain **at least 2 blocks**.  
+
+Once your layout is ready, you can start exploring Autopilot and manual control with the Driver Cab.
 
 ### Prerequisites
 
