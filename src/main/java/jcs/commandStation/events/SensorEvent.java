@@ -42,12 +42,6 @@ public class SensorEvent {
     return sensorBean.getId();
   }
 
-//  @Deprecated
-//  @Override
-//  public String getIdString() {
-//    return sensorBean.getId().toString();
-//  }
-
   public Integer getDeviceId() {
     return sensorBean.getDeviceId();
   }
@@ -57,13 +51,12 @@ public class SensorEvent {
   }
 
   public boolean isChanged() {
-    //boolean active = sensorBean.isActive();
     boolean prevActive = sensorBean.isPreviousActive();
     return newValue != prevActive;
   }
 
   public boolean isActive() {
-    return newValue; //sensorBean.isActive();
+    return newValue;
   }
 
   @Override

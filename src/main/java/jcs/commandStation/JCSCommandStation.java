@@ -32,6 +32,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedTransferQueue;
+import java.util.concurrent.TransferQueue;
 import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
 import jcs.commandStation.events.AccessoryEvent;
@@ -85,6 +87,11 @@ public class JCSCommandStation {
 
   private static final String AWT_THREAD = "AWT-EventQueue-0";
 
+  //private final ConcurrentLinkedQueue<SensorEvent> sensorEventQueue;
+  private final TransferQueue<SensorEvent> sensorEventQueue;
+
+  private SensorEventHandlerThread sensorEventHandlerThread;
+
   /**
    * Wrapper around the "real" CommandStation implementation.<br>
    * Operations to commandStations should not be performed in the EventDispatch thread.<br>
@@ -105,6 +112,10 @@ public class JCSCommandStation {
     locomotiveDirectionEventListeners = new LinkedList<>();
     locomotiveSpeedEventListeners = new LinkedList<>();
     supportedProtocols = new HashSet<>();
+
+    //sensorEventQueue = new ConcurrentLinkedQueue();
+    sensorEventQueue = new LinkedTransferQueue<>();
+    sensorEventHandlerThread = new SensorEventHandlerThread(this);
 
     try {
       if (decoderController != null && (decoderController.getCommandStationBean() != null || !accessoryControllers.isEmpty() || !feedbackControllers.isEmpty()) && autoConnectController) {
@@ -245,7 +256,11 @@ public class JCSCommandStation {
       }
     }
 
-    Logger.trace("Connected Controllers:  Decoder: " + (decoderControllerConnected ? "Yes" : "No") + " Accessory: " + accessoryCntrConnected + " Feedback: " + feedbackCntrConnected);
+    if (feedbackCntrConnected > 0) {
+      this.sensorEventHandlerThread.start();
+    }
+
+    Logger.debug("Connected Controllers:  Decoder: " + (decoderControllerConnected ? "Yes" : "No") + " Accessory: " + accessoryCntrConnected + " Feedback: " + feedbackCntrConnected);
 
     if (decoderControllerConnected && !allreadyConnected && decoderController != null) {
       decoderController.addConnectionEventListener(new ConnectionListener(this));
@@ -297,6 +312,10 @@ public class JCSCommandStation {
   }
 
   public void disconnect() {
+//    if (sensorEventHandlerThread.isRunning()) {
+//      sensorEventHandlerThread.quit();
+//    }
+
     for (FeedbackController fc : feedbackControllers.values()) {
       if (fc != decoderController) {
         fc.disconnect();
@@ -673,33 +692,40 @@ public class JCSCommandStation {
 
     @Override
     public void onSensorChange(SensorEvent event) {
-      SensorBean sb = event.getSensorBean();
-      boolean newValue = event.isActive();
-      //SensorBean dbsb = PersistenceFactory.getService().getSensor(sb.getDeviceId(), sb.getContactId());
-      SensorBean dbsb = PersistenceFactory.getService().getSensor(event.getSensorId());
 
-      if (dbsb == null) {
-        //Try using the deviceId and contactId and command station...
-        dbsb = PersistenceFactory.getService().getSensor(sb.getDeviceId(), sb.getContactId());
+      try {
+        commandStation.sensorEventQueue.put(event);
+      } catch (InterruptedException ex) {
+        Logger.trace("Interupted! " + ex.getMessage());
       }
 
-      if (dbsb != null) {
-        if (sb.getId() == null) {
-          sb.setId(dbsb.getId());
-        }
-        sb.setName(dbsb.getName());
-        sb.setActive(newValue);
-        PersistenceFactory.getService().persist(sb);
-      }
-
-      //Avoid concurrent modification exceptions
-      List<SensorEventListener> snapshot = new ArrayList<>(commandStation.sensorListeners);
-
-      for (SensorEventListener sl : snapshot) {
-        if (sl != null) {
-          sl.onSensorChange(event);
-        }
-      }
+//      SensorBean sb = event.getSensorBean();
+//      boolean newValue = event.isActive();
+//      //SensorBean dbsb = PersistenceFactory.getService().getSensor(sb.getDeviceId(), sb.getContactId());
+//      SensorBean dbsb = PersistenceFactory.getService().getSensor(event.getSensorId());
+//
+//      if (dbsb == null) {
+//        //Try using the deviceId and contactId and command station...
+//        dbsb = PersistenceFactory.getService().getSensor(sb.getDeviceId(), sb.getContactId());
+//      }
+//
+//      if (dbsb != null) {
+//        if (sb.getId() == null) {
+//          sb.setId(dbsb.getId());
+//        }
+//        sb.setName(dbsb.getName());
+//        sb.setActive(newValue);
+//        PersistenceFactory.getService().persist(sb);
+//      }
+//
+//      //Avoid concurrent modification exceptions
+//      List<SensorEventListener> snapshot = new ArrayList<>(commandStation.sensorListeners);
+//
+//      for (SensorEventListener sl : snapshot) {
+//        if (sl != null) {
+//          sl.onSensorChange(event);
+//        }
+//      }
     }
   }
 
@@ -924,6 +950,90 @@ public class JCSCommandStation {
         Logger.trace(event.getSource() + " is Disconnected!");
         //jcsCommandStationImpl.disconnect();
       }
+    }
+  }
+
+  /**
+   * Handle Sensor Events, which are unsolicited messages from the CS.
+   */
+  private class SensorEventHandlerThread extends Thread {
+
+    @SuppressWarnings("FieldMayBeFinal")
+    private boolean stop = false;
+    private boolean quit = true;
+
+    private JCSCommandStation jcsCommandStation;
+
+    //private final TransferQueue<SensorEvent> feedbackEventQueue;
+    SensorEventHandlerThread(JCSCommandStation jcsCommandStation) {
+      this.jcsCommandStation = jcsCommandStation;
+    }
+
+    void quit() {
+      this.quit = true;
+    }
+
+    boolean isRunning() {
+      return !this.quit;
+    }
+
+    boolean isFinished() {
+      return this.stop;
+    }
+
+    @Override
+    public void run() {
+      quit = false;
+      Thread.currentThread().setName("JCS-SENSOR-EVENT-HANDLER");
+
+      Logger.trace("Event Handler Started...");
+
+      while (isRunning()) {
+        try {
+          try {
+            SensorEvent event = jcsCommandStation.sensorEventQueue.take();
+            SensorBean sb = event.getSensorBean();
+            boolean newValue = event.isActive();
+            SensorBean dbsb = PersistenceFactory.getService().getSensor(event.getSensorId());
+
+            if (dbsb == null) {
+              //Try using the deviceId and contactId and command station...
+              dbsb = PersistenceFactory.getService().getSensor(sb.getDeviceId(), sb.getContactId());
+            }
+
+            if (dbsb != null) {
+              if (sb.getId() == null) {
+                sb.setId(dbsb.getId());
+              }
+              sb.setName(dbsb.getName());
+
+              //sb.setPreviousActive(dbsb.isActive());
+              sb.setActive(dbsb.isActive());
+              sb.setActive(newValue);
+              
+              PersistenceFactory.getService().persist(sb);
+            }
+
+            //Avoid concurrent modification exceptions
+            List<SensorEventListener> snapshot = new ArrayList<>(this.jcsCommandStation.sensorListeners);
+            
+            Logger.trace("SensorEvent from Sensor " + event.getSensorId() + ": " + event.isActive()+" Fireing " + snapshot.size() + " sensorListeners...");
+         
+            for (SensorEventListener sl : snapshot) {
+              if (sl != null) {
+                sl.onSensorChange(event);
+              }
+            }
+
+          } catch (InterruptedException ex) {
+            Logger.error(ex);
+          }
+        } catch (Exception e) {
+          Logger.error("Error in Handling Thread. Cause: " + e.getMessage());
+        }
+      }
+
+      Logger.debug("Stop Event handling");
     }
   }
 
