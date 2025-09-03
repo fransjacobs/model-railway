@@ -39,7 +39,7 @@ class StartState extends DispatcherState implements SensorEventListener {
     //Register this state as a SensorEventListener, therefor a handle to the dispacher is needed
     this.dispatcher = dispatcher;
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
-    
+
     if (!locomotiveStarted) {
       BlockBean departureBlock = dispatcher.getDepartureBlock();
       BlockBean destinationBlock = dispatcher.getDestinationBlock();
@@ -87,7 +87,7 @@ class StartState extends DispatcherState implements SensorEventListener {
       }
 
       int fullscale = locomotive.getTachoMax();
-      double velocity = (speed3 / (double) fullscale) * 1000;    
+      double velocity = (speed3 / (double) fullscale) * 1000;
       dispatcher.changeLocomotiveVelocity(locomotive, velocity);
 
       locomotiveStarted = true;
@@ -114,6 +114,11 @@ class StartState extends DispatcherState implements SensorEventListener {
       }
       return this;
     }
+  }
+
+  @Override
+  public Integer getSensorId() {
+    return enterSensorId;
   }
 
   @Override

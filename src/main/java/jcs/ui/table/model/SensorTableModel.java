@@ -64,6 +64,11 @@ public class SensorTableModel extends BeanTableModel<SensorBean> implements Sens
   }
 
   @Override
+  public Integer getSensorId() {
+    return -1;
+  }
+
+  @Override
   public void onSensorChange(SensorEvent event) {
     SensorBean sensor = event.getSensorBean();
     Integer key = null;
@@ -85,9 +90,9 @@ public class SensorTableModel extends BeanTableModel<SensorBean> implements Sens
         beans.add(sensor);
       }
 
-      this.fireTableDataChanged();
+      fireTableDataChanged();
     } else {
-      Logger.warn("Sensor `event without a identifiable key " + sensor);
+      Logger.warn("Sensor event without a identifiable key " + sensor);
     }
   }
 

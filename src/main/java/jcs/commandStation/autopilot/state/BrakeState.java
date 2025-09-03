@@ -101,6 +101,11 @@ class BrakeState extends DispatcherState implements SensorEventListener {
   }
 
   @Override
+  public Integer getSensorId() {
+    return inSensorId;
+  }
+
+  @Override
   public void onSensorChange(SensorEvent sensorEvent) {
     if (inSensorId.equals(sensorEvent.getSensorId())) {
       if (sensorEvent.isActive()) {

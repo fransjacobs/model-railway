@@ -17,5 +17,7 @@ package jcs.commandStation.events;
 
 public interface SensorEventListener {
 
+  Integer getSensorId();
+  
   void onSensorChange(SensorEvent sensorEvent);
 }
