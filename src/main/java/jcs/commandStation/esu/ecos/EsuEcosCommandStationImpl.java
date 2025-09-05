@@ -48,10 +48,10 @@ import jcs.commandStation.events.LocomotiveFunctionEvent;
 import jcs.commandStation.events.LocomotiveFunctionEventListener;
 import jcs.commandStation.events.LocomotiveSpeedEvent;
 import jcs.commandStation.events.LocomotiveSpeedEventListener;
-import jcs.commandStation.events.SensorEventListener;
 import jcs.commandStation.autopilot.DriveSimulator;
 import jcs.commandStation.VirtualConnection;
 import jcs.commandStation.entities.Device;
+import jcs.commandStation.events.AllSensorEventsListener;
 import static jcs.entities.AccessoryBean.AccessoryValue.GREEN;
 import static jcs.entities.AccessoryBean.AccessoryValue.RED;
 import jcs.entities.LocomotiveBean;
@@ -409,8 +409,8 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     reply = connection.sendMessage(EcosMessageFactory.getReleaseLocomotiveControl(locUid));
     Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
 
-    LocomotiveSpeedEvent vme = new LocomotiveSpeedEvent(locUid, 0, this.commandStationBean.getId());
-    LocomotiveDirectionEvent dce = new LocomotiveDirectionEvent(locUid, direction, this.commandStationBean.getId());
+    LocomotiveSpeedEvent vme = new LocomotiveSpeedEvent(locUid, commandStationBean.getId(), 0);
+    LocomotiveDirectionEvent dce = new LocomotiveDirectionEvent(locUid, commandStationBean.getId(), direction);
 
     //TODO: think about threading....
     fireDirectionEventListeners(dce);
@@ -432,7 +432,7 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     reply = connection.sendMessage(EcosMessageFactory.getReleaseLocomotiveControl(locUid));
     Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
 
-    LocomotiveSpeedEvent vme = new LocomotiveSpeedEvent(locUid, speed, this.commandStationBean.getId());
+    LocomotiveSpeedEvent vme = new LocomotiveSpeedEvent(locUid, commandStationBean.getId(), speed);
 
     //TODO: think about threading....
     Logger.trace("Speed changed to: " + speed + " speedstep: " + speedstep + " for loco ID: " + locUid);
@@ -463,7 +463,7 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     //TODO: think about threading....
     Logger.trace("Function " + functionNumber + " changed to: " + (flag ? "On" : "Off") + " for loco ID: " + locUid);
 
-    LocomotiveFunctionEvent lfe = new LocomotiveFunctionEvent(locUid, functionNumber, flag);
+    LocomotiveFunctionEvent lfe = new LocomotiveFunctionEvent(locUid, commandStationBean.getId(), functionNumber, flag);
     fireFunctionEventListeners(lfe);
   }
 
@@ -577,10 +577,11 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
   }
 
   @Override
-  public void fireSensorEventListeners(SensorEvent sensorEvent) {
-    Logger.trace("SensorEvent: " + sensorEvent);
-    if (sensorEventListeners != null && !sensorEventListeners.isEmpty()) {
-      for (SensorEventListener listener : sensorEventListeners) {
+  public void fireAllSensorEventsListeners(SensorEvent sensorEvent) {
+    if (allSensorEventsListeners != null && !allSensorEventsListeners.isEmpty()) {
+      Logger.trace("SensorEvent: " + sensorEvent + " Firing " + allSensorEventsListeners.size() + " listeners");
+      List<AllSensorEventsListener> snapshot = new ArrayList<>(allSensorEventsListeners);
+      for (AllSensorEventsListener listener : snapshot) {
         listener.onSensorChange(sensorEvent);
       }
     }
@@ -594,27 +595,27 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
   }
 
   void fireDirectionEventListeners(final LocomotiveDirectionEvent directionEvent) {
-    if (directionEvent.isValid()) {
+    //if (directionEvent.isValid()) {
       for (LocomotiveDirectionEventListener listener : this.locomotiveDirectionEventListeners) {
         listener.onDirectionChange(directionEvent);
       }
-    }
+    //}
   }
 
   void fireLocomotiveSpeedEventListeners(final LocomotiveSpeedEvent speedEvent) {
-    if (speedEvent.isValid()) {
+    //if (speedEvent.isValid()) {
       for (LocomotiveSpeedEventListener listener : this.locomotiveSpeedEventListeners) {
         listener.onSpeedChange(speedEvent);
       }
-    }
+    //}
   }
 
   void fireFunctionEventListeners(final LocomotiveFunctionEvent functionEvent) {
-    if (functionEvent.isValid()) {
+    //if (functionEvent.isValid()) {
       for (LocomotiveFunctionEventListener listener : this.locomotiveFunctionEventListeners) {
         listener.onFunctionChange(functionEvent);
       }
-    }
+    //}
   }
 
   void fireAccessoryEventListeners(final AccessoryEvent accessoryEvent) {

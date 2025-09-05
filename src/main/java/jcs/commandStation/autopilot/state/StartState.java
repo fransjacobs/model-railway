@@ -60,7 +60,7 @@ class StartState extends DispatcherState implements SensorEventListener {
       enterSensorId = dispatcher.getEnterSensorId();
       Logger.trace("Destination: " + destinationBlock.getId() + " Enter Sensor: " + enterSensorId + "...");
 
-      JCS.getJcsCommandStation().addSensorEventListener(this);
+      JCS.getJcsCommandStation().addSensorEventListener(enterSensorId, this);
 
       //Register the sensor also a an expected event
       ExpectedSensorEventHandler esh = new ExpectedSensorEventHandler(enterSensorId, dispatcher);
@@ -97,7 +97,7 @@ class StartState extends DispatcherState implements SensorEventListener {
     if (canAdvanceToNextState) {
       DispatcherState newState = new EnterBlockState();
       //Remove handler as the state will now change
-      JCS.getJcsCommandStation().removeSensorEventListener(this);
+      JCS.getJcsCommandStation().removeSensorEventListener(enterSensorId, this);
 
       return newState;
     } else {

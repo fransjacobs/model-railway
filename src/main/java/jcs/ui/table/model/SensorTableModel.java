@@ -15,7 +15,6 @@
  */
 package jcs.ui.table.model;
 
-import jcs.ui.table.model.BeanTableModel;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -23,15 +22,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import jcs.commandStation.events.SensorEvent;
-import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.SensorBean;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
+import jcs.commandStation.events.AllSensorEventsListener;
 
 /**
  * @author frans
  */
-public class SensorTableModel extends BeanTableModel<SensorBean> implements SensorEventListener {
+public class SensorTableModel extends BeanTableModel<SensorBean> implements AllSensorEventsListener {
 
   private static final long serialVersionUID = -5544147259543750662L;
 
@@ -61,11 +60,6 @@ public class SensorTableModel extends BeanTableModel<SensorBean> implements Sens
       List<SensorBean> sensorList = new LinkedList<>();
       return sensorList;
     }
-  }
-
-  @Override
-  public Integer getSensorId() {
-    return -1;
   }
 
   @Override

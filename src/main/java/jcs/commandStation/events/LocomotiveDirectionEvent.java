@@ -16,76 +16,76 @@
 package jcs.commandStation.events;
 
 import java.io.Serializable;
-import java.util.Objects;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.Direction;
 
 /**
  *
  */
-public class LocomotiveDirectionEvent implements Serializable {
+public class LocomotiveDirectionEvent extends LocomotiveEvent implements Serializable {
 
-  private LocomotiveBean locomotiveBean;
+  //private LocomotiveBean locomotiveBean;
 
   public LocomotiveDirectionEvent(LocomotiveBean locomotiveBean) {
-    this.locomotiveBean = locomotiveBean;
+    super(locomotiveBean);
   }
 
-  public LocomotiveDirectionEvent(long locomotiveBeanId, LocomotiveBean.Direction direction, String commandStationId) {
-    createLocomotiveBean(locomotiveBeanId, direction, commandStationId);
+  public LocomotiveDirectionEvent(long locomotiveBeanId, String commandStationId, LocomotiveBean.Direction direction) {
+    super(locomotiveBeanId,commandStationId);
+    this.locomotiveBean.setDirection(direction);
   }
 
-  private void createLocomotiveBean(long locomotiveBeanId, LocomotiveBean.Direction direction, String commandStationId) {
-    locomotiveBean = new LocomotiveBean();
-    locomotiveBean.setId(locomotiveBeanId);
-    locomotiveBean.setCommandStationId(commandStationId);
-    locomotiveBean.setVelocity(0);
-    locomotiveBean.setDirection(direction);
-  }
+//  private void createLocomotiveBean(long locomotiveBeanId, LocomotiveBean.Direction direction, String commandStationId) {
+//    locomotiveBean = new LocomotiveBean();
+//    locomotiveBean.setId(locomotiveBeanId);
+//    locomotiveBean.setCommandStationId(commandStationId);
+//    locomotiveBean.setVelocity(0);
+//    locomotiveBean.setDirection(direction);
+//  }
 
-  public LocomotiveBean getLocomotiveBean() {
-    return locomotiveBean;
-  }
+//  public LocomotiveBean getLocomotiveBean() {
+//    return locomotiveBean;
+//  }
 
-  public void setLocomotiveBean(LocomotiveBean locomotiveBean) {
-    this.locomotiveBean = locomotiveBean;
-  }
+//  public void setLocomotiveBean(LocomotiveBean locomotiveBean) {
+//    this.locomotiveBean = locomotiveBean;
+//  }
 
-  public boolean isValid() {
-    return this.locomotiveBean != null && this.locomotiveBean.getId() != null;
-  }
+//  public boolean isValid() {
+//    return this.locomotiveBean != null && this.locomotiveBean.getId() != null;
+//  }
 
   public Direction getNewDirection() {
     return this.locomotiveBean.getDirection();
   }
 
-  public boolean isEventFor(LocomotiveBean locomotive) {
-    if (locomotive != null) {
-      Long id = locomotiveBean.getId();
+//  public boolean isEventFor(LocomotiveBean locomotive) {
+//    if (locomotive != null) {
+//      Long id = locomotiveBean.getId();
+//
+//      String csId = locomotiveBean.getCommandStationId();
+//      int address = locomotiveBean.getAddress();
+//      LocomotiveBean.DecoderType decoderType = locomotiveBean.getDecoderType();
+//
+//      if (Objects.equals(id, locomotive.getId())) {
+//        return true;
+//      } else {
+//        //Check also the logical key
+//        if (!Objects.equals(csId, locomotive.getCommandStationId())) {
+//          return false;
+//        }
+//        if (!Objects.equals(decoderType, locomotive.getDecoderType())) {
+//          return false;
+//        }
+//        return Objects.equals(address, locomotive.getAddress());
+//      }
+//    } else {
+//      return false;
+//    }
+//  }
 
-      String csId = locomotiveBean.getCommandStationId();
-      int address = locomotiveBean.getAddress();
-      LocomotiveBean.DecoderType decoderType = locomotiveBean.getDecoderType();
-
-      if (Objects.equals(id, locomotive.getId())) {
-        return true;
-      } else {
-        //Check also the logical key
-        if (!Objects.equals(csId, locomotive.getCommandStationId())) {
-          return false;
-        }
-        if (!Objects.equals(decoderType, locomotive.getDecoderType())) {
-          return false;
-        }
-        return Objects.equals(address, locomotive.getAddress());
-      }
-    } else {
-      return false;
-    }
-  }
-
-  public Long getId() {
-    return this.locomotiveBean.getId();
-  }
+//  public Long getId() {
+//    return this.locomotiveBean.getId();
+//  }
 
 }

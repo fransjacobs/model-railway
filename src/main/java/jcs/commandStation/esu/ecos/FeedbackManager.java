@@ -91,7 +91,7 @@ class FeedbackManager {
       if (event) {
         if (ecosCommandStation != null) {
           for (SensorEvent sensorEvent : changedSensors) {
-            ecosCommandStation.fireSensorEventListeners(sensorEvent);
+            ecosCommandStation.fireAllSensorEventsListeners(sensorEvent);
           }
         }
       }

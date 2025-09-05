@@ -60,7 +60,7 @@ class ContinueState extends DispatcherState implements SensorEventListener {
     dispatcher.setWaitForSensorid(inSensorId);
 
     //Register this state as a SensorEventListener
-    JCS.getJcsCommandStation().addSensorEventListener(this);
+    JCS.getJcsCommandStation().addSensorEventListener(inSensorId, this);
     Logger.trace("Destination block " + destinationBlock.getId() + " In SensorId: " + inSensorId);
 
     //Wait until the in sensor is hit by the locomotive
@@ -68,7 +68,7 @@ class ContinueState extends DispatcherState implements SensorEventListener {
     if (canAdvanceToNextState) {
       DispatcherState newState = new InBlockState();
       //Remove handler as the state will now change
-      JCS.getJcsCommandStation().removeSensorEventListener(this);
+      JCS.getJcsCommandStation().removeSensorEventListener(inSensorId, this);
 
       return newState;
     } else {

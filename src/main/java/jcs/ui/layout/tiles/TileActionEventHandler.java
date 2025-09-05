@@ -90,7 +90,7 @@ class TileActionEventHandler extends Thread {
     //Logger.trace("Firing Sensor Action " + sensorEvent.getIdString() + " -> " + sensorEvent.isActive());
     List<FeedbackController> acl = JCS.getJcsCommandStation().getFeedbackControllers();
     for (FeedbackController fbc : acl) {
-      fbc.fireSensorEventListeners(sensorEvent);
+      fbc.fireAllSensorEventsListeners(sensorEvent);
     }
   }
 

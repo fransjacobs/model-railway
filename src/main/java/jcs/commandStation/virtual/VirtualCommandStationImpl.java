@@ -37,11 +37,11 @@ import jcs.commandStation.events.LocomotiveSpeedEventListener;
 import jcs.commandStation.events.PowerEvent;
 import jcs.commandStation.events.PowerEventListener;
 import jcs.commandStation.events.SensorEvent;
-import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.CommandStationBean;
 import jcs.commandStation.entities.FeedbackModule;
 import jcs.commandStation.entities.InfoBean;
+import jcs.commandStation.events.AllSensorEventsListener;
 import jcs.entities.LocomotiveBean;
 import jcs.util.NetworkUtil;
 import org.tinylog.Logger;
@@ -115,12 +115,12 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   }
 
   @Override
-   public List<Device> getDevices() {
+  public List<Device> getDevices() {
     List<Device> devices = new ArrayList<>();
-    
+
     return devices;
   }
-  
+
   @Override
   public String getIp() {
     return NetworkUtil.getIPv4HostAddress().getHostAddress();
@@ -156,7 +156,7 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
     if (this.power && this.connected) {
       Logger.debug("locUid " + locUid + " direction " + direction);
 
-      LocomotiveDirectionEvent lde = new LocomotiveDirectionEvent(locUid, direction, commandStationBean.getId());
+      LocomotiveDirectionEvent lde = new LocomotiveDirectionEvent(locUid, commandStationBean.getId(), direction);
 
       notifyLocomotiveDirectionEventListeners(lde);
     } else {
@@ -171,11 +171,11 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   }
 
   private void fireAllDirectionEventListeners(final LocomotiveDirectionEvent directionEvent) {
-    if (directionEvent.isValid()) {
+    //if (directionEvent.isValid()) {
       for (LocomotiveDirectionEventListener listener : this.locomotiveDirectionEventListeners) {
         listener.onDirectionChange(directionEvent);
       }
-    }
+    //}
   }
 
   @Override
@@ -183,7 +183,7 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
     if (this.power && connected) {
       Logger.debug("locUid " + locUid + " speed " + speed);
 
-      LocomotiveSpeedEvent lse = new LocomotiveSpeedEvent(locUid, speed, commandStationBean.getId());
+      LocomotiveSpeedEvent lse = new LocomotiveSpeedEvent(locUid, commandStationBean.getId(), speed);
       executor.execute(() -> {
         fireAllLocomotiveSpeedEventListeners(lse);
 
@@ -202,18 +202,18 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   }
 
   private void fireAllLocomotiveSpeedEventListeners(final LocomotiveSpeedEvent speedEvent) {
-    if (speedEvent.isValid()) {
+    //if (speedEvent.isValid()) {
       for (LocomotiveSpeedEventListener listener : this.locomotiveSpeedEventListeners) {
         listener.onSpeedChange(speedEvent);
       }
-    }
+    //}
   }
 
   @Override
   public void changeFunctionValue(int locUid, int functionNumber, boolean flag) {
     if (this.power && connected) {
       Logger.debug("locUid " + locUid + " functionNumber " + functionNumber + " " + (flag ? "on" : "off"));
-      LocomotiveFunctionEvent lfe = new LocomotiveFunctionEvent(locUid, functionNumber, flag);
+      LocomotiveFunctionEvent lfe = new LocomotiveFunctionEvent(locUid, commandStationBean.getId(), functionNumber, flag);
       executor.execute(() -> fireAllFunctionEventListeners(lfe));
     } else {
       if (!this.power) {
@@ -223,11 +223,11 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   }
 
   private void fireAllFunctionEventListeners(final LocomotiveFunctionEvent functionEvent) {
-    if (functionEvent.isValid()) {
-      for (LocomotiveFunctionEventListener listener : this.locomotiveFunctionEventListeners) {
-        listener.onFunctionChange(functionEvent);
-      }
+    //if (functionEvent.isValid()) {
+    for (LocomotiveFunctionEventListener listener : this.locomotiveFunctionEventListeners) {
+      listener.onFunctionChange(functionEvent);
     }
+    //}
   }
 
   @Override
@@ -295,8 +295,9 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   }
 
   @Override
-  public synchronized void fireSensorEventListeners(final SensorEvent sensorEvent) {
-    for (SensorEventListener listener : sensorEventListeners) {
+  public void fireAllSensorEventsListeners(final SensorEvent sensorEvent) {
+    List<AllSensorEventsListener> snapshot = new ArrayList<>(allSensorEventsListeners);
+    for (AllSensorEventsListener listener : snapshot) {
       if (listener != null) {
         listener.onSensorChange(sensorEvent);
       }
@@ -308,7 +309,7 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
     List<FeedbackController> acl = JCS.getJcsCommandStation().getFeedbackControllers();
 
     for (FeedbackController fbc : acl) {
-      fbc.fireSensorEventListeners(sensorEvent);
+      fbc.fireAllSensorEventsListeners(sensorEvent);
     }
   }
 

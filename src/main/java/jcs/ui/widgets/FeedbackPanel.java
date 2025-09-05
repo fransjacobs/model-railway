@@ -139,43 +139,43 @@ public class FeedbackPanel extends JPanel {
     if (JCS.getJcsCommandStation() != null) {
       initSensorListeners();
 
-      JCS.getJcsCommandStation().addSensorEventListener(p1);
-      JCS.getJcsCommandStation().addSensorEventListener(p2);
-      JCS.getJcsCommandStation().addSensorEventListener(p3);
-      JCS.getJcsCommandStation().addSensorEventListener(p4);
-      JCS.getJcsCommandStation().addSensorEventListener(p5);
-      JCS.getJcsCommandStation().addSensorEventListener(p6);
-      JCS.getJcsCommandStation().addSensorEventListener(p7);
-      JCS.getJcsCommandStation().addSensorEventListener(p8);
-      JCS.getJcsCommandStation().addSensorEventListener(p9);
-      JCS.getJcsCommandStation().addSensorEventListener(p10);
-      JCS.getJcsCommandStation().addSensorEventListener(p11);
-      JCS.getJcsCommandStation().addSensorEventListener(p12);
-      JCS.getJcsCommandStation().addSensorEventListener(p13);
-      JCS.getJcsCommandStation().addSensorEventListener(p14);
-      JCS.getJcsCommandStation().addSensorEventListener(p15);
-      JCS.getJcsCommandStation().addSensorEventListener(p16);
+      JCS.getJcsCommandStation().addSensorEventListener(p1.getSensorId(), p1);
+      JCS.getJcsCommandStation().addSensorEventListener(p2.getSensorId(), p2);
+      JCS.getJcsCommandStation().addSensorEventListener(p3.getSensorId(), p3);
+      JCS.getJcsCommandStation().addSensorEventListener(p4.getSensorId(), p4);
+      JCS.getJcsCommandStation().addSensorEventListener(p5.getSensorId(), p5);
+      JCS.getJcsCommandStation().addSensorEventListener(p6.getSensorId(), p6);
+      JCS.getJcsCommandStation().addSensorEventListener(p7.getSensorId(), p7);
+      JCS.getJcsCommandStation().addSensorEventListener(p8.getSensorId(), p8);
+      JCS.getJcsCommandStation().addSensorEventListener(p9.getSensorId(), p9);
+      JCS.getJcsCommandStation().addSensorEventListener(p10.getSensorId(), p10);
+      JCS.getJcsCommandStation().addSensorEventListener(p11.getSensorId(), p11);
+      JCS.getJcsCommandStation().addSensorEventListener(p12.getSensorId(), p12);
+      JCS.getJcsCommandStation().addSensorEventListener(p13.getSensorId(), p13);
+      JCS.getJcsCommandStation().addSensorEventListener(p14.getSensorId(), p14);
+      JCS.getJcsCommandStation().addSensorEventListener(p15.getSensorId(), p15);
+      JCS.getJcsCommandStation().addSensorEventListener(p16.getSensorId(), p16);
     }
   }
 
   public void removeSensorListeners() {
     if (JCS.getJcsCommandStation() != null) {
-      JCS.getJcsCommandStation().removeSensorEventListener(p1);
-      JCS.getJcsCommandStation().removeSensorEventListener(p2);
-      JCS.getJcsCommandStation().removeSensorEventListener(p3);
-      JCS.getJcsCommandStation().removeSensorEventListener(p4);
-      JCS.getJcsCommandStation().removeSensorEventListener(p5);
-      JCS.getJcsCommandStation().removeSensorEventListener(p6);
-      JCS.getJcsCommandStation().removeSensorEventListener(p7);
-      JCS.getJcsCommandStation().removeSensorEventListener(p8);
-      JCS.getJcsCommandStation().removeSensorEventListener(p9);
-      JCS.getJcsCommandStation().removeSensorEventListener(p10);
-      JCS.getJcsCommandStation().removeSensorEventListener(p11);
-      JCS.getJcsCommandStation().removeSensorEventListener(p12);
-      JCS.getJcsCommandStation().removeSensorEventListener(p13);
-      JCS.getJcsCommandStation().removeSensorEventListener(p14);
-      JCS.getJcsCommandStation().removeSensorEventListener(p15);
-      JCS.getJcsCommandStation().removeSensorEventListener(p16);
+      JCS.getJcsCommandStation().removeSensorEventListener(p1.getSensorId(), p1);
+      JCS.getJcsCommandStation().removeSensorEventListener(p2.getSensorId(), p2);
+      JCS.getJcsCommandStation().removeSensorEventListener(p3.getSensorId(), p3);
+      JCS.getJcsCommandStation().removeSensorEventListener(p4.getSensorId(), p4);
+      JCS.getJcsCommandStation().removeSensorEventListener(p5.getSensorId(), p5);
+      JCS.getJcsCommandStation().removeSensorEventListener(p6.getSensorId(), p6);
+      JCS.getJcsCommandStation().removeSensorEventListener(p7.getSensorId(), p7);
+      JCS.getJcsCommandStation().removeSensorEventListener(p8.getSensorId(), p8);
+      JCS.getJcsCommandStation().removeSensorEventListener(p9.getSensorId(), p9);
+      JCS.getJcsCommandStation().removeSensorEventListener(p10.getSensorId(), p10);
+      JCS.getJcsCommandStation().removeSensorEventListener(p11.getSensorId(), p11);
+      JCS.getJcsCommandStation().removeSensorEventListener(p12.getSensorId(), p12);
+      JCS.getJcsCommandStation().removeSensorEventListener(p13.getSensorId(), p13);
+      JCS.getJcsCommandStation().removeSensorEventListener(p14.getSensorId(), p14);
+      JCS.getJcsCommandStation().removeSensorEventListener(p15.getSensorId(), p15);
+      JCS.getJcsCommandStation().removeSensorEventListener(p16.getSensorId(), p16);
 
       this.p1 = null;
       this.p2 = null;

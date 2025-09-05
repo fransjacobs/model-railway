@@ -68,7 +68,8 @@ public class SignalsPanel extends javax.swing.JPanel {
       }
 
       this.add(signalRowPanel);
-      JCS.getJcsCommandStation().addAccessoryEventListener(signalRowPanel);
+      //TODO!
+      //JCS.getJcsCommandStation().addAccessoryEventListener(signalRowPanel);
     }
     GridLayout gl = new GridLayout(rows, cols);
     this.setLayout(gl);

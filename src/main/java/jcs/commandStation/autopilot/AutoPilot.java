@@ -591,7 +591,7 @@ public final class AutoPilot {
           sensorListeners.add(seh);
           cnt++;
           //Register with a command station
-          JCS.getJcsCommandStation().addSensorEventListener(seh);
+          JCS.getJcsCommandStation().addSensorEventListener(key, seh);
           //Logger.trace("Added handler " + cnt + " for sensor " + key);
         }
       }
@@ -600,7 +600,7 @@ public final class AutoPilot {
 
     private void unRegisterAllSensors() {
       for (SensorListener seh : this.sensorListeners) {
-        JCS.getJcsCommandStation().removeSensorEventListener(seh);
+        JCS.getJcsCommandStation().removeSensorEventListener(seh.getSensorId(), seh);
       }
       Logger.trace("Unregistered " + sensorListeners.size() + " sensor event handlers");
       this.sensorListeners.clear();

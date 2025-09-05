@@ -31,6 +31,7 @@ public class AccessoryEvent {
     return accessoryBean;
   }
 
+  @Deprecated
   public boolean isValid() {
     return accessoryBean != null && (accessoryBean.getAddress() != null || accessoryBean.getId() != null);
   }
@@ -60,6 +61,10 @@ public class AccessoryEvent {
 
   public Integer getAddress() {
     return accessoryBean.getAddress();
+  }
+
+  public String getId() {
+    return accessoryBean.getId();
   }
 
 }

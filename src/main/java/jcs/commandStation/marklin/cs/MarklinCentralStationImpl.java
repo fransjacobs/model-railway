@@ -47,7 +47,6 @@ import jcs.commandStation.events.LocomotiveSpeedEventListener;
 import jcs.commandStation.events.PowerEvent;
 import jcs.commandStation.events.PowerEventListener;
 import jcs.commandStation.events.SensorEvent;
-import jcs.commandStation.events.SensorEventListener;
 import jcs.commandStation.marklin.cs.can.CanMessage;
 import jcs.commandStation.marklin.cs.can.CanMessageFactory;
 import static jcs.commandStation.marklin.cs.can.CanMessageFactory.getStatusDataConfigResponse;
@@ -75,6 +74,7 @@ import jcs.commandStation.autopilot.DriveSimulator;
 import jcs.commandStation.entities.Device;
 import jcs.commandStation.entities.MeasuredChannels;
 import jcs.commandStation.entities.MeasurementBean;
+import jcs.commandStation.events.AllSensorEventsListener;
 import jcs.commandStation.events.ConnectionEvent;
 import jcs.commandStation.marklin.cs.can.device.ConfigChannel;
 import jcs.commandStation.marklin.cs.can.device.MeasuringChannel;
@@ -935,8 +935,9 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   }
 
   @Override
-  public void fireSensorEventListeners(final SensorEvent sensorEvent) {
-    for (SensorEventListener listener : sensorEventListeners) {
+  public void fireAllSensorEventsListeners(final SensorEvent sensorEvent) {
+    List<AllSensorEventsListener> snapshot = new ArrayList<>(allSensorEventsListeners);
+    for (AllSensorEventsListener listener : snapshot) {
       listener.onSensorChange(sensorEvent);
     }
   }
@@ -955,27 +956,27 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   }
 
   private void notifyLocomotiveFunctionEventListeners(final LocomotiveFunctionEvent functionEvent) {
-    if (functionEvent.isValid()) {
+    //if (functionEvent.isValid()) {
       for (LocomotiveFunctionEventListener listener : this.locomotiveFunctionEventListeners) {
         listener.onFunctionChange(functionEvent);
       }
-    }
+    //}
   }
 
   private void notifyLocomotiveDirectionEventListeners(final LocomotiveDirectionEvent directionEvent) {
-    if (directionEvent.isValid()) {
+    //if (directionEvent.isValid()) {
       for (LocomotiveDirectionEventListener listener : this.locomotiveDirectionEventListeners) {
         listener.onDirectionChange(directionEvent);
       }
-    }
+    //}
   }
 
   private void notifyLocomotiveSpeedEventListeners(final LocomotiveSpeedEvent speedEvent) {
-    if (speedEvent.isValid()) {
+    //if (speedEvent.isValid()) {
       for (LocomotiveSpeedEventListener listener : this.locomotiveSpeedEventListeners) {
         listener.onSpeedChange(speedEvent);
       }
-    }
+    //}
   }
 
   /**
@@ -1062,7 +1063,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
                   Logger.trace("Sensor " + sb.getId() + " value " + sb.getStatus());
                   SensorEvent sme = new SensorEvent(sb);
                   if (sme.getSensorBean() != null) {
-                    fireSensorEventListeners(sme);
+                    fireAllSensorEventsListeners(sme);
                   }
                 }
               }
@@ -1071,7 +1072,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
                   SensorBean sb = FeedbackEventMessage.parse(eventMessage, new Date());
                   SensorEvent sme = new SensorEvent(sb);
                   if (sme.getSensorBean() != null) {
-                    fireSensorEventListeners(sme);
+                    fireAllSensorEventsListeners(sme);
                   }
                 }
               }

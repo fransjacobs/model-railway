@@ -26,7 +26,6 @@ import jcs.commandStation.AbstractController;
 import jcs.commandStation.FeedbackController;
 import jcs.commandStation.events.ConnectionEvent;
 import jcs.commandStation.events.SensorEvent;
-import jcs.commandStation.events.SensorEventListener;
 import static jcs.commandStation.hsis88.HSIConnection.COMMAND_VERSION;
 import jcs.entities.CommandStationBean;
 import jcs.entities.CommandStationBean.ConnectionType;
@@ -34,6 +33,7 @@ import jcs.commandStation.entities.FeedbackModule;
 import jcs.commandStation.entities.InfoBean;
 import jcs.commandStation.VirtualConnection;
 import jcs.commandStation.entities.Device;
+import jcs.commandStation.events.AllSensorEventsListener;
 import jcs.entities.SensorBean;
 import jcs.util.RunUtil;
 import org.tinylog.Logger;
@@ -201,8 +201,9 @@ public class HSIImpl extends AbstractController implements FeedbackController {
   }
 
   @Override
-  public void fireSensorEventListeners(final SensorEvent sensorEvent) {
-    for (SensorEventListener listener : sensorEventListeners) {
+  public void fireAllSensorEventsListeners(final SensorEvent sensorEvent) {
+    List<AllSensorEventsListener> snapshot = new ArrayList<>(allSensorEventsListeners);
+    for (AllSensorEventsListener listener : snapshot) {
       listener.onSensorChange(sensorEvent);
     }
   }
@@ -282,9 +283,9 @@ public class HSIImpl extends AbstractController implements FeedbackController {
       }
 
       //Inform the sensor listeners
-      //Logger.trace("Informing " + sensorEventListeners.size() + " sensorListeners with " + events.size() + " events");
+      //Logger.trace("Informing " + allSensorEventsListeners.size() + " sensorListeners with " + events.size() + " events");
       for (SensorEvent sensorEvent : events) {
-        fireSensorEventListeners(sensorEvent);
+        fireAllSensorEventsListeners(sensorEvent);
       }
     }
 

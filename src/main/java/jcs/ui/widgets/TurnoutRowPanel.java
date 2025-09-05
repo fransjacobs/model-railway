@@ -250,7 +250,7 @@ public class TurnoutRowPanel extends JPanel implements AccessoryEventListener {
       TurnoutRowPanel signalRowPanel = new TurnoutRowPanel(turnout);
       f.add(signalRowPanel);
 
-      JCS.getJcsCommandStation().addAccessoryEventListener(signalRowPanel);
+      JCS.getJcsCommandStation().addAccessoryEventListener(turnout.getId(), signalRowPanel);
     }
 
     f.pack();

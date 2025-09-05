@@ -75,7 +75,8 @@ public class TurnoutsPanel extends javax.swing.JPanel {
       }
 
       this.add(turnoutRowPanel);
-      JCS.getJcsCommandStation().addAccessoryEventListener(turnoutRowPanel);
+      //TODO!
+      //JCS.getJcsCommandStation().addAccessoryEventListener(turnoutRowPanel);
     }
     GridLayout gl = new GridLayout(rows, cols);
     this.setLayout(gl);
