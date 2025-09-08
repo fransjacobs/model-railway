@@ -91,8 +91,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     buttons.put(31, f31TB);
 
     setEnabled(false);
-    if (JCS.getJcsCommandStation() != null) {
-      JCS.getJcsCommandStation().addLocomotiveFunctionEventListener(this);
+    if (JCS.getJcsCommandStation() != null && locomotive != null) {
+      JCS.getJcsCommandStation().addLocomotiveEventListener(locomotive.getId(), (LocomotiveFunctionEventListener) this);
     }
   }
 

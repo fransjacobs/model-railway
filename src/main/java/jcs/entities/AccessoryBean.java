@@ -269,6 +269,25 @@ public class AccessoryBean {
     this.synchronize = synchronize;
   }
 
+  public void copyInto(AccessoryBean other) {
+    this.id = other.id;
+    this.address = other.address;
+    this.name = other.name;
+    this.type = other.type;
+    this.state = other.state;
+    this.switchTime = other.switchTime;
+    this.decType = other.decType;
+    this.decoder = other.decoder;
+    this.states = other.states;
+    this.group = other.group;
+    this.icon = other.icon;
+    this.iconFile = other.iconFile;
+    this.source = other.source;
+    this.commandStationId = other.commandStationId;
+    this.synchronize = other.synchronize;
+    this.locked = other.locked;
+  }
+
   @Transient
   public boolean isSignal() {
     //if (group != null) {

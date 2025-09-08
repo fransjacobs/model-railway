@@ -125,7 +125,11 @@ public class AccessoryKeyPanel16 extends JPanel {
         button.setForeground(new Color(0, 0, 0));
       }
       AccessoryStatusListener asl = new AccessoryStatusListener(button, address);
-      JCS.getJcsCommandStation().addAccessoryEventListener(ab.getId(), asl);
+      if(ab != null && ab.getId() != null) {
+        JCS.getJcsCommandStation().addAccessoryEventListener(ab.getId(), asl);
+      } else {
+        //Logger.trace("Can't add button "+button.getText()+" as an AccessoryListener because the is no AccessoryBean...");
+      }  
     }
   }
 

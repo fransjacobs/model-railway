@@ -170,11 +170,12 @@ public class SmallDriverCabPanel extends JPanel implements LocomotiveSelectionCh
       Logger.trace("Change selection to LocomotiveId: " + locomotiveId);
       //Disable listeners!
       disableListener = true;
-      if (JCS.getJcsCommandStation() != null) {
+      if (JCS.getJcsCommandStation() != null && locomotiveBean != null) {
         JCSCommandStation cs = JCS.getJcsCommandStation();
-        cs.removeLocomotiveDirectionEventListener(this);
-        cs.removeLocomotiveFunctionEventListener(this);
-        cs.removeLocomotiveSpeedEventListener(this);
+        cs.removeLocomotiveEventListener(locomotiveBean.getId(), (LocomotiveDirectionEventListener) this);
+        cs.removeLocomotiveEventListener(locomotiveBean.getId(), (LocomotiveSpeedEventListener) this);
+
+        cs.removeLocomotiveEventListener(locomotiveBean.getId(), (LocomotiveFunctionEventListener) this);
       }
 
       resetButtons();
@@ -236,11 +237,12 @@ public class SmallDriverCabPanel extends JPanel implements LocomotiveSelectionCh
         buttonsTP.setEnabled(true);
       }
 
-      if (JCS.getJcsCommandStation() != null) {
+      if (JCS.getJcsCommandStation() != null && locomotiveBean != null) {
         JCSCommandStation cs = JCS.getJcsCommandStation();
-        cs.addLocomotiveDirectionEventListener(this);
-        cs.addLocomotiveFunctionEventListener(this);
-        cs.addLocomotiveSpeedEventListener(this);
+        cs.addLocomotiveEventListener(locomotiveBean.getId(), (LocomotiveDirectionEventListener) this);
+        cs.addLocomotiveEventListener(locomotiveBean.getId(), (LocomotiveSpeedEventListener) this);
+
+        cs.addLocomotiveEventListener(locomotiveBean.getId(), (LocomotiveFunctionEventListener) this);
       }
 
       initButtons = false;

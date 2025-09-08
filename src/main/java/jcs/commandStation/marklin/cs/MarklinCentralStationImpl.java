@@ -1109,9 +1109,9 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
               }
               case CanMessage.ACCESSORY_SWITCHING_RESP -> {
                 AccessoryEvent ae = AccessoryMessage.parse(eventMessage);
-                if (ae.isValid()) {
+                //if (ae.isValid()) {
                   notifyAccessoryEventListeners(ae);
-                }
+                //}
               }
               case CanMessage.LOC_VELOCITY -> {
                 Logger.trace("VelocityChange# " + eventMessage);

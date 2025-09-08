@@ -64,6 +64,7 @@ import org.tinylog.Logger;
 import jcs.commandStation.events.ConnectionEventListener;
 import jcs.commandStation.events.AllSensorEventsListener;
 import jcs.commandStation.events.LocomotiveEvent;
+import jcs.commandStation.events.LocomotiveEventListener;
 
 /**
  * The JCSCommandStation is the layer between the UI, engines and Command stations
@@ -77,12 +78,17 @@ public class JCSCommandStation {
   private final List<AllSensorEventsListener> allSensorEventsListeners;
   private final Map<Integer, List<SensorEventListener>> sensorListeners;
 
-  //private final List<AccessoryEventListener> accessoryEventListeners;
   private final Map<String, List<AccessoryEventListener>> accessoryEventListeners;
-  private final List<LocomotiveFunctionEventListener> locomotiveFunctionEventListeners;
 
-  private final List<LocomotiveDirectionEventListener> locomotiveDirectionEventListeners;
-  private final List<LocomotiveSpeedEventListener> locomotiveSpeedEventListeners;
+  //private Map<Long, List<LocomotiveEvent>> locomotiveEventListeners;
+  private Map<Long, LocomotiveEventListener> locomotiveEventListeners;
+
+//  private final List<LocomotiveFunctionEventListener> locomotiveFunctionEventListeners;
+//  private final List<LocomotiveDirectionEventListener> locomotiveDirectionEventListeners;
+//  private final List<LocomotiveSpeedEventListener> locomotiveSpeedEventListeners;
+  private final Map<Long, List<LocomotiveFunctionEventListener>> locomotiveFunctionEventListeners;
+  private final Map<Long, List<LocomotiveDirectionEventListener>> locomotiveDirectionEventListeners;
+  private final Map<Long, List<LocomotiveSpeedEventListener>> locomotiveSpeedEventListeners;
 
   private final Set<Protocol> supportedProtocols;
   private CommandStationBean commandStation;
@@ -96,6 +102,8 @@ public class JCSCommandStation {
   private final TransferQueue<LocomotiveEvent> locomotiveEventQueue;
 
   private SensorEventHandlerThread sensorEventHandlerThread;
+  private AccessoryEventHandlerThread accessoryEventHandlerThread;
+  private LocomotiveEventHandlerThread locomotiveEventHandlerThread;
 
   /**
    * Wrapper around the "real" CommandStation implementation.<br>
@@ -113,13 +121,16 @@ public class JCSCommandStation {
 
     allSensorEventsListeners = new LinkedList<>();
     sensorListeners = new HashMap<>();
-
-    //accessoryEventListeners = new LinkedList<>();
     accessoryEventListeners = new HashMap<>();
 
-    locomotiveFunctionEventListeners = new LinkedList<>();
-    locomotiveDirectionEventListeners = new LinkedList<>();
-    locomotiveSpeedEventListeners = new LinkedList<>();
+//    locomotiveFunctionEventListeners = new LinkedList<>();
+//    locomotiveDirectionEventListeners = new LinkedList<>();
+//    locomotiveSpeedEventListeners = new LinkedList<>();
+    locomotiveFunctionEventListeners = new HashMap<>();
+    locomotiveDirectionEventListeners = new HashMap<>();
+    locomotiveSpeedEventListeners = new HashMap<>();
+
+    locomotiveEventListeners = new HashMap<>();
 
     supportedProtocols = new HashSet<>();
 
@@ -128,6 +139,8 @@ public class JCSCommandStation {
 
     sensorEventQueue = new LinkedTransferQueue<>();
     sensorEventHandlerThread = new SensorEventHandlerThread(this);
+    accessoryEventHandlerThread = new AccessoryEventHandlerThread(this);
+    locomotiveEventHandlerThread = new LocomotiveEventHandlerThread(this);
 
     try {
       if (decoderController != null && (decoderController.getCommandStationBean() != null || !accessoryControllers.isEmpty() || !feedbackControllers.isEmpty()) && autoConnectController) {
@@ -265,6 +278,18 @@ public class JCSCommandStation {
             Logger.warn(" Can't connected to " + fc.getCommandStationBean().getDescription());
           }
         }
+      }
+    }
+
+    if (decoderController != null && decoderController.isConnected()) {
+      if (!locomotiveEventHandlerThread.isRunning()) {
+        locomotiveEventHandlerThread.start();
+      }
+    }
+
+    if (accessoryCntrConnected > 0) {
+      if (!accessoryEventHandlerThread.isRunning()) {
+        accessoryEventHandlerThread.start();
       }
     }
 
@@ -656,28 +681,58 @@ public class JCSCommandStation {
     }
   }
 
-  public void addLocomotiveFunctionEventListener(LocomotiveFunctionEventListener listener) {
-    locomotiveFunctionEventListeners.add(listener);
+  public void addLocomotiveEventListener(Long locomotiveId, LocomotiveEventListener listener) {
+    this.locomotiveEventListeners.put(locomotiveId, listener);
+
+    if (listener instanceof LocomotiveFunctionEventListener) {
+      if (locomotiveFunctionEventListeners.containsKey(locomotiveId)) {
+        List<LocomotiveFunctionEventListener> sameFunctionEventListeners = locomotiveFunctionEventListeners.get(locomotiveId);
+        sameFunctionEventListeners.add((LocomotiveFunctionEventListener) listener);
+      } else {
+        List<LocomotiveFunctionEventListener> sameFunctionEventListeners = new ArrayList<>();
+        sameFunctionEventListeners.add((LocomotiveFunctionEventListener) listener);
+        locomotiveFunctionEventListeners.put(locomotiveId, sameFunctionEventListeners);
+      }
+    } else if (listener instanceof LocomotiveDirectionEventListener) {
+      if (locomotiveDirectionEventListeners.containsKey(locomotiveId)) {
+        List<LocomotiveDirectionEventListener> sameDirectionEventListeners = locomotiveDirectionEventListeners.get(locomotiveId);
+        sameDirectionEventListeners.add((LocomotiveDirectionEventListener) listener);
+      } else {
+        List<LocomotiveDirectionEventListener> sameDirectionEventListeners = new ArrayList<>();
+        sameDirectionEventListeners.add((LocomotiveDirectionEventListener) listener);
+        locomotiveDirectionEventListeners.put(locomotiveId, sameDirectionEventListeners);
+      }
+    } else if (listener instanceof LocomotiveSpeedEventListener) {
+      if (locomotiveSpeedEventListeners.containsKey(locomotiveId)) {
+        List<LocomotiveSpeedEventListener> sameSpeedEventListeners = locomotiveSpeedEventListeners.get(locomotiveId);
+        sameSpeedEventListeners.add((LocomotiveSpeedEventListener) listener);
+      } else {
+        List<LocomotiveSpeedEventListener> sameSpeedEventListeners = new ArrayList<>();
+        sameSpeedEventListeners.add((LocomotiveSpeedEventListener) listener);
+        locomotiveSpeedEventListeners.put(locomotiveId, sameSpeedEventListeners);
+      }
+    }
   }
 
-  public void removeLocomotiveFunctionEventListener(LocomotiveFunctionEventListener listener) {
-    locomotiveFunctionEventListeners.remove(listener);
-  }
+  public void removeLocomotiveEventListener(Long locomotiveId, LocomotiveEventListener listener) {
+    this.locomotiveEventListeners.remove(locomotiveId);
 
-  public void addLocomotiveDirectionEventListener(LocomotiveDirectionEventListener listener) {
-    locomotiveDirectionEventListeners.add(listener);
-  }
-
-  public void removeLocomotiveDirectionEventListener(LocomotiveDirectionEventListener listener) {
-    this.locomotiveDirectionEventListeners.remove(listener);
-  }
-
-  public void addLocomotiveSpeedEventListener(LocomotiveSpeedEventListener listener) {
-    locomotiveSpeedEventListeners.add(listener);
-  }
-
-  public void removeLocomotiveSpeedEventListener(LocomotiveSpeedEventListener listener) {
-    locomotiveSpeedEventListeners.remove(listener);
+    if (listener instanceof LocomotiveFunctionEventListener) {
+      if (locomotiveFunctionEventListeners.containsKey(locomotiveId)) {
+        List<LocomotiveFunctionEventListener> sameFunctionEventListeners = locomotiveFunctionEventListeners.get(locomotiveId);
+        sameFunctionEventListeners.remove((LocomotiveFunctionEventListener) listener);
+      }
+    } else if (listener instanceof LocomotiveDirectionEventListener) {
+      if (locomotiveDirectionEventListeners.containsKey(locomotiveId)) {
+        List<LocomotiveDirectionEventListener> sameDirectionEventListeners = locomotiveDirectionEventListeners.get(locomotiveId);
+        sameDirectionEventListeners.remove((LocomotiveDirectionEventListener) listener);
+      }
+    } else if (listener instanceof LocomotiveSpeedEventListener) {
+      if (locomotiveSpeedEventListeners.containsKey(locomotiveId)) {
+        List<LocomotiveSpeedEventListener> sameSpeedEventListeners = locomotiveSpeedEventListeners.get(locomotiveId);
+        sameSpeedEventListeners.remove((LocomotiveSpeedEventListener) listener);
+      }
+    }
   }
 
   public void addDisconnectionEventListener(ConnectionEventListener listener) {
@@ -743,11 +798,7 @@ public class JCSCommandStation {
 
     @Override
     public void onSensorChange(SensorEvent sensorEvent) {
-      //try {
       commandStation.sensorEventQueue.offer(sensorEvent);
-      //} catch (InterruptedException ex) {
-      // Logger.trace("Interupted! " + ex.getMessage());
-      //}
     }
   }
 
@@ -761,201 +812,80 @@ public class JCSCommandStation {
 
     @Override
     public void onAccessoryChange(AccessoryEvent event) {
-
       jcsCommandStation.accessoryEventQueue.offer(event);
-
-//      AccessoryBean ab = event.getAccessoryBean();
-//
-//      int address = ab.getAddress();
-//      String commandStationId = ab.getCommandStationId();
-//
-//      AccessoryBean dbab = PersistenceFactory.getService().getAccessoryByAddressAndCommandStationId(address, commandStationId);
-//      if (dbab == null) {
-//        //check if address is even, might be the second address of a signal
-//        if (address % 2 == 0) {
-//          address = address - 1;
-//          dbab = PersistenceFactory.getService().getAccessoryByAddressAndCommandStationId(address, commandStationId);
-//          if (dbab != null && dbab.isSignal() && dbab.getStates() > 2) {
-//            ab.setAddress(address);
-//            int p = ab.getState() + 2;
-//            ab.setState(p);
-//          } else {
-//            dbab = null;
-//          }
-//        }
-//      }
-//
-//      if (dbab != null) {
-//        //set all properties
-//        ab.setId(dbab.getId());
-//        ab.setDecoder(dbab.getDecoder());
-//        ab.setDecType(dbab.getDecType());
-//        ab.setName(dbab.getName());
-//        ab.setType(dbab.getType());
-//        ab.setGroup(dbab.getGroup());
-//        ab.setIcon(dbab.getIcon());
-//        ab.setIconFile(dbab.getIconFile());
-//        ab.setStates(dbab.getStates());
-//        ab.setCommandStationId(dbab.getCommandStationId());
-//        //might be set by the event
-//        if (ab.getSwitchTime() == null) {
-//          ab.setSwitchTime(dbab.getSwitchTime());
-//        }
-//
-//        PersistenceFactory.getService().persist(ab);
-//
-//        for (AccessoryEventListener al : trackService.accessoryEventListeners) {
-//          al.onAccessoryChange(event);
-//        }
-//      }
     }
   }
 
   private class LocomotiveFunctionChangeEventListener implements LocomotiveFunctionEventListener {
 
-    private final JCSCommandStation trackService;
+    private final JCSCommandStation jcsCommandStation;
 
-    LocomotiveFunctionChangeEventListener(JCSCommandStation trackService) {
-      this.trackService = trackService;
+    LocomotiveFunctionChangeEventListener(JCSCommandStation jcsCommandStation) {
+      this.jcsCommandStation = jcsCommandStation;
     }
 
     @Override
     public void onFunctionChange(LocomotiveFunctionEvent functionEvent) {
-      FunctionBean fb = functionEvent.getFunctionBean();
+      jcsCommandStation.locomotiveEventQueue.offer(functionEvent);
 
-      FunctionBean dbfb = null;
-      String commandStationId = trackService.getDecoderController().getCommandStationBean().getId();
-
-      if ("marklin.cs".equals(commandStationId) || "esu-ecos".equals(commandStationId)) {
-        dbfb = PersistenceFactory.getService().getLocomotiveFunction(fb.getLocomotiveId(), fb.getNumber());
-      } else {
-        Integer address = fb.getLocomotiveId().intValue();
-
-        LocomotiveBean dblb = PersistenceFactory.getService().getLocomotive(address, DecoderType.get(fb.getDecoderTypeString()), fb.getCommandStationId());
-        if (dblb != null) {
-          dbfb = PersistenceFactory.getService().getLocomotiveFunction(dblb.getId(), fb.getNumber());
-        }
-      }
-
-      if (dbfb != null) {
-        if (!Objects.equals(dbfb.getValue(), fb.getValue())) {
-          dbfb.setValue(fb.getValue());
-          if (!dbfb.isMomentary()) {
-            PersistenceFactory.getService().persist(dbfb);
-            functionEvent.setFunctionBean(dbfb);
-          }
-          for (LocomotiveFunctionEventListener fl : trackService.locomotiveFunctionEventListeners) {
-            fl.onFunctionChange(functionEvent);
-          }
-        }
-      }
+//      FunctionBean fb = functionEvent.getFunctionBean();
+//
+//      FunctionBean dbfb = null;
+//      String commandStationId = jcsCommandStation.getDecoderController().getCommandStationBean().getId();
+//
+//      if ("marklin.cs".equals(commandStationId) || "esu-ecos".equals(commandStationId)) {
+//        dbfb = PersistenceFactory.getService().getLocomotiveFunction(fb.getLocomotiveId(), fb.getNumber());
+//      } else {
+//        Integer address = fb.getLocomotiveId().intValue();
+//
+//        LocomotiveBean dblb = PersistenceFactory.getService().getLocomotive(address, DecoderType.get(fb.getDecoderTypeString()), fb.getCommandStationId());
+//        if (dblb != null) {
+//          dbfb = PersistenceFactory.getService().getLocomotiveFunction(dblb.getId(), fb.getNumber());
+//        }
+//      }
+//
+//      if (dbfb != null) {
+//        if (!Objects.equals(dbfb.getValue(), fb.getValue())) {
+//          dbfb.setValue(fb.getValue());
+//          if (!dbfb.isMomentary()) {
+//            PersistenceFactory.getService().persist(dbfb);
+//            functionEvent.setFunctionBean(dbfb);
+//          }
+//          
+//          List<LocomotiveFunctionEventListener> fel = 
+//          for (LocomotiveFunctionEventListener fl : trackService.locomotiveFunctionEventListeners) {
+//            fl.onFunctionChange(functionEvent);
+//          }
+//        }
+//      }
     }
   }
 
   private class LocomotiveDirectionChangeEventListener implements LocomotiveDirectionEventListener {
 
-    private final JCSCommandStation trackService;
+    private final JCSCommandStation jcsCommandStation;
 
-    LocomotiveDirectionChangeEventListener(JCSCommandStation trackService) {
-      this.trackService = trackService;
+    LocomotiveDirectionChangeEventListener(JCSCommandStation jcsCommandStation) {
+      this.jcsCommandStation = jcsCommandStation;
     }
 
     @Override
     public void onDirectionChange(LocomotiveDirectionEvent directionEvent) {
-      LocomotiveBean lb = directionEvent.getLocomotiveBean();
-      if (lb != null) {
-        LocomotiveBean dblb = null;
-        //For marklin and Ecos use the ID 
-        if ("marklin.cs".equals(lb.getCommandStationId()) || "esu-ecos".equals(lb.getCommandStationId())) {
-          dblb = PersistenceFactory.getService().getLocomotive(lb.getId());
-        } else {
-          Integer address;
-          if (lb.getAddress() != null) {
-            address = lb.getAddress();
-          } else {
-            address = lb.getId().intValue();
-          }
-          if (lb.getDecoderType() != null) {
-            dblb = PersistenceFactory.getService().getLocomotive(address, lb.getDecoderType(), lb.getCommandStationId());
-          } else {
-            //Try to match one...
-            Set<Protocol> protocols = PersistenceFactory.getService().getDefaultCommandStation().getSupportedProtocols();
-            for (Protocol protocol : protocols) {
-              DecoderType decoder = DecoderType.get(protocol.getProtocol());
-              dblb = PersistenceFactory.getService().getLocomotive(address, decoder, lb.getCommandStationId());
-              if (dblb != null) {
-                break;
-              }
-            }
-          }
-        }
-
-        if (dblb != null) {
-          if (!Objects.equals(dblb.getRichtung(), lb.getRichtung())) {
-            Integer richtung = lb.getRichtung();
-            dblb.setRichtung(richtung);
-            PersistenceFactory.getService().persist(dblb);
-
-            Logger.trace(dblb.getId() + ", " + dblb.getName() + ": " + dblb.getDirection().getDirection());
-
-            directionEvent.setLocomotiveBean(dblb);
-
-            for (LocomotiveDirectionEventListener dl : this.trackService.locomotiveDirectionEventListeners) {
-              dl.onDirectionChange(directionEvent);
-            }
-          }
-        } else {
-          Logger.trace("No loc found for " + lb.toLogString());
-        }
-      }
+      jcsCommandStation.locomotiveEventQueue.offer(directionEvent);
     }
   }
 
   private class LocomotiveSpeedChangeEventListener implements LocomotiveSpeedEventListener {
 
-    private final JCSCommandStation trackService;
+    private final JCSCommandStation jcsCommandStation;
 
-    LocomotiveSpeedChangeEventListener(JCSCommandStation trackService) {
-      this.trackService = trackService;
+    LocomotiveSpeedChangeEventListener(JCSCommandStation jcsCommandStation) {
+      this.jcsCommandStation = jcsCommandStation;
     }
 
     @Override
     public void onSpeedChange(LocomotiveSpeedEvent speedEvent) {
-      LocomotiveBean lb = speedEvent.getLocomotiveBean();
-      if (lb != null) {
-        LocomotiveBean dblb;
-        //For marklin and Ecos use the ID 
-        if ("marklin.cs".equals(lb.getCommandStationId()) || "esu-ecos".equals(lb.getCommandStationId())) {
-          dblb = PersistenceFactory.getService().getLocomotive(lb.getId());
-        } else {
-          Integer address;
-          if (lb.getAddress() != null) {
-            address = lb.getAddress();
-          } else {
-            address = lb.getId().intValue();
-          }
-          dblb = PersistenceFactory.getService().getLocomotive(address, lb.getDecoderType(), lb.getCommandStationId());
-        }
-
-        if (dblb != null) {
-          Integer velocity = lb.getVelocity();
-          dblb.setVelocity(velocity);
-          PersistenceFactory.getService().persist(dblb);
-
-          speedEvent.setLocomotiveBean(dblb);
-          for (LocomotiveSpeedEventListener dl : trackService.locomotiveSpeedEventListeners) {
-            if (dl != null) {
-              dl.onSpeedChange(speedEvent);
-            }
-          }
-        } else {
-          if ("marklin.cs".equals(lb.getCommandStationId()) || "esu-ecos".equals(lb.getCommandStationId())) {
-            Logger.trace("No loc with id " + lb.getId() + ", " + lb.getCommandStationId());
-          } else {
-            Logger.trace("No loc found for " + lb.toLogString());
-          }
-        }
-      }
+      jcsCommandStation.locomotiveEventQueue.offer(speedEvent);
     }
   }
 
@@ -1038,7 +968,7 @@ public class JCSCommandStation {
             if (this.jcsCommandStation.sensorListeners.containsKey(sb.getId())) {
               //Avoid concurrent modification exceptions
               List<SensorEventListener> snapshot = new ArrayList<>(this.jcsCommandStation.sensorListeners.get(sb.getId()));
-              Logger.trace("SensorEvent from Sensor " + event.getSensorId() + ": " + event.isActive() + " Firing " + snapshot.size() + " SensorListeners...");
+              //Logger.trace("SensorEvent from Sensor " + event.getSensorId() + ": " + event.isActive() + " Firing " + snapshot.size() + " SensorListeners...");
 
               for (SensorEventListener sl : snapshot) {
                 if (sl != null) {
@@ -1135,22 +1065,10 @@ public class JCSCommandStation {
             }
 
             if (dbab != null) {
-              //set all properties
-              ab.setId(dbab.getId());
-              ab.setDecoder(dbab.getDecoder());
-              ab.setDecType(dbab.getDecType());
-              ab.setName(dbab.getName());
-              ab.setType(dbab.getType());
-              ab.setGroup(dbab.getGroup());
-              ab.setIcon(dbab.getIcon());
-              ab.setIconFile(dbab.getIconFile());
-              ab.setStates(dbab.getStates());
-              ab.setCommandStationId(dbab.getCommandStationId());
-              //might be set by the event
-              if (ab.getSwitchTime() == null) {
-                ab.setSwitchTime(dbab.getSwitchTime());
-              }
-
+              //set all current properties
+              ab.copyInto(dbab);
+              //update the value
+              ab.setAccessoryValue(newValue);
               PersistenceFactory.getService().persist(ab);
             }
 
@@ -1170,8 +1088,136 @@ public class JCSCommandStation {
         }
       }
 
-      Logger.debug(
-              "Stop Event handling");
+      Logger.debug("Stop Event handling");
+    }
+  }
+
+  /**
+   * Handle Locomotive Events, which could be unsolicited,<br>
+   * but mostly the event will come after a used change something on the locomotive Cap or the auatoPilot.<br>
+   * Handle in separate thread as most listeners has to do something with the UI.
+   */
+  private class LocomotiveEventHandlerThread extends Thread {
+
+    @SuppressWarnings("FieldMayBeFinal")
+    private boolean stop = false;
+    private boolean quit = true;
+
+    private final JCSCommandStation jcsCommandStation;
+
+    LocomotiveEventHandlerThread(JCSCommandStation jcsCommandStation) {
+      this.jcsCommandStation = jcsCommandStation;
+    }
+
+    void quit() {
+      this.quit = true;
+    }
+
+    boolean isRunning() {
+      return !this.quit;
+    }
+
+    boolean isFinished() {
+      return this.stop;
+    }
+
+    @Override
+    public void run() {
+      quit = false;
+      Thread.currentThread().setName("JCS-LOCOMOTIVE-EVENT-HANDLER");
+      Logger.trace("Event Handler Started...");
+
+      while (isRunning()) {
+        try {
+          try {
+            LocomotiveEvent event = jcsCommandStation.locomotiveEventQueue.take();
+            LocomotiveBean lb = event.getLocomotiveBean();
+            LocomotiveBean dblb = null;
+            if ("marklin.cs".equals(lb.getCommandStationId()) || "esu-ecos".equals(lb.getCommandStationId())) {
+              dblb = PersistenceFactory.getService().getLocomotive(lb.getId());
+            } else {
+              Integer address;
+              if (lb.getAddress() != null) {
+                address = lb.getAddress();
+              } else {
+                address = lb.getId().intValue();
+              }
+              if (lb.getDecoderType() != null) {
+                dblb = PersistenceFactory.getService().getLocomotive(address, lb.getDecoderType(), lb.getCommandStationId());
+              } else {
+                //Try to match one...
+                Set<Protocol> protocols = PersistenceFactory.getService().getDefaultCommandStation().getSupportedProtocols();
+                for (Protocol protocol : protocols) {
+                  DecoderType decoder = DecoderType.get(protocol.getProtocol());
+                  dblb = PersistenceFactory.getService().getLocomotive(address, decoder, lb.getCommandStationId());
+                  if (dblb != null) {
+                    break;
+                  }
+                }
+              }
+            }
+
+            if (dblb == null) {
+              if ("marklin.cs".equals(lb.getCommandStationId()) || "esu-ecos".equals(lb.getCommandStationId())) {
+                Logger.error("No loc with id " + lb.getId() + ", " + lb.getCommandStationId() + " found in Database");
+              } else {
+                Logger.error("No loc found for " + lb.toLogString() + " found in Database");
+              }
+              return;
+            }
+
+            if (event instanceof LocomotiveSpeedEvent) {
+              LocomotiveSpeedEvent speedEvent = (LocomotiveSpeedEvent) event;
+              Integer newVelocity = speedEvent.getVelocity();
+              dblb.setVelocity(newVelocity);
+              PersistenceFactory.getService().persist(dblb);
+              speedEvent.setLocomotiveBean(dblb);
+
+              if (jcsCommandStation.locomotiveEventListeners.containsKey(dblb.getId())) {
+                List<LocomotiveSpeedEventListener> velocityListeners = jcsCommandStation.locomotiveSpeedEventListeners.get(dblb.getId());
+                for (LocomotiveSpeedEventListener lvel : velocityListeners) {
+                  lvel.onSpeedChange(speedEvent);
+                }
+              }
+            } else if (event instanceof LocomotiveDirectionEvent) {
+              LocomotiveDirectionEvent directionEvent = (LocomotiveDirectionEvent) event;
+              Direction newDirection = directionEvent.getNewDirection();
+              dblb.setDirection(newDirection);
+              PersistenceFactory.getService().persist(dblb);
+              directionEvent.setLocomotiveBean(dblb);
+
+              if (jcsCommandStation.locomotiveDirectionEventListeners.containsKey(dblb.getId())) {
+                List<LocomotiveDirectionEventListener> directionListeners = jcsCommandStation.locomotiveDirectionEventListeners.get(dblb.getId());
+                for (LocomotiveDirectionEventListener ldel : directionListeners) {
+                  ldel.onDirectionChange(directionEvent);
+                }
+              }
+            } else if (event instanceof LocomotiveFunctionEvent) {
+              LocomotiveFunctionEvent functionEvent = (LocomotiveFunctionEvent) event;
+              Integer newValue = functionEvent.isOn() ? 1 : 0;
+              FunctionBean fb = functionEvent.getFunctionBean();
+              FunctionBean dbfb = PersistenceFactory.getService().getLocomotiveFunction(dblb, fb.getNumber());
+              dbfb.setValue(newValue);
+
+              PersistenceFactory.getService().persist(dbfb);
+              functionEvent.setFunctionBean(dbfb);
+
+              if (jcsCommandStation.locomotiveFunctionEventListeners.containsKey(dblb.getId())) {
+                List<LocomotiveFunctionEventListener> functionListeners = jcsCommandStation.locomotiveFunctionEventListeners.get(dblb.getId());
+                for (LocomotiveFunctionEventListener fl : functionListeners) {
+                  fl.onFunctionChange(functionEvent);
+                }
+              }
+            }
+          } catch (InterruptedException ex) {
+            Logger.error(ex);
+          }
+        } catch (Exception e) {
+          Logger.error("Error in Handling Thread. Cause: " + e.getMessage());
+        }
+      }
+
+      Logger.debug("Stop Event handling");
     }
   }
 

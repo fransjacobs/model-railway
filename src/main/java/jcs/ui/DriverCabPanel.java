@@ -23,6 +23,7 @@ import javax.swing.event.ChangeListener;
 import jcs.JCS;
 import jcs.commandStation.events.LocomotiveDirectionEvent;
 import jcs.commandStation.events.LocomotiveDirectionEventListener;
+import jcs.commandStation.events.LocomotiveFunctionEventListener;
 import jcs.commandStation.events.LocomotiveSpeedEvent;
 import jcs.commandStation.events.LocomotiveSpeedEventListener;
 import jcs.commandStation.events.PowerEvent;
@@ -40,13 +41,9 @@ public class DriverCabPanel extends JPanel implements LocomotiveDirectionEventLi
   private static final long serialVersionUID = 8833627645563021982L;
 
   private LocomotiveBean locomotiveBean;
-
   private final ExecutorService executor;
-
   private boolean power;
-
   private boolean disableListener = false;
-
   private LocomotiveDirectionEventListener directionListener;
 
   public DriverCabPanel() {
@@ -63,21 +60,24 @@ public class DriverCabPanel extends JPanel implements LocomotiveDirectionEventLi
 
   private void postInit() {
     if (JCS.getJcsCommandStation() != null) {
-      this.power = JCS.getJcsCommandStation().isPowerOn();
-
-      JCS.getJcsCommandStation().addLocomotiveSpeedEventListener(this);
-      JCS.getJcsCommandStation().addLocomotiveDirectionEventListener(this);
+      power = JCS.getJcsCommandStation().isPowerOn();
       JCS.getJcsCommandStation().addPowerEventListener(this);
+
+      if (locomotiveBean != null) {
+        JCS.getJcsCommandStation().addLocomotiveEventListener(locomotiveBean.getId(), (LocomotiveSpeedEventListener) this);
+        JCS.getJcsCommandStation().addLocomotiveEventListener(locomotiveBean.getId(), (LocomotiveDirectionEventListener) this);
+      }
     }
   }
 
   @Override
   public void setVisible(boolean aFlag) {
-    if (!aFlag && JCS.getJcsCommandStation() != null) {
-      JCS.getJcsCommandStation().removeLocomotiveSpeedEventListener(this);
-      JCS.getJcsCommandStation().removeLocomotiveDirectionEventListener(this);
+    if (!aFlag && JCS.getJcsCommandStation() != null && locomotiveBean != null) {
       JCS.getJcsCommandStation().removePowerEventListener(this);
-      JCS.getJcsCommandStation().removeLocomotiveFunctionEventListener(this.functionsPanel);
+
+      JCS.getJcsCommandStation().removeLocomotiveEventListener(locomotiveBean.getId(), (LocomotiveSpeedEventListener) this);
+      JCS.getJcsCommandStation().removeLocomotiveEventListener(locomotiveBean.getId(), (LocomotiveDirectionEventListener) this);
+      JCS.getJcsCommandStation().removeLocomotiveEventListener(locomotiveBean.getId(), (LocomotiveFunctionEventListener) functionsPanel);
     }
     super.setVisible(aFlag);
   }
@@ -378,10 +378,17 @@ public class DriverCabPanel extends JPanel implements LocomotiveDirectionEventLi
   }
 
   public final void setLocomotiveBean(LocomotiveBean locomotiveBean) {
+    if (this.locomotiveBean != null) {
+      JCS.getJcsCommandStation().removeLocomotiveEventListener(locomotiveBean.getId(), (LocomotiveSpeedEventListener) this);
+      JCS.getJcsCommandStation().removeLocomotiveEventListener(locomotiveBean.getId(), (LocomotiveDirectionEventListener) this);
+    }
     this.locomotiveBean = locomotiveBean;
     this.functionsPanel.setLocomotive(locomotiveBean);
 
     if (locomotiveBean != null) {
+      JCS.getJcsCommandStation().addLocomotiveEventListener(locomotiveBean.getId(), (LocomotiveSpeedEventListener) this);
+      JCS.getJcsCommandStation().addLocomotiveEventListener(locomotiveBean.getId(), (LocomotiveDirectionEventListener) this);
+
       int velocity = 0;
       if (locomotiveBean.getVelocity() != null) {
         velocity = locomotiveBean.getVelocity();
