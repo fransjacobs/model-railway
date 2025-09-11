@@ -956,26 +956,22 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   }
 
   private void notifyLocomotiveFunctionEventListeners(final LocomotiveFunctionEvent functionEvent) {
-    //if (functionEvent.isValid()) {
-      for (LocomotiveFunctionEventListener listener : this.locomotiveFunctionEventListeners) {
-        listener.onFunctionChange(functionEvent);
-      }
-    //}
+    for (LocomotiveFunctionEventListener listener : this.locomotiveFunctionEventListeners) {
+      listener.onFunctionChange(functionEvent);
+    }
   }
 
   private void notifyLocomotiveDirectionEventListeners(final LocomotiveDirectionEvent directionEvent) {
-    //if (directionEvent.isValid()) {
-      for (LocomotiveDirectionEventListener listener : this.locomotiveDirectionEventListeners) {
-        listener.onDirectionChange(directionEvent);
-      }
-    //}
+    for (LocomotiveDirectionEventListener listener : this.locomotiveDirectionEventListeners) {
+      listener.onDirectionChange(directionEvent);
+    }
   }
 
   private void notifyLocomotiveSpeedEventListeners(final LocomotiveSpeedEvent speedEvent) {
     //if (speedEvent.isValid()) {
-      for (LocomotiveSpeedEventListener listener : this.locomotiveSpeedEventListeners) {
-        listener.onSpeedChange(speedEvent);
-      }
+    for (LocomotiveSpeedEventListener listener : this.locomotiveSpeedEventListeners) {
+      listener.onSpeedChange(speedEvent);
+    }
     //}
   }
 
@@ -1109,9 +1105,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
               }
               case CanMessage.ACCESSORY_SWITCHING_RESP -> {
                 AccessoryEvent ae = AccessoryMessage.parse(eventMessage);
-                //if (ae.isValid()) {
-                  notifyAccessoryEventListeners(ae);
-                //}
+                notifyAccessoryEventListeners(ae);
               }
               case CanMessage.LOC_VELOCITY -> {
                 Logger.trace("VelocityChange# " + eventMessage);
@@ -1134,6 +1128,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 
               }
               case CanMessage.LOC_FUNCTION_RESP -> {
+                Logger.trace("FunctionChange " + eventMessage);
                 notifyLocomotiveFunctionEventListeners(LocomotiveFunctionEventParser.parseMessage(eventMessage));
               }
               case CanMessage.BOOTLOADER_CAN -> {

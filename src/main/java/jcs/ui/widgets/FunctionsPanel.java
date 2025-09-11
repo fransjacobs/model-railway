@@ -18,8 +18,6 @@ package jcs.ui.widgets;
 import java.awt.event.ActionEvent;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import javax.swing.JFrame;
 import javax.swing.JToggleButton;
 import javax.swing.UIManager;
@@ -42,14 +40,14 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
   private final Map<Integer, JToggleButton> buttons;
   private LocomotiveBean locomotive;
-  private final ExecutorService executor;
+  //private final ExecutorService executor;
   private boolean initButtons = false;
 
   private boolean enableEvent = true;
 
   public FunctionsPanel() {
     buttons = new HashMap<>();
-    executor = Executors.newCachedThreadPool();
+    //executor = Executors.newCachedThreadPool();
 
     initComponents();
     mapButtons();
@@ -92,7 +90,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
     setEnabled(false);
     if (JCS.getJcsCommandStation() != null && locomotive != null) {
-      JCS.getJcsCommandStation().addLocomotiveEventListener(locomotive.getId(), (LocomotiveFunctionEventListener) this);
+      JCS.getJcsCommandStation().addLocomotiveFunctionEventListener(locomotive.getId(), this);
     }
   }
 
@@ -108,14 +106,17 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
   @Override
   public void onFunctionChange(LocomotiveFunctionEvent event) {
-    if (this.locomotive != null && this.locomotive.getId().equals(event.getFunctionBean().getLocomotiveId())) {
+    if (locomotive != null && locomotive.getId().equals(event.getFunctionBean().getLocomotiveId())) {
       FunctionBean fb = event.getFunctionBean();
-      //this.buttons.get(fb.getNumber()).setSelected(fb.isOn());
-      JToggleButton tbtn = this.buttons.get(fb.getNumber());
+      JToggleButton tbtn = buttons.get(fb.getNumber());
 
       //Temp disable the event handling as this is an external event...
       enableEvent = false;
-      tbtn.doClick();
+      if (fb.isOn() && !tbtn.isSelected()) {
+        tbtn.doClick();
+      } else if (!fb.isOn() && tbtn.isSelected()) {
+        tbtn.doClick();
+      }
       enableEvent = true;
 
     } else {
@@ -139,11 +140,21 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
   }
 
   public void setLocomotive(LocomotiveBean locomotive) {
+    if (locomotive == null && this.locomotive != null) {
+      JCS.getJcsCommandStation().removeLocomotiveFunctionEventListener(this.locomotive.getId(), this);
+    } else if (locomotive != null && this.locomotive != null && !this.locomotive.getId().equals(locomotive.getId())) {
+      JCS.getJcsCommandStation().removeLocomotiveFunctionEventListener(this.locomotive.getId(), this);
+    }
+
+    this.locomotive = locomotive;
+
     resetButtons();
     initButtons = true;
-    if (PersistenceFactory.getService() != null && locomotive != null) {
-      this.locomotive = locomotive;
-      Map<Integer, FunctionBean> functions = locomotive.getFunctions();
+    if (PersistenceFactory.getService() != null && this.locomotive != null) {
+      if (JCS.getJcsCommandStation() != null) {
+        JCS.getJcsCommandStation().addLocomotiveFunctionEventListener(this.locomotive.getId(), this);
+      }
+      Map<Integer, FunctionBean> functions = this.locomotive.getFunctions();
 
       Logger.trace("Loc: " + this.locomotive.getName() + " has " + functions.size() + " functions");
       for (FunctionBean fb : functions.values()) {
@@ -205,7 +216,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
     if (!initButtons && enableEvent) {
       Logger.trace("Function " + fb.getNumber() + " Value: " + fb.isOn() + " Momentary: " + fb.isMomentary());
-      executor.execute(() -> changeFunction(value, functionNumber, locomotive));
+      //executor.execute(() -> changeFunction(value, functionNumber, locomotive));
+      changeFunction(value, functionNumber, locomotive);
     }
   }
 
@@ -217,10 +229,10 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
       if (JCS.getJcsCommandStation() != null) {
         JCS.getJcsCommandStation().changeLocomotiveFunction(newValue, functionNumber, locomotiveBean);
       }
-      if (fb.isMomentary() && newValue) {
-        JToggleButton tb = this.buttons.get(fb.getNumber());
-        tb.doClick();
-      }
+      //if (fb.isMomentary() && newValue) {
+      //  JToggleButton tb = this.buttons.get(fb.getNumber());
+      //  tb.doClick();
+      //}
     }
   }
 
@@ -969,8 +981,10 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
       if (JCS.getJcsCommandStation() != null) {
 
+        JCS.getJcsCommandStation().connect();
+
         //LocomotiveBean loc = PersistenceFactory.getService().getLocomotive(49189L);
-        LocomotiveBean loc = PersistenceFactory.getService().getLocomotive(1000L);
+        LocomotiveBean loc = PersistenceFactory.getService().getLocomotiveById(16404L, "marklin.cs");
         Logger.debug(loc);
 
         testPanel.setLocomotive(loc);

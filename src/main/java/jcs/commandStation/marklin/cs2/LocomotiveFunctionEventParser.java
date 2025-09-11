@@ -42,6 +42,7 @@ public class LocomotiveFunctionEventParser {
 
       FunctionBean fb = new FunctionBean(functionNumber, locomotiveId);
       fb.setValue(functionValue);
+      fb.setCommandStationId("marklin.cs");
 
       return new LocomotiveFunctionEvent(fb);
     } else {

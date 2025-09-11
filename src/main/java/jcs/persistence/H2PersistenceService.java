@@ -263,7 +263,7 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public LocomotiveBean getLocomotive(Integer address, DecoderType decoderType, String commandStionId) {
+  public LocomotiveBean getLocomotive(Integer address, DecoderType decoderType, String commandStationId) {
     DecoderType dt;
     if (decoderType != null) {
       dt = decoderType;
@@ -271,7 +271,7 @@ public class H2PersistenceService implements PersistenceService {
       dt = DecoderType.DCC;
     }
 
-    Object[] args = new Object[]{address, dt.getDecoderType(), commandStionId};
+    Object[] args = new Object[]{address, dt.getDecoderType(), commandStationId};
 
     LocomotiveBean loco = database.where("address=? and decoder_type=? and command_station_id=?", args).first(LocomotiveBean.class);
     if (loco != null) {
@@ -284,10 +284,23 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public LocomotiveBean getLocomotive(Integer locUid, String commandStionId) {
-    Object[] args = new Object[]{locUid, commandStionId};
+  public LocomotiveBean getLocomotive(Integer locUid, String commandStationId) {
+    Object[] args = new Object[]{locUid, commandStationId};
 
     LocomotiveBean loco = database.where("uid=? and command_station_id=?", args).first(LocomotiveBean.class);
+    if (loco != null) {
+      if (loco.getIcon() != null) {
+        loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
+      }
+      loco.addAllFunctions(getLocomotiveFunctions(loco));
+    }
+    return loco;
+  }
+
+  @Override
+  public LocomotiveBean getLocomotiveById(Long id, String commandStationId) {
+    Object[] args = new Object[]{id, commandStationId};
+    LocomotiveBean loco = database.where("id=? and command_station_id=?", args).first(LocomotiveBean.class);
     if (loco != null) {
       if (loco.getIcon() != null) {
         loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
