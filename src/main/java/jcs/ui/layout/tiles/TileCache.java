@@ -64,30 +64,30 @@ public class TileCache {
   private static int blockIdSeq;
   private static int straightDirectionIdSeq;
   private static int endIdSeq;
-  
+
   static final Map<String, Tile> idMap = new HashMap<>();
   static final Map<Point, Tile> pointMap = new HashMap<>();
   static final Map<Point, Tile> altPointMap = new HashMap<>();
-  
+
   private static final ConcurrentLinkedQueue<JCSActionEvent> eventsQueue = new ConcurrentLinkedQueue();
   private static final TileActionEventHandler actionEventQueueHandler = new TileActionEventHandler(eventsQueue);
-  
+
   private static int maxX;
   private static int maxY;
-  
+
   static {
     actionEventQueueHandler.start();
   }
-  
+
   private TileCache() {
   }
-  
+
   public static int getIdSeq(String id) {
     String idnr = id.substring(3);
     int idSeq = Integer.parseInt(idnr);
     return idSeq;
   }
-  
+
   private static String nextTileId(TileBean.TileType tileType) {
     switch (tileType) {
       case STRAIGHT -> {
@@ -136,7 +136,7 @@ public class TileCache {
       }
     }
   }
-  
+
   private static int maxIdSeq(int currentId, int newId) {
     if (currentId < newId) {
       return newId;
@@ -144,12 +144,12 @@ public class TileCache {
       return currentId;
     }
   }
-  
+
   public static Tile createTile(TileBean tileBean, boolean showValues) {
     if (tileBean == null) {
       return null;
     }
-    
+
     TileBean.TileType tileType = tileBean.getTileType();
     Tile tile = null;
     switch (tileType) {
@@ -168,27 +168,36 @@ public class TileCache {
       case SWITCH -> {
         tile = new Switch(tileBean);
         tile.setAccessoryBean(tileBean.getAccessoryBean());
-        
+
         switchIdSeq = maxIdSeq(switchIdSeq, getIdSeq(tileBean.getId()));
         if (showValues && tileBean.getAccessoryBean() != null) {
           tile.setAccessoryValue((tileBean.getAccessoryBean()).getAccessoryValue());
         }
-        JCS.getJcsCommandStation().addAccessoryEventListener(tileBean.getAccessoryBean().getId(), (AccessoryEventListener) tile);
+        if (tileBean.getAccessoryBean() != null && tileBean.getAccessoryBean().getId() != null) {
+          JCS.getJcsCommandStation().addAccessoryEventListener(tileBean.getAccessoryBean().getId(), (AccessoryEventListener) tile);
+        } else {
+          Logger.trace("Can't add tile " + tile.getId() + " as an AccessorListener as the AccessoryId is null...");
+        }
       }
       case CROSS -> {
         tile = new Cross(tileBean);
         tile.setAccessoryBean(tileBean.getAccessoryBean());
-        
+
         crossIdSeq = maxIdSeq(crossIdSeq, getIdSeq(tileBean.getId()));
         if (showValues && tileBean.getAccessoryBean() != null) {
           tile.setAccessoryValue((tileBean.getAccessoryBean()).getAccessoryValue());
         }
-        JCS.getJcsCommandStation().addAccessoryEventListener(tileBean.getAccessoryBean().getId(), (AccessoryEventListener) tile);
+
+        if (tileBean.getAccessoryBean() != null && tileBean.getAccessoryBean().getId() != null) {
+          JCS.getJcsCommandStation().addAccessoryEventListener(tileBean.getAccessoryBean().getId(), (AccessoryEventListener) tile);
+        } else {
+          Logger.trace("Can't add tile " + tile.getId() + " as an AccessorListener as the AccessoryId is null...");
+        }
       }
       case SIGNAL -> {
         tile = new Signal(tileBean);
         tile.setAccessoryBean(tileBean.getAccessoryBean());
-        
+
         signalIdSeq = maxIdSeq(signalIdSeq, getIdSeq(tileBean.getId()));
         if (showValues && tileBean.getAccessoryBean() != null) {
           ((Signal) tile).setSignalValue(((AccessoryBean) tileBean.getAccessoryBean()).getSignalValue());
@@ -203,7 +212,7 @@ public class TileCache {
         tile = new Sensor(tileBean);
         tile.setSensorBean(tileBean.getSensorBean());
         sensorIdSeq = maxIdSeq(sensorIdSeq, getIdSeq(tileBean.getId()));
-        
+
         if (showValues && tileBean.getSensorBean() != null) {
           ((Sensor) tile).setActive(((SensorBean) tileBean.getSensorBean()).isActive());
         }
@@ -229,7 +238,7 @@ public class TileCache {
       default ->
         Logger.warn("Unknown Tile Type " + tileType);
     }
-    
+
     return (Tile) tile;
   }
 
@@ -255,7 +264,7 @@ public class TileCache {
   public static Tile createTile(TileBean.TileType tileType, TileBean.Orientation orientation, TileBean.Direction direction, int x, int y) {
     return createTile(tileType, orientation, direction, new Point(x, y));
   }
-  
+
   public static Tile createTile(TileBean.TileType tileType, TileBean.Orientation orientation, TileBean.Direction direction, Point center) {
     Tile tile = null;
     switch (tileType) {
@@ -284,14 +293,14 @@ public class TileCache {
       default ->
         Logger.warn("Unknown Tile Type " + tileType);
     }
-    
+
     if (tile != null) {
       tile.setId(nextTileId(tileType));
     }
-    
+
     return (Tile) tile;
   }
-  
+
   public static void rollback(Tile tile) {
     switch (tile.tileType) {
       case STRAIGHT -> {
@@ -326,20 +335,20 @@ public class TileCache {
       }
     }
   }
-  
+
   public static List<Tile> loadTiles() {
     return loadTiles(false);
   }
-  
+
   public static List<Tile> loadTiles(boolean showvalues) {
     altPointMap.clear();
     pointMap.clear();
     idMap.clear();
     maxX = 0;
     maxY = 0;
-    
+
     List<TileBean> tileBeans = PersistenceFactory.getService().getTileBeans();
-    
+
     for (TileBean tb : tileBeans) {
       Tile tile = createTile(tb, showvalues);
       calculateMaxCoordinates(tile.tileX, tile.tileY);
@@ -353,15 +362,15 @@ public class TileCache {
         }
       }
     }
-    
+
     Logger.trace("Loaded " + idMap.size() + " Tiles. Max: (" + maxX + "," + maxY + ")");
     return idMap.values().stream().collect(Collectors.toList());
   }
-  
+
   public static List<Tile> getTiles() {
     return idMap.values().stream().collect(Collectors.toList());
   }
-  
+
   static void calculateMaxCoordinates(int tileX, int tileY) {
     if (maxX < tileX) {
       maxX = tileX;
@@ -370,18 +379,18 @@ public class TileCache {
       maxY = tileY;
     }
   }
-  
+
   public static Dimension getMinCanvasSize() {
     int w = maxX + GRID;
     int h = maxY + GRID;
     return new Dimension(w, h);
   }
-  
+
   public static Tile addAndSaveTile(Tile tile) {
     if (tile == null) {
       throw new IllegalArgumentException("Tile cannot be null");
     }
-    
+
     pointMap.put(tile.getCenter(), tile);
     idMap.put(tile.getId(), tile);
 
@@ -392,12 +401,12 @@ public class TileCache {
         altPointMap.put(ap, tile);
       }
     }
-    
+
     persistTile(tile);
     //Logger.trace("Added " + tile + " There are now " + pointMap.size() + " pointMap...");
     return tile;
   }
-  
+
   public static void persistTile(final Tile tile) {
     if (tile == null) {
       throw new IllegalArgumentException("Tile cannot be null");
@@ -405,7 +414,7 @@ public class TileCache {
     TileBean tb = tile.getTileBean();
     PersistenceFactory.getService().persist(tb);
   }
-  
+
   public static void persistBlock(final BlockBean block) {
     if (block == null) {
       throw new IllegalArgumentException("block cannot be null");
@@ -414,13 +423,13 @@ public class TileCache {
     TileBean tb = tile.getTileBean();
     PersistenceFactory.getService().persist(tb);
   }
-  
+
   public static void persistAllTiles() {
     for (Tile tile : idMap.values()) {
       persistTile(tile);
     }
   }
-  
+
   public static void deleteTile(final Tile tile) {
     if (tile == null) {
       throw new IllegalArgumentException("Tile cannot be null");
@@ -440,7 +449,7 @@ public class TileCache {
       Logger.warn("Tile " + tile.getId() + " not found in cache");
     }
   }
-  
+
   public static Tile findTile(Point cp) {
     Tile result = pointMap.get(cp);
     if (result == null) {
@@ -448,16 +457,16 @@ public class TileCache {
     }
     return result;
   }
-  
+
   public static Tile findTile(String id) {
     Tile tile = idMap.get(id);
     return tile;
   }
-  
+
   public static boolean contains(Point p) {
     return pointMap.containsKey(p);
   }
-  
+
   public static boolean canMoveTo(Tile tile, Point p) {
     //check if a tile exist with point p
     //Check if the cache contains a Cp of a tile on p
@@ -483,12 +492,12 @@ public class TileCache {
     //Logger.trace("Checked " + tile.id + " can move to (" + p.x + "," + p.y + ")");
     return true;
   }
-  
+
   public static void moveTo(Tile tile, Point p) {
     if (tile == null || p == null) {
       throw new IllegalArgumentException("Tile or new Center Point cannot be null");
     }
-    
+
     if (canMoveTo(tile, p)) {
       //Logger.trace("Moving " + tile.getId() + " from " + tile.xyToString() + " to (" + p.x + "," + p.y + ")");
       Set<Point> rps = tile.getAltPoints();
@@ -499,7 +508,7 @@ public class TileCache {
       //pointIds.remove(tile.getId());
       idMap.remove(tile.id);
       pointMap.remove(tile.getCenter());
-      
+
       tile.setCenter(p);
       addAndSaveTile(tile);
     } else {
@@ -507,7 +516,7 @@ public class TileCache {
       Logger.trace("Can't Move tile " + tile.id + " from " + tile.xyToString() + " to (" + p.x + "," + p.y + ") Is occupied by " + occ.id);
     }
   }
-  
+
   public static Tile rotateTile(Tile tile) {
     if (!pointMap.containsKey(tile.getCenter())) {
       Logger.warn("Tile " + tile.getId() + " NOT in cache!");
@@ -517,7 +526,7 @@ public class TileCache {
     for (Point ep : tile.getAltPoints()) {
       altPointMap.remove(ep);
     }
-    
+
     tile.rotate();
 
     //update
@@ -526,19 +535,19 @@ public class TileCache {
       altPointMap.put(ep, tile);
     }
     idMap.put(tile.id, tile);
-    
+
     persistTile(tile);
     return tile;
   }
-  
+
   public static Tile flipHorizontal(Tile tile) {
     return flipTile(tile, true);
   }
-  
+
   public static Tile flipVertical(Tile tile) {
     return flipTile(tile, false);
   }
-  
+
   private static Tile flipTile(Tile tile, boolean horizontal) {
     if (!pointMap.containsKey(tile.getCenter())) {
       Logger.warn("Tile " + tile.getId() + " NOT in cache!");
@@ -548,7 +557,7 @@ public class TileCache {
     for (Point ep : tile.getAltPoints()) {
       altPointMap.remove(ep);
     }
-    
+
     if (horizontal) {
       tile.flipHorizontal();
     } else {
@@ -560,7 +569,7 @@ public class TileCache {
       altPointMap.put(ep, tile);
     }
     idMap.put(tile.id, tile);
-    
+
     persistTile(tile);
     return tile;
   }
@@ -577,23 +586,23 @@ public class TileCache {
       actionEventQueueHandler.notifyAll();
     }
   }
-  
+
   public static void enqueTileAction(SensorEvent sensorEvent) {
     eventsQueue.offer(new ActionEventWrapper(sensorEvent));
     synchronized (TileCache.actionEventQueueHandler) {
       actionEventQueueHandler.notifyAll();
     }
   }
-  
+
   public static void repaintTile(Tile tile) {
     repaintTile(tile.id);
   }
-  
+
   public static void repaintTile(String tileId) {
     if (tileId == null) {
       throw new IllegalArgumentException("TileId cannot be null");
     }
-    
+
     if (idMap.containsKey(tileId)) {
       Tile tile = idMap.get(tileId);
       tile.repaint();
@@ -601,20 +610,20 @@ public class TileCache {
       Logger.warn("Can't find a Tile with Id: " + tileId + " in the cache");
     }
   }
-  
+
   private static class ActionEventWrapper implements JCSActionEvent {
-    
+
     private final Object eventObject;
-    
+
     ActionEventWrapper(Object eventObject) {
       this.eventObject = eventObject;
     }
-    
+
     @Override
     public Object getEventObject() {
       return eventObject;
     }
-    
+
     @Override
     public String getIdString() {
       switch (eventObject) {
@@ -629,6 +638,6 @@ public class TileCache {
         }
       }
     }
-    
+
   }
 }
