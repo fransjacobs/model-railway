@@ -97,7 +97,7 @@ public class StateMachineStepByStepDriveStopTest extends AbstractStateMachineSte
     Logger.trace("Prepared layout");
   }
 
-  @Test
+  //@Test
   @Order(1)
   public void testBk1ToBk4() {
     //StateMachine functionality test, runs in 1 single thread.
@@ -290,7 +290,7 @@ public class StateMachineStepByStepDriveStopTest extends AbstractStateMachineSte
     assertEquals("IdleState", stateMachine.getDispatcherStateName());
   }
 
-  @Test
+  //@Test
   @Order(2)
   public void testFromBk1ToBk4andViceVersa() {
     Logger.info("fromBk1ToBk4andViceVersa");

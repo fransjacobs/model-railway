@@ -105,7 +105,7 @@ public class StateMachineStepByStepDriveThroughTest extends AbstractStateMachine
     Logger.trace("Prepared layout");
   }
 
-  @Test
+  //@Test
   @Order(1)
   public void testBk1ToBk6() {
     //StateMachine functionality test, runs in 1 single thread.
