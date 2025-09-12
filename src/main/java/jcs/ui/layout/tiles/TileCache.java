@@ -173,7 +173,11 @@ public class TileCache {
         if (showValues && tileBean.getAccessoryBean() != null) {
           tile.setAccessoryValue((tileBean.getAccessoryBean()).getAccessoryValue());
         }
-        JCS.getJcsCommandStation().addAccessoryEventListener((AccessoryEventListener) tile);
+        if (tileBean.getAccessoryBean() != null && tileBean.getAccessoryBean().getId() != null) {
+          JCS.getJcsCommandStation().addAccessoryEventListener(tileBean.getAccessoryBean().getId(), (AccessoryEventListener) tile);
+        } else {
+          Logger.trace("Can't add tile " + tile.getId() + " as an AccessorListener as the AccessoryId is null...");
+        }
       }
       case CROSS -> {
         tile = new Cross(tileBean);
@@ -183,7 +187,12 @@ public class TileCache {
         if (showValues && tileBean.getAccessoryBean() != null) {
           tile.setAccessoryValue((tileBean.getAccessoryBean()).getAccessoryValue());
         }
-        JCS.getJcsCommandStation().addAccessoryEventListener((AccessoryEventListener) tile);
+
+        if (tileBean.getAccessoryBean() != null && tileBean.getAccessoryBean().getId() != null) {
+          JCS.getJcsCommandStation().addAccessoryEventListener(tileBean.getAccessoryBean().getId(), (AccessoryEventListener) tile);
+        } else {
+          Logger.trace("Can't add tile " + tile.getId() + " as an AccessorListener as the AccessoryId is null...");
+        }
       }
       case SIGNAL -> {
         tile = new Signal(tileBean);
@@ -193,7 +202,11 @@ public class TileCache {
         if (showValues && tileBean.getAccessoryBean() != null) {
           ((Signal) tile).setSignalValue(((AccessoryBean) tileBean.getAccessoryBean()).getSignalValue());
         }
-        JCS.getJcsCommandStation().addAccessoryEventListener((AccessoryEventListener) tile);
+        if (tileBean.getAccessoryBean() != null && tileBean.getAccessoryBean().getId() != null) {
+          JCS.getJcsCommandStation().addAccessoryEventListener(tileBean.getAccessoryBean().getId(), (AccessoryEventListener) tile);
+        } else {
+          Logger.trace("Can't add tile " + tile.getId() + " as an AccessorListener as the AccessoryId is null...");
+        }
       }
       case SENSOR -> {
         tile = new Sensor(tileBean);
@@ -203,7 +216,11 @@ public class TileCache {
         if (showValues && tileBean.getSensorBean() != null) {
           ((Sensor) tile).setActive(((SensorBean) tileBean.getSensorBean()).isActive());
         }
-        JCS.getJcsCommandStation().addSensorEventListener((SensorEventListener) tile);
+        if (((Sensor) tile).getSensorBean() != null && ((Sensor) tile).getSensorBean().getId() != null) {
+          JCS.getJcsCommandStation().addSensorEventListener(((Sensor) tile).getSensorBean().getId(), (SensorEventListener) tile);
+        } else {
+          Logger.warn("Can't register Sensor " + tile.getId() + " no Sensor ID available");
+        }
       }
       case BLOCK -> {
         tile = new Block(tileBean);

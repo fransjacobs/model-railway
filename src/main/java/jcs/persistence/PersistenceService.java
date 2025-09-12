@@ -201,19 +201,28 @@ public interface PersistenceService {
    *
    * @param address The address.
    * @param decoderType The decoder type.
-   * @param commandStionId The command station ID.
+   * @param commandStationId The command station ID.
    * @return The LocomotiveBean, or null if not found.
    */
-  LocomotiveBean getLocomotive(Integer address, DecoderType decoderType, String commandStionId);
+  LocomotiveBean getLocomotive(Integer address, DecoderType decoderType, String commandStationId);
+
+  /**
+   * Retrieves a LocomotiveBean by ID and command station ID.
+   *
+   * @param id The locomotive UID.
+   * @param commandStationId The command station ID.
+   * @return The LocomotiveBean, or null if not found.
+   */
+  LocomotiveBean getLocomotiveById(Long id, String commandStationId);
 
   /**
    * Retrieves a LocomotiveBean by UID and command station ID.
    *
    * @param locUid The locomotive UID.
-   * @param commandStionId The command station ID.
+   * @param commandStationId The command station ID.
    * @return The LocomotiveBean, or null if not found.
    */
-  LocomotiveBean getLocomotive(Integer locUid, String commandStionId);
+  LocomotiveBean getLocomotive(Integer locUid, String commandStationId);
 
   /**
    * Retrieves a LocomotiveBean by ID.

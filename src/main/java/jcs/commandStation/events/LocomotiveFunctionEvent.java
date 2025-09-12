@@ -21,11 +21,12 @@ import jcs.entities.FunctionBean;
 /**
  *
  */
-public class LocomotiveFunctionEvent implements Serializable {
+public class LocomotiveFunctionEvent extends LocomotiveEvent implements Serializable {
 
   private FunctionBean function;
 
   public LocomotiveFunctionEvent(FunctionBean changedFunction) {
+    super(changedFunction.getLocomotiveId(), changedFunction.getCommandStationId());
     this.function = changedFunction;
   }
 
@@ -33,7 +34,8 @@ public class LocomotiveFunctionEvent implements Serializable {
     return this.function;
   }
 
-  public LocomotiveFunctionEvent(long locomotiveBeanId, int functionNumber, boolean flag) {
+  public LocomotiveFunctionEvent(long locomotiveBeanId, String commandStationId, int functionNumber, boolean flag) {
+    super(locomotiveBeanId, commandStationId);
     function = new FunctionBean(locomotiveBeanId, functionNumber, flag ? 1 : 0);
   }
 
@@ -41,6 +43,8 @@ public class LocomotiveFunctionEvent implements Serializable {
     this.function = function;
   }
 
+  @Override
+  @Deprecated
   public boolean isValid() {
     return this.function != null && this.function.getLocomotiveId() != null && this.function.getNumber() != null;
   }
@@ -53,8 +57,8 @@ public class LocomotiveFunctionEvent implements Serializable {
     }
   }
 
-  public Long getLocomotiveId() {
-    return this.function.getLocomotiveId();
+  public Long getFunctionId() {
+    return this.function.getId();
   }
 
   public Integer getNumber() {

@@ -15,19 +15,20 @@
  */
 package jcs.commandStation;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import jcs.commandStation.events.AccessoryEventListener;
+import jcs.commandStation.events.AllSensorEventsListener;
+import jcs.commandStation.events.ConnectionEventListener;
 import jcs.commandStation.events.LocomotiveDirectionEventListener;
 import jcs.commandStation.events.LocomotiveFunctionEventListener;
 import jcs.commandStation.events.LocomotiveSpeedEventListener;
 import jcs.commandStation.events.PowerEventListener;
-import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.CommandStationBean;
 import org.tinylog.Logger;
-import jcs.commandStation.events.ConnectionEventListener;
 import jcs.commandStation.events.MeasurementEventListener;
 
 public abstract class AbstractController implements GenericController {
@@ -37,7 +38,7 @@ public abstract class AbstractController implements GenericController {
 
   protected final List<PowerEventListener> powerEventListeners;
   protected final List<AccessoryEventListener> accessoryEventListeners;
-  protected final List<SensorEventListener> sensorEventListeners;
+  protected final List<AllSensorEventsListener> allSensorEventsListeners;
 
   protected final List<LocomotiveFunctionEventListener> locomotiveFunctionEventListeners;
   protected final List<LocomotiveDirectionEventListener> locomotiveDirectionEventListeners;
@@ -66,7 +67,7 @@ public abstract class AbstractController implements GenericController {
     defaultSwitchTime = Integer.getInteger("default.switchtime", 100);
 
     powerEventListeners = new LinkedList<>();
-    sensorEventListeners = new LinkedList<>();
+    allSensorEventsListeners = new LinkedList<>();
     accessoryEventListeners = new LinkedList<>();
 
     locomotiveFunctionEventListeners = new LinkedList<>();
@@ -77,8 +78,8 @@ public abstract class AbstractController implements GenericController {
 
     measurementEventListeners = new LinkedList<>();
 
-    if (this.commandStationBean != null) {
-      this.virtual = commandStationBean.isVirtual();
+    if (commandStationBean != null) {
+      virtual = commandStationBean.isVirtual();
     }
 
     executor = Executors.newCachedThreadPool();
@@ -114,6 +115,11 @@ public abstract class AbstractController implements GenericController {
   public void removeConnectionEventListener(ConnectionEventListener listener) {
     this.connectionEventListeners.remove(listener);
   }
+  
+  @Override
+  public List<ConnectionEventListener> getConnectionEventListeners() {
+    return new ArrayList<>(connectionEventListeners);
+  }
 
   public boolean isPower() {
     return this.power;
@@ -127,12 +133,12 @@ public abstract class AbstractController implements GenericController {
     this.powerEventListeners.remove(listener);
   }
 
-  public void addSensorEventListener(SensorEventListener listener) {
-    this.sensorEventListeners.add(listener);
+  public void addAllSensorEventsListener(AllSensorEventsListener listener) {
+    this.allSensorEventsListeners.add(listener);
   }
 
-  public void removeSensorEventListener(SensorEventListener listener) {
-    this.sensorEventListeners.remove(listener);
+  public void removeAllSensorEventsListener(AllSensorEventsListener listener) {
+    this.allSensorEventsListeners.remove(listener);
   }
 
   public void addAccessoryEventListener(AccessoryEventListener listener) {

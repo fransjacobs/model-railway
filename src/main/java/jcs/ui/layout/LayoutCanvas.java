@@ -114,6 +114,8 @@ public class LayoutCanvas extends JPanel {
 
   private boolean showCenter;
 
+  private boolean loading;
+
   public LayoutCanvas() {
     this(false);
   }
@@ -247,19 +249,28 @@ public class LayoutCanvas extends JPanel {
   }
 
   void loadLayoutInBackground() {
-    executor.execute(() -> {
-      List<Tile> tiles = TileCache.loadTiles(readonly);
-      if (this.readonly) {
-        Logger.trace("Loaded " + tiles.size() + " from database...");
-      }
+    if (!loading) {
+      executor.execute(() -> {
+        try {
+          loading = true;
+          long now = System.currentTimeMillis();
+          List<Tile> tiles = TileCache.loadTiles(readonly);
 
-      java.awt.EventQueue.invokeLater(() -> {
-        loadTiles(tiles);
+          java.awt.EventQueue.invokeLater(() -> {
+            loadTiles(tiles);
 
-        validate();
-        repaint();
+            validate();
+            repaint();
+            long duration = System.currentTimeMillis() - now;
+            if (this.readonly) {
+              Logger.trace("Loading and Repaint of " + tiles.size() + " tiles finished in " + duration + " ms...");
+            }
+          });
+        } finally {
+          loading = false;
+        }
       });
-    });
+    }
   }
 
   void loadLayout() {
@@ -1285,10 +1296,10 @@ public class LayoutCanvas extends JPanel {
       block.setLogicalDirection(newDir);
       Logger.trace(block.getId() + " LogicalDir changed from " + curDir + " to " + newDir + " for " + locomotive.getName());
       locomotive.setDirection(newDir);
-      
+
       //this.executor.execute(() -> {
-        PersistenceFactory.getService().persist(block.getTileBean());
-        PersistenceFactory.getService().persist(locomotive);
+      PersistenceFactory.getService().persist(block.getTileBean());
+      PersistenceFactory.getService().persist(locomotive);
       //});
     }
   }//GEN-LAST:event_toggleLocomotiveDirectionMIActionPerformed

@@ -177,7 +177,7 @@ public abstract class AbstractStateMachineStepByStepTest {
   protected void fireFeedbackEvent(SensorEvent sensorEvent) {
     List<FeedbackController> acl = JCS.getJcsCommandStation().getFeedbackControllers();
     for (FeedbackController fbc : acl) {
-      fbc.fireSensorEventListeners(sensorEvent);
+      fbc.fireAllSensorEventsListeners(sensorEvent);
     }
   }
 

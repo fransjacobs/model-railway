@@ -153,7 +153,7 @@ class StateMachine extends Thread {
     DispatcherState currentState = dispatcherState;
     if (currentState instanceof SensorEventListener sensorEventListener) {
       Logger.trace("Removing " + sensorEventListener.toString() + " as Sensor Listener...");
-      JCS.getJcsCommandStation().removeSensorEventListener(sensorEventListener);
+      JCS.getJcsCommandStation().removeSensorEventListener(sensorEventListener.getSensorId(), sensorEventListener);
     }
 
     dispatcher.clearDepartureIgnoreEventHandlers();
@@ -228,7 +228,7 @@ class StateMachine extends Thread {
     DispatcherState currentState = dispatcherState;
     if (currentState instanceof SensorEventListener sensorEventListener) {
       Logger.trace("Removing " + currentState.toString() + " as Sensor Listener...");
-      JCS.getJcsCommandStation().removeSensorEventListener(sensorEventListener);
+      JCS.getJcsCommandStation().removeSensorEventListener(sensorEventListener.getSensorId(), sensorEventListener);
     } else {
       Logger.trace("No sensor listeners are registered...");
     }

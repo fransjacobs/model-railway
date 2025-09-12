@@ -50,7 +50,7 @@ class BrakeState extends DispatcherState implements SensorEventListener {
     dispatcher.setWaitForSensorid(inSensorId);
 
     //Register this state as a SensorEventListener
-    JCS.getJcsCommandStation().addSensorEventListener(this);
+    JCS.getJcsCommandStation().addSensorEventListener(inSensorId, this);
     Logger.trace("Destination block " + destinationBlock.getId() + " In SensorId: " + inSensorId);
 
     //Slowdown
@@ -81,7 +81,7 @@ class BrakeState extends DispatcherState implements SensorEventListener {
     //TODO: Timeout detection in case the locomotive has stopped....
     if (canAdvanceToNextState) {
       //Remove handler as the state will now change
-      JCS.getJcsCommandStation().removeSensorEventListener(this);
+      JCS.getJcsCommandStation().removeSensorEventListener(inSensorId, this);
       return new InBlockState();
     } else {
       if ("true".equals(System.getProperty("state.machine.stepTest", "false"))) {
@@ -98,6 +98,11 @@ class BrakeState extends DispatcherState implements SensorEventListener {
       }
       return this;
     }
+  }
+
+  @Override
+  public Integer getSensorId() {
+    return inSensorId;
   }
 
   @Override

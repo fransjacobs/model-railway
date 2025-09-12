@@ -15,7 +15,7 @@
  */
 package jcs.commandStation.events;
 
-public interface LocomotiveFunctionEventListener {
+public interface LocomotiveFunctionEventListener extends LocomotiveEventListener {
 
   void onFunctionChange(LocomotiveFunctionEvent locomotiveFunctionEvent);
 

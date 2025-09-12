@@ -32,7 +32,7 @@ import org.tinylog.Logger;
  * @author FJA
  */
 public class DriverCabDialog extends javax.swing.JDialog implements LocomotiveDirectionEventListener {
-
+  
   private static final long serialVersionUID = 4474469920406357799L;
 
   /**
@@ -44,18 +44,18 @@ public class DriverCabDialog extends javax.swing.JDialog implements LocomotiveDi
   public DriverCabDialog(JFrame parent, boolean modal) {
     this(parent, null, modal);
   }
-
+  
   public DriverCabDialog(java.awt.Frame parent, LocomotiveBean locomotiveBean, boolean modal) {
     super(parent, modal);
     initComponents();
     initListener();
-
+    
     if (locomotiveBean != null) {
       //Refresh settings
       LocomotiveBean locomotive = PersistenceFactory.getService().getLocomotive(locomotiveBean.getId());
       this.setTitle(locomotive.getName());
       this.driverCabPanel.setLocomotiveBean(locomotive);
-
+      
       if (locomotive.getLocIcon() != null) {
         Image img = locomotive.getLocIcon().getImage();
         if (LocomotiveBean.Direction.BACKWARDS == locomotive.getDirection()) {
@@ -71,17 +71,17 @@ public class DriverCabDialog extends javax.swing.JDialog implements LocomotiveDi
         this.locNameLabel.setText("");
       }
     }
-
+    
   }
-
+  
   private void initListener() {
     this.driverCabPanel.setDirectionListener(this);
   }
-
+  
   @Override
   public void onDirectionChange(LocomotiveDirectionEvent directionEvent) {
     LocomotiveBean locomotive = this.driverCabPanel.getLocomotiveBean();
-
+    
     ImageIcon imgIcon = locomotive.getLocIcon();
     if (imgIcon != null) {
       Image img = imgIcon.getImage();
@@ -109,6 +109,11 @@ public class DriverCabDialog extends javax.swing.JDialog implements LocomotiveDi
 
     setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
     setPreferredSize(new java.awt.Dimension(500, 380));
+    addWindowListener(new java.awt.event.WindowAdapter() {
+      public void windowClosed(java.awt.event.WindowEvent evt) {
+        formWindowClosed(evt);
+      }
+    });
     getContentPane().add(driverCabPanel, java.awt.BorderLayout.CENTER);
 
     northPanel.setPreferredSize(new java.awt.Dimension(300, 50));
@@ -128,6 +133,11 @@ public class DriverCabDialog extends javax.swing.JDialog implements LocomotiveDi
     pack();
   }// </editor-fold>//GEN-END:initComponents
 
+  private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
+    Logger.trace("Closing " + this.locNameLabel.getText());
+    this.driverCabPanel.setLocomotiveBean(null);
+  }//GEN-LAST:event_formWindowClosed
+
   /**
    * @param args the command line arguments
    */
@@ -140,7 +150,7 @@ public class DriverCabDialog extends javax.swing.JDialog implements LocomotiveDi
     } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
       Logger.error(ex);
     }
-
+    
     LocomotiveBean loc = PersistenceFactory.getService().getLocomotive(7L);
 
     /* Create and display the dialog */

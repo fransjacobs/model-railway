@@ -99,7 +99,7 @@ public final class AutoPilot {
     enqueCommand(new AutoPilotActionEvent("addLocomotive", locomotiveBean));
   }
 
-  public static void startAllLocomotives() {
+  public static synchronized void startAllLocomotives() {
     enqueCommand(new AutoPilotActionEvent("startAllLocomotives"));
   }
 
@@ -206,7 +206,7 @@ public final class AutoPilot {
     return runningDispatchers;
   }
 
-  static Dispatcher createDispatcher(LocomotiveBean locomotiveBean) {
+  synchronized static Dispatcher createDispatcher(LocomotiveBean locomotiveBean) {
     Dispatcher dispatcher = null;
     //check if the locomotive is on track
     if (isOnTrack(locomotiveBean)) {
@@ -279,7 +279,7 @@ public final class AutoPilot {
     dispatchers.clear();
   }
 
-  static void startDispatcher(LocomotiveBean locomotiveBean) {
+  synchronized static void startDispatcher(LocomotiveBean locomotiveBean) {
     Logger.trace("Starting locomotive for " + locomotiveBean.getName());
     String key = locomotiveBean.getName();
 
@@ -300,7 +300,7 @@ public final class AutoPilot {
     Logger.trace("Started locomotive " + key + "...");
   }
 
-  static void stopDispatcher(LocomotiveBean locomotiveBean) {
+  synchronized static void stopDispatcher(LocomotiveBean locomotiveBean) {
     Logger.trace("Stopping locomotive " + locomotiveBean.getName());
     String key = locomotiveBean.getName();
 
@@ -311,7 +311,7 @@ public final class AutoPilot {
     }
   }
 
-  static void startLocomotives() {
+  synchronized static void startLocomotives() {
     List<LocomotiveBean> locos = getOnTrackLocomotives();
     for (LocomotiveBean loc : locos) {
       startDispatcher(loc);
@@ -334,7 +334,7 @@ public final class AutoPilot {
     dispatcher.reset();
   }
 
-  static void resetStates() {
+  synchronized static void resetStates() {
     Logger.trace("Resetting AutoPilot...");
 
     stopAutoMode();
@@ -398,7 +398,7 @@ public final class AutoPilot {
           tile.setArrivalSuffix(null);
           freeBlockCounter++;
         } else {
-          if(!blockState.equals(tile.getBlockState())) {
+          if (!blockState.equals(tile.getBlockState())) {
             tile.setBlockBean(block);
           }
         }
@@ -502,6 +502,8 @@ public final class AutoPilot {
   }
 
   static void handleSensorEvent(SensorEvent event) {
+    Logger.trace("Event for Sensor " + event.getSensorId() + " " + (event.isActive() ? "On" : "Off") + " isChanged " + event.isChanged());
+
     if (event.isChanged()) {
       SensorEventHandler sh = sensorHandlers.get(event.getSensorId());
       Boolean registered = sh != null;
@@ -589,7 +591,7 @@ public final class AutoPilot {
           sensorListeners.add(seh);
           cnt++;
           //Register with a command station
-          JCS.getJcsCommandStation().addSensorEventListener(seh);
+          JCS.getJcsCommandStation().addSensorEventListener(key, seh);
           //Logger.trace("Added handler " + cnt + " for sensor " + key);
         }
       }
@@ -598,7 +600,7 @@ public final class AutoPilot {
 
     private void unRegisterAllSensors() {
       for (SensorListener seh : this.sensorListeners) {
-        JCS.getJcsCommandStation().removeSensorEventListener(seh);
+        JCS.getJcsCommandStation().removeSensorEventListener(seh.getSensorId(), seh);
       }
       Logger.trace("Unregistered " + sensorListeners.size() + " sensor event handlers");
       this.sensorListeners.clear();
@@ -692,6 +694,11 @@ public final class AutoPilot {
 
     SensorListener(Integer sensorId) {
       this.sensorId = sensorId;
+    }
+
+    @Override
+    public Integer getSensorId() {
+      return sensorId;
     }
 
     @Override

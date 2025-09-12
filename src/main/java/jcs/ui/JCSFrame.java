@@ -33,8 +33,6 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.swing.AbstractAction;
@@ -147,13 +145,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
       //Show the default panel
       showOverviewPanel();
       editMode = false;
-      // Start a one-shot timer with 1 second delay to refresh the panel
-      new Timer().schedule(new TimerTask() {
-        @Override
-        public void run() {
-          showOverviewPanel();
-        }
-      }, 1000);
     }
   }
 
@@ -220,11 +211,9 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   }
 
   public void showOverviewPanel() {
-    Logger.trace("Show ReadOnly Canvas");
     CardLayout card = (CardLayout) centerPanel.getLayout();
     card.show(centerPanel, "overviewPanel");
     editMode = false;
-    overviewPanel.loadLayoutInBackground();
 
     if (autoPilotBtn.isSelected()) {
       dispatcherStatusPanel.showDispatcherTab();
@@ -232,11 +221,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
       dispatcherStatusPanel.showLocomotiveTab();
     }
 
-    java.awt.EventQueue.invokeLater(() -> {
-      overviewPanel.repaint();
-    });
-    //});
-
+    overviewPanel.loadLayoutInBackground();
   }
 
   private void showLocomotives() {

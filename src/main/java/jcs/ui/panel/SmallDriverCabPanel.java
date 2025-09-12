@@ -125,12 +125,15 @@ public class SmallDriverCabPanel extends JPanel implements LocomotiveSelectionCh
   public void onFunctionChange(LocomotiveFunctionEvent event) {
     if (locomotiveBean != null && locomotiveBean.getId().equals(event.getFunctionBean().getLocomotiveId())) {
       FunctionBean fb = event.getFunctionBean();
-      //this.buttons.get(fb.getNumber()).setSelected(fb.isOn());
       JToggleButton tbtn = buttons.get(fb.getNumber());
 
       //Temp disable the event handling as this is an external event...
       enableEvent = false;
-      tbtn.doClick();
+      if (fb.isOn() && !tbtn.isSelected()) {
+        tbtn.doClick();
+      } else if (!fb.isOn() && tbtn.isSelected()) {
+        tbtn.doClick();
+      }
       enableEvent = true;
 
     } else {
@@ -170,11 +173,12 @@ public class SmallDriverCabPanel extends JPanel implements LocomotiveSelectionCh
       Logger.trace("Change selection to LocomotiveId: " + locomotiveId);
       //Disable listeners!
       disableListener = true;
-      if (JCS.getJcsCommandStation() != null) {
+      if (JCS.getJcsCommandStation() != null && locomotiveBean != null) {
         JCSCommandStation cs = JCS.getJcsCommandStation();
-        cs.removeLocomotiveDirectionEventListener(this);
-        cs.removeLocomotiveFunctionEventListener(this);
-        cs.removeLocomotiveSpeedEventListener(this);
+        cs.removeLocomotiveDirectionEventListener(locomotiveBean.getId(), this);
+        cs.removeLocomotiveSpeedEventListener(locomotiveBean.getId(), this);
+
+        cs.removeLocomotiveFunctionEventListener(locomotiveBean.getId(), this);
       }
 
       resetButtons();
@@ -236,11 +240,12 @@ public class SmallDriverCabPanel extends JPanel implements LocomotiveSelectionCh
         buttonsTP.setEnabled(true);
       }
 
-      if (JCS.getJcsCommandStation() != null) {
+      if (JCS.getJcsCommandStation() != null && locomotiveBean != null) {
         JCSCommandStation cs = JCS.getJcsCommandStation();
-        cs.addLocomotiveDirectionEventListener(this);
-        cs.addLocomotiveFunctionEventListener(this);
-        cs.addLocomotiveSpeedEventListener(this);
+        cs.addLocomotiveDirectionEventListener(locomotiveBean.getId(), this);
+        cs.addLocomotiveSpeedEventListener(locomotiveBean.getId(), this);
+
+        cs.addLocomotiveFunctionEventListener(locomotiveBean.getId(), this);
       }
 
       initButtons = false;
@@ -297,7 +302,6 @@ public class SmallDriverCabPanel extends JPanel implements LocomotiveSelectionCh
 
     if (!initButtons && enableEvent) {
       Logger.trace("Function " + fb.getNumber() + " Value: " + fb.isOn() + " Momentary: " + fb.isMomentary());
-      //executor.execute(() -> changeFunction(value, functionNumber, locomotiveBean));
       changeFunction(value, functionNumber, locomotiveBean);
     }
   }
@@ -309,10 +313,6 @@ public class SmallDriverCabPanel extends JPanel implements LocomotiveSelectionCh
 
       if (JCS.getJcsCommandStation() != null) {
         JCS.getJcsCommandStation().changeLocomotiveFunction(newValue, functionNumber, locomotiveBean);
-      }
-      if (fb.isMomentary() && newValue) {
-        JToggleButton tb = buttons.get(fb.getNumber());
-        tb.doClick();
       }
     }
   }
@@ -1339,11 +1339,6 @@ public class SmallDriverCabPanel extends JPanel implements LocomotiveSelectionCh
       Logger.trace("Changing direction of " + locomotiveBean + " to: " + newDirection);
       JCS.getJcsCommandStation().changeLocomotiveDirection(newDirection, locomotiveBean);
     }
-
-//    if (this.directionListener != null && locomotiveBean != null) {
-//      LocomotiveDirectionEvent dme = new LocomotiveDirectionEvent(locomotiveBean);
-//      this.directionListener.onDirectionChange(dme);
-//    }
   }
 
   /**
@@ -1363,8 +1358,10 @@ public class SmallDriverCabPanel extends JPanel implements LocomotiveSelectionCh
 
       //Disable the direction buttons so that the change does not retrigger the commandstation
       disableListener = true;
-      reverseButton.setSelected(LocomotiveBean.Direction.BACKWARDS == lb.getDirection());
-      forwardButton.setSelected(LocomotiveBean.Direction.FORWARDS == lb.getDirection());
+      synchronized (this) {
+        reverseButton.setSelected(LocomotiveBean.Direction.BACKWARDS == lb.getDirection());
+        forwardButton.setSelected(LocomotiveBean.Direction.FORWARDS == lb.getDirection());
+      }
       disableListener = false;
     }
   }

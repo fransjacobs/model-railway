@@ -100,7 +100,7 @@ public class AccessoryKeyPanel8 extends JPanel {
         button.setForeground(new Color(0, 0, 0));
       }
       AccessoryStatusListener asl = new AccessoryStatusListener(button, address);
-      JCS.getJcsCommandStation().addAccessoryEventListener(asl);
+      JCS.getJcsCommandStation().addAccessoryEventListener(ab.getId(), asl);
     }
   }
 

@@ -39,6 +39,8 @@ public interface GenericController {
 
   void removeConnectionEventListener(ConnectionEventListener listener);
 
+  List<ConnectionEventListener> getConnectionEventListeners();
+
   InfoBean getCommandStationInfo();
 
   List<Device> getDevices();

@@ -289,8 +289,8 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
 
   @Override
   public void onFunctionChange(LocomotiveFunctionEvent locomotiveFunctionEvent) {
-    if (this.locomotives.containsKey(locomotiveFunctionEvent.getLocomotiveId())) {
-      LocomotiveBean lb = this.locomotives.get(locomotiveFunctionEvent.getLocomotiveId());
+    if (this.locomotives.containsKey(locomotiveFunctionEvent.getId())) {
+      LocomotiveBean lb = this.locomotives.get(locomotiveFunctionEvent.getId());
       FunctionBean fb = lb.getFunctionBean(locomotiveFunctionEvent.getNumber());
       if (fb != null) {
         fb.setValue((locomotiveFunctionEvent.isOn() ? 1 : 0));

@@ -163,14 +163,14 @@ public class FeedbackSensorDialog extends javax.swing.JDialog {
 
   private void formWindowActivated(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowActivated
     if (JCS.getJcsCommandStation() != null) {
-      JCS.getJcsCommandStation().addSensorEventListener(sensorTableModel);
+      JCS.getJcsCommandStation().addAllSensorEventsListener(sensorTableModel);
       Logger.trace(evt.getNewState() + " Added sensor listener");
     }
   }//GEN-LAST:event_formWindowActivated
 
   private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
     if (JCS.getJcsCommandStation() != null) {
-      JCS.getJcsCommandStation().removeSensorEventListener(sensorTableModel);
+      JCS.getJcsCommandStation().removeAllSensorEventsListener(sensorTableModel);
       Logger.trace(evt.getNewState() + " Removed sensor listener");
     }
     this.sensorTableModel.clear();
@@ -200,7 +200,7 @@ public class FeedbackSensorDialog extends javax.swing.JDialog {
       FrameMonitor.registerFrame(dialog, FeedbackSensorDialog.class.getName());
       //String frameImageUrl = "/media/jcs-train-64.png";
       String frameImageUrl = "/media/jcs-train-2-512.png";
-      
+
       if (RunUtil.isMacOSX()) {
         Taskbar taskbar = Taskbar.getTaskbar();
         try {
@@ -215,7 +215,7 @@ public class FeedbackSensorDialog extends javax.swing.JDialog {
         frame.setIconImage(new ImageIcon(iconUrl).getImage());
         dialog.setIconImage(new ImageIcon(iconUrl).getImage());
       }
-      
+
       dialog.addWindowListener(new java.awt.event.WindowAdapter() {
         @Override
         public void windowClosing(java.awt.event.WindowEvent e) {

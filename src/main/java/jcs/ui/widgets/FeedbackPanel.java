@@ -28,6 +28,7 @@ import jcs.JCS;
 import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.SensorBean;
+import jcs.persistence.PersistenceFactory;
 
 /**
  * Diagnostic panel for a feedback module
@@ -98,8 +99,7 @@ public class FeedbackPanel extends JPanel {
 
     int port = 1;
     p1 = new FeedbackPort(this.lbl1, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
-
-    //Logger.trace("Port " + (port - 1) + ", device: " + deviceId + " module: " + moduleNumber + " offset: " + contactIdOffset + " Contact Addres: " + p1.contactId);
+    obtainSensorByContactAndPort(p1);
     p2 = new FeedbackPort(this.lbl2, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
     p3 = new FeedbackPort(this.lbl3, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
     p4 = new FeedbackPort(this.lbl4, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
@@ -115,49 +115,67 @@ public class FeedbackPanel extends JPanel {
     p14 = new FeedbackPort(this.lbl14, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
     p15 = new FeedbackPort(this.lbl15, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
     p16 = new FeedbackPort(this.lbl16, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
+
+    obtainSensorByContactAndPort(p1);
+    obtainSensorByContactAndPort(p2);
+    obtainSensorByContactAndPort(p3);
+    obtainSensorByContactAndPort(p4);
+    obtainSensorByContactAndPort(p5);
+    obtainSensorByContactAndPort(p6);
+    obtainSensorByContactAndPort(p7);
+    obtainSensorByContactAndPort(p8);
+    obtainSensorByContactAndPort(p9);
+    obtainSensorByContactAndPort(p10);
+    obtainSensorByContactAndPort(p11);
+    obtainSensorByContactAndPort(p12);
+    obtainSensorByContactAndPort(p13);
+    obtainSensorByContactAndPort(p14);
+    obtainSensorByContactAndPort(p15);
+    obtainSensorByContactAndPort(p16);
+
   }
 
   public void registerSensorListeners() {
     if (JCS.getJcsCommandStation() != null) {
       initSensorListeners();
 
-      JCS.getJcsCommandStation().addSensorEventListener(p1);
-      JCS.getJcsCommandStation().addSensorEventListener(p2);
-      JCS.getJcsCommandStation().addSensorEventListener(p3);
-      JCS.getJcsCommandStation().addSensorEventListener(p4);
-      JCS.getJcsCommandStation().addSensorEventListener(p5);
-      JCS.getJcsCommandStation().addSensorEventListener(p6);
-      JCS.getJcsCommandStation().addSensorEventListener(p7);
-      JCS.getJcsCommandStation().addSensorEventListener(p8);
-      JCS.getJcsCommandStation().addSensorEventListener(p9);
-      JCS.getJcsCommandStation().addSensorEventListener(p10);
-      JCS.getJcsCommandStation().addSensorEventListener(p11);
-      JCS.getJcsCommandStation().addSensorEventListener(p12);
-      JCS.getJcsCommandStation().addSensorEventListener(p13);
-      JCS.getJcsCommandStation().addSensorEventListener(p14);
-      JCS.getJcsCommandStation().addSensorEventListener(p15);
-      JCS.getJcsCommandStation().addSensorEventListener(p16);
+      JCS.getJcsCommandStation().addSensorEventListener(p1.getSensorId(), p1);
+      JCS.getJcsCommandStation().addSensorEventListener(p2.getSensorId(), p2);
+      JCS.getJcsCommandStation().addSensorEventListener(p3.getSensorId(), p3);
+      JCS.getJcsCommandStation().addSensorEventListener(p4.getSensorId(), p4);
+      JCS.getJcsCommandStation().addSensorEventListener(p5.getSensorId(), p5);
+      JCS.getJcsCommandStation().addSensorEventListener(p6.getSensorId(), p6);
+      JCS.getJcsCommandStation().addSensorEventListener(p7.getSensorId(), p7);
+      JCS.getJcsCommandStation().addSensorEventListener(p8.getSensorId(), p8);
+      JCS.getJcsCommandStation().addSensorEventListener(p9.getSensorId(), p9);
+      JCS.getJcsCommandStation().addSensorEventListener(p10.getSensorId(), p10);
+      JCS.getJcsCommandStation().addSensorEventListener(p11.getSensorId(), p11);
+      JCS.getJcsCommandStation().addSensorEventListener(p12.getSensorId(), p12);
+      JCS.getJcsCommandStation().addSensorEventListener(p13.getSensorId(), p13);
+      JCS.getJcsCommandStation().addSensorEventListener(p14.getSensorId(), p14);
+      JCS.getJcsCommandStation().addSensorEventListener(p15.getSensorId(), p15);
+      JCS.getJcsCommandStation().addSensorEventListener(p16.getSensorId(), p16);
     }
   }
 
   public void removeSensorListeners() {
     if (JCS.getJcsCommandStation() != null) {
-      JCS.getJcsCommandStation().removeSensorEventListener(p1);
-      JCS.getJcsCommandStation().removeSensorEventListener(p2);
-      JCS.getJcsCommandStation().removeSensorEventListener(p3);
-      JCS.getJcsCommandStation().removeSensorEventListener(p4);
-      JCS.getJcsCommandStation().removeSensorEventListener(p5);
-      JCS.getJcsCommandStation().removeSensorEventListener(p6);
-      JCS.getJcsCommandStation().removeSensorEventListener(p7);
-      JCS.getJcsCommandStation().removeSensorEventListener(p8);
-      JCS.getJcsCommandStation().removeSensorEventListener(p9);
-      JCS.getJcsCommandStation().removeSensorEventListener(p10);
-      JCS.getJcsCommandStation().removeSensorEventListener(p11);
-      JCS.getJcsCommandStation().removeSensorEventListener(p12);
-      JCS.getJcsCommandStation().removeSensorEventListener(p13);
-      JCS.getJcsCommandStation().removeSensorEventListener(p14);
-      JCS.getJcsCommandStation().removeSensorEventListener(p15);
-      JCS.getJcsCommandStation().removeSensorEventListener(p16);
+      JCS.getJcsCommandStation().removeSensorEventListener(p1.getSensorId(), p1);
+      JCS.getJcsCommandStation().removeSensorEventListener(p2.getSensorId(), p2);
+      JCS.getJcsCommandStation().removeSensorEventListener(p3.getSensorId(), p3);
+      JCS.getJcsCommandStation().removeSensorEventListener(p4.getSensorId(), p4);
+      JCS.getJcsCommandStation().removeSensorEventListener(p5.getSensorId(), p5);
+      JCS.getJcsCommandStation().removeSensorEventListener(p6.getSensorId(), p6);
+      JCS.getJcsCommandStation().removeSensorEventListener(p7.getSensorId(), p7);
+      JCS.getJcsCommandStation().removeSensorEventListener(p8.getSensorId(), p8);
+      JCS.getJcsCommandStation().removeSensorEventListener(p9.getSensorId(), p9);
+      JCS.getJcsCommandStation().removeSensorEventListener(p10.getSensorId(), p10);
+      JCS.getJcsCommandStation().removeSensorEventListener(p11.getSensorId(), p11);
+      JCS.getJcsCommandStation().removeSensorEventListener(p12.getSensorId(), p12);
+      JCS.getJcsCommandStation().removeSensorEventListener(p13.getSensorId(), p13);
+      JCS.getJcsCommandStation().removeSensorEventListener(p14.getSensorId(), p14);
+      JCS.getJcsCommandStation().removeSensorEventListener(p15.getSensorId(), p15);
+      JCS.getJcsCommandStation().removeSensorEventListener(p16.getSensorId(), p16);
 
       this.p1 = null;
       this.p2 = null;
@@ -231,12 +249,20 @@ public class FeedbackPanel extends JPanel {
 
   }
 
+  private void obtainSensorByContactAndPort(FeedbackPort feedbackPort) {
+    if (PersistenceFactory.getService() != null) {
+      SensorBean sb = PersistenceFactory.getService().getSensor(feedbackPort.deviceId, feedbackPort.contactId);
+      feedbackPort.setSensorId(sb.getId());
+    }
+  }
+
   private class FeedbackPort implements SensorEventListener {
 
     private final JLabel label;
     private final Integer deviceId;
     private final Integer contactId;
     private boolean value;
+    private Integer sensorId;
 
     FeedbackPort(JLabel label, Integer deviceId, Integer contactId) {
       this.label = label;
@@ -244,6 +270,15 @@ public class FeedbackPanel extends JPanel {
       this.contactId = contactId;
 
       label.setToolTipText("DeviceId: " + this.deviceId + " ContactId: " + this.contactId);
+    }
+
+    @Override
+    public Integer getSensorId() {
+      if (sensorId != null) {
+        return sensorId;
+      } else {
+        return -1;
+      }
     }
 
     @Override
@@ -256,6 +291,11 @@ public class FeedbackPanel extends JPanel {
         label.repaint();
       }
     }
+
+    void setSensorId(Integer sensorId) {
+      this.sensorId = sensorId;
+    }
+
   }
 
   /**

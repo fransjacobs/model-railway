@@ -16,10 +16,9 @@
 package jcs.commandStation.events;
 
 /**
- *
- * @author fransjacobs
+ * Listen to Locomotive Velocity events
  */
-public interface LocomotiveSpeedEventListener {
+public interface LocomotiveSpeedEventListener extends LocomotiveEventListener {
 
   void onSpeedChange(LocomotiveSpeedEvent velocityEvent);
 

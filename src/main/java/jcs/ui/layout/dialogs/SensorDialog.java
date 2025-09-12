@@ -29,7 +29,6 @@ import jcs.entities.TileBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.layout.tiles.Sensor;
 import jcs.ui.layout.tiles.Tile;
-import jcs.ui.layout.tiles.TileCache;
 import org.tinylog.Logger;
 
 /**
@@ -124,7 +123,7 @@ public class SensorDialog extends javax.swing.JDialog {
 
     if (JCS.getJcsCommandStation() != null) {
       //Unregister as properties might change
-      JCS.getJcsCommandStation().removeSensorEventListener(sensor);
+      JCS.getJcsCommandStation().removeSensorEventListener(sb.getId(), sensor);
     }
   }
 
@@ -268,7 +267,7 @@ public class SensorDialog extends javax.swing.JDialog {
           PersistenceFactory.getService().persist(sensorBean);
 
           PersistenceFactory.getService().persist((sensor.getTileBean()));
-          JCS.getJcsCommandStation().addSensorEventListener(sensor);
+          JCS.getJcsCommandStation().addSensorEventListener(sensorBean.getId(), sensor);
         }
       } else if (sensor != null && sensor.getSensorBean() == null) {
 
@@ -281,7 +280,7 @@ public class SensorDialog extends javax.swing.JDialog {
           Logger.trace("Created " + sensorBean);
 
           PersistenceFactory.getService().persist((sensor.getTileBean()));
-          JCS.getJcsCommandStation().addSensorEventListener(sensor);
+          //JCS.getJcsCommandStation().addSensorEventListener(sensor);
         }
       }
 

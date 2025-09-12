@@ -15,8 +15,7 @@
  */
 package jcs.commandStation.events;
 
-public interface LocomotiveDirectionEventListener {
+public interface LocomotiveDirectionEventListener extends LocomotiveEventListener {
 
   void onDirectionChange(LocomotiveDirectionEvent directionEvent);
-
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Frans Jacobs.
+ * Copyright 2025 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,9 @@
 package jcs.commandStation.events;
 
 /**
- * Listener which reacts on a specific Sensor Event
+ * Listener which reacts on all Sensor Events
  */
-public interface SensorEventListener {
-
-  Integer getSensorId();
+public interface AllSensorEventsListener {
 
   void onSensorChange(SensorEvent sensorEvent);
 }

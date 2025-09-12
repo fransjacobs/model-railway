@@ -269,7 +269,7 @@ public class SignalRowPanel extends JPanel implements AccessoryEventListener {
 
   private void sendCommand(AccessoryValue value, AccessoryBean signal, boolean useValue2) {
     if (JCS.getJcsCommandStation() != null) {
-      JCS.getJcsCommandStation().switchAccessory(signal,value);
+      JCS.getJcsCommandStation().switchAccessory(signal, value);
     }
   }
 
@@ -307,7 +307,7 @@ public class SignalRowPanel extends JPanel implements AccessoryEventListener {
       SignalRowPanel signalRowPanel = new SignalRowPanel(signal);
       f.add(signalRowPanel);
 
-      JCS.getJcsCommandStation().addAccessoryEventListener(signalRowPanel);
+      JCS.getJcsCommandStation().addAccessoryEventListener(signal.getId(), signalRowPanel);
     }
 
     f.pack();
