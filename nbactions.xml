@@ -95,4 +95,14 @@
                 <goal>test</goal>
             </goals>
         </action>
+        <action>
+            <actionName>CUSTOM-Package Native</actionName>
+            <displayName>Package Native</displayName>
+            <goals>
+                <goal>package</goal>
+            </goals>
+            <activatedProfiles>
+                <activatedProfile>native</activatedProfile>
+            </activatedProfiles>
+        </action>
     </actions>
