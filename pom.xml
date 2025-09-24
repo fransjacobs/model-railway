@@ -477,7 +477,7 @@
                 </executions>
             </plugin>  
             -->
-            <plugin>
+            <!--plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-gpg-plugin</artifactId>
                 <version>3.0.1</version>
@@ -490,7 +490,7 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
@@ -544,27 +544,219 @@
                     <administratorRequired>false</administratorRequired>
                     <copyDependencies>true</copyDependencies>
                     <displayName>jcs</displayName>
-                    <jreDirectoryName>jre</jreDirectoryName>
                     <organizationName>Frans's Train Projects</organizationName>
                     <vmArgs>-Dtinylog.writer.level=trace -Xms256m -Xmx1024m</vmArgs> 
+                    <createZipball>false</createZipball>
+                    <createTarball>false</createTarball>
+                    <!--bundleJre>true</bundleJre-->
+                    <!--customizedJre>false</customizedJre-->
+                    <assetsDir>${project.basedir}/assets</assetsDir>
+
                     <additionalResources>
                         <additionalResource>${project.basedir}/README.md</additionalResource>
                         <additionalResource>${project.basedir}/JCS_SETUP.md</additionalResource>
+                        <additionalResource>${project.basedir}/JCS_SETUP_NL.md</additionalResource>
+                        <additionalResource>${project.basedir}/INTERFACES.md</additionalResource>
                         <additionalResource>${project.basedir}/DRIVING.md</additionalResource>
                         <additionalResource>${project.basedir}/AUTOPILOT.md</additionalResource>
-                        <!--
-                        <additionalResource>${project.build.directory}/generated-resources/licenses</additionalResource>
-                        -->
-                        <!--
+                        <additionalResource>${project.basedir}/AUTOPILOT_NL.md</additionalResource>
+                        <additionalResource>${project.basedir}/DRIVING.md</additionalResource>
+                        <additionalResource>${project.basedir}/DRIVING_NL.md</additionalResource>
                         <additionalResource>${project.basedir}/DESIGN.md</additionalResource>
-                        <additionalResource>${project.basedir}/BUILDING.md</additionalResource>
-                        <additionalResource>${project.basedir}/INTERFACES.md</additionalResource>
-                        <additionalResource>assets/JCS.l4j.ini</additionalResource>
-                        -->
+                        <additionalResource>${project.basedir}/DESIGN_NL.md</additionalResource>
                     </additionalResources>
                 </configuration>
                 <executions>
-                    <!--execution>
+                    <execution>
+                        <id>bundle-with-jre</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>package</goal>
+                        </goals>
+                        <configuration>
+                            <name>jcs-jre</name>
+                            <bundleJre>true</bundleJre>
+                            <customizedJre>false</customizedJre>
+                            <jreDirectoryName>jre</jreDirectoryName>
+                            <!--platform>auto|linux|mac|windows</platform-->
+                            <platform>auto</platform>
+                            <winConfig>
+                                <headerType>gui</headerType>
+                                <icoFile>target/classes/media/jcs.ico</icoFile>
+                                <setupMode>installForCurrentUser</setupMode>
+                                <generateMsi>false</generateMsi>
+                                <generateMsm>false</generateMsm>
+                                <generateSetup>true</generateSetup>
+                                <wrapJar>false</wrapJar>
+                                <companyName>${organizationName}</companyName>
+                                <productVersion>1.0.0.0</productVersion>
+                                <txtProductVersion>${project.version}</txtProductVersion>
+                                <copyright>${organizationName}</copyright>
+                                <productName>${project.name}</productName>
+                                <internalName>${project.name}</internalName>
+                                <originalFilename>${project.name}.exe</originalFilename>
+                                <exeCreationTool>launch4j</exeCreationTool>
+                            </winConfig>
+                            <linuxConfig>
+                                <generateAppImage>false</generateAppImage>
+                                <generateDeb>true</generateDeb>
+                                <generateRpm>true</generateRpm>
+                                <wrapJar>true</wrapJar>
+                                <categories>
+                                    <category>Education</category>
+                                </categories>
+                            </linuxConfig>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>bundle-without-jre</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>package</goal>
+                        </goals>
+                        <configuration>
+                            <name>jcs-nojre</name>
+                            <bundleJre>false</bundleJre>
+                            <winConfig>
+                                <headerType>gui</headerType>
+                                <icoFile>target/classes/media/jcs.ico</icoFile>
+                                <setupMode>installForCurrentUser</setupMode>
+                                <generateMsi>false</generateMsi>
+                                <generateMsm>false</generateMsm>
+                                <generateSetup>true</generateSetup>
+                                <wrapJar>false</wrapJar>
+                                <companyName>${organizationName}</companyName>
+                                <productVersion>1.0.0.0</productVersion>
+                                <txtProductVersion>${project.version}</txtProductVersion>
+                                <copyright>${organizationName}</copyright>
+                                <productName>${project.name}</productName>
+                                <internalName>${project.name}</internalName>
+                                <originalFilename>${project.name}.exe</originalFilename>
+                                <exeCreationTool>launch4j</exeCreationTool>
+                            </winConfig>
+                            <macConfig>
+                                <appId>${app.main.class}</appId>
+                                <icnsFile>target/classes/media/jcs.icns</icnsFile>
+                                <generateDmg>false</generateDmg>
+                                <generatePkg>false</generatePkg>
+                                <volumeName>jcs</volumeName>
+                                <entitlements>assets/mac/entitlements.plist</entitlements>
+                                <macStartup>SCRIPT</macStartup>
+                                <relocateJar>false</relocateJar>
+                                <codesignApp>false</codesignApp>
+                                <hardenedCodesign>false</hardenedCodesign>
+                                <notarizeApp>false</notarizeApp>
+                                <infoPlist>
+                                    <bundlePackageType>APPL</bundlePackageType>
+                                    <!--additionalEntries>
+                                          <![CDATA[
+                                           <key>com.apple.security.cs.allow-jit</key>
+                                           <true/>
+                                           <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+                                           <true/>
+                                           <key>com.apple.security.cs.disable-executable-page-protection</key>
+                                           <true/>
+                                           <key>com.apple.security.cs.allow-dyld-environment-variables</key>
+                                           <true/>
+                                           <key>com.apple.security.cs.disable-library-validation</key>
+                                           <true/>
+                                          ]]>
+                                    </additionalEntries-->
+                                </infoPlist>
+                            </macConfig>
+                            <linuxConfig>
+                                <generateAppImage>false</generateAppImage>
+                                <generateDeb>true</generateDeb>
+                                <generateRpm>true</generateRpm>
+                                <wrapJar>true</wrapJar>
+                                <categories>
+                                    <category>Education</category>
+                                </categories>
+                            </linuxConfig>
+                        </configuration>
+                    </execution>
+                   
+                    <!--                                         
+                    <execution>
+                        <id>auto</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>package</goal>
+                        </goals>
+                        
+                        <configuration>
+                            <platform>windows</platform>
+                            <createZipball>false</createZipball>
+                            <bundleJre>true</bundleJre>
+                            <customizedJre>false</customizedJre>
+                        </configuration>
+                        
+                        
+                        <configuration>
+                            <assetsDir>${project.basedir}/assets</assetsDir>
+                            <platform>auto</platform>
+                            <winConfig>
+                                <headerType>gui</headerType>
+                                <icoFile>target/classes/media/jcs.ico</icoFile>
+                                <setupMode>installForCurrentUser</setupMode>
+                                <generateMsi>false</generateMsi>
+                                <generateMsm>false</generateMsm>
+                                <generateSetup>true</generateSetup>
+                                <wrapJar>true</wrapJar>
+                                <companyName>${organizationName}</companyName>
+                                <productVersion>1.0.0.0</productVersion>
+                                <txtProductVersion>${project.version}</txtProductVersion>
+                                <copyright>${organizationName}</copyright>
+                                <productName>${project.name}</productName>
+                                <internalName>${project.name}</internalName>
+                                <originalFilename>${project.name}.exe</originalFilename>
+                                <exeCreationTool>launch4j</exeCreationTool>
+                            </winConfig>
+                            <macConfig>
+                                <appId>${app.main.class}</appId>
+                                <icnsFile>target/classes/media/jcs.icns</icnsFile>
+                                <generateDmg>false</generateDmg>
+                                <generatePkg>false</generatePkg>
+                                <volumeName>jcs</volumeName>
+                                <entitlements>assets/mac/entitlements.plist</entitlements>
+                                <macStartup>SCRIPT</macStartup>
+                                <relocateJar>false</relocateJar>
+                                <codesignApp>false</codesignApp>
+                                <hardenedCodesign>false</hardenedCodesign>
+                                <notarizeApp>false</notarizeApp>
+                                <infoPlist>
+                                    <bundlePackageType>APPL</bundlePackageType>
+                                    <!- -additionalEntries>
+                                          <![CDATA[
+                                           <key>com.apple.security.cs.allow-jit</key>
+                                           <true/>
+                                           <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+                                           <true/>
+                                           <key>com.apple.security.cs.disable-executable-page-protection</key>
+                                           <true/>
+                                           <key>com.apple.security.cs.allow-dyld-environment-variables</key>
+                                           <true/>
+                                           <key>com.apple.security.cs.disable-library-validation</key>
+                                           <true/>
+                                          ]]>
+                                    </additionalEntries- ->
+                                </infoPlist>
+                            </macConfig>
+                            <linuxConfig>
+                                <generateAppImage>false</generateAppImage>
+                                <generateDeb>true</generateDeb>
+                                <generateRpm>true</generateRpm>
+                                <wrapJar>true</wrapJar>
+                                <categories>
+                                    <category>Education</category>
+                                </categories>
+                            </linuxConfig>
+                        </configuration>
+                        
+                    </execution>
+                    -->
+                    <!--
+                    <execution>
                         <id>bundling-for-windows</id>
                         <phase>package</phase>
                         <goals>
@@ -572,22 +764,26 @@
                         </goals>
                         <configuration>
                             <platform>windows</platform>
-                            <createZipball>true</createZipball>
+                            <icoFile>target/classes/media/jcs.ico</icoFile>
+                            <createZipball>false</createZipball>
+                            <setupMode>installForCurrentUser</setupMode>
                             <headerType>gui</headerType>
                             <generateMsi>false</generateMsi>
                             <generateMsm>false</generateMsm>
-                            <generateSetup>false</generateSetup>
-                            <wrapJar>false</wrapJar>
+                            <generateSetup>true</generateSetup>
+                            <wrapJar>true</wrapJar>
+                            <exeCreationTool>why</exeCreationTool>
+                            <productName>jcs</productName>
                                 
                             <companyName>${organizationName}</companyName>
-                            <productVersion>1.0.0.0</productVersion>
+                            <productVersion>${project.version}</productVersion>
                             <txtProductVersion>${project.version}</txtProductVersion>
                             <copyright>${organizationName}</copyright>
-                            <productName>${project.name}</productName>
                             <internalName>${project.name}</internalName>
                             <originalFilename>${project.name}.exe</originalFilename>
                             <exeCreationTool>launch4j</exeCreationTool>
-                            <jdkPath>X:\\path\to\linux\jdk</jdkPath>
+                            <bundleJre>false</bundleJre>
+                            <!- -jrePath>X:\\path\to\linux\jdk</jrePath- ->
                         </configuration>
                     </execution-->
                     <!--execution>
@@ -610,7 +806,7 @@
                 
                         </configuration>
                     </execution-->
-                    <execution>
+                    <!--execution>
                         <id>bundling-for-mac</id>
                         <phase>package</phase>
                         <goals>
@@ -628,7 +824,6 @@
                             <volumeName>jcs</volumeName>
                             <entitlements>assets/mac/entitlements.plist</entitlements>
                             <macStartup>SCRIPT</macStartup>
-                            <!--macStartup>X86_64</macStartup-->
                             <relocateJar>false</relocateJar>
                             <codesignApp>false</codesignApp>
                             <hardenedCodesign>false</hardenedCodesign>
@@ -636,7 +831,7 @@
                             <jrePath>/Library/Java/JavaVirtualMachines/jdk-21.0.8+9-jre/Contents/Home</jrePath>
                             <infoPlist>
                                 <bundlePackageType>APPL</bundlePackageType>
-                                <!--additionalEntries>
+                                <!- -additionalEntries>
                                       <![CDATA[
                                        <key>com.apple.security.cs.allow-jit</key>
                                        <true/>
@@ -649,11 +844,10 @@
                                        <key>com.apple.security.cs.disable-library-validation</key>
                                        <true/>
                                       ]]>
-                                </additionalEntries-->
+                                </additionalEntries- ->
                             </infoPlist>
                         </configuration>
-                    </execution>
-                    
+                    </execution-->                   
                     
                     <!--execution>
                         <id>auto</id>

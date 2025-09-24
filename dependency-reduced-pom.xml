@@ -142,19 +142,6 @@
         </configuration>
       </plugin>
       <plugin>
-        <artifactId>maven-gpg-plugin</artifactId>
-        <version>3.0.1</version>
-        <executions>
-          <execution>
-            <id>sign-artifacts</id>
-            <phase>deploy</phase>
-            <goals>
-              <goal>sign</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <artifactId>maven-checkstyle-plugin</artifactId>
         <version>3.6.0</version>
         <executions>
@@ -199,31 +186,96 @@
         <version>1.7.6</version>
         <executions>
           <execution>
-            <id>bundling-for-mac</id>
+            <id>bundle-with-jre</id>
             <phase>package</phase>
             <goals>
               <goal>package</goal>
             </goals>
             <configuration>
-              <platform>mac</platform>
-              <createTarball>false</createTarball>
-              <bundleJre>false</bundleJre>
+              <name>jcs-jre</name>
+              <bundleJre>true</bundleJre>
               <customizedJre>false</customizedJre>
-              <appId>${app.main.class}</appId>
-              <icnsFile>target/classes/media/jcs.icns</icnsFile>
-              <generateDmg>false</generateDmg>
-              <generatePkg>false</generatePkg>
-              <volumeName>jcs</volumeName>
-              <entitlements>assets/mac/entitlements.plist</entitlements>
-              <macStartup>SCRIPT</macStartup>
-              <relocateJar>false</relocateJar>
-              <codesignApp>false</codesignApp>
-              <hardenedCodesign>false</hardenedCodesign>
-              <notarizeApp>false</notarizeApp>
-              <jrePath>/Library/Java/JavaVirtualMachines/jdk-21.0.8+9-jre/Contents/Home</jrePath>
-              <infoPlist>
-                <bundlePackageType>APPL</bundlePackageType>
-              </infoPlist>
+              <jreDirectoryName>jre</jreDirectoryName>
+              <platform>auto</platform>
+              <winConfig>
+                <headerType>gui</headerType>
+                <icoFile>target/classes/media/jcs.ico</icoFile>
+                <setupMode>installForCurrentUser</setupMode>
+                <generateMsi>false</generateMsi>
+                <generateMsm>false</generateMsm>
+                <generateSetup>true</generateSetup>
+                <wrapJar>false</wrapJar>
+                <companyName>${organizationName}</companyName>
+                <productVersion>1.0.0.0</productVersion>
+                <txtProductVersion>${project.version}</txtProductVersion>
+                <copyright>${organizationName}</copyright>
+                <productName>${project.name}</productName>
+                <internalName>${project.name}</internalName>
+                <originalFilename>${project.name}.exe</originalFilename>
+                <exeCreationTool>launch4j</exeCreationTool>
+              </winConfig>
+              <linuxConfig>
+                <generateAppImage>false</generateAppImage>
+                <generateDeb>true</generateDeb>
+                <generateRpm>true</generateRpm>
+                <wrapJar>true</wrapJar>
+                <categories>
+                  <category>Education</category>
+                </categories>
+              </linuxConfig>
+            </configuration>
+          </execution>
+          <execution>
+            <id>bundle-without-jre</id>
+            <phase>package</phase>
+            <goals>
+              <goal>package</goal>
+            </goals>
+            <configuration>
+              <name>jcs-nojre</name>
+              <bundleJre>false</bundleJre>
+              <winConfig>
+                <headerType>gui</headerType>
+                <icoFile>target/classes/media/jcs.ico</icoFile>
+                <setupMode>installForCurrentUser</setupMode>
+                <generateMsi>false</generateMsi>
+                <generateMsm>false</generateMsm>
+                <generateSetup>true</generateSetup>
+                <wrapJar>false</wrapJar>
+                <companyName>${organizationName}</companyName>
+                <productVersion>1.0.0.0</productVersion>
+                <txtProductVersion>${project.version}</txtProductVersion>
+                <copyright>${organizationName}</copyright>
+                <productName>${project.name}</productName>
+                <internalName>${project.name}</internalName>
+                <originalFilename>${project.name}.exe</originalFilename>
+                <exeCreationTool>launch4j</exeCreationTool>
+              </winConfig>
+              <macConfig>
+                <appId>${app.main.class}</appId>
+                <icnsFile>target/classes/media/jcs.icns</icnsFile>
+                <generateDmg>false</generateDmg>
+                <generatePkg>false</generatePkg>
+                <volumeName>jcs</volumeName>
+                <entitlements>assets/mac/entitlements.plist</entitlements>
+                <macStartup>SCRIPT</macStartup>
+                <relocateJar>false</relocateJar>
+                <codesignApp>false</codesignApp>
+                <hardenedCodesign>false</hardenedCodesign>
+                <notarizeApp>false</notarizeApp>
+                <infoPlist>
+                  <bundlePackageType>APPL</bundlePackageType>
+                </infoPlist>
+              </macConfig>
+              <linuxConfig>
+                <generateAppImage>false</generateAppImage>
+                <generateDeb>true</generateDeb>
+                <generateRpm>true</generateRpm>
+                <wrapJar>true</wrapJar>
+                <categories>
+                  <category>Education</category>
+                </categories>
+              </linuxConfig>
             </configuration>
           </execution>
         </executions>
@@ -233,14 +285,23 @@
           <administratorRequired>false</administratorRequired>
           <copyDependencies>true</copyDependencies>
           <displayName>jcs</displayName>
-          <jreDirectoryName>jre</jreDirectoryName>
           <organizationName>Frans's Train Projects</organizationName>
           <vmArgs>-Dtinylog.writer.level=trace -Xms256m -Xmx1024m</vmArgs>
+          <createZipball>false</createZipball>
+          <createTarball>false</createTarball>
+          <assetsDir>${project.basedir}/assets</assetsDir>
           <additionalResources>
             <additionalResource>${project.basedir}/README.md</additionalResource>
             <additionalResource>${project.basedir}/JCS_SETUP.md</additionalResource>
+            <additionalResource>${project.basedir}/JCS_SETUP_NL.md</additionalResource>
+            <additionalResource>${project.basedir}/INTERFACES.md</additionalResource>
             <additionalResource>${project.basedir}/DRIVING.md</additionalResource>
             <additionalResource>${project.basedir}/AUTOPILOT.md</additionalResource>
+            <additionalResource>${project.basedir}/AUTOPILOT_NL.md</additionalResource>
+            <additionalResource>${project.basedir}/DRIVING.md</additionalResource>
+            <additionalResource>${project.basedir}/DRIVING_NL.md</additionalResource>
+            <additionalResource>${project.basedir}/DESIGN.md</additionalResource>
+            <additionalResource>${project.basedir}/DESIGN_NL.md</additionalResource>
           </additionalResources>
         </configuration>
       </plugin>
@@ -339,11 +400,11 @@
   </dependencies>
   <properties>
     <maven.compiler.release>${java.version}</maven.compiler.release>
+    <maven.compiler.target>${java.version}</maven.compiler.target>
     <java.version>21</java.version>
     <maven.compiler.source>${java.version}</maven.compiler.source>
-    <packaging>jar</packaging>
-    <maven.compiler.target>${java.version}</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <packaging>jar</packaging>
     <app.main.class>jcs.JCS</app.main.class>
     <app.distribution.directory>${project.build.directory}/distributions/app</app.distribution.directory>
   </properties>
