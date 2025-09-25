@@ -10,19 +10,29 @@
     <url>https://github.com/fransjacobs/model-railway</url>
     <description>Java Central Station</description>
     <inceptionYear>2018</inceptionYear>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.version>21</java.version>
+        <packaging>jar</packaging>
+        <app.main.class>jcs.JCS</app.main.class>
+        <maven.compiler.release>${java.version}</maven.compiler.release>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <app.distribution.directory>${project.build.directory}/distributions/app</app.distribution.directory>
+    </properties>    
+    <licenses>
+        <license>
+            <name>Apache-2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
     <developers>
         <developer>
             <name>Frans Jacobs</name>
             <email>frans.jacobs@gmail.com</email>
         </developer>
     </developers>
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>21</java.version>
-        <packaging>jar</packaging>
-        <exec.mainClass>jcs.JCS</exec.mainClass>
-        <maven.compiler.release>21</maven.compiler.release>
-    </properties>
     <dependencies>
         <dependency>
             <groupId>org.tinylog</groupId>
@@ -82,30 +92,36 @@
         <dependency>
             <groupId>org.apache.xmlgraphics</groupId>
             <artifactId>batik</artifactId>
-            <version>1.18</version>
+            <version>1.19</version>
             <type>pom</type>
         </dependency>
         <dependency>
             <groupId>org.apache.xmlgraphics</groupId>
             <artifactId>batik-transcoder</artifactId>
-            <version>1.18</version>
+            <version>1.19</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>xml-apis</groupId>
+                    <artifactId>xml-apis</artifactId>
+                </exclusion>
+            </exclusions>            
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>5.11.0</version>
+            <version>5.11.4</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-params</artifactId>
-            <version>5.11.0</version>
+            <version>5.11.4</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.vintage</groupId>
             <artifactId>junit-vintage-engine</artifactId>
-            <version>5.11.0</version>
+            <version>5.11.4</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -155,7 +171,7 @@
         <dependency>
             <groupId>com.fazecast</groupId>
             <artifactId>jSerialComm</artifactId>
-            <version>2.11.0</version>
+            <version>2.11.2</version>
         </dependency>
         <dependency>
             <groupId>com.shinyhut</groupId>
@@ -172,38 +188,21 @@
             <artifactId>logback-classic</artifactId>
             <version>1.2.13</version>
         </dependency>
-        <!--dependency>
-            <groupId>com.sshtools</groupId>
-            <artifactId>two-slices</artifactId>
-            <version>0.9.4</version>
-        </dependency-->
         <dependency>
             <groupId>org.netbeans.external</groupId>
             <artifactId>AbsoluteLayout</artifactId>
-            <version>RELEASE230</version>
+            <version>RELEASE270</version>
         </dependency>
     </dependencies>
     <build>        
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <version>3.1.0</version>
-                <executions>
-                    <execution>
-                        <id>enforce-maven</id>
-                        <goals>
-                            <goal>enforce</goal>
-                        </goals>
-                        <configuration>
-                            <rules>
-                                <requireMavenVersion>
-                                    <version>3.2.5</version>
-                                </requireMavenVersion>
-                            </rules>
-                        </configuration>
-                    </execution>
-                </executions>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.5.0</version>
+                <configuration>
+                    <mainClass>${app.main.class}</mainClass>
+                </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -214,6 +213,43 @@
                     <release>21</release>
                     <showDeprecation>true</showDeprecation>
                 </configuration>
+            </plugin>  
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.2</version>
+                <configuration>
+                    <skipIfEmpty>true</skipIfEmpty>
+                    <archive>
+                        <manifestEntries>
+                            <Main-Class>${app.main.class}</Main-Class>
+                            <Automatic-Module-Name>jcs</Automatic-Module-Name>
+                            <Program-Version>${project.version}</Program-Version>
+                            <Implementation-Version>${project.version}</Implementation-Version>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.6.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <!-- Add a manifest so the JAR is executable -->
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>${app.main.class}</mainClass>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -260,41 +296,20 @@
                             <directory>src/test/resources</directory>
                             <filtering>false</filtering>
                         </resource>
+                        <resource>
+                            <directory>${project.build.directory}/generated-resources/licenses</directory>
+                            <targetPath>META-INF/licenses</targetPath>
+                            <includes>
+                                <include>**/*.txt</include>
+                            </includes>
+                        </resource>
                     </resources> 
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.7.1</version>
-                <executions>
-                    <execution>
-                        <id>server</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                        <configuration>
-                            <archive>
-                                <manifest>
-                                    <addClasspath>true</addClasspath>
-                                    <mainClass>
-                                        jcs.JCS
-                                    </mainClass>
-                                </manifest>
-                            </archive>
-                            <descriptorRefs>
-                                <descriptorRef>jar-with-dependencies</descriptorRef>
-                            </descriptorRefs>
-                            <appendAssemblyId>true</appendAssemblyId>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.5.2</version>
+                <version>3.5.3</version>
                 <configuration>
                     <!--testFailureIgnore>false</testFailureIgnore-->
                     <argLine>-Dfile.encoding=UTF-8</argLine>
@@ -305,56 +320,11 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.4.2</version>
-                <configuration>
-                    <skipIfEmpty>true</skipIfEmpty>
-                    <archive>
-                        <manifestEntries>
-                            <Main-Class>${exec.mainClass}</Main-Class>
-                            <Automatic-Module-Name>jcs</Automatic-Module-Name>
-                            <Program-Version>${project.version}</Program-Version>
-                            <Implementation-Version>${project.version}</Implementation-Version>
-                        </manifestEntries>
-                    </archive>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-install-plugin</artifactId>
-                <version>3.1.3</version>
+                <version>3.1.4</version>
                 <configuration>
                     <packaging>jar</packaging>
                 </configuration>
-            </plugin>
-            <!-- Disabled as obtaining the licenses takes a lot of time. It is onley need when a release is pending.
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>license-maven-plugin</artifactId>
-                <version>2.4.0</version>
-                <executions>
-                    <execution>
-                        <id>aggregate-download-licenses</id>
-                        <goals>
-                            <goal>aggregate-download-licenses</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <version>3.0.1</version>
-                <executions>
-                    <execution>
-                        <id>sign-artifacts</id>
-                        <phase>deploy</phase>
-                        <goals>
-                            <goal>sign</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -378,51 +348,112 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>enforce-maven</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireMavenVersion>
+                                    <version>3.2.5</version>
+                                </requireMavenVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>io.github.fvarrui</groupId>
                 <artifactId>javapackager</artifactId>
                 <version>1.7.6</version>
                 <configuration>
-                    <mainClass>${exec.mainClass}</mainClass>
-                    <bundleJre>false</bundleJre>
-                    <customizedJre>false</customizedJre>
-                    <generateInstaller>true</generateInstaller>
+                    <mainClass>${app.main.class}</mainClass>
+                    <generateInstaller>false</generateInstaller>
                     <administratorRequired>false</administratorRequired>
                     <copyDependencies>true</copyDependencies>
-                    <displayName>JCS</displayName>
+                    <displayName>jcs</displayName>
                     <organizationName>Frans's Train Projects</organizationName>
-                    <vmArgs>-Dtinylog.writer.level=trace -Xms256m -Xmx1024m --add-opens=java.desktop/sun.lwawt.macosx=ALL-UNNAMED -Dsun.java2d.metal=true</vmArgs> 
+                    <vmArgs>-Dtinylog.writer.level=trace -Xms256m -Xmx1024m</vmArgs> 
+                    <createZipball>false</createZipball>
+                    <createTarball>false</createTarball>
+                    <assetsDir>${project.basedir}/assets</assetsDir>
                     <additionalResources>
                         <additionalResource>${project.basedir}/README.md</additionalResource>
                         <additionalResource>${project.basedir}/JCS_SETUP.md</additionalResource>
-                        <additionalResource>${project.basedir}/DRIVING.md</additionalResource>
-                        <!--
-                        <additionalResource>${project.build.directory}/generated-resources/licenses</additionalResource>
-                        -->
-                        <!--
-                        <additionalResource>${project.basedir}/DESIGN.md</additionalResource>
-                        <additionalResource>${project.basedir}/BUILDING.md</additionalResource>
+                        <additionalResource>${project.basedir}/JCS_SETUP_NL.md</additionalResource>
                         <additionalResource>${project.basedir}/INTERFACES.md</additionalResource>
-                        <additionalResource>assets/JCS.l4j.ini</additionalResource>
-                        -->
+                        <additionalResource>${project.basedir}/DRIVING.md</additionalResource>
+                        <additionalResource>${project.basedir}/AUTOPILOT.md</additionalResource>
+                        <additionalResource>${project.basedir}/AUTOPILOT_NL.md</additionalResource>
+                        <additionalResource>${project.basedir}/DRIVING.md</additionalResource>
+                        <additionalResource>${project.basedir}/DRIVING_NL.md</additionalResource>
+                        <additionalResource>${project.basedir}/DESIGN.md</additionalResource>
+                        <additionalResource>${project.basedir}/DESIGN_NL.md</additionalResource>
                     </additionalResources>
                 </configuration>
                 <executions>
                     <execution>
-                        <id>auto</id>
+                        <id>bundle-with-jre</id>
                         <phase>package</phase>
                         <goals>
                             <goal>package</goal>
                         </goals>
                         <configuration>
-                            <assetsDir>${project.basedir}/assets</assetsDir>
+                            <name>jcs-jre</name>
+                            <bundleJre>true</bundleJre>
+                            <customizedJre>false</customizedJre>
+                            <jreDirectoryName>jre</jreDirectoryName>
+                            <!--platform>auto|linux|mac|windows</platform-->
                             <platform>auto</platform>
-                            <createZipball>false</createZipball>
-                            <createTarball>false</createTarball>
                             <winConfig>
                                 <headerType>gui</headerType>
+                                <icoFile>target/classes/media/jcs.ico</icoFile>
+                                <setupMode>installForCurrentUser</setupMode>
                                 <generateMsi>false</generateMsi>
                                 <generateMsm>false</generateMsm>
-                                <generateSetup>false</generateSetup>
+                                <generateSetup>true</generateSetup>
+                                <wrapJar>false</wrapJar>
+                                <companyName>${organizationName}</companyName>
+                                <productVersion>1.0.0.0</productVersion>
+                                <txtProductVersion>${project.version}</txtProductVersion>
+                                <copyright>${organizationName}</copyright>
+                                <productName>${project.name}</productName>
+                                <internalName>${project.name}</internalName>
+                                <originalFilename>${project.name}.exe</originalFilename>
+                                <exeCreationTool>launch4j</exeCreationTool>
+                            </winConfig>
+                            <linuxConfig>
+                                <generateAppImage>false</generateAppImage>
+                                <generateDeb>true</generateDeb>
+                                <generateRpm>true</generateRpm>
+                                <wrapJar>true</wrapJar>
+                                <categories>
+                                    <category>Education</category>
+                                </categories>
+                            </linuxConfig>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>bundle-without-jre</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>package</goal>
+                        </goals>
+                        <configuration>
+                            <name>jcs</name>
+                            <bundleJre>false</bundleJre>
+                            <winConfig>
+                                <headerType>gui</headerType>
+                                <icoFile>target/classes/media/jcs.ico</icoFile>
+                                <setupMode>installForCurrentUser</setupMode>
+                                <generateMsi>false</generateMsi>
+                                <generateMsm>false</generateMsm>
+                                <generateSetup>true</generateSetup>
                                 <wrapJar>false</wrapJar>
                                 <companyName>${organizationName}</companyName>
                                 <productVersion>1.0.0.0</productVersion>
@@ -434,16 +465,34 @@
                                 <exeCreationTool>launch4j</exeCreationTool>
                             </winConfig>
                             <macConfig>
-                                <appId>${exec.mainClass}</appId>
+                                <appId>${app.main.class}</appId>
                                 <icnsFile>target/classes/media/jcs.icns</icnsFile>
                                 <generateDmg>false</generateDmg>
                                 <generatePkg>false</generatePkg>
-                                <volumeName>JCS</volumeName>
-                                <entitlements>entitlements.plist</entitlements>
+                                <volumeName>jcs</volumeName>
+                                <entitlements>assets/mac/entitlements.plist</entitlements>
                                 <macStartup>SCRIPT</macStartup>
+                                <relocateJar>false</relocateJar>
                                 <codesignApp>false</codesignApp>
                                 <hardenedCodesign>false</hardenedCodesign>
                                 <notarizeApp>false</notarizeApp>
+                                <infoPlist>
+                                    <bundlePackageType>APPL</bundlePackageType>
+                                    <!--additionalEntries>
+                                          <![CDATA[
+                                           <key>com.apple.security.cs.allow-jit</key>
+                                           <true/>
+                                           <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+                                           <true/>
+                                           <key>com.apple.security.cs.disable-executable-page-protection</key>
+                                           <true/>
+                                           <key>com.apple.security.cs.allow-dyld-environment-variables</key>
+                                           <true/>
+                                           <key>com.apple.security.cs.disable-library-validation</key>
+                                           <true/>
+                                          ]]>
+                                    </additionalEntries-->
+                                </infoPlist>
                             </macConfig>
                             <linuxConfig>
                                 <generateAppImage>false</generateAppImage>
@@ -457,7 +506,163 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>         
+            </plugin>
+            <!-- Disabled as obtaining the licenses takes a lot of time. It is only need when a release is pending. -->
+            <!--
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <version>2.4.0</version>
+                <configuration>
+                    <licensesOutputDirectory>${project.build.directory}/generated-resources/licenses</licensesOutputDirectory>
+                    <useRepositoryContent>true</useRepositoryContent>
+                    <cacheDir>${project.build.directory}/license-cache</cacheDir>
+                    <licenseMerges>
+                        <licenseMerge>GNU Lesser General Public License</licenseMerge>
+                        <licenseMerge>LGPL-2.1</licenseMerge>
+                    </licenseMerges>
+                    <licenseMap>
+                        <license>
+                            <name>GNU Lesser General Public License</name>
+                            <url>https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt</url>
+                        </license>
+                        <license>
+                            <name>OpenJDK GPLv2 + Classpath Exception</name>
+                            <url>https://openjdk.org/legal/gplv2+ce.html</url>
+                        </license>
+                    </licenseMap>
+                    <licenseUrlMap>
+                        <licenseUrl>
+                            <match>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</match>
+                            <replacement>https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt</replacement>
+                        </licenseUrl>
+                        <licenseUrl>
+                            <match>http://www.gnu.org/licenses/lgpl.html</match>
+                            <replacement>https://www.gnu.org/licenses/lgpl-2.1.txt</replacement>
+                        </licenseUrl>
+                        <licenseUrl>
+                            <match>https://openjdk.java.net/legal/gplv2+ce.html</match>
+                            <replacement>https://openjdk.org/legal/gplv2+ce.html</replacement>
+                        </licenseUrl>
+                        <licenseUrl>
+                            <match>/LICENSE.txt</match>
+                            <replacement>https://raw.githubusercontent.com/apache/commons-logging/master/LICENSE.txt</replacement>
+                        </licenseUrl>
+                    </licenseUrlMap>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>aggregate-download-licenses</id>
+                        <goals>
+                            <goal>aggregate-download-licenses</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>  
+            -->
+            <!-- Disabled plugins, which are probably obsolete, but not yet sure -->
+            <!--plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>3.0.1</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>deploy</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin-->
+            <!--plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>appassembler-maven-plugin</artifactId>
+                <version>2.1.0</version>
+                <configuration>
+                    <assembleDirectory>${project.build.directory}/binary</assembleDirectory>
+                    <repositoryLayout>flat</repositoryLayout>
+                    <repositoryName>lib</repositoryName>
+                    <extraJvmArguments>-Xms256m -Xmx10242m</extraJvmArguments>
+                    <platforms>
+                        <platform>unix</platform>
+                        <platform>windows</platform>
+                    </platforms>
+                    <programs>
+                        <program>
+                            <mainClass>${app.main.class}</mainClass>
+                            <id>jcs</id>
+                        </program>
+                    </programs>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-distribution</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>assemble</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin-->
+            <!--plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.7.1</version>
+                <executions>    
+                    <execution>
+                        <id>server</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <archive>
+                                <manifest>
+                                    <addClasspath>true</addClasspath>
+                                    <mainClass>${app.main.class}</mainClass>
+                                </manifest>
+                            </archive>
+                            <descriptorRefs>
+                                <descriptorRef>jar-with-dependencies</descriptorRef>
+                            </descriptorRefs>
+                            <appendAssemblyId>true</appendAssemblyId>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin-->
+            <!--plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.7.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <appendAssemblyId>false</appendAssemblyId>
+                            <finalName>${project.artifactId}</finalName>
+                            <outputDirectory>${project.build.directory}/dist</outputDirectory>
+                            <descriptorRefs>
+                                <descriptorRef>jar-with-dependencies</descriptorRef>
+                            </descriptorRefs>
+                            <archive>
+                                <manifest> 
+                                    <addClasspath>false</addClasspath>
+                                    <mainClass>${app.main.class}</mainClass>
+                                    <classpathPrefix>lib/</classpathPrefix>
+                                </manifest>
+                                <manifestEntries>
+                                    <Release-Version>${project.version}</Release-Version>
+                                </manifestEntries>
+                            </archive>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin-->
+
         </plugins>
     </build>
 </project>
