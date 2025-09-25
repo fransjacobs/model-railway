@@ -37,10 +37,12 @@ public abstract class LocomotiveEvent {
     locomotiveBean.setCommandStationId(commandStationId);
   }
 
-  protected LocomotiveEvent(int address, LocomotiveBean.DecoderType decoderType, String commandStationId) {
+  protected LocomotiveEvent(int address, LocomotiveBean.DecoderType decoderType, String commandStationId, int a) {
     locomotiveBean = new LocomotiveBean();
     locomotiveBean.setAddress(address);
-    locomotiveBean.setDecoderTypeString(decoderType.getDecoderType());
+    if (decoderType != null) {
+      locomotiveBean.setDecoderTypeString(decoderType.getDecoderType());
+    }
     locomotiveBean.setCommandStationId(commandStationId);
   }
 
@@ -63,10 +65,10 @@ public abstract class LocomotiveEvent {
     this.locomotiveBean = locomotiveBean;
   }
 
-  @Deprecated
-  public boolean isValid() {
-    return this.locomotiveBean != null && this.locomotiveBean.getId() != null;
-  }
+//  @Deprecated
+//  public boolean isValid() {
+//    return this.locomotiveBean != null && this.locomotiveBean.getId() != null;
+//  }
 
   public boolean isEventFor(LocomotiveBean locomotive) {
     if (locomotive != null) {

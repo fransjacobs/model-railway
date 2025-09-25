@@ -25,7 +25,7 @@ import org.tinylog.Logger;
  */
 public class LocomotiveDirectionEventParser {
 
-  public static LocomotiveDirectionEvent parseMessage(CanMessage message) {
+  public static LocomotiveDirectionEvent parse(CanMessage message) {
     LocomotiveBean locomotiveBean = new LocomotiveBean();
     locomotiveBean.setCommandStationId(CanMessage.MARKLIN_COMMANDSTATION_ID);
     CanMessage resp;
@@ -43,6 +43,20 @@ public class LocomotiveDirectionEventParser {
 
       locomotiveBean.setId(id);
       locomotiveBean.setRichtung(richtung);
+
+      //Use the address range to determine the DecoderType
+      if (locomotiveBean.getDecoderType() == null) {
+        if (id > 49152) {
+          locomotiveBean.setDecoderTypeString(LocomotiveBean.DecoderType.DCC.getDecoderType());
+        } else if (id > 16384) {
+          locomotiveBean.setDecoderTypeString(LocomotiveBean.DecoderType.MFX.getDecoderType());
+        } else if (id > 2.048) {
+          locomotiveBean.setDecoderTypeString(LocomotiveBean.DecoderType.SX1.getDecoderType());
+        } else {
+          locomotiveBean.setDecoderTypeString(LocomotiveBean.DecoderType.MM.getDecoderType());
+        }
+      }
+
     } else {
       Logger.warn("Can't parse message, not a Locomotive Direction Message! " + resp);
       return null;

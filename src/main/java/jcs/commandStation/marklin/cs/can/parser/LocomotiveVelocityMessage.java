@@ -44,6 +44,18 @@ public class LocomotiveVelocityMessage {
 
       locomotiveBean.setId(id);
       locomotiveBean.setVelocity(velocity);
+      //Use the address range to determine the DecoderType
+      if (locomotiveBean.getDecoderType() == null) {
+        if (id > 49152) {
+          locomotiveBean.setDecoderTypeString(LocomotiveBean.DecoderType.DCC.getDecoderType());
+        } else if (id > 16384) {
+          locomotiveBean.setDecoderTypeString(LocomotiveBean.DecoderType.MFX.getDecoderType());
+        } else if (id > 2.048) {
+          locomotiveBean.setDecoderTypeString(LocomotiveBean.DecoderType.SX1.getDecoderType());
+        } else {
+          locomotiveBean.setDecoderTypeString(LocomotiveBean.DecoderType.MM.getDecoderType());
+        }
+      }
 
     } else {
       Logger.warn("Can't parse message, not a Locomotive Velocity Message! " + resp);

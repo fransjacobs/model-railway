@@ -749,7 +749,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       Logger.trace("Change direction to " + direction + " CS val " + direction.getMarklinValue());
       CanMessage message = sendMessage(CanMessageFactory.setDirection(locUid, direction.getMarklinValue(), this.csUid));
       //query velocity of give a not halt
-      LocomotiveDirectionEvent dme = LocomotiveDirectionEventParser.parseMessage(message);
+      LocomotiveDirectionEvent dme = LocomotiveDirectionEventParser.parse(message);
       notifyLocomotiveDirectionEventListeners(dme);
     }
   }
@@ -968,11 +968,9 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   }
 
   private void notifyLocomotiveSpeedEventListeners(final LocomotiveSpeedEvent speedEvent) {
-    //if (speedEvent.isValid()) {
     for (LocomotiveSpeedEventListener listener : this.locomotiveSpeedEventListeners) {
       listener.onSpeedChange(speedEvent);
     }
-    //}
   }
 
   /**
@@ -1113,7 +1111,6 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
               }
               case CanMessage.LOC_VELOCITY_RESP -> {
                 Logger.trace("VelocityChange " + eventMessage);
-
                 notifyLocomotiveSpeedEventListeners(LocomotiveVelocityMessage.parse(eventMessage));
               }
               case CanMessage.LOC_DIRECTION -> {
@@ -1122,7 +1119,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
               }
               case CanMessage.LOC_DIRECTION_RESP -> {
                 Logger.trace("DirectionChange " + eventMessage);
-                notifyLocomotiveDirectionEventListeners(LocomotiveDirectionEventParser.parseMessage(eventMessage));
+                notifyLocomotiveDirectionEventListeners(LocomotiveDirectionEventParser.parse(eventMessage));
               }
               case CanMessage.LOC_FUNCTION -> {
 
@@ -1138,7 +1135,6 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
               default -> {
               }
             }
-
           } catch (InterruptedException ex) {
             Logger.error(ex);
           }
@@ -1146,7 +1142,6 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
           Logger.error("Error in Handling Thread. Cause: " + e.getMessage());
         }
       }
-
       Logger.debug("Stop Event handling");
     }
   }

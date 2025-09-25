@@ -41,9 +41,9 @@ class BrakeState extends DispatcherState implements SensorEventListener {
     RouteBean route = dispatcher.getRouteBean();
     Logger.trace("Locomotive " + locomotive.getName() + " has entered destination " + destinationBlock.getDescription() + " and prepares to stop...");
 
+    
+    
     inSensorId = dispatcher.getInSensorId();
-
-    //For the remaining states ignore events from the in sensor
     ExpectedSensorEventHandler ish = new ExpectedSensorEventHandler(inSensorId, dispatcher);
     AutoPilot.addSensorEventHandler(ish);
 

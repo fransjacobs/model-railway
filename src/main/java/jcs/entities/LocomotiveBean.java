@@ -167,8 +167,12 @@ public class LocomotiveBean implements Serializable {
   @Column(name = "decoder")
   @ColumnPosition(position = 4)
   public DecoderType getDecoderType() {
-    DecoderType dt = DecoderType.get(this.decoderTypeString);
-    return dt;
+    if (decoderTypeString != null) {
+      DecoderType dt = DecoderType.get(decoderTypeString);
+      return dt;
+    } else {
+      return null;
+    }
   }
 
   @Column(name = "tacho_max")
@@ -692,6 +696,7 @@ public class LocomotiveBean implements Serializable {
     MM_DIL("mm2_dil8"),
     MFX("mfx"),
     MFXP("mfx+"),
+    MFXPP("mfxp"),
     DCC("dcc"),
     SX1("sx1"),
     MM_PRG("mm_prg"),
@@ -728,7 +733,6 @@ public class LocomotiveBean implements Serializable {
         return null;
       }
       return ENUM_MAP.get(decoderType.toLowerCase());
-
     }
   }
 

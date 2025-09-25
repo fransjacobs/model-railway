@@ -321,7 +321,7 @@ public class Dispatcher {
     //Logger.trace("Event for a ignored listener: " + event.getIdString() + " Changed: " + event.isChanged() + ", active: " + event.getSensorBean().isActive());
   }
 
-  synchronized void switchAccessory(AccessoryBean accessory, AccessoryValue value) {
+  void switchAccessory(AccessoryBean accessory, AccessoryValue value) {
     try {
       JCS.getJcsCommandStation().switchAccessory(accessory, value);
     } catch (Exception e) {
@@ -329,7 +329,7 @@ public class Dispatcher {
     }
   }
 
-  synchronized void changeLocomotiveVelocity(LocomotiveBean locomotive, double velocity) {
+  void changeLocomotiveVelocity(LocomotiveBean locomotive, double velocity) {
     int commandStationVelocity = (int) velocity;
     locomotiveBean.setVelocity(commandStationVelocity);
     try {
@@ -339,7 +339,7 @@ public class Dispatcher {
     }
   }
 
-  synchronized void changeLocomotiveDirection(LocomotiveBean locomotive, Direction newDirection) {
+  void changeLocomotiveDirection(LocomotiveBean locomotive, Direction newDirection) {
     try {
       JCS.getJcsCommandStation().changeLocomotiveDirection(newDirection, locomotive);
     } catch (Exception e) {
