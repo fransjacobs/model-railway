@@ -306,9 +306,8 @@ class CSTCPConnection implements CSConnection {
           CanMessage rx = new CanMessage(prio, cmd, hash, dlc, data);
 
           //Logger.trace("RX: "+rx +"; "+ din.available());
-          if (this.callBack != null && this.callBack.isSubscribedfor(cmd)) {
-            this.callBack.addResponse(rx, din.available());
-
+          if (callBack != null && this.callBack.isSubscribedfor(cmd)) {
+            callBack.addResponse(rx, din.available());
           } else {
             eventQueue.offer(rx);
             //Logger.trace("Enqueued: " + rx + " QueueSize: " + eventQueue.size());

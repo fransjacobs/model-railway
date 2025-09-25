@@ -400,11 +400,11 @@
   </dependencies>
   <properties>
     <maven.compiler.release>${java.version}</maven.compiler.release>
-    <maven.compiler.target>${java.version}</maven.compiler.target>
     <java.version>21</java.version>
     <maven.compiler.source>${java.version}</maven.compiler.source>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <packaging>jar</packaging>
+    <maven.compiler.target>${java.version}</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <app.main.class>jcs.JCS</app.main.class>
     <app.distribution.directory>${project.build.directory}/distributions/app</app.distribution.directory>
   </properties>
