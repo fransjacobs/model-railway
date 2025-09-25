@@ -232,7 +232,7 @@
               <goal>package</goal>
             </goals>
             <configuration>
-              <name>jcs-nojre</name>
+              <name>jcs</name>
               <bundleJre>false</bundleJre>
               <winConfig>
                 <headerType>gui</headerType>
