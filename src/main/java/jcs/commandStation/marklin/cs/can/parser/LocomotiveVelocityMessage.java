@@ -21,7 +21,7 @@ import jcs.entities.LocomotiveBean;
 import org.tinylog.Logger;
 
 /**
- *
+ * Parser for Locomotive Velocity Changed Message
  */
 public class LocomotiveVelocityMessage {
 
@@ -56,7 +56,6 @@ public class LocomotiveVelocityMessage {
           locomotiveBean.setDecoderTypeString(LocomotiveBean.DecoderType.MM.getDecoderType());
         }
       }
-
     } else {
       Logger.warn("Can't parse message, not a Locomotive Velocity Message! " + resp);
       return null;

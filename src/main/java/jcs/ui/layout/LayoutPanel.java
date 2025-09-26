@@ -87,7 +87,7 @@ public class LayoutPanel extends JPanel {
 
       gridBtn.setEnabled(!readonly);
       gridBtn.setVisible(!readonly);
-      
+
       autoPilotBtn.setEnabled(false);
       startAllLocomotivesBtn.setEnabled(false);
       toolBar.remove(autoPilotBtn);
@@ -115,7 +115,8 @@ public class LayoutPanel extends JPanel {
   }
 
   public void loadLayout() {
-    canvas.loadLayout();
+    //canvas.loadLayout();
+    canvas.loadLayoutInBackground();
   }
 
   public void rotateSelectedTile() {
@@ -314,7 +315,7 @@ public class LayoutPanel extends JPanel {
     }//GEN-LAST:event_formComponentHidden
 
     private void formComponentShown(ComponentEvent evt) {//GEN-FIRST:event_formComponentShown
-      Logger.trace("SHOWN");
+      //Logger.trace("SHOWN");
       if (JCS.getParentFrame() != null) {
         topPanel.remove(this.toolBar);
         this.remove(topPanel);

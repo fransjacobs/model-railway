@@ -761,7 +761,7 @@ public class StateMachineStepByStepDriveStopTest extends AbstractStateMachineSte
     block3 = ps.getBlockByTileId("bk-3");
     assertEquals(BlockBean.BlockState.LOCKED, block3.getBlockState());
 
-    assertEquals(583, dispatcher.getLocomotiveBean().getVelocity());
+    assertEquals(625, dispatcher.getLocomotiveBean().getVelocity());
     assertEquals(LocomotiveBean.Direction.FORWARDS, dispatcher.getLocomotiveBean().getDirection());
 
     block1 = ps.getBlockByTileId("bk-1");

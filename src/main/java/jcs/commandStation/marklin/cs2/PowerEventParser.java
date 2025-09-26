@@ -25,10 +25,10 @@ import org.tinylog.Logger;
 public class PowerEventParser {
 
   public PowerEventParser(CanMessage message) {
-    parseMessage(message);
+    parse(message);
   }
 
-  public static PowerEvent parseMessage(CanMessage message) {
+  public static PowerEvent parse(CanMessage message) {
     CanMessage resp;
     if (!message.isResponseMessage()) {
       resp = message.getResponse();

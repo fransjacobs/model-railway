@@ -31,6 +31,10 @@ import jcs.entities.CommandStationBean;
 import org.tinylog.Logger;
 import jcs.commandStation.events.MeasurementEventListener;
 
+/**
+ *
+ * 
+ */
 public abstract class AbstractController implements GenericController {
 
   protected CommandStationBean commandStationBean;

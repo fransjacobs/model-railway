@@ -26,7 +26,8 @@ import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
 /**
- * Reserve the exit and entry sensors
+ * Start state of the Autopilot Ste machine. This stat is entered when a valid route is found. This state will start the locomotive by sending the direction and start velocity to the command station.
+ * I will subscribe to the enter sensor. The state will advance to the next state when the enter sensor becomes active.
  */
 class StartState extends DispatcherState implements SensorEventListener {
 
@@ -36,7 +37,7 @@ class StartState extends DispatcherState implements SensorEventListener {
 
   @Override
   DispatcherState execute(Dispatcher dispatcher) {
-    //Register this state as a SensorEventListener, therefor a handle to the dispacher is needed
+    //Register this state as a SensorEventListener
     this.dispatcher = dispatcher;
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
 
