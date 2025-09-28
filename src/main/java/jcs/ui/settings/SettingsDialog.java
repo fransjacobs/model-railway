@@ -46,6 +46,7 @@ public class SettingsDialog extends javax.swing.JDialog {
     super(parent, modal);
     initComponents();
     init();
+
   }
 
   private void init() {

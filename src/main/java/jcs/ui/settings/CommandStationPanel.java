@@ -191,6 +191,12 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
       fbpSerialCB.setSelectedItem(port);
     }
 
+    if (JCS.getJcsCommandStation() != null && JCS.getJcsCommandStation().isConnected()) {
+      this.controller = JCS.getJcsCommandStation().getDecoderController();
+      //Obtain some info from the controller
+      Logger.trace("Connected to " + controller.getCommandStationInfo());
+    }
+
     setComponents();
     if (!selectedCommandStation.isVirtual() && CommandStationBean.ConnectionType.NETWORK == selectedCommandStation.getConnectionType() && selectedCommandStation.getIpAddress() != null && selectedCommandStation.getIpAddress().length() > 8) {
       executor.execute(() -> checkConnection(selectedCommandStation));
