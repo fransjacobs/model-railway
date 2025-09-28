@@ -239,7 +239,7 @@ public class LocomotiveSettingsPanel extends JPanel implements PropertyChangeLis
 
     this.synchronizeCB.setEnabled(this.commandStationBean.isLocomotiveSynchronizationSupport() && enable);
 
-    boolean showUid = selectedLocomotive != null && (DecoderType.MFX == selectedLocomotive.getDecoderType() || DecoderType.MFXP == selectedLocomotive.getDecoderType());
+    boolean showUid = selectedLocomotive != null && DecoderType.MFX == selectedLocomotive.getDecoderType();
     this.uidNameLbl.setVisible(showUid);
     this.uidLbl.setVisible(showUid);
 

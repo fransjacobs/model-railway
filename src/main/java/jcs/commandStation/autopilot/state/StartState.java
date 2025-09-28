@@ -82,9 +82,10 @@ class StartState extends DispatcherState implements SensorEventListener {
       //TODO: for now rely on the acceleration delay of the loco decoder. Future make a smooth accelerator our selves..
       Logger.trace("Starting " + locomotive.getName() + " Direction " + locomotive.getDirection());
 
-      dispatcher.changeLocomotiveDirection(locomotive, locomotive.getDirection());
-
-      pause(100);
+      //First time starting as curent velocity is zero ensure the direction is right
+      if (locomotive.getVelocity() == 0) {
+        dispatcher.changeLocomotiveDirection(locomotive, locomotive.getDirection());
+      }
 
       //Speed to ~75% or speed 3
       Integer speed3 = locomotive.getSpeedThree();

@@ -79,7 +79,7 @@ public class LocomotiveManagerTest {
     assertEquals("SNCB/NMBS HLE 27", l1001.getName());
 
     assertEquals((Integer) 3, l1001.getAddress());
-    assertEquals(DecoderType.DCC28, l1001.getDecoderType());
+    assertEquals(DecoderType.DCC, l1001.getDecoderType());
     assertEquals(Direction.FORWARDS, l1001.getDirection());
     assertEquals((Integer) 0, l1001.getVelocity());
 
@@ -111,7 +111,7 @@ public class LocomotiveManagerTest {
     assertEquals("FS236-002", l1002.getName());
 
     assertEquals((Integer) 14, l1002.getAddress());
-    assertEquals(DecoderType.DCC28, l1002.getDecoderType());
+    assertEquals(DecoderType.DCC, l1002.getDecoderType());
 
     LocomotiveBean l1000 = instance.getLocomotives().get(1000L);
     assertNotNull(l1000);
@@ -150,7 +150,7 @@ public class LocomotiveManagerTest {
     assertEquals("SNCB/NMBS HLE 27", l1001.getName());
 
     assertEquals((Integer) 3, l1001.getAddress());
-    assertEquals(DecoderType.DCC128, l1001.getDecoderType());
+    assertEquals(DecoderType.DCC, l1001.getDecoderType());
     
     Map<Integer,FunctionBean> functions = l1001.getFunctions();
     

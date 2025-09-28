@@ -20,14 +20,51 @@ package jcs.commandStation.events;
  */
 public class PowerEvent {
 
-  private boolean power;
+  private final boolean power;
+  private final boolean overload;
 
   public PowerEvent(boolean power) {
     this.power = power;
+    this.overload = false;
+  }
+
+  public PowerEvent(boolean power, boolean overload) {
+    this.power = power;
+    this.overload = overload;
   }
 
   public boolean isPower() {
     return power;
+  }
+
+  public boolean isOverload() {
+    return overload;
+  }
+
+  @Override
+  public int hashCode() {
+    int hash = 5;
+    hash = 31 * hash + (this.power ? 1 : 0);
+    hash = 31 * hash + (this.overload ? 1 : 0);
+    return hash;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    final PowerEvent other = (PowerEvent) obj;
+    if (this.power != other.power) {
+      return false;
+    }
+    return this.overload == other.overload;
   }
 
 }

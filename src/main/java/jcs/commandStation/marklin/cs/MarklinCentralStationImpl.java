@@ -67,7 +67,7 @@ import jcs.commandStation.entities.FeedbackModule;
 import jcs.commandStation.marklin.cs2.LocomotiveDirectionEventParser;
 import jcs.commandStation.marklin.cs2.LocomotiveFunctionEventParser;
 import jcs.commandStation.marklin.cs.can.parser.LocomotiveVelocityMessage;
-import jcs.commandStation.marklin.cs2.PowerEventParser;
+import jcs.commandStation.marklin.cs.can.parser.PowerEventParser;
 import jcs.commandStation.VirtualConnection;
 import jcs.commandStation.autopilot.AutoPilot;
 import jcs.commandStation.autopilot.DriveSimulator;
@@ -91,6 +91,7 @@ import jcs.commandStation.marklin.parser.SystemStatusMessage;
 import jcs.commandStation.events.ConnectionEventListener;
 import jcs.commandStation.events.MeasurementEvent;
 import jcs.commandStation.events.MeasurementEventListener;
+import jcs.commandStation.marklin.cs.can.parser.OverloadEventParser;
 import jcs.commandStation.marklin.parser.CanDeviceJSONParser;
 import jcs.util.Ping;
 
@@ -1093,7 +1094,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
                     notifyLocomotiveSpeedEventListeners(lse);
                   }
                   case CanMessage.OVERLOAD_SUB_CMD -> {
-                    PowerEvent gpe = PowerEventParser.parse(eventMessage);
+                    PowerEvent gpe = OverloadEventParser.parse(eventMessage);
                     notifyPowerEventListeners(gpe);
                   }
                 }

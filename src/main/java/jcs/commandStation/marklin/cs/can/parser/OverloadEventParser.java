@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Frans Jacobs.
+ * Copyright 2025 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation.marklin.cs2;
+package jcs.commandStation.marklin.cs.can.parser;
 
 import jcs.commandStation.events.*;
 import jcs.commandStation.marklin.cs.can.CanMessage;
@@ -22,9 +22,9 @@ import org.tinylog.Logger;
 /**
  *
  */
-public class PowerEventParser {
+public class OverloadEventParser {
 
-  public PowerEventParser(CanMessage message) {
+  public OverloadEventParser(CanMessage message) {
     parse(message);
   }
 
@@ -39,10 +39,10 @@ public class PowerEventParser {
     int cmd = message.getCommand();
     int subCmd = message.getSubCommand();
 
-    if (resp.isResponseMessage() && CanMessage.SYSTEM_COMMAND_RESP == cmd && (subCmd == 0 | subCmd == 1)) {
-      return new PowerEvent(subCmd == 1);
+    if (resp.isResponseMessage() && CanMessage.SYSTEM_COMMAND_RESP == cmd && (subCmd == 0x0a)) {
+      return new PowerEvent(false, true);
     } else {
-      Logger.warn("Can't parse message, not a System Go or Stop Response! " + resp);
+      Logger.warn("Can't parse message, not a System Overload Response! " + resp);
       return null;
     }
   }

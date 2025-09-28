@@ -414,18 +414,25 @@ public class CanMessage implements MarklinCan {
   }
 
   /**
-   * The hash fulfills a double function: It primarily serves to resolve the collisions of the messages and to ensure that there are no collisions with the CS1 protocol. Secondarily, it can contain
-   * the sequence number of a data transmission. No collisions with the CS1 protocol: In the CAN protocol of the CS1, the value 6 for the "com area of ​​the ID", these are the bits 7..9, i.e. the
-   * highest bit in the lowest byte (0b0xxxxxxx) and the two bits above it (0bxxxxxx11), is not used.
+   * The hash fulfills a double function:<br>
+   * It primarily serves to resolve the collisions of the messages and to ensure that there are no collisions with the CS1 protocol.<br>
+   * Secondarily, it can contain the sequence number of a data transmission.<br>
+   * No collisions with the CS1 protocol: In the CAN protocol of the CS1, the value 6 for the "com area of ​​the ID", these are the bits 7..9,<br>
+   * i.e. the highest bit in the lowest byte (0b0xxxxxxx) and the two bits above it (0bxxxxxx11), is not used.<br>
    *
-   * This bit combination is therefore used for differentiation in the hash. collision resolution: The hash is used to make the CAN messages collision-free with a high probability. This 16-bit value
-   * is formed from the UID hash. Calculation: 16-bit high UID XOR 16-bit low of the UID. Then the bits are set according to the CS1 distinction.
+   * This bit combination is therefore used for differentiation in the hash.<br>
+   * Collision resolution: The hash is used to make the CAN messages collision-free with a high probability.<br>
+   * This 16-bit value is formed from the UID hash.<br>
+   * Calculation: 16-bit high UID XOR 16-bit low of the UID.<br>
+   * Then the bits are set according to the CS1 distinction.<br>
    *
-   * Each participant on the bus has to check the hash of received CAN messages to ensure that they are free of collisions. If your own hash is received, a new one must be chosen. This must not match
-   * any other received. Sequence number of a data transfer: If the hash is used to identify the package number, these bits are hidden when the package number is calculated. i.e. With the 16-bit
-   * number, bits 7 to 9 are hidden, the top 3 bits are 0. The range of values ​​is reduced accordingly to 8192.
+   * Each participant on the bus has to check the hash of received CAN messages to ensure that they are free of collisions.<br>
+   * If your own hash is received, a new one must be chosen.<br>
+   * This must not match any other received. Sequence number of a data transfer:<br>
+   * If the hash is used to identify the package number, these bits are hidden when the package number is calculated.<br>
+   * i.e. With the 16-bit number, bits 7 to 9 are hidden, the top 3 bits are 0. The range of values ​​is reduced accordingly to 8192.
    *
-   * @param uid the uid to calculate the hash over
+   * @param uid the UID to calculate the hash over
    * @return an integer representing the hash value
    */
   public static int calcHash(int uid) {

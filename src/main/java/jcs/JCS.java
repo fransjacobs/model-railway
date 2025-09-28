@@ -335,10 +335,10 @@ public class JCS extends Thread {
 
     @Override
     public void onPowerChange(PowerEvent event) {
-      Logger.info("Track Power is " + (event.isPower() ? "on" : "off"));
-
-      if (JCS.jcsFrame != null) {
-        JCS.jcsFrame.powerChanged(event);
+      if (event.isOverload()) {
+        Logger.warn("Track Power OVERLOAD!");
+      } else {
+        Logger.info("Track Power is " + (event.isPower() ? "on" : "off"));
       }
     }
   }

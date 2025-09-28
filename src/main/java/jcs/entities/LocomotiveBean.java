@@ -690,23 +690,10 @@ public class LocomotiveBean implements Serializable {
   }
 
   public enum DecoderType {
-    //TODO: make more generic, incorporate the speedsteps
-    //Marklin types
     MM("mm"),
-    MM_DIL("mm2_dil8"),
     MFX("mfx"),
-    MFXP("mfx+"),
-    MFXPP("mfxp"),
     DCC("dcc"),
-    SX1("sx1"),
-    MM_PRG("mm_prg"),
-    MM2_PRG("mm2_prg"),
-    //ESU types
-    DCC14("dcc14"),
-    DCC28("dcc28"),
-    DCC128("dcc128"),
-    MM14("mm14"),
-    MM28("mm28"),;
+    SX1("sx1");
 
     private final String decoderType;
 
@@ -732,7 +719,24 @@ public class LocomotiveBean implements Serializable {
       if (decoderType == null) {
         return null;
       }
-      return ENUM_MAP.get(decoderType.toLowerCase());
+      String dt = decoderType.toLowerCase();
+      if (!ENUM_MAP.containsKey(dt)) {
+        //Derivative decoder , something lime mm_prg of mfxp....
+        if (dt.startsWith("mm")) {
+          dt = "mm";
+        } else if (dt.startsWith("mfx")) {
+          dt = "mfx";
+        } else if (dt.startsWith("dcc")) {
+          dt = "dcc";
+        } else if (dt.startsWith("sx")) {
+          dt = "sx1";
+        } else {
+          //default to dcc
+          dt = "dcc";
+        }
+      }
+      return ENUM_MAP.get(dt);
+
     }
   }
 
