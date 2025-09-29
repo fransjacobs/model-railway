@@ -47,6 +47,7 @@ public class BlockBean {
   private boolean alwaysStop;
   private boolean allowCommuterOnly;
   private boolean allowNonCommuterOnly;
+  private boolean allowDirectionChange;
 
   private String logicalDirection;
 
@@ -301,6 +302,15 @@ public class BlockBean {
   @Column(name = "logical_direction", length = 255)
   public String getLogicalDirection() {
     return logicalDirection;
+  }
+
+  @Column(name = "allow_direction_change", nullable = false, columnDefinition = "allow_direction_change bool default '1'")
+  public boolean isAllowDirectionChange() {
+    return allowDirectionChange;
+  }
+
+  public void setAllowDirectionChange(boolean allowDirectionChange) {
+    this.allowDirectionChange = allowDirectionChange;
   }
 
   public void setLogicalDirection(String logicalDirection) {
