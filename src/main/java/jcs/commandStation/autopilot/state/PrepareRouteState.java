@@ -100,8 +100,8 @@ class PrepareRouteState extends DispatcherState {
     boolean commuter = locomotive.isCommuter();
 
     //No routes found or possible.
-    //When the Locomotive is a commuter train it can reverse direction. Lets try that...
-    if (routes.isEmpty() && commuter) {
+    //When the Locomotive is a commuter train and the departure block allows a direction change it can reverse direction. Lets try that...
+    if (routes.isEmpty() && commuter && departureBlock.isAllowDirectionChange()) {
       Direction oldDirection = logicalDirection;
       //Direction newDirection = locomotive.toggleDispatcherDirection();
       Direction newDirection = LocomotiveBean.toggle(oldDirection);

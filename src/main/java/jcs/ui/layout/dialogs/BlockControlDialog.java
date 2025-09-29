@@ -81,11 +81,12 @@ public class BlockControlDialog extends javax.swing.JDialog {
           bb.setMinWaitTime(10);
           bb.setAllowCommuterOnly(true);
           bb.setAllowNonCommuterOnly(true);
+          bb.setAllowDirectionChange(true);
         }
         block.setBlockBean(bb);
       } else {
         if(bb.isAllowCommuterOnly() == bb.isAllowNonCommuterOnly() && bb.isAllowCommuterOnly() == false) {
-          //Both are false invert both for clearnes as it means both are allowed
+          //Both are false invert both for clearness as it means both are allowed
           bb.setAllowCommuterOnly(true);
           bb.setAllowNonCommuterOnly(true);
         }
@@ -96,6 +97,7 @@ public class BlockControlDialog extends javax.swing.JDialog {
       
       allowCommutersCB.setSelected(bb.isAllowCommuterOnly());
       allowNonCommutersCB.setSelected(bb.isAllowNonCommuterOnly());
+      allowDirectionChangeCB.setSelected(bb.isAllowDirectionChange());
       
       if (bb.getLocomotiveId() != null && bb.getLocomotive() == null) {
         bb.setLocomotive(PersistenceFactory.getService().getLocomotive(bb.getLocomotiveId()));
@@ -194,7 +196,9 @@ public class BlockControlDialog extends javax.swing.JDialog {
     filler4 = new javax.swing.Box.Filler(new java.awt.Dimension(20, 0), new java.awt.Dimension(60, 0), new java.awt.Dimension(20, 32767));
     allowCommutersCB = new javax.swing.JCheckBox();
     allowCommutersLbl = new javax.swing.JLabel();
-    futurePermissionPanel1 = new javax.swing.JPanel();
+    directionChangePropertiesPanel = new javax.swing.JPanel();
+    allowDirectionChangeCB = new javax.swing.JCheckBox();
+    allowDirectionChangeLbl = new javax.swing.JLabel();
     futurePermissionPanel2 = new javax.swing.JPanel();
     bottomPanel = new javax.swing.JPanel();
     saveExitBtn = new javax.swing.JButton();
@@ -446,8 +450,22 @@ public class BlockControlDialog extends javax.swing.JDialog {
 
     java.awt.FlowLayout flowLayout7 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
     flowLayout7.setAlignOnBaseline(true);
-    futurePermissionPanel1.setLayout(flowLayout7);
-    permissionsPanel.add(futurePermissionPanel1);
+    directionChangePropertiesPanel.setLayout(flowLayout7);
+
+    allowDirectionChangeCB.setSelected(true);
+    allowDirectionChangeCB.setToolTipText("Allow Non Commuter Trains Only");
+    allowDirectionChangeCB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        allowDirectionChangeCBActionPerformed(evt);
+      }
+    });
+    directionChangePropertiesPanel.add(allowDirectionChangeCB);
+
+    allowDirectionChangeLbl.setLabelFor(allowDirectionChangeCB);
+    allowDirectionChangeLbl.setText("Allow Direction Change");
+    directionChangePropertiesPanel.add(allowDirectionChangeLbl);
+
+    permissionsPanel.add(directionChangePropertiesPanel);
 
     java.awt.FlowLayout flowLayout8 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
     flowLayout8.setAlignOnBaseline(true);
@@ -601,9 +619,15 @@ public class BlockControlDialog extends javax.swing.JDialog {
     block.getBlockBean().setAllowCommuterOnly(allowCommutersCB.isSelected());
   }//GEN-LAST:event_allowCommutersCBActionPerformed
 
+  private void allowDirectionChangeCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_allowDirectionChangeCBActionPerformed
+    block.getBlockBean().setAllowDirectionChange(allowDirectionChangeCB.isSelected());
+  }//GEN-LAST:event_allowDirectionChangeCBActionPerformed
+
   // Variables declaration - do not modify//GEN-BEGIN:variables
   javax.swing.JCheckBox allowCommutersCB;
   javax.swing.JLabel allowCommutersLbl;
+  javax.swing.JCheckBox allowDirectionChangeCB;
+  javax.swing.JLabel allowDirectionChangeLbl;
   javax.swing.JCheckBox allowNonCommutersCB;
   javax.swing.JLabel allowNonCommutersLbl;
   javax.swing.JCheckBox alwaysStopCB;
@@ -615,13 +639,13 @@ public class BlockControlDialog extends javax.swing.JDialog {
   javax.swing.JTextField blockNameTF;
   javax.swing.JPanel bottomPanel;
   javax.swing.JPanel deviceIdPanel;
+  javax.swing.JPanel directionChangePropertiesPanel;
   javax.swing.JPanel directionsPanel;
   javax.swing.Box.Filler filler1;
   javax.swing.Box.Filler filler2;
   javax.swing.Box.Filler filler3;
   javax.swing.Box.Filler filler4;
   javax.swing.JRadioButton forwardsRB;
-  javax.swing.JPanel futurePermissionPanel1;
   javax.swing.JPanel futurePermissionPanel2;
   javax.swing.JLabel headingLbl;
   javax.swing.JPanel headingPanel;
