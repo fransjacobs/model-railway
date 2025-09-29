@@ -55,33 +55,23 @@ Door JCS open source te maken, hoop ik ook andere hobbyisten te inspireren:
 
 ## 🖼️ Screenshots
 
-| Hoofdscherm     |                        
-|-----------------|
-|![Hoofdscherm](./assets/mainscreen.png) | 
+### Hoofd scherm
+![MAIN_SCREEN](assets/mainscreen.png)
 
-| Layout Bewerken | VNC Hoofdscherm |                         
-|-----------------|-----------------|
-|![Layout Bewerken](./assets/mainscreen-edit-layout.png) | ![VNC Hoofdscherm](./assets/mainScreen-VNC.png) |
+### Spoorplan editor
+![MAIN_SCREEN_EDIT](assets/mainscreen-edit-layout.png)
 
-| Automatisch Rijden |                         
-|-----------------|
-|![Automatisch Rijden](./assets/maincreen-autopilot-running.png) | 
+### (terug) Melder monitor
+![SENSOR_MONITOR](assets/sensor_monitor.png)
 
-| Sensor Monitor | Handmatige Driver Throttle |                        
-|-----------------|-----------------|
-|![Sensor Monitor](./assets/sensor_monitor.png) | ![Driver Throttle](./assets/drivercab-dialog.png) |
+### Locomotief besturings dialoog
+![DRIVER_CAB](assets/drivercab-dialog.png)
 
-| Accessory Instellingen | Locomotief Instellingen |
-|-------------------|------------------|
-| ![Accessory Settings](./assets/accessorySettings.png) | ![Locomotive Settings](./assets/locomotiveSettings.png) |
+### Hoofdschem met VNC naar Marklin CS-3
+![MAIN_SCREEN](assets/mainScreen-VNC.png)
 
-| Driveway Instellingen | Driveway Commando's |
-|------------------|-----------------|
-| ![Driveway Settings](./assets/drivewaySettings.png) | ![Driveway Commands](./assets/drivewayCommandSettings.png) |
-
-| Command Station Instellingen (CS3) |
-|------------------|
-| ![Command Station Settings (CS3)](./assets/command-station-CS3.png) | 
+### Centrale instellingen voor Marklin CS-3
+![COMMAND_STATION_SETTINGS](assets/command-station-CS3.png) 
 
 ## ⚙️ Ondersteunde Centrales
 
@@ -146,7 +136,7 @@ De nieuwste stabiele versie is **v0.0.2** (uitgebracht op 27 september 2024):
 
 > Tip: De Uber-JAR kan direct gestart worden met `java -jar jcs-uber.jar` zonder extra dependencies.
 
-### 🏗 Build from Source
+### 🏗 Bouw vanaf de bron code
 
 Als je JCS liever zelf bouwt:  
 
