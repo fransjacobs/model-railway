@@ -111,10 +111,10 @@ class StateMachine extends Thread {
       //Automode has stopped, let the Thread finish when WaitState is reached or is Idle
       if (dispatcherState instanceof IdleState || dispatcherState instanceof WaitState) {
         Logger.trace(getName() + " Stopping thread as Autopilot automode is stopped");
-        this.running = false;
+        running = false;
         //Just stop
         synchronized (this) {
-          this.notifyAll();
+          notifyAll();
         }
       }
     }
@@ -122,9 +122,9 @@ class StateMachine extends Thread {
     if (!dispatcher.isLocomotiveAutomodeOn()) {
       if (dispatcherState instanceof IdleState) {
         Logger.trace(getName() + " Stopping thread as Locomotive " + dispatcher.getName() + " has stopped...");
-        this.running = false;
+        running = false;
         synchronized (this) {
-          this.notifyAll();
+          notifyAll();
         }
       }
     }
@@ -203,19 +203,23 @@ class StateMachine extends Thread {
   public void run() {
     if (JCS.getJcsCommandStation() == null) {
       Logger.error("Can't start due to missing Command Station!");
-      this.running = false;
+      running = false;
       return;
     } else {
-      this.running = true;
+      running = true;
       Logger.trace(getName() + " Started. State " + dispatcherState.getName() + "...");
     }
 
     while (running) {
-      if (resetRequested) {
-        resetStateMachine();
-      } else {
-        handleState();
-      }
+      //try {
+        if (resetRequested) {
+          resetStateMachine();
+        } else {
+          handleState();
+        }
+      //} catch (Exception e) {
+      //  Logger.error("Error in statehandling: " + e.getMessage());
+      //}
     }
 
     Logger.trace(getName() + " in state " + dispatcherState.getClass().getSimpleName() + " is ending...");

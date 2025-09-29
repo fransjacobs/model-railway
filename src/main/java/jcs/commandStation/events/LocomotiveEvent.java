@@ -20,7 +20,7 @@ import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.DecoderType;
 
 /**
- *
+ * Generic Locomotive event
  */
 public abstract class LocomotiveEvent {
 
@@ -31,28 +31,17 @@ public abstract class LocomotiveEvent {
   }
 
   protected LocomotiveEvent(long locomotiveBeanId, String commandStationId) {
-    //createLocomotiveBean(locomotiveBeanId, commandStationId);
     locomotiveBean = new LocomotiveBean();
     locomotiveBean.setId(locomotiveBeanId);
     locomotiveBean.setCommandStationId(commandStationId);
   }
 
-  protected LocomotiveEvent(int address, LocomotiveBean.DecoderType decoderType, String commandStationId) {
-    locomotiveBean = new LocomotiveBean();
-    locomotiveBean.setAddress(address);
-    locomotiveBean.setDecoderTypeString(decoderType.getDecoderType());
-    locomotiveBean.setCommandStationId(commandStationId);
-  }
-
-//  protected LocomotiveEvent(int address, int speed) {
+//  protected LocomotiveEvent(int address, LocomotiveBean.DecoderType decoderType, String commandStationId, int a) {
 //    locomotiveBean = new LocomotiveBean();
-//    locomotiveBean.setUid((long) address);
 //    locomotiveBean.setAddress(address);
-//    locomotiveBean.setVelocity(speed);
-//  }
-//  protected void createLocomotiveBean(long locomotiveBeanId, String commandStationId) {
-//    locomotiveBean = new LocomotiveBean();
-//    locomotiveBean.setId(locomotiveBeanId);
+//    if (decoderType != null) {
+//      locomotiveBean.setDecoderTypeString(decoderType.getDecoderType());
+//    }
 //    locomotiveBean.setCommandStationId(commandStationId);
 //  }
   public LocomotiveBean getLocomotiveBean() {
@@ -61,11 +50,6 @@ public abstract class LocomotiveEvent {
 
   public void setLocomotiveBean(LocomotiveBean locomotiveBean) {
     this.locomotiveBean = locomotiveBean;
-  }
-
-  @Deprecated
-  public boolean isValid() {
-    return this.locomotiveBean != null && this.locomotiveBean.getId() != null;
   }
 
   public boolean isEventFor(LocomotiveBean locomotive) {

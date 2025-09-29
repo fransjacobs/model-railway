@@ -78,6 +78,7 @@ import jcs.util.SerialPortUtil;
 import jcs.util.VersionInfo;
 import org.tinylog.Logger;
 import jcs.commandStation.events.ConnectionEventListener;
+import jcs.commandStation.events.PowerEventListener;
 import jcs.persistence.util.Backup;
 import jcs.ui.settings.DrivewaySettingsDialog;
 import jcs.util.Ping;
@@ -85,7 +86,7 @@ import jcs.util.Ping;
 /**
  * JCS Main Frame
  */
-public class JCSFrame extends JFrame implements UICallback, ConnectionEventListener {
+public class JCSFrame extends JFrame implements UICallback, ConnectionEventListener, PowerEventListener {
 
   private static final long serialVersionUID = -5800900684173242844L;
 
@@ -134,6 +135,9 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   private void initJCS() {
     if (PersistenceFactory.getService() != null) {
       setTitle(getTitleString());
+
+      JCS.getJcsCommandStation().addConnectionEventListener(this);
+      JCS.getJcsCommandStation().addPowerEventListener(this);
 
       if (JCS.getJcsCommandStation().isConnected()) {
         setControllerProperties();
@@ -1070,7 +1074,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
         connectMI.setText("Connect");
       }
     }
-    JCS.getJcsCommandStation().addDisconnectionEventListener(this);
 
     powerButton.setEnabled(connect && connected);
     showFeedbackMonitorBtn.setEnabled(connect && connected);
@@ -1272,13 +1275,29 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     if (event.isConnected()) {
       connectMI.setText("DisConnect");
       connectButton.setSelected(true);
-      showVNCBtn.setEnabled(true);
+      if (JCS.getJcsCommandStation().isSupportVNC()) {
+        showVNCBtn.setEnabled(true);
+      } else {
+        showVNCBtn.setEnabled(false);
+      }
     } else {
-      JOptionPane.showMessageDialog(this, "CommandStation " + event.getSource() + " is disconnected.", "Disconnection error", JOptionPane.ERROR_MESSAGE);
+      JOptionPane.showMessageDialog(this, "CommandStation " + event.getSource() + " is not connected.", "Not Connected", JOptionPane.ERROR_MESSAGE);
       connectMI.setText("Connect");
       connectButton.setSelected(false);
       showVNCBtn.setEnabled(false);
     }
+  }
+
+  @Override
+  public void onPowerChange(PowerEvent event) {
+    boolean power = event.isPower();
+    java.awt.EventQueue.invokeLater(() -> {
+      this.powerButton.setSelected(power);
+      if (event.isOverload()) {
+        Logger.info("Power overload detected!");
+        JOptionPane.showMessageDialog(this, "Power Overload detected!", "Overload", JOptionPane.ERROR_MESSAGE);
+      }
+    });
   }
 
   @Override
@@ -1310,10 +1329,12 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     settingsDialog.setVisible(true);
   }
 
-  public void powerChanged(PowerEvent event) {
-    powerButton.setSelected(event.isPower());
-  }
-
+//  public void powerChanged(PowerEvent event) {
+//    powerButton.setSelected(event.isPower());
+//
+//    
+//
+//  }
   public void refreshData() {
     Logger.trace("Refresh data due to settings change...");
   }

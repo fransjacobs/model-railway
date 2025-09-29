@@ -98,7 +98,6 @@ public class CommandStationDialog extends JDialog implements TreeSelectionListen
     }
 
     List<CommandStationBean> allCommandStations = PersistenceFactory.getService().getCommandStations();
-
     List<CommandStationBean> commandStations = new ArrayList<>();
     List<CommandStationBean> feedbackProviders = new ArrayList<>();
 
@@ -163,10 +162,18 @@ public class CommandStationDialog extends JDialog implements TreeSelectionListen
       fbpSerialCB.setSelectedItem(port);
     }
 
+    if (JCS.getJcsCommandStation() != null && JCS.getJcsCommandStation().isConnected()) {
+      this.controller = JCS.getJcsCommandStation().getDecoderController();
+      //Obtain some info from the controller
+      Logger.trace("Connected to " + controller.getCommandStationInfo());
+    }
+
     setComponents();
+
     if (!selectedCommandStation.isVirtual() && CommandStationBean.ConnectionType.NETWORK == selectedCommandStation.getConnectionType() && selectedCommandStation.getIpAddress() != null && selectedCommandStation.getIpAddress().length() > 8) {
       executor.execute(() -> checkConnection(selectedCommandStation));
     }
+
   }
 
   /**
@@ -738,8 +745,6 @@ public class CommandStationDialog extends JDialog implements TreeSelectionListen
         Collections.sort(modules);
 
         //Marklin show per bus
-        
-        
         for (FeedbackModule fm : modules) {
           StringBuilder sb = new StringBuilder();
           sb.append("id: ");
@@ -757,12 +762,9 @@ public class CommandStationDialog extends JDialog implements TreeSelectionListen
 
           DefaultMutableTreeNode moduleNode = new DefaultMutableTreeNode(sb);
           Logger.trace("M " + sb.toString());
-
           deviceNode.add(moduleNode);
         }
-
       }
-
       root.add(deviceNode);
     }
 
@@ -973,19 +975,28 @@ public class CommandStationDialog extends JDialog implements TreeSelectionListen
   }
 
   private void checkConnection(final CommandStationBean commandStation) {
-    String ip = commandStation.getIpAddress();
-    boolean canConnect = Ping.IsReachable(ip);
+    //First check if we are already connected
+    boolean allreadyConnected = false;
+    if (JCS.getJcsCommandStation() != null) {
+      allreadyConnected = JCS.getJcsCommandStation().isConnected();
+      ipTF.setBackground(new java.awt.Color(204, 255, 204));
+    }
 
-    java.awt.EventQueue.invokeLater(() -> {
-      if (canConnect) {
-        ipTF.setBackground(new java.awt.Color(204, 255, 204));
-        connectBtn.setEnabled(true);
-      } else {
-        ipTF.setBackground(new java.awt.Color(255, 255, 255));
-        connectBtn.setEnabled(false);
-        JOptionPane.showMessageDialog(this, "Can't connect with host " + ip, "Can't Connect", JOptionPane.WARNING_MESSAGE);
-      }
-    });
+    if (!allreadyConnected) {
+      String ip = commandStation.getIpAddress();
+      boolean canConnect = Ping.IsReachable(ip);
+
+      java.awt.EventQueue.invokeLater(() -> {
+        if (canConnect) {
+          ipTF.setBackground(new java.awt.Color(204, 255, 204));
+          connectBtn.setEnabled(true);
+        } else {
+          ipTF.setBackground(new java.awt.Color(255, 255, 255));
+          connectBtn.setEnabled(false);
+          JOptionPane.showMessageDialog(this, "Can't connect with host " + ip, "Can't Connect", JOptionPane.WARNING_MESSAGE);
+        }
+      });
+    }
   }
 
   private void disconnect() {
@@ -1014,12 +1025,19 @@ public class CommandStationDialog extends JDialog implements TreeSelectionListen
 
     if (null == commandStation.getId()) {
       Logger.trace("Unknown Controller!");
-    } else switch (commandStation.getId()) {
-      case MARKLIN_CS -> controller = new MarklinCentralStationImpl(commandStation);
-      case ESU_ECOS -> controller = new EsuEcosCommandStationImpl(commandStation);
-      case DCC_EX -> Logger.info("TODO: DCC-EX!");
-      case HSI_S88 -> Logger.info("TODO: HSI-S88!");
-      default -> Logger.trace("Unknown Controller!");
+    } else {
+      switch (commandStation.getId()) {
+        case MARKLIN_CS ->
+          controller = new MarklinCentralStationImpl(commandStation);
+        case ESU_ECOS ->
+          controller = new EsuEcosCommandStationImpl(commandStation);
+        case DCC_EX ->
+          Logger.info("TODO: DCC-EX!");
+        case HSI_S88 ->
+          Logger.info("TODO: HSI-S88!");
+        default ->
+          Logger.trace("Unknown Controller!");
+      }
     }
 
     if (controller == null) {

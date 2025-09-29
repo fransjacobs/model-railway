@@ -106,7 +106,23 @@ Before you run or build:
 
 ## 🢂 Screenshots
 
-*(Insert layout editor, dispatcher view, sensor feedback, throttle panel, etc.)*
+### Main screen
+![MAIN_SCREEN](assets/mainscreen.png)
+
+### Layout editor
+![MAIN_SCREEN_EDIT](assets/mainscreen-edit-layout.png)
+
+### Sensor monitor
+![SENSOR_MONITOR](assets/sensor_monitor.png)
+
+### Locomotive Throttle
+![DRIVER_CAB](assets/drivercab-dialog.png)
+
+### Main screen VNC to Marklin CS-3
+![MAIN_SCREEN](assets/mainScreen-VNC.png)
+
+### Command Station settings for Marklin CS-3
+![COMMAND_STATION_SETTINGS](assets/command-station-CS3.png) 
 
 ---
 

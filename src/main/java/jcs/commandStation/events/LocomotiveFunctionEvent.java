@@ -43,11 +43,11 @@ public class LocomotiveFunctionEvent extends LocomotiveEvent implements Serializ
     this.function = function;
   }
 
-  @Override
-  @Deprecated
-  public boolean isValid() {
-    return this.function != null && this.function.getLocomotiveId() != null && this.function.getNumber() != null;
-  }
+//  @Override
+//  @Deprecated
+//  public boolean isValid() {
+//    return this.function != null && this.function.getLocomotiveId() != null && this.function.getNumber() != null;
+//  }
 
   public boolean isEventFor(FunctionBean function) {
     if (function != null) {

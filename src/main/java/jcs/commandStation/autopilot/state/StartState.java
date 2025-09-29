@@ -26,7 +26,8 @@ import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
 /**
- * Reserve the exit and entry sensors
+ * Start state of the Autopilot Ste machine. This stat is entered when a valid route is found. This state will start the locomotive by sending the direction and start velocity to the command station.
+ * I will subscribe to the enter sensor. The state will advance to the next state when the enter sensor becomes active.
  */
 class StartState extends DispatcherState implements SensorEventListener {
 
@@ -36,7 +37,7 @@ class StartState extends DispatcherState implements SensorEventListener {
 
   @Override
   DispatcherState execute(Dispatcher dispatcher) {
-    //Register this state as a SensorEventListener, therefor a handle to the dispacher is needed
+    //Register this state as a SensorEventListener
     this.dispatcher = dispatcher;
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
 
@@ -80,10 +81,16 @@ class StartState extends DispatcherState implements SensorEventListener {
 
       //TODO: for now rely on the acceleration delay of the loco decoder. Future make a smooth accelerator our selves..
       Logger.trace("Starting " + locomotive.getName() + " Direction " + locomotive.getDirection());
-      //Speed to ~70% or speed 3
+
+      //First time starting as curent velocity is zero ensure the direction is right
+      if (locomotive.getVelocity() == 0) {
+        dispatcher.changeLocomotiveDirection(locomotive, locomotive.getDirection());
+      }
+
+      //Speed to ~75% or speed 3
       Integer speed3 = locomotive.getSpeedThree();
       if (speed3 == null || speed3 == 0) {
-        speed3 = 70;
+        speed3 = 75;
       }
 
       int fullscale = locomotive.getTachoMax();

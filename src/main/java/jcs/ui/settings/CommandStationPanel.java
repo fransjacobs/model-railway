@@ -22,6 +22,8 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
@@ -189,6 +191,12 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
       fbpSerialCB.setSelectedItem(port);
     }
 
+    if (JCS.getJcsCommandStation() != null && JCS.getJcsCommandStation().isConnected()) {
+      this.controller = JCS.getJcsCommandStation().getDecoderController();
+      //Obtain some info from the controller
+      Logger.trace("Connected to " + controller.getCommandStationInfo());
+    }
+
     setComponents();
     if (!selectedCommandStation.isVirtual() && CommandStationBean.ConnectionType.NETWORK == selectedCommandStation.getConnectionType() && selectedCommandStation.getIpAddress() != null && selectedCommandStation.getIpAddress().length() > 8) {
       executor.execute(() -> checkConnection(selectedCommandStation));
@@ -249,14 +257,22 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
     filler2 = new Box.Filler(new Dimension(100, 0), new Dimension(100, 0), new Dimension(100, 32767));
     updatePanel = new JPanel();
     updateBtn = new JButton();
-    jPanel6 = new JPanel();
+    rightPanel = new JPanel();
     devicesPanel = new JPanel();
     devicesSP = new JScrollPane();
     devicesTree = new JTree();
 
     setMinimumSize(new Dimension(1080, 600));
     setName("Form"); // NOI18N
-    setPreferredSize(new Dimension(1400, 609));
+    setPreferredSize(new Dimension(1200, 600));
+    addComponentListener(new ComponentAdapter() {
+      public void componentHidden(ComponentEvent evt) {
+        formComponentHidden(evt);
+      }
+      public void componentShown(ComponentEvent evt) {
+        formComponentShown(evt);
+      }
+    });
     setLayout(new BorderLayout());
 
     topPanel.setName("topPanel"); // NOI18N
@@ -432,7 +448,7 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
     GroupLayout jPanel3Layout = new GroupLayout(jPanel3);
     jPanel3.setLayout(jPanel3Layout);
     jPanel3Layout.setHorizontalGroup(jPanel3Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-      .addGap(0, 1400, Short.MAX_VALUE)
+      .addGap(0, 1220, Short.MAX_VALUE)
     );
     jPanel3Layout.setVerticalGroup(jPanel3Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
       .addGap(0, 100, Short.MAX_VALUE)
@@ -568,19 +584,19 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
 
     jPanel2.add(propertiesPanel, BorderLayout.PAGE_START);
 
-    jPanel6.setName("jPanel6"); // NOI18N
-    jPanel6.setPreferredSize(new Dimension(750, 318));
+    rightPanel.setName("rightPanel"); // NOI18N
+    rightPanel.setPreferredSize(new Dimension(750, 318));
 
-    GroupLayout jPanel6Layout = new GroupLayout(jPanel6);
-    jPanel6.setLayout(jPanel6Layout);
-    jPanel6Layout.setHorizontalGroup(jPanel6Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+    GroupLayout rightPanelLayout = new GroupLayout(rightPanel);
+    rightPanel.setLayout(rightPanelLayout);
+    rightPanelLayout.setHorizontalGroup(rightPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
       .addGap(0, 750, Short.MAX_VALUE)
     );
-    jPanel6Layout.setVerticalGroup(jPanel6Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-      .addGap(0, 407, Short.MAX_VALUE)
+    rightPanelLayout.setVerticalGroup(rightPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+      .addGap(0, 317, Short.MAX_VALUE)
     );
 
-    jPanel2.add(jPanel6, BorderLayout.EAST);
+    jPanel2.add(rightPanel, BorderLayout.EAST);
 
     devicesPanel.setBorder(BorderFactory.createTitledBorder("Devices"));
     devicesPanel.setName("devicesPanel"); // NOI18N
@@ -841,7 +857,6 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
     });
   }
 
-
   private void commandStationCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_commandStationCBActionPerformed
     CommandStationBean newSelectedCommandStation = (CommandStationBean) commandStationCBM.getSelectedItem();
     if (selectedCommandStation != null && selectedCommandStation.getId() != null && !selectedCommandStation.getId().equals(newSelectedCommandStation.getId())) {
@@ -967,6 +982,29 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
       updateSensors();
     });
   }//GEN-LAST:event_updateBtnActionPerformed
+
+  private void formComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_formComponentShown
+    Logger.trace("Shown");
+  }//GEN-LAST:event_formComponentShown
+
+  private void formComponentHidden(ComponentEvent evt) {//GEN-FIRST:event_formComponentHidden
+    Logger.trace("Hidden");
+  }//GEN-LAST:event_formComponentHidden
+
+  @Override
+  public void setVisible(boolean aFlag) {
+    super.setVisible(aFlag);
+    Logger.trace("Shown " + aFlag);
+
+    if (!aFlag && this.controller != null) {
+      if (controller.isConnected()) {
+        controller.disconnect();
+      }
+      controller = null;
+      Logger.trace("Disconnected from " + selectedCommandStation.getId());
+    }
+
+  }
 
   private void updateSensors() {
     List<FeedbackModule> modules = ((FeedbackController) controller).getFeedbackModules();
@@ -1134,19 +1172,6 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
     });
   }
 
-  @Override
-  public void setVisible(boolean b) {
-    super.setVisible(b);
-
-    if (!b && this.controller != null) {
-      if (controller.isConnected()) {
-        controller.disconnect();
-      }
-      controller = null;
-      Logger.trace("Disconnected from " + selectedCommandStation.getId());
-    }
-  }
-
   // Variables declaration - do not modify//GEN-BEGIN:variables
   JLabel accessoryControllerLbl;
   JLabel bus1Lbl;
@@ -1184,12 +1209,12 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
   JPanel jPanel3;
   JPanel jPanel4;
   JPanel jPanel5;
-  JPanel jPanel6;
   JPanel mainCSPanel;
   JLabel mainLbl;
   JSpinner mainSpinner;
   JRadioButton networkRB;
   JPanel propertiesPanel;
+  JPanel rightPanel;
   JLabel secondfbpLbl;
   JComboBox<String> serialCB;
   JLabel serialLbl;

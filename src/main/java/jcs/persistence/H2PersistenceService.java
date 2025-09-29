@@ -271,9 +271,9 @@ public class H2PersistenceService implements PersistenceService {
       dt = DecoderType.DCC;
     }
 
-    Object[] args = new Object[]{address, dt.getDecoderType(), commandStationId};
+    Object[] args = new Object[]{address, dt.getDecoderType()+"%", commandStationId};
 
-    LocomotiveBean loco = database.where("address=? and decoder_type=? and command_station_id=?", args).first(LocomotiveBean.class);
+    LocomotiveBean loco = database.where("address=? and decoder_type like ? and command_station_id=?", args).first(LocomotiveBean.class);
     if (loco != null) {
       if (loco.getIcon() != null) {
         loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
