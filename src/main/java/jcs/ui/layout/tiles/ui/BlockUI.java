@@ -502,7 +502,7 @@ public class BlockUI extends TileUI {
           xx = DEFAULT_WIDTH / 2 - w / 2;
 
           //if (null == departureSuffix) {
-          int minY = BLOCK_HEIGHT / 2 - tile.getHeight() / 2 + h;
+          //int minY = BLOCK_HEIGHT / 2 - tile.getHeight() / 2 + h;
           //  yy = minY;
           //} else {
           switch (departureSuffix) {
