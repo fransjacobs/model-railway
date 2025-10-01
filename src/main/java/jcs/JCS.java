@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.net.URL;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -166,7 +167,7 @@ public class JCS extends Thread {
 
     if (!lockAppInstance()) {
       Logger.warn("Can not obtain a lock. Check if an other instance of JCS is running");
-      JOptionPane.showMessageDialog(null, "There is another instance of JCS running.", "JCS allready running", JOptionPane.INFORMATION_MESSAGE, null);
+      JOptionPane.showMessageDialog(new JFrame(), "There is another instance of JCS running.", "JCS allready running", JOptionPane.INFORMATION_MESSAGE, null);
       System.exit(0);
     }
 
