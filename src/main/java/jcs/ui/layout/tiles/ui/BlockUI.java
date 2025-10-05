@@ -275,10 +275,16 @@ public class BlockUI extends TileUI {
     BlockBean bb = tile.getBlockBean();
 
     LocomotiveBean.Direction logicalDirection;
+
     if (bb.getLogicalDirection() != null) {
       logicalDirection = model.getLogicalDirection();
     } else {
-      logicalDirection = model.getLocomotive().getDirection();
+      if (model.getLocomotive() != null && model.getLocomotive().getDirection() != null) {
+        logicalDirection = model.getLocomotive().getDirection();
+      } else {
+        Logger.warn("Can't obtain Locomotive direction");
+        logicalDirection = LocomotiveBean.Direction.FORWARDS;
+      }
     }
 
     String arrivalSide = bb.getArrivalSuffix();
@@ -496,7 +502,7 @@ public class BlockUI extends TileUI {
           xx = DEFAULT_WIDTH / 2 - w / 2;
 
           //if (null == departureSuffix) {
-          int minY = BLOCK_HEIGHT / 2 - tile.getHeight() / 2 + h;
+          //int minY = BLOCK_HEIGHT / 2 - tile.getHeight() / 2 + h;
           //  yy = minY;
           //} else {
           switch (departureSuffix) {

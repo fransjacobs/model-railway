@@ -27,7 +27,11 @@ import jcs.entities.RouteBean;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
-class ContinueState extends DispatcherState implements SensorEventListener {
+/**
+ * Proceeding state of the Autopilot State Machine.<br>
+ * The locomotive does not have to stop in this block, therefor the speed is maintained.
+ */
+class ProceedingState extends DispatcherState implements SensorEventListener {
 
   private boolean canAdvanceToNextState = false;
   private Integer inSensorId;
@@ -65,20 +69,24 @@ class ContinueState extends DispatcherState implements SensorEventListener {
 
     //Wait until the in sensor is hit by the locomotive
     //TODO: Timeout detection in case the locomotive has stopped....
-    if (canAdvanceToNextState) {
-      DispatcherState newState = new InBlockState();
-      //Remove handler as the state will now change
-      JCS.getJcsCommandStation().removeSensorEventListener(inSensorId, this);
-
+    if (canAdvanceToNextState || resetRequested) {
+      DispatcherState newState;
+      if (resetRequested) {
+        newState = new ResettingState();
+      } else {
+        newState = new InBlockState();
+        //Remove handler as the state will now change
+        JCS.getJcsCommandStation().removeSensorEventListener(inSensorId, this);
+      }
       return newState;
+
     } else {
       if ("true".equals(System.getProperty("state.machine.stepTest", "false"))) {
         Logger.debug("StateMachine StepTest is enabled. Dispatcher: " + dispatcher.getName() + " State: " + dispatcher.getStateName());
       } else {
         try {
           synchronized (this) {
-            //TODO: the wait time are very long to detect errors make then shorter....
-            wait(10000);
+            wait(threadWaitMillis);
           }
         } catch (InterruptedException ex) {
           Logger.trace("Interrupted: " + ex.getMessage());

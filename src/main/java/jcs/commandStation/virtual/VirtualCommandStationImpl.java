@@ -18,6 +18,7 @@ package jcs.commandStation.virtual;
 import jcs.commandStation.autopilot.DriveSimulator;
 import java.awt.Image;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import jcs.JCS;
 import jcs.commandStation.AbstractController;
@@ -286,12 +287,12 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
 
   @Override
   public List<AccessoryBean> getAccessories() {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return Collections.emptyList();
   }
 
   @Override
   public List<FeedbackModule> getFeedbackModules() {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return Collections.emptyList();
   }
 
   @Override

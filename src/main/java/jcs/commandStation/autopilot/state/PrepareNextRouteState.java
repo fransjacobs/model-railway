@@ -61,9 +61,9 @@ class PrepareNextRouteState extends DispatcherState {
 
     if (dispatcher.isLocomotiveAutomodeOn()) {
       if (foundNextRoute) {
-        return new ContinueState();
+        return new ProceedingState();
       } else {
-        return new BrakeState();
+        return new BrakingState();
       }
     } else {
       //Rollback changes
@@ -80,10 +80,11 @@ class PrepareNextRouteState extends DispatcherState {
         dispatcher.showBlockState(nextDestinationBlock);
         Dispatcher.resetRoute(nextRoute);
       }
-      return new BrakeState();
+      return new BrakingState();
     }
   }
 
+  //TODO most of this code is also share in the PrepareRouteState. Combine this....
   boolean searchNextRoute(Dispatcher dispatcher) {
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
     Logger.trace("Search a free next route for " + locomotive.getName() + "...");

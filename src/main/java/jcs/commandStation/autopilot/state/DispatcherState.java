@@ -31,6 +31,16 @@ abstract class DispatcherState {
 
   protected Dispatcher dispatcher;
 
+  protected static final long DEFAULT_WAIT_INTERVAL = 1000;
+
+  protected static long threadWaitMillis;
+
+  protected boolean resetRequested = false;
+
+  static {
+    threadWaitMillis = Long.parseUnsignedLong(System.getProperty("autopilot.thread.wait.millis", "10000"));
+  }
+
   protected DispatcherState() {
   }
 
@@ -43,6 +53,17 @@ abstract class DispatcherState {
 
   public String getName() {
     return this.getClass().getSimpleName();
+  }
+
+  void setResetRequested(boolean resetRequested) {
+    this.resetRequested = resetRequested;
+  }
+  
+  protected void requestReset() {
+    resetRequested = true;
+    synchronized (this) {
+      this.notifyAll();
+    }
   }
 
   void pause(int millis) {

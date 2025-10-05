@@ -22,9 +22,9 @@ import org.tinylog.Logger;
  *
  * @author frans
  */
-class WaitState extends DispatcherState {
+class WaitingState extends DispatcherState {
 
-  WaitState() {
+  WaitingState() {
     super();
   }
 
@@ -62,7 +62,7 @@ class WaitState extends DispatcherState {
     }
 
     Logger.debug("Waiting for " + waitTime + " s. Block Random " + blockBean.isRandomWait() + " Block max: " + blockBean.getMaxWaitTime());
-
+    //TODO: use the Systemtimer for this
     for (; waitTime >= 0; waitTime--) {
       if (dispatcher.isLocomotiveAutomodeOn()) {
         String s = dispatcher.getStateName() + " (" + waitTime + ")";
@@ -72,7 +72,7 @@ class WaitState extends DispatcherState {
         if ("false".equals(System.getProperty("dispatcher.stepTest", "false"))) {
           synchronized (this) {
             try {
-              wait(1000);
+              wait(DEFAULT_WAIT_INTERVAL);
             } catch (InterruptedException ex) {
               Logger.trace("Wait loop interrupted");
             }

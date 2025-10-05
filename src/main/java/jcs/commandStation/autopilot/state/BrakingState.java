@@ -27,9 +27,12 @@ import jcs.entities.RouteBean;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
-class BrakeState extends DispatcherState implements SensorEventListener {
+/**
+ * Braking state of the Autopilot State Machine.<br>
+ * The locomotive has to stop in this block, therefor the speed is decreased.
+ */
+class BrakingState extends DispatcherState implements SensorEventListener {
 
-  //private boolean locomotiveBraking = false;
   private boolean canAdvanceToNextState = false;
   private Integer inSensorId;
 
@@ -41,8 +44,6 @@ class BrakeState extends DispatcherState implements SensorEventListener {
     RouteBean route = dispatcher.getRouteBean();
     Logger.trace("Locomotive " + locomotive.getName() + " has entered destination " + destinationBlock.getDescription() + " and prepares to stop...");
 
-    
-    
     inSensorId = dispatcher.getInSensorId();
     ExpectedSensorEventHandler ish = new ExpectedSensorEventHandler(inSensorId, dispatcher);
     AutoPilot.addSensorEventHandler(ish);
@@ -77,20 +78,26 @@ class BrakeState extends DispatcherState implements SensorEventListener {
     dispatcher.showBlockState(departureBlock);
     dispatcher.showRoute(route, Color.magenta);
     dispatcher.showBlockState(destinationBlock);
-    //Wait until the in sensor is hit by the locomotive
+
+    //Wait until the IN sensor is hit by the locomotive
     //TODO: Timeout detection in case the locomotive has stopped....
-    if (canAdvanceToNextState) {
-      //Remove handler as the state will now change
-      JCS.getJcsCommandStation().removeSensorEventListener(inSensorId, this);
-      return new InBlockState();
+    if (canAdvanceToNextState || resetRequested) {
+      DispatcherState newState;
+      if (resetRequested) {
+        newState = new ResettingState();
+      } else {
+        newState = new InBlockState();
+        //Remove handler as the state will now change
+        JCS.getJcsCommandStation().removeSensorEventListener(inSensorId, this);
+      }
+      return newState;
     } else {
       if ("true".equals(System.getProperty("state.machine.stepTest", "false"))) {
         Logger.debug("StateMachine StepTest is enabled. Dispatcher: " + dispatcher.getName() + " State: " + dispatcher.getStateName());
       } else {
         try {
           synchronized (this) {
-            //TODO: the wait times are very long to detect errors make then shorter....
-            wait(10000);
+            wait(threadWaitMillis);
           }
         } catch (InterruptedException ex) {
           Logger.trace("Interrupted: " + ex.getMessage());

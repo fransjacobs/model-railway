@@ -26,7 +26,7 @@ import org.tinylog.Logger;
 
 /**
  * In Auto mode every on-track locomotive get a Dispatcher Thread.<br>
- * The Dispatcher Thread doe the driving of the locomotive.<br>
+ * The Dispatcher Thread performs the driving of the locomotive.<br>
  * The Thread "knows the dispatcherState", (should) knows where the locomotive is.<br>
  * On dispatcherState changes the screen updates are also handled by this Thread.<br>
  *
@@ -47,9 +47,7 @@ class StateMachine extends Thread {
   private DispatcherState dispatcherState;
 
   private boolean running = false;
-
   private boolean enableAutomode = false;
-  private boolean resetRequested = false;
 
   StateMachine(ThreadGroup parent, Dispatcher dispatcher) {
     super(parent, "STM->" + dispatcher.getLocomotiveBean().getName().toUpperCase());
@@ -77,18 +75,6 @@ class StateMachine extends Thread {
     notifyAll();
   }
 
-  //Reset the statemachine
-  synchronized void reset() {
-    //Switch of running
-    this.enableAutomode = false;
-    this.resetRequested = true;
-
-    Logger.trace("Reset requested...");
-    if (running) {
-      notifyAll();
-    }
-  }
-
   DispatcherState getDispatcherState() {
     return dispatcherState;
   }
@@ -108,8 +94,8 @@ class StateMachine extends Thread {
     }
 
     if (!AutoPilot.isAutoModeActive()) {
-      //Automode has stopped, let the Thread finish when WaitState is reached or is Idle
-      if (dispatcherState instanceof IdleState || dispatcherState instanceof WaitState) {
+      //Automode has stopped, let the Thread finish when WaitingState is reached or is Idle
+      if (dispatcherState instanceof IdleState || dispatcherState instanceof WaitingState) {
         Logger.trace(getName() + " Stopping thread as Autopilot automode is stopped");
         running = false;
         //Just stop
@@ -129,17 +115,23 @@ class StateMachine extends Thread {
       }
     }
 
-    if (previousState != dispatcherState || dispatcherState instanceof WaitState) {
+    if (previousState != dispatcherState || dispatcherState instanceof WaitingState) {
       //handle the dispatcherState changes
       Logger.trace("Fire for " + dispatcherState.getName());
       dispatcher.fireStateListeners(dispatcherState.getName());
     }
 
-    //Do not bring the CPU up to 100% An event should call notifyAll() to quickly get out of waiting
+    //Do not bring the CPU up to 100% An event should call notifyAll() to quickly getout of waiting
     //To be sure check every second...
     if (previousState == dispatcherState) {
       Logger.trace("State not changed: " + dispatcherState.getName());
     }
+  }
+
+  //Reset the statemachine
+  void reset() {
+    Logger.trace("Reset requested...");
+    resetStateMachine();
   }
 
   //Reset the statemachine
@@ -161,30 +153,28 @@ class StateMachine extends Thread {
     //Restore the Departure block state
     BlockBean departureBlock = dispatcher.getDepartureBlock();
     departureBlock.setBlockState(BlockBean.BlockState.OCCUPIED);
-
-    //Clear the destination block
-    BlockBean destinationBlock = dispatcher.getDestinationBlock();
-    destinationBlock.setBlockState(BlockBean.BlockState.FREE);
-    destinationBlock.setLocomotive(null);
-    destinationBlock.setArrivalSuffix(null);
-
     PersistenceFactory.getService().persist(departureBlock);
-    PersistenceFactory.getService().persist(destinationBlock);
+    dispatcher.showBlockState(departureBlock);
+
+    //Clear the destination block if available
+    BlockBean destinationBlock = dispatcher.getDestinationBlock();
+    if (destinationBlock != null) {
+      destinationBlock.setBlockState(BlockBean.BlockState.FREE);
+      destinationBlock.setLocomotive(null);
+      destinationBlock.setArrivalSuffix(null);
+      PersistenceFactory.getService().persist(destinationBlock);
+      dispatcher.showBlockState(destinationBlock);
+    }
 
     //reset the route
     RouteBean route = dispatcher.getRouteBean();
-    route.setLocked(false);
-    Dispatcher.resetRoute(route);
-
-    PersistenceFactory.getService().persist(route);
-    dispatcher.setRouteBean(null);
-
-    dispatcher.showBlockState(departureBlock);
-    dispatcher.showBlockState(destinationBlock);
-
-    dispatcherState = new IdleState();
-
-    this.resetRequested = false;
+    if (route != null) {
+      route.setLocked(false);
+      Dispatcher.resetRoute(route);
+      PersistenceFactory.getService().persist(route);
+      dispatcher.setRouteBean(null);
+    }
+    dispatcher.fireStateListeners(dispatcherState.getName());
   }
 
   /**
@@ -211,15 +201,7 @@ class StateMachine extends Thread {
     }
 
     while (running) {
-      //try {
-        if (resetRequested) {
-          resetStateMachine();
-        } else {
-          handleState();
-        }
-      //} catch (Exception e) {
-      //  Logger.error("Error in statehandling: " + e.getMessage());
-      //}
+      handleState();
     }
 
     Logger.trace(getName() + " in state " + dispatcherState.getClass().getSimpleName() + " is ending...");

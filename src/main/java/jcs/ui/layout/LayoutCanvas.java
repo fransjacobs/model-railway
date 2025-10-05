@@ -317,7 +317,6 @@ public class LayoutCanvas extends JPanel {
   }
 
   private void mouseMoveAction(MouseEvent evt) {
-    //Point sp = LayoutUtil.snapToGrid(evt.getPoint());
     if (selectedTile != null) {
       setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
     } else {
@@ -362,7 +361,6 @@ public class LayoutCanvas extends JPanel {
           Logger.trace("Adding a new tile: " + tileType + " @ (" + snapPoint.x + ", " + snapPoint.y + ")");
           selectedTile = addTile(snapPoint, tileType, orientation, direction, true, showCenter);
           if (selectedTile != null) {
-            //selectedTile.setSelected(true);
             repaint(selectedTile.getTileBounds());
           }
         } else {
@@ -380,15 +378,6 @@ public class LayoutCanvas extends JPanel {
           showOperationsPopupMenu(selectedTile, snapPoint);
         }
       }
-//      case DELETE -> {
-//        Component c = getComponentAt(snapPoint);
-//        if (c != null && c instanceof Tile) {
-//          Tile toBeDeleted = (Tile) c;
-//          removeTile(toBeDeleted);
-//          repaint(toBeDeleted.getTileBounds());
-//          selectedTile = null;
-//        }
-//      }
       default -> {
         Logger.trace((selectedTile != null ? "Selected tile: " + selectedTile.getId() + ", " + selectedTile.xyToString() : "No tile @ (" + snapPoint.x + "," + snapPoint.y + ")"));
         if (MouseEvent.BUTTON3 == evt.getButton()) {
@@ -491,7 +480,6 @@ public class LayoutCanvas extends JPanel {
     //Logger.trace("@ (" + evt.getX() + "," + evt.getY() + ")");
     Point snapPoint = LayoutUtil.snapToGrid(evt.getPoint());
     if (selectedTile != null) {
-      //int z = getComponentZOrder(selectedTile);
       setComponentZOrder(selectedTile, 0);
       //Logger.trace("Moving: " + selectedTile.getId() + " @ " + selectedTile.xyToString() + " P: " + snapPoint.x + "," + snapPoint.y + ")");
 
@@ -1234,7 +1222,7 @@ public class LayoutCanvas extends JPanel {
       executor.execute(() -> {
         AutoPilot.resetDispatcher(locomotive);
 
-        repaint();
+        //repaint();
       });
     }
   }//GEN-LAST:event_resetDispatcherMIActionPerformed

@@ -206,19 +206,21 @@ public final class AutoPilot {
     return runningDispatchers;
   }
 
-  synchronized static Dispatcher createDispatcher(LocomotiveBean locomotiveBean) {
+  static Dispatcher createDispatcher(LocomotiveBean locomotiveBean) {
     Dispatcher dispatcher = null;
     //check if the locomotive is on track
     if (isOnTrack(locomotiveBean)) {
-      if (dispatchers.containsKey(locomotiveBean.getName())) {
-        dispatcher = dispatchers.get(locomotiveBean.getName());
-        Logger.trace("Reuse dispatcher for " + locomotiveBean.getName() + "...");
-      } else {
-        dispatcher = new Dispatcher(autoPilotRunners, locomotiveBean);
+      synchronized (dispatchers) {
+        if (dispatchers.containsKey(locomotiveBean.getName())) {
+          dispatcher = dispatchers.get(locomotiveBean.getName());
+          Logger.trace("Reuse dispatcher for " + locomotiveBean.getName() + "...");
+        } else {
+          dispatcher = new Dispatcher(autoPilotRunners, locomotiveBean);
 
-        //Also add it to the dispatchers
-        dispatchers.put(locomotiveBean.getName(), dispatcher);
-        Logger.trace("Added new dispatcher for " + locomotiveBean.getName() + "...");
+          //Also add it to the dispatchers
+          dispatchers.put(locomotiveBean.getName(), dispatcher);
+          Logger.trace("Added new dispatcher for " + locomotiveBean.getName() + "...");
+        }
       }
     }
     return dispatcher;
@@ -243,10 +245,14 @@ public final class AutoPilot {
   }
 
   static void addDispatcher(LocomotiveBean locomotiveBean) {
-    createDispatcher(locomotiveBean);
+    if (autoPilotThread != null) {
+      createDispatcher(locomotiveBean);
 
-    for (AutoPilotStatusListener asl : autoPilotStatusListeners) {
-      asl.statusChanged(autoPilotThread.running);
+      for (AutoPilotStatusListener asl : autoPilotStatusListeners) {
+        asl.statusChanged(autoPilotThread.running);
+      }
+    } else {
+      Logger.error("autoPilotThread is null!");
     }
   }
 
@@ -318,20 +324,16 @@ public final class AutoPilot {
     }
   }
 
-  public static synchronized void resetDispatcher(LocomotiveBean locomotiveBean) {
+  public static void resetDispatcher(LocomotiveBean locomotiveBean) {
     Logger.trace("Resetting dispatcher for " + locomotiveBean.getName());
     Dispatcher dispatcher;
     String key = locomotiveBean.getName();
     if (dispatchers.containsKey(key)) {
       dispatcher = dispatchers.get(key);
+      dispatcher.reset();
     } else {
-      //TODO is this really needed !
-      dispatcher = new Dispatcher(autoPilotRunners, locomotiveBean);
-      dispatchers.put(key, dispatcher);
-      Logger.trace("Created a new dispatcher " + key + "...");
+      Logger.warn("Dispatcher for " + locomotiveBean.getName() + " not found!");
     }
-
-    dispatcher.reset();
   }
 
   synchronized static void resetStates() {
@@ -609,6 +611,10 @@ public final class AutoPilot {
     @Override
     public void run() {
       running = true;
+
+      long threadWaitMillis = Long.parseUnsignedLong(System.getProperty("autopilot.thread.wait.millis", "10000"));
+
+      Logger.debug("Autopilot thread wait time: " + threadWaitMillis + " ms.");
 
       registerAllSensors();
       prepareAllDispatchers();

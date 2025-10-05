@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Frans Jacobs.
+ * Copyright 2025 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,90 +22,69 @@ import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
-import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
 /**
- * Start state of the Autopilot Ste machine. This stat is entered when a valid route is found. This state will start the locomotive by sending the direction and start velocity to the command station.
- * I will subscribe to the enter sensor. The state will advance to the next state when the enter sensor becomes active.
+ * Running state of the Autopilot State machine.<br>
+ * This state is entered when a locomotive is started.<br>
+ * This state will subscribe to the enter sensor.<br>
+ * The state will advance to a next state when the enter sensor becomes active or a reset is requested.
  */
-class StartState extends DispatcherState implements SensorEventListener {
-
-  private boolean locomotiveStarted = false;
+class RunningState extends DispatcherState implements SensorEventListener {
+  
+  private boolean sensorsRegistered = false;
   private boolean canAdvanceToNextState = false;
   private Integer enterSensorId;
-
+  
   @Override
   DispatcherState execute(Dispatcher dispatcher) {
-    //Register this state as a SensorEventListener
     this.dispatcher = dispatcher;
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
-
-    if (!locomotiveStarted) {
+    
+    if (!sensorsRegistered) {
       BlockBean departureBlock = dispatcher.getDepartureBlock();
       BlockBean destinationBlock = dispatcher.getDestinationBlock();
-
+      
       Integer occupancySensorId = dispatcher.getOccupationSensorId();
       Integer exitSensorId = dispatcher.getExitSensorId();
 
-      //Register them both to ignore event form these sensors.
+      //Register them both to ignore event for these sensors.
       ExpectedSensorEventHandler osh = new ExpectedSensorEventHandler(occupancySensorId, dispatcher);
       AutoPilot.addSensorEventHandler(osh);
-
+      
       ExpectedSensorEventHandler xsh = new ExpectedSensorEventHandler(exitSensorId, dispatcher);
       AutoPilot.addSensorEventHandler(xsh);
-
+      
       Logger.trace("Departure: " + departureBlock.getId() + " Ignoring Occupancy Sensor: " + occupancySensorId + " and Exit Sensor: " + exitSensorId);
 
       //The enter Sensor triggering will switch states.
       enterSensorId = dispatcher.getEnterSensorId();
-      Logger.trace("Destination: " + destinationBlock.getId() + " Enter Sensor: " + enterSensorId + "...");
+      if (enterSensorId != null && destinationBlock != null) {
+        Logger.trace("Destination: " + destinationBlock.getId() + " Enter Sensor: " + enterSensorId + "...");
+        JCS.getJcsCommandStation().addSensorEventListener(enterSensorId, this);
 
-      JCS.getJcsCommandStation().addSensorEventListener(enterSensorId, this);
-
-      //Register the sensor also a an expected event
-      ExpectedSensorEventHandler esh = new ExpectedSensorEventHandler(enterSensorId, dispatcher);
-      AutoPilot.addSensorEventHandler(esh);
+        //Register the sensor also a an expected event
+        ExpectedSensorEventHandler esh = new ExpectedSensorEventHandler(enterSensorId, dispatcher);
+        AutoPilot.addSensorEventHandler(esh);
+      } else {
+        Logger.warn("Can't register the enterSensor. Is is null!");
+      }
 
       //TODO This is the simulator can be improved!
       dispatcher.setWaitForSensorid(enterSensorId);
-
-      departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
-      PersistenceFactory.getService().persist(departureBlock);
-
-      destinationBlock.setBlockState(BlockBean.BlockState.LOCKED);
-      PersistenceFactory.getService().persist(destinationBlock);
-
-      dispatcher.showBlockState(departureBlock);
-      dispatcher.showBlockState(destinationBlock);
-
-      //TODO: for now rely on the acceleration delay of the loco decoder. Future make a smooth accelerator our selves..
-      Logger.trace("Starting " + locomotive.getName() + " Direction " + locomotive.getDirection());
-
-      //First time starting as curent velocity is zero ensure the direction is right
-      if (locomotive.getVelocity() == 0) {
-        dispatcher.changeLocomotiveDirection(locomotive, locomotive.getDirection());
-      }
-
-      //Speed to ~75% or speed 3
-      Integer speed3 = locomotive.getSpeedThree();
-      if (speed3 == null || speed3 == 0) {
-        speed3 = 75;
-      }
-
-      int fullscale = locomotive.getTachoMax();
-      double velocity = (speed3 / (double) fullscale) * 1000;
-      dispatcher.changeLocomotiveVelocity(locomotive, velocity);
-
-      locomotiveStarted = true;
+      sensorsRegistered = true;
       Logger.trace("Waiting for the enter event from SensorId: " + enterSensorId + " Running loco: " + locomotive.getName() + " [" + locomotive.getDecoderType().getDecoderType() + " (" + locomotive.getAddress() + ")] Direction: " + locomotive.getDirection().getDirection() + " current velocity: " + locomotive.getVelocity());
     }
-
-    if (canAdvanceToNextState) {
-      DispatcherState newState = new EnterBlockState();
-      //Remove handler as the state will now change
-      JCS.getJcsCommandStation().removeSensorEventListener(enterSensorId, this);
-
+    
+    if (canAdvanceToNextState || resetRequested) {
+      DispatcherState newState;
+      if (resetRequested) {
+        newState = new ResettingState();
+      } else {
+        newState = new ApproachingState();
+        //Remove handler as the state will now change
+        JCS.getJcsCommandStation().removeSensorEventListener(enterSensorId, this);
+      }
       return newState;
     } else {
       if ("true".equals(System.getProperty("state.machine.stepTest", "false"))) {
@@ -113,7 +92,7 @@ class StartState extends DispatcherState implements SensorEventListener {
       } else {
         try {
           synchronized (this) {
-            wait(10000);
+            wait(threadWaitMillis);
           }
         } catch (InterruptedException ex) {
           Logger.trace("Interrupted: " + ex.getMessage());
@@ -122,12 +101,12 @@ class StartState extends DispatcherState implements SensorEventListener {
       return this;
     }
   }
-
+  
   @Override
   public Integer getSensorId() {
     return enterSensorId;
   }
-
+  
   @Override
   public void onSensorChange(SensorEvent sensorEvent) {
     if (enterSensorId.equals(sensorEvent.getSensorId())) {
@@ -140,5 +119,4 @@ class StartState extends DispatcherState implements SensorEventListener {
       }
     }
   }
-
 }

@@ -22,7 +22,16 @@ import jcs.entities.RouteBean;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
-class EnterBlockState extends DispatcherState {
+/**
+ * Approaching state of the Autopilot State Machine.<br>
+ * When the enter sensor is active the state machine advances to this state. In the state it is checked whether the destination block has the property alwayStop set.<br>
+ * If so the locomotive has to stop when it reaches the IN sensor.<br>
+ * Therefor next state will be the BrakingStage.<br>
+ *
+ * When the locomotive does not have to stop, the next possible route to the next block is searched.<br>
+ * This is done in the PrepareNextRouteState.
+ */
+class ApproachingState extends DispatcherState {
 
   @Override
   DispatcherState execute(Dispatcher dispatcher) {
@@ -47,13 +56,13 @@ class EnterBlockState extends DispatcherState {
 
     if (dispatcher.isLocomotiveAutomodeOn()) {
       if (startBraking) {
-        return new BrakeState();
+        return new BrakingState();
       } else {
         //Lets check whether there is a next available route to continue....
         return new PrepareNextRouteState();
       }
     } else {
-      return new BrakeState();
+      return new BrakingState();
     }
   }
 
