@@ -84,6 +84,7 @@ class PrepareNextRouteState extends DispatcherState {
     }
   }
 
+  //TODO most of this code is also share in the PrepareRouteState. Combine this....
   boolean searchNextRoute(Dispatcher dispatcher) {
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
     Logger.trace("Search a free next route for " + locomotive.getName() + "...");

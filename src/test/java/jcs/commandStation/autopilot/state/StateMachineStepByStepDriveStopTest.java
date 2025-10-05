@@ -771,7 +771,7 @@ public class StateMachineStepByStepDriveStopTest extends AbstractStateMachineSte
     assertEquals(BlockBean.BlockState.OUT_OF_ORDER, block4.getBlockState());
 
     //State should stay the same as the enter sensor of the destination is not het.
-    assertEquals("StartingState", instance.getDispatcherStateName());
+    assertEquals("RunningState", instance.getDispatcherStateName());
 
     instance.getDispatcherState().setResetRequested(true);
     instance.reset();

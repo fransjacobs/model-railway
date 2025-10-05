@@ -27,6 +27,10 @@ import jcs.entities.RouteBean;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
+/**
+ * Braking state of the Autopilot State Machine.<br>
+ * The locomotive has to stop in this block, therefor the speed is decreased.
+ */
 class BrakingState extends DispatcherState implements SensorEventListener {
 
   private boolean canAdvanceToNextState = false;
@@ -74,9 +78,9 @@ class BrakingState extends DispatcherState implements SensorEventListener {
     dispatcher.showBlockState(departureBlock);
     dispatcher.showRoute(route, Color.magenta);
     dispatcher.showBlockState(destinationBlock);
-    //Wait until the in sensor is hit by the locomotive
-    //TODO: Timeout detection in case the locomotive has stopped....
 
+    //Wait until the IN sensor is hit by the locomotive
+    //TODO: Timeout detection in case the locomotive has stopped....
     if (canAdvanceToNextState || resetRequested) {
       DispatcherState newState;
       if (resetRequested) {

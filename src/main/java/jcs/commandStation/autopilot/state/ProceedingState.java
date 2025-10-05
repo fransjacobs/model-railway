@@ -27,6 +27,10 @@ import jcs.entities.RouteBean;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
+/**
+ * Proceeding state of the Autopilot State Machine.<br>
+ * The locomotive does not have to stop in this block, therefor the speed is maintained.
+ */
 class ProceedingState extends DispatcherState implements SensorEventListener {
 
   private boolean canAdvanceToNextState = false;
