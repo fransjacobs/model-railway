@@ -22,7 +22,7 @@ import jcs.entities.RouteBean;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
-class EnterBlockState extends DispatcherState {
+class ApproachingState extends DispatcherState {
 
   @Override
   DispatcherState execute(Dispatcher dispatcher) {
@@ -47,13 +47,13 @@ class EnterBlockState extends DispatcherState {
 
     if (dispatcher.isLocomotiveAutomodeOn()) {
       if (startBraking) {
-        return new BrakeState();
+        return new BrakingState();
       } else {
         //Lets check whether there is a next available route to continue....
         return new PrepareNextRouteState();
       }
     } else {
-      return new BrakeState();
+      return new BrakingState();
     }
   }
 

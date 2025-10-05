@@ -37,8 +37,8 @@ import jcs.ui.layout.tiles.Tile;
 import org.tinylog.Logger;
 
 /**
- * The Dispatcher is the controlling class during auto mode of one Locomotive<br>
- * When a Locomotive runs a separate stateMachine is started which handles all the states.<br>
+ * The Dispatcher is the controlling class during auto mode for one Locomotive<br>
+ * When a Locomotive runs a State Machine is started which handles all the states.<br>
  *
  */
 public class Dispatcher {
@@ -114,11 +114,6 @@ public class Dispatcher {
 
   void setNextRouteBean(RouteBean nextRouteBean) {
     this.nextRouteBean = nextRouteBean;
-//    if (nextRouteBean == null) {
-//      nextDestinationBlockId = null;
-//    } else {
-//      nextDestinationBlockId = nextRouteBean.getToTileId();
-//    }
   }
 
   public boolean isLocomotiveAutomodeOn() {
@@ -168,24 +163,29 @@ public class Dispatcher {
     }
   }
 
-  void resetDispatcher() {
+  public void reset() {
+    if (isRunning()) {
+      //In which state are we?
+      DispatcherState currentState = stateMachine.getDispatcherState();
+      currentState.requestReset();
+    } else {
+      stateMachine.reset();
+    }
+  }
+
+  void resetAttributes() {
     routeBean = null;
     nextRouteBean = null;
-    departureBlockId = null;
     destinationBlockId = null;
-    //nextDestinationBlockId = null;
     waitingForSensorId = null;
     enterSensorId = null;
     inSensorId = null;
     exitSensorId = null;
     stateEventListeners.clear();
-    locomotiveBean.setDispatcherDirection(Direction.SWITCH);
   }
 
-  public void reset() {
-    Logger.trace("Resetting dispatcher " + getName() + " StateMachine...");
-    this.stateMachine.reset();
-    resetDispatcher();
+  void resetStateMachine() {
+    stateMachine.reset();
   }
 
   public boolean isRunning() {
@@ -222,9 +222,6 @@ public class Dispatcher {
   }
 
   BlockBean getNextDestinationBlock() {
-    //if (nextDestinationBlockId != null) {
-    //  return PersistenceFactory.getService().getBlockByTileId(nextDestinationBlockId);
-    //} else 
     if (nextRouteBean != null) {
       String nextDestinationBlockId = nextRouteBean.getToTileId();
       return PersistenceFactory.getService().getBlockByTileId(nextDestinationBlockId);

@@ -29,7 +29,7 @@ import org.tinylog.Logger;
  * Start state of the Autopilot Ste machine. This stat is entered when a valid route is found. This state will start the locomotive by sending the direction and start velocity to the command station.
  * I will subscribe to the enter sensor. The state will advance to the next state when the enter sensor becomes active.
  */
-class StartState extends DispatcherState implements SensorEventListener {
+class StartingState extends DispatcherState implements SensorEventListener {
 
   private boolean locomotiveStarted = false;
   private boolean canAdvanceToNextState = false;
@@ -101,11 +101,15 @@ class StartState extends DispatcherState implements SensorEventListener {
       Logger.trace("Waiting for the enter event from SensorId: " + enterSensorId + " Running loco: " + locomotive.getName() + " [" + locomotive.getDecoderType().getDecoderType() + " (" + locomotive.getAddress() + ")] Direction: " + locomotive.getDirection().getDirection() + " current velocity: " + locomotive.getVelocity());
     }
 
-    if (canAdvanceToNextState) {
-      DispatcherState newState = new EnterBlockState();
-      //Remove handler as the state will now change
-      JCS.getJcsCommandStation().removeSensorEventListener(enterSensorId, this);
-
+    if (canAdvanceToNextState || resetRequested) {
+      DispatcherState newState;
+      if (resetRequested) {
+        newState = new ResettingState();
+      } else {
+        newState = new ApproachingState();
+        //Remove handler as the state will now change
+        JCS.getJcsCommandStation().removeSensorEventListener(enterSensorId, this);
+      }
       return newState;
     } else {
       if ("true".equals(System.getProperty("state.machine.stepTest", "false"))) {
@@ -113,7 +117,7 @@ class StartState extends DispatcherState implements SensorEventListener {
       } else {
         try {
           synchronized (this) {
-            wait(10000);
+            wait(threadWaitMillis);
           }
         } catch (InterruptedException ex) {
           Logger.trace("Interrupted: " + ex.getMessage());

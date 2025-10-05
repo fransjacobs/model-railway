@@ -27,9 +27,8 @@ import jcs.entities.RouteBean;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
-class BrakeState extends DispatcherState implements SensorEventListener {
+class ProceedingState extends DispatcherState implements SensorEventListener {
 
-  //private boolean locomotiveBraking = false;
   private boolean canAdvanceToNextState = false;
   private Integer inSensorId;
 
@@ -39,33 +38,7 @@ class BrakeState extends DispatcherState implements SensorEventListener {
     BlockBean departureBlock = dispatcher.getDepartureBlock();
     BlockBean destinationBlock = dispatcher.getDestinationBlock();
     RouteBean route = dispatcher.getRouteBean();
-    Logger.trace("Locomotive " + locomotive.getName() + " has entered destination " + destinationBlock.getDescription() + " and prepares to stop...");
-
-    
-    
-    inSensorId = dispatcher.getInSensorId();
-    ExpectedSensorEventHandler ish = new ExpectedSensorEventHandler(inSensorId, dispatcher);
-    AutoPilot.addSensorEventHandler(ish);
-
-    dispatcher.setWaitForSensorid(inSensorId);
-
-    //Register this state as a SensorEventListener
-    JCS.getJcsCommandStation().addSensorEventListener(inSensorId, this);
-    Logger.trace("Destination block " + destinationBlock.getId() + " In SensorId: " + inSensorId);
-
-    //Slowdown
-    Logger.trace("Slowdown " + locomotive.getName() + "...");
-
-    //Speed to ~10% or speed 1
-    Integer speed1 = locomotive.getSpeedOne();
-    if (speed1 == null || speed1 == 0) {
-      speed1 = 10;
-    }
-
-    int fullscale = locomotive.getTachoMax();
-    double velocity = (speed1 / (double) fullscale) * 1000;
-
-    dispatcher.changeLocomotiveVelocity(locomotive, velocity);
+    Logger.trace("Locomotive " + locomotive.getName() + " has entered destination " + destinationBlock.getDescription() + " and continues...");
 
     //Change Block statuses 
     departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
@@ -77,20 +50,39 @@ class BrakeState extends DispatcherState implements SensorEventListener {
     dispatcher.showBlockState(departureBlock);
     dispatcher.showRoute(route, Color.magenta);
     dispatcher.showBlockState(destinationBlock);
+
+    inSensorId = dispatcher.getInSensorId();
+
+    //For the remaining states ignore events from the in sensor
+    ExpectedSensorEventHandler ish = new ExpectedSensorEventHandler(inSensorId, dispatcher);
+    AutoPilot.addSensorEventHandler(ish);
+
+    dispatcher.setWaitForSensorid(inSensorId);
+
+    //Register this state as a SensorEventListener
+    JCS.getJcsCommandStation().addSensorEventListener(inSensorId, this);
+    Logger.trace("Destination block " + destinationBlock.getId() + " In SensorId: " + inSensorId);
+
     //Wait until the in sensor is hit by the locomotive
     //TODO: Timeout detection in case the locomotive has stopped....
-    if (canAdvanceToNextState) {
-      //Remove handler as the state will now change
-      JCS.getJcsCommandStation().removeSensorEventListener(inSensorId, this);
-      return new InBlockState();
+    if (canAdvanceToNextState || resetRequested) {
+      DispatcherState newState;
+      if (resetRequested) {
+        newState = new ResettingState();
+      } else {
+        newState = new InBlockState();
+        //Remove handler as the state will now change
+        JCS.getJcsCommandStation().removeSensorEventListener(inSensorId, this);
+      }
+      return newState;
+
     } else {
       if ("true".equals(System.getProperty("state.machine.stepTest", "false"))) {
         Logger.debug("StateMachine StepTest is enabled. Dispatcher: " + dispatcher.getName() + " State: " + dispatcher.getStateName());
       } else {
         try {
           synchronized (this) {
-            //TODO: the wait times are very long to detect errors make then shorter....
-            wait(10000);
+            wait(threadWaitMillis);
           }
         } catch (InterruptedException ex) {
           Logger.trace("Interrupted: " + ex.getMessage());

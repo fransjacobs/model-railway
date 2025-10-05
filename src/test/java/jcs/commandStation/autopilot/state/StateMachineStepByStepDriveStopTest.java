@@ -716,7 +716,7 @@ public class StateMachineStepByStepDriveStopTest extends AbstractStateMachineSte
     instance.handleState();
 
     //After executing the PrepareRouteState should be advanced to StartState
-    assertEquals("StartState", instance.getDispatcherStateName());
+    assertEquals("StartingState", instance.getDispatcherStateName());
 
     block1 = ps.getBlockByTileId("bk-1");
     assertEquals(BlockBean.BlockState.OUT_OF_ORDER, block1.getBlockState());
@@ -748,7 +748,7 @@ public class StateMachineStepByStepDriveStopTest extends AbstractStateMachineSte
     assertEquals(0, dispatcher.getLocomotiveBean().getVelocity());
 
     //After executing the status should be advanced to StartState
-    assertEquals("StartState", instance.getDispatcherStateName());
+    assertEquals("StartingState", instance.getDispatcherStateName());
 
     //Execute the StartState
     instance.handleState();
@@ -771,9 +771,14 @@ public class StateMachineStepByStepDriveStopTest extends AbstractStateMachineSte
     assertEquals(BlockBean.BlockState.OUT_OF_ORDER, block4.getBlockState());
 
     //State should stay the same as the enter sensor of the destination is not het.
-    assertEquals("StartState", instance.getDispatcherStateName());
+    assertEquals("StartingState", instance.getDispatcherStateName());
 
-    instance.resetStateMachine();
+    instance.getDispatcherState().setResetRequested(true);
+    instance.reset();
+    instance.handleState();
+
+    assertEquals("ResettingState", instance.getDispatcherStateName());
+    instance.handleState();
 
     //State should be reset to Idle.
     assertEquals("IdleState", instance.getDispatcherStateName());

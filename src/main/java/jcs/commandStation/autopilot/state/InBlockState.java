@@ -124,11 +124,11 @@ class InBlockState extends DispatcherState {
       //Clear the next routes
       dispatcher.setNextRouteBean(null);
 
-      return new StartState();
+      return new StartingState();
     } else {
       if (dispatcher.isLocomotiveAutomodeOn()) {
         if (alwaysStop) {
-          return new WaitState();
+          return new WaitingState();
         } else {
           return new PrepareRouteState();
         }

@@ -62,11 +62,11 @@ class PrepareRouteState extends DispatcherState {
     }
 
     if (canAdvanceToNextState) {
-      DispatcherState newState = new StartState();
+      DispatcherState newState = new StartingState();
       return newState;
     } else {
       //Go back to waiting and try again
-      DispatcherState newWaitState = new WaitState();
+      DispatcherState newWaitState = new WaitingState();
       return newWaitState;
     }
   }
