@@ -1,6 +1,15 @@
 # Java Central Station (JCS)
 
+🌐 **[Lees deze README in het Nederlands](LEESMIJ.md)**
+
 *A hobbyist open-source project to automate model railways, written in Java.*
+
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](#license)  
+[![Release](https://img.shields.io/github/v/release/fransjacobs/model-railway)](https://github.com/fransjacobs/model-railway/releases)  
+[![GitHub issues](https://img.shields.io/github/issues-raw/fransjacobs/model-railway)](https://github.com/fransjacobs/model-railway/issues) <br>
+[![Model Railroad Automation](https://img.shields.io/badge/Model_Railroad-Automation-blue)]()  
+[![Java CI with Maven](https://github.com/fransjacobs/model-railway/actions/workflows/maven.yml/badge.svg?branch=master)](https://github.com/fransjacobs/model-railway/actions/workflows/maven.yml)  
+[![GitHub last commit](https://img.shields.io/github/last-commit/fransjacobs/model-railway)]()
 
 ---
 
