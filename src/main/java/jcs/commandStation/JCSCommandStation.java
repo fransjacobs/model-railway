@@ -362,10 +362,6 @@ public class JCSCommandStation {
   }
 
   public void disconnect() {
-//    if (sensorEventHandlerThread.isRunning()) {
-//      sensorEventHandlerThread.quit();
-//    }
-
     for (FeedbackController fc : feedbackControllers.values()) {
       if (fc != decoderController) {
         fc.disconnect();
@@ -786,17 +782,10 @@ public class JCSCommandStation {
 
   public void addPowerEventListener(PowerEventListener listener) {
     this.powerEventListeners.add(listener);
-
-//    if (decoderController != null) {
-//      decoderController.addPowerEventListener(listener);
-//    }
   }
 
   public void removePowerEventListener(PowerEventListener listener) {
     this.powerEventListeners.remove(listener);
-//    if (decoderController != null) {
-//      decoderController.removePowerEventListener(listener);
-//    }
   }
 
   public void addMeasurementEventListener(MeasurementEventListener listener) {
@@ -821,6 +810,16 @@ public class JCSCommandStation {
 
   public List<FeedbackController> getFeedbackControllers() {
     return feedbackControllers.values().stream().collect(Collectors.toList());
+  }
+
+  public SensorBean getSensorStatus(SensorBean sensorBean) {
+    for (FeedbackController fbc : feedbackControllers.values()) {
+      SensorBean sb = fbc.getSensorStatus(sensorBean);
+      SensorEvent se = new SensorEvent(sb);
+      sensorEventQueue.offer(se);
+      sensorBean.setActive(sb.isActive());
+    }
+    return sensorBean;
   }
 
   private class AllSensorEventsHandler implements AllSensorEventsListener {

@@ -582,8 +582,18 @@ public final class AutoPilot {
       return this.running;
     }
 
+    private void refreshAllSensorValues() {
+      List<SensorBean> sensors = PersistenceFactory.getService().getAssignedSensors();
+      for (SensorBean sb : sensors) {
+        JCS.getJcsCommandStation().getSensorStatus(sb);
+      }
+    }
+
     private void registerAllSensors() {
       //Use only assigned sensors, ignore sensors which are not assigned to a Tile
+      //First refresh the sensors...
+      refreshAllSensorValues();
+
       List<SensorBean> sensors = PersistenceFactory.getService().getAssignedSensors();
       int cnt = 0;
       for (SensorBean sb : sensors) {

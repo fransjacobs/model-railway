@@ -425,6 +425,19 @@ public class CanMessageFactory implements MarklinCan {
     return sensorMessage;
   }
 
+  public static CanMessage querySensorStatus(int nodeId, int contactId, int uid) {
+    byte[] data = new byte[CanMessage.DATA_SIZE];
+    byte[] nId = CanMessage.to2Bytes(nodeId);
+    byte[] cId = CanMessage.to2Bytes(contactId);
+    System.arraycopy(nId, 0, data, 0, nId.length);
+    System.arraycopy(cId, 0, data, 2, cId.length);
+
+    byte[] hash = CanMessage.generateHash(uid);
+
+    CanMessage sensorQueryMessage = new CanMessage(PRIO_1, S88_EVENT_QUERY, hash, DLC_4, data);
+    return sensorQueryMessage;
+  }
+
   //Mainly for testing....
   //TODO move to a test class
   public static void main(String[] a) {
@@ -460,5 +473,8 @@ public class CanMessageFactory implements MarklinCan {
     for (int i = 0; i < msgs1.size(); i++) {
       System.out.println((i == 0 ? "statusDataConfigRes1: " : i + "                    ") + msgs1.get(i));
     }
+
+    System.out.println("querySensorStatus:   " + querySensorStatus(65, 1, 1668498828));
+
   }
 }

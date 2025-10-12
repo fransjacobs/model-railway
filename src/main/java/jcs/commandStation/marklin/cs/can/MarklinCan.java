@@ -112,7 +112,9 @@ interface MarklinCan {
   public final static int SX1_EVENT = 0x24;
 
   //public final static int S88_EVENT_QUERY_DLC = 0x04;
+  public final static int S88_EVENT_QUERY = 0x22;
   public final static int S88_EVENT_RESPONSE = 0x23;
+  
 
   public final static int PARAM_PIN_RESET = 0x00;
   public final static int PARAM_PIN_READ = 0x01;

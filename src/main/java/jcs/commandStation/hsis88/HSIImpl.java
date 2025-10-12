@@ -173,6 +173,11 @@ public class HSIImpl extends AbstractController implements FeedbackController {
   }
 
   @Override
+  public SensorBean getSensorStatus(SensorBean sensorBean) {
+    return sensorBean;
+  }
+
+  @Override
   public void disconnect() {
     try {
       if (connection != null) {

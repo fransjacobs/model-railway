@@ -55,6 +55,7 @@ import jcs.commandStation.events.AllSensorEventsListener;
 import static jcs.entities.AccessoryBean.AccessoryValue.GREEN;
 import static jcs.entities.AccessoryBean.AccessoryValue.RED;
 import jcs.entities.LocomotiveBean;
+import jcs.entities.SensorBean;
 import jcs.util.Ping;
 import org.tinylog.Logger;
 
@@ -245,6 +246,12 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
       connection.sendMessage(EcosMessageFactory.subscribeFeedbackModule(moduleId));
       //Logger.trace("r: "+reply.getResponse());
     }
+  }
+
+  @Override
+  public SensorBean getSensorStatus(SensorBean sensorBean) {
+    Integer sensorId = sensorBean.getId();
+    return feedbackManager.getSensor(sensorId);
   }
 
   @Override
@@ -596,25 +603,25 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
   void fireDirectionEventListeners(final LocomotiveDirectionEvent directionEvent) {
     //if (directionEvent.isValid()) {
-      for (LocomotiveDirectionEventListener listener : this.locomotiveDirectionEventListeners) {
-        listener.onDirectionChange(directionEvent);
-      }
+    for (LocomotiveDirectionEventListener listener : this.locomotiveDirectionEventListeners) {
+      listener.onDirectionChange(directionEvent);
+    }
     //}
   }
 
   void fireLocomotiveSpeedEventListeners(final LocomotiveSpeedEvent speedEvent) {
     //if (speedEvent.isValid()) {
-      for (LocomotiveSpeedEventListener listener : this.locomotiveSpeedEventListeners) {
-        listener.onSpeedChange(speedEvent);
-      }
+    for (LocomotiveSpeedEventListener listener : this.locomotiveSpeedEventListeners) {
+      listener.onSpeedChange(speedEvent);
+    }
     //}
   }
 
   void fireFunctionEventListeners(final LocomotiveFunctionEvent functionEvent) {
     //if (functionEvent.isValid()) {
-      for (LocomotiveFunctionEventListener listener : this.locomotiveFunctionEventListeners) {
-        listener.onFunctionChange(functionEvent);
-      }
+    for (LocomotiveFunctionEventListener listener : this.locomotiveFunctionEventListeners) {
+      listener.onFunctionChange(functionEvent);
+    }
     //}
   }
 
