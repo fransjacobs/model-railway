@@ -44,6 +44,7 @@ import jcs.commandStation.entities.FeedbackModule;
 import jcs.commandStation.entities.InfoBean;
 import jcs.commandStation.events.AllSensorEventsListener;
 import jcs.entities.LocomotiveBean;
+import jcs.entities.SensorBean;
 import jcs.util.NetworkUtil;
 import org.tinylog.Logger;
 
@@ -173,9 +174,9 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
 
   private void fireAllDirectionEventListeners(final LocomotiveDirectionEvent directionEvent) {
     //if (directionEvent.isValid()) {
-      for (LocomotiveDirectionEventListener listener : this.locomotiveDirectionEventListeners) {
-        listener.onDirectionChange(directionEvent);
-      }
+    for (LocomotiveDirectionEventListener listener : this.locomotiveDirectionEventListeners) {
+      listener.onDirectionChange(directionEvent);
+    }
     //}
   }
 
@@ -203,11 +204,9 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   }
 
   private void fireAllLocomotiveSpeedEventListeners(final LocomotiveSpeedEvent speedEvent) {
-    //if (speedEvent.isValid()) {
-      for (LocomotiveSpeedEventListener listener : this.locomotiveSpeedEventListeners) {
-        listener.onSpeedChange(speedEvent);
-      }
-    //}
+    for (LocomotiveSpeedEventListener listener : this.locomotiveSpeedEventListeners) {
+      listener.onSpeedChange(speedEvent);
+    }
   }
 
   @Override
@@ -224,11 +223,9 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   }
 
   private void fireAllFunctionEventListeners(final LocomotiveFunctionEvent functionEvent) {
-    //if (functionEvent.isValid()) {
     for (LocomotiveFunctionEventListener listener : this.locomotiveFunctionEventListeners) {
       listener.onFunctionChange(functionEvent);
     }
-    //}
   }
 
   @Override
@@ -312,6 +309,11 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
     for (FeedbackController fbc : acl) {
       fbc.fireAllSensorEventsListeners(sensorEvent);
     }
+  }
+
+  @Override
+  public SensorBean getSensorStatus(SensorBean sensorBean) {
+    return sensorBean;
   }
 
 }

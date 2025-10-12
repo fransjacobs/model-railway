@@ -128,7 +128,9 @@ public class SwitchUI extends TileUI implements MouseListener, MouseMotionListen
     if (accessoryValue == null) {
       accessoryValue = AccessoryBean.AccessoryValue.OFF;
     }
-
+    if(model.getAccessory() != null) {
+      Logger.trace(tile.getId()+", Accessory "+model.getAccessory().getId()+" value "+accessoryValue);
+    }  
     switch (accessoryValue) {
       case RED -> {
         renderStraight(g2, trackColor, c);

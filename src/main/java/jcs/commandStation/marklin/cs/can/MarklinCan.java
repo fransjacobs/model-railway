@@ -16,9 +16,10 @@
 package jcs.commandStation.marklin.cs.can;
 
 /**
- * Constants for CS 2/3 CAN communication
+ * Constants for CS 2/3 CAN communication.<br>
  *
- * @see http://medienpdb.maerklin.de/digital22008/files/cs2CAN-Protokoll-2_0.pdf or on the Central Station 2: http://<central station 2>/can/index.html
+ * @see http://medienpdb.maerklin.de/digital22008/files/cs2CAN-Protokoll-2_0.pdf <br>
+ * or on the Central Station 2: http://<central station 2>/can/index.html<br>
  *
  */
 interface MarklinCan {
@@ -106,12 +107,9 @@ interface MarklinCan {
   public final static int ACCESSORY_CONFIG = 0x18;
 
   //Sensor messages
-  public final static int S88_EVENT = 0x22;
-  //public final static int S88_EVENT_RESP = 0x23;
-
   public final static int SX1_EVENT = 0x24;
 
-  //public final static int S88_EVENT_QUERY_DLC = 0x04;
+  public final static int S88_EVENT_QUERY = 0x22;
   public final static int S88_EVENT_RESPONSE = 0x23;
 
   public final static int PARAM_PIN_RESET = 0x00;

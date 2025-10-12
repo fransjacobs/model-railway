@@ -574,14 +574,9 @@ public class TileCache {
     return tile;
   }
 
-//  public static void enqueTileAction(JCSActionEvent jcsEvent) {
-//    eventsQueue.offer(jcsEvent);
-//    synchronized (TileCache.actionEventQueueHandler) {
-//      actionEventQueueHandler.notifyAll();
-//    }
-//  }
   public static void enqueTileAction(AccessoryEvent accessoryEvent) {
     eventsQueue.offer(new ActionEventWrapper(accessoryEvent));
+    
     synchronized (TileCache.actionEventQueueHandler) {
       actionEventQueueHandler.notifyAll();
     }

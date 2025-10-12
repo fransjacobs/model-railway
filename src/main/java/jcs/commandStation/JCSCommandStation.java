@@ -362,10 +362,6 @@ public class JCSCommandStation {
   }
 
   public void disconnect() {
-//    if (sensorEventHandlerThread.isRunning()) {
-//      sensorEventHandlerThread.quit();
-//    }
-
     for (FeedbackController fc : feedbackControllers.values()) {
       if (fc != decoderController) {
         fc.disconnect();
@@ -703,12 +699,14 @@ public class JCSCommandStation {
 
   public void addAccessoryEventListener(String accessoryId, AccessoryEventListener listener) {
     if (accessoryEventListeners.containsKey(accessoryId)) {
-      List<AccessoryEventListener> sameAccessoryListener = accessoryEventListeners.get(accessoryId);
-      sameAccessoryListener.add(listener);
+      List<AccessoryEventListener> sameAccessoryIdListeners = accessoryEventListeners.get(accessoryId);
+      sameAccessoryIdListeners.add(listener);
+
+      accessoryEventListeners.put(accessoryId, sameAccessoryIdListeners);
     } else {
-      List<AccessoryEventListener> sameAccessoryListener = new ArrayList<>();
-      sameAccessoryListener.add(listener);
-      accessoryEventListeners.put(accessoryId, sameAccessoryListener);
+      List<AccessoryEventListener> sameAccessoryIdListeners = new ArrayList<>();
+      sameAccessoryIdListeners.add(listener);
+      accessoryEventListeners.put(accessoryId, sameAccessoryIdListeners);
     }
   }
 
@@ -786,17 +784,10 @@ public class JCSCommandStation {
 
   public void addPowerEventListener(PowerEventListener listener) {
     this.powerEventListeners.add(listener);
-
-//    if (decoderController != null) {
-//      decoderController.addPowerEventListener(listener);
-//    }
   }
 
   public void removePowerEventListener(PowerEventListener listener) {
     this.powerEventListeners.remove(listener);
-//    if (decoderController != null) {
-//      decoderController.removePowerEventListener(listener);
-//    }
   }
 
   public void addMeasurementEventListener(MeasurementEventListener listener) {
@@ -821,6 +812,16 @@ public class JCSCommandStation {
 
   public List<FeedbackController> getFeedbackControllers() {
     return feedbackControllers.values().stream().collect(Collectors.toList());
+  }
+
+  public SensorBean getSensorStatus(SensorBean sensorBean) {
+    for (FeedbackController fbc : feedbackControllers.values()) {
+      SensorBean sb = fbc.getSensorStatus(sensorBean);
+      SensorEvent se = new SensorEvent(sb);
+      sensorEventQueue.offer(se);
+      sensorBean.setActive(sb.isActive());
+    }
+    return sensorBean;
   }
 
   private class AllSensorEventsHandler implements AllSensorEventsListener {
@@ -848,6 +849,11 @@ public class JCSCommandStation {
     @Override
     public void onAccessoryChange(AccessoryEvent event) {
       jcsCommandStation.accessoryEventQueue.offer(event);
+
+      synchronized (this) {
+        notifyAll();
+      }
+
     }
   }
 
@@ -977,6 +983,7 @@ public class JCSCommandStation {
               if (sb.getId() == null) {
                 sb.setId(dbsb.getId());
               }
+
               sb.setName(dbsb.getName());
               sb.setActive(dbsb.isActive());
               sb.setActive(newValue);
@@ -1068,6 +1075,7 @@ public class JCSCommandStation {
               //Try using the deviceId and contactId and command station...
               dbab = PersistenceFactory.getService().getAccessoryByAddressAndCommandStationId(address, commandStationId);
             }
+
             if (dbab == null) {
               //check if address is even, might be the second address of a signal
               if (address % 2 == 0) {
@@ -1083,19 +1091,30 @@ public class JCSCommandStation {
               }
             }
 
+            boolean changed = false;
             if (dbab != null) {
-              //set all current properties
-              ab.copyInto(dbab);
-              //update the value
-              ab.setAccessoryValue(newValue);
-              PersistenceFactory.getService().persist(ab);
+              AccessoryValue previous = dbab.getAccessoryValue();
+              changed = newValue != previous;
+              if (changed) {
+                //set all current properties
+                ab.copyInto(dbab);
+                //update the value
+                ab.setAccessoryValue(newValue);
+                PersistenceFactory.getService().persist(ab);
+              } else {
+                Logger.trace("Value " + newValue + " for accessory " + dbab.getId() + " has NOT changed...");
+              }
             }
 
-            if (jcsCommandStation.accessoryEventListeners.containsKey(ab.getId())) {
-              List<AccessoryEventListener> snapshot = new ArrayList<>(this.jcsCommandStation.accessoryEventListeners.get(ab.getId()));
+            if (changed) {
+              if (jcsCommandStation.accessoryEventListeners.containsKey(ab.getId())) {
+                List<AccessoryEventListener> snapshot = new ArrayList<>(jcsCommandStation.accessoryEventListeners.get(ab.getId()));
+                Logger.trace("Obtaining listener for accessory " + ab.getId() + " which has " + snapshot.size() + " listeners to set to values" + event.getValue());
 
-              for (AccessoryEventListener al : snapshot) {
-                al.onAccessoryChange(event);
+                for (AccessoryEventListener al : snapshot) {
+                  Logger.trace("Listener source " + al.getClass().getName());
+                  al.onAccessoryChange(event);
+                }
               }
             }
 

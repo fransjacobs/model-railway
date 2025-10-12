@@ -21,6 +21,7 @@ import java.awt.event.ActionListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
+import jcs.entities.AccessoryBean;
 import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.AccessoryBean.SignalValue;
 import jcs.entities.BlockBean;
@@ -52,6 +53,8 @@ public class DefaultTileModel implements TileModel {
   protected boolean showAccessoryValue = false;
   protected boolean showSignalValue = false;
   protected boolean sensorActive = false;
+
+  protected AccessoryBean accessory;
   protected AccessoryValue accessoryValue;
   protected SignalValue signalValue;
 
@@ -60,6 +63,7 @@ public class DefaultTileModel implements TileModel {
   protected String arrivalSuffix;
   protected boolean overlayImage = false;
   protected BlockState blockState;
+
   protected LocomotiveBean locomotive;
   protected LocomotiveBean.Direction logicalDirection;
 
@@ -230,8 +234,10 @@ public class DefaultTileModel implements TileModel {
 
   @Override
   public void setAccessoryValue(AccessoryValue accessoryValue) {
-    this.accessoryValue = accessoryValue;
-    fireStateChanged();
+    if (this.accessoryValue != accessoryValue) {
+      this.accessoryValue = accessoryValue;
+      fireStateChanged();
+    }
   }
 
   @Override
@@ -326,6 +332,18 @@ public class DefaultTileModel implements TileModel {
   @Override
   public void setLogicalDirection(LocomotiveBean.Direction logicalDirection) {
     this.logicalDirection = logicalDirection;
+    fireStateChanged();
+  }
+
+  @Override
+  public AccessoryBean getAccessory() {
+    return accessory;
+  }
+
+  @Override
+  public void setAccessory(AccessoryBean accessory) {
+    this.accessory = accessory;
+
     fireStateChanged();
   }
 

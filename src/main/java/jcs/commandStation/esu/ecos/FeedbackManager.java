@@ -16,11 +16,13 @@
 package jcs.commandStation.esu.ecos;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.entities.FeedbackModule;
+import jcs.entities.SensorBean;
 import org.tinylog.Logger;
 
 /**
@@ -37,10 +39,12 @@ class FeedbackManager {
 
   private final EsuEcosCommandStationImpl ecosCommandStation;
   private final Map<Integer, FeedbackModule> modules;
+  private final Map<Integer, SensorBean> sensors;
 
   FeedbackManager(EsuEcosCommandStationImpl ecosCommandStation, EcosMessage message) {
     this.ecosCommandStation = ecosCommandStation;
     modules = new HashMap<>();
+    sensors = new HashMap<>();
     parse(message);
   }
 
@@ -86,6 +90,18 @@ class FeedbackManager {
         updatePorts(state, feedbackModule);
       }
       modules.put(objectId, feedbackModule);
+
+      List<SensorBean> moduleSensors = feedbackModule.getSensors();
+      for (SensorBean sb : moduleSensors) {
+        if (sensors.containsKey(sb.getId())) {
+          SensorBean sensor = sensors.get(sb.getId());
+          sensor.setActive(sb.isActive());
+          sensor.setLastUpdated(new Date());
+        } else {
+          sensors.put(sb.getId(), sb);
+        }
+      }
+
       changedSensors = feedbackModule.getChangedSensorEvents();
 
       if (event) {
@@ -168,4 +184,9 @@ class FeedbackManager {
   public FeedbackModule getFeedbackModule(int id) {
     return modules.get(id);
   }
+
+  SensorBean getSensor(Integer id) {
+    return sensors.get(id);
+  }
+
 }

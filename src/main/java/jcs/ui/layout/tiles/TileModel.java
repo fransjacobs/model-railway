@@ -80,6 +80,10 @@ public interface TileModel extends Serializable {
 
   public void setSensorActive(boolean active);
 
+  AccessoryBean getAccessory();
+
+  void setAccessory(AccessoryBean accessory);
+
   AccessoryBean.AccessoryValue getAccessoryValue();
 
   public void setAccessoryValue(AccessoryBean.AccessoryValue accessoryValue);
@@ -101,7 +105,6 @@ public interface TileModel extends Serializable {
   public void setDepartureSuffix(String suffix);
 
   //boolean isReverseArrival();
-
   public void reverseArrival();
 
   LocomotiveBean.Direction getLogicalDirection();
