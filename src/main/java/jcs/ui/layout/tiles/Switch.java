@@ -33,11 +33,14 @@ import static jcs.entities.TileBean.Orientation.WEST;
 import jcs.entities.TileBean.TileType;
 import jcs.ui.layout.tiles.ui.SwitchUI;
 import jcs.ui.layout.tiles.ui.TileUI;
+import org.tinylog.Logger;
 
 /**
  * Representation of a Switch or Turnout on the layout
  */
 public class Switch extends Tile implements AccessoryEventListener {
+
+  private static final long serialVersionUID = -7568128047080914161L;
 
   public Switch(Orientation orientation, Direction direction, Point center) {
     this(orientation, direction, center.x, center.y);
@@ -185,8 +188,9 @@ public class Switch extends Tile implements AccessoryEventListener {
 
   @Override
   public void onAccessoryChange(AccessoryEvent event) {
+    Logger.info("Event "+event.getId()+" Value "+event.getValue());
     if (getAccessoryBean() != null && event.isEventFor(accessoryBean)) {
-      setAccessoryValue(event.getAccessoryBean().getAccessoryValue());
+      setAccessoryValue(event.getValue());
     }
   }
 

@@ -920,7 +920,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   @Override
   public List<AccessoryBean> getAccessories() {
     List<AccessoryBean> accessories;
-    if (System.getProperty("accessory.list.via", "http").equalsIgnoreCase("http")) {
+    if (System.getProperty("accessory.list.via", "can").equalsIgnoreCase("http")) {
       accessories = getAccessoriesViaHttp();
     } else {
       accessories = getAccessoriesViaCan();
@@ -1316,21 +1316,31 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 //      }
       //cs.getLocomotivesViaCAN();
       //cs.getAccessoriesViaCan();
-      Logger.debug("Query SensorStatus for sensor : 1 node 65");
-      SensorBean sb = cs.getSensorStatus(65, 1006);
-      Logger.trace("1 SensorStatus: " + sb.toLogString());
-      cs.pause(1000);
-      sb = cs.getSensorStatus(65, 1006);
-      Logger.trace("2 SensorStatus: " + sb.toLogString());
-      cs.pause(1000);
-      sb = cs.getSensorStatus(65, 1006);
-      Logger.trace("3 SensorStatus: " + sb.toLogString());
-      cs.pause(1000);
-      sb = cs.getSensorStatus(65, 1006);
-      Logger.trace("4 SensorStatus: " + sb.toLogString());
-      cs.pause(1000);
-      sb = cs.getSensorStatus(65, 1006);
-      Logger.trace("5 SensorStatus: " + sb.toLogString());
+      
+      Logger.debug("Getting all accessories...");
+      List<AccessoryBean> accessories = cs.getAccessories();
+
+      Logger.debug("List with "+accessories.size()+" accessories...");
+      
+      for(AccessoryBean ab : accessories) {
+        Logger.debug("Id: "+ab.getId()+" address: "+ab.getAddress()+" name "+ab.getName());
+      }
+      
+//      Logger.debug("Query SensorStatus for sensor : 1 node 65");
+//      SensorBean sb = cs.getSensorStatus(65, 1006);
+//      Logger.trace("1 SensorStatus: " + sb.toLogString());
+//      cs.pause(1000);
+//      sb = cs.getSensorStatus(65, 1006);
+//      Logger.trace("2 SensorStatus: " + sb.toLogString());
+//      cs.pause(1000);
+//      sb = cs.getSensorStatus(65, 1006);
+//      Logger.trace("3 SensorStatus: " + sb.toLogString());
+//      cs.pause(1000);
+//      sb = cs.getSensorStatus(65, 1006);
+//      Logger.trace("4 SensorStatus: " + sb.toLogString());
+//      cs.pause(1000);
+//      sb = cs.getSensorStatus(65, 1006);
+//      Logger.trace("5 SensorStatus: " + sb.toLogString());
 
 //      
       //cs.getMembers();

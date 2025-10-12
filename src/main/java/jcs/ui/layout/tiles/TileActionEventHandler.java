@@ -26,7 +26,7 @@ import org.tinylog.Logger;
 
 /**
  *
- * @author fransjacobs
+ * Handler for actions started from clicking on a tile
  */
 class TileActionEventHandler extends Thread {
 
@@ -73,7 +73,7 @@ class TileActionEventHandler extends Thread {
         } else {
           //lets sleep for a while
           synchronized (this) {
-            wait(10000);
+            wait(1000);
           }
         }
 

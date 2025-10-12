@@ -518,6 +518,7 @@ public abstract class Tile extends JComponent implements Serializable {
 
   public void setAccessoryBean(AccessoryBean accessoryBean) {
     this.accessoryBean = accessoryBean;
+    this.model.setAccessory(accessoryBean);
     if (accessoryBean != null) {
       accessoryId = accessoryBean.getId();
       if (accessoryBean.isSignal()) {
