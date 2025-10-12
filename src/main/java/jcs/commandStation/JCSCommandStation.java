@@ -147,7 +147,7 @@ public class JCSCommandStation {
     }
   }
 
-  public final synchronized boolean connectInBackground() {
+  public synchronized final boolean connectInBackground() {
     long now = System.currentTimeMillis();
     long start = now;
     long timemax = now + 3000;
@@ -339,8 +339,7 @@ public class JCSCommandStation {
         }
       }
     }
-
-    //TODO implement get the day end i.e. the current state of all Objects on track
+    
     return decoderControllerConnected;
   }
 

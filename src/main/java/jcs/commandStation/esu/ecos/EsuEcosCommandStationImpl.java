@@ -100,7 +100,7 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
   }
 
   @Override
-  public boolean connect() {
+  public final synchronized boolean connect() {
     if (!connected) {
       Logger.trace("Connecting to a " + (virtual ? "Virtual " : "") + "ESU ECoS Command Station...");
       if (executor == null || executor.isShutdown()) {

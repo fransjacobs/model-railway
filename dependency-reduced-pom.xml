@@ -4,7 +4,7 @@
   <groupId>jcs</groupId>
   <artifactId>jcs</artifactId>
   <name>JCS</name>
-  <version>0.0.3-SNAPSHOT</version>
+  <version>0.0.3</version>
   <description>Java Central Station</description>
   <url>https://github.com/fransjacobs/model-railway</url>
   <inceptionYear>2018</inceptionYear>
