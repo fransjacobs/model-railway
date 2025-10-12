@@ -278,7 +278,7 @@ public class CanMessage implements MarklinCan {
             || this.command == LOC_DECODER_READ
             || this.command == LOC_DECODER_WRITE
             || this.command == ACCESSORY_SWITCHING
-            || this.command == S88_EVENT
+            || this.command == S88_EVENT_QUERY
             || this.command == PING_REQ
             || this.command == STATUS_CONFIG
             || this.command == REQUEST_CONFIG_DATA;

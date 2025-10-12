@@ -507,7 +507,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     //Feedbackmodules can be queried from the Link S88 if available.
     //In case of a CS-3 Plus or CS-2 there should be a node "0" which could have max 32 S88 modules.
     //
-    //TODO: Test with CS-3 Plus and CS2.
+    //TODO: Test with CS-3 Plus and CS-2.
     //
     //Link S88
     List<FeedbackModule> feedbackModules = new ArrayList<>();

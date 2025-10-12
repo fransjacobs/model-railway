@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,6 +34,7 @@ import jcs.entities.BlockBean;
 import jcs.entities.BlockBean.BlockState;
 import static jcs.entities.BlockBean.BlockState.LOCKED;
 import jcs.entities.CommandStationBean;
+import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.RouteBean;
 import jcs.entities.SensorBean;
@@ -454,14 +456,7 @@ public final class AutoPilot {
         }
       }
     }
-
-    //if (Logger.isTraceEnabled()) {
-    //Logger.trace("There are " + activeLocomotives.size() + " Locomotives on the track: ");
-    //for (LocomotiveBean loc : activeLocomotives) {
-    //  Logger.trace(loc);
-    //}
-    //}
-    return activeLocomotives; //new ArrayList<>(activeLocomotives);
+    return activeLocomotives;
   }
 
   public static boolean isGostDetected() {
@@ -574,12 +569,23 @@ public final class AutoPilot {
       this.running = false;
       synchronized (this) {
         this.notifyAll();
-        //this.interrupt();
       }
     }
 
     boolean isRunning() {
       return this.running;
+    }
+
+    public static void restoreLocomotiveFunctions() {
+      List<LocomotiveBean> onTrackLocomotives = getOnTrackLocomotives();
+      Logger.trace("Restoring functions for " + onTrackLocomotives.size() + " locomotives");
+
+      for (LocomotiveBean locomotive : onTrackLocomotives) {
+        List<FunctionBean> functions = new LinkedList<>(locomotive.getFunctions().values());
+        for (FunctionBean function : functions) {
+          JCS.getJcsCommandStation().changeLocomotiveFunction(function.isOn(), function.getNumber(), locomotive);
+        }
+      }
     }
 
     private void refreshAllSensorValues() {
@@ -628,6 +634,8 @@ public final class AutoPilot {
 
       registerAllSensors();
       prepareAllDispatchers();
+
+      restoreLocomotiveFunctions();
 
       Logger.trace("Autopilot Started. There are " + dispatchers.size() + " Dispatchers created...");
 
