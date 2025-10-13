@@ -239,7 +239,8 @@ public class JCS extends Thread {
 
       //check the connection to the command station
       if (!JCS.getJcsCommandStation().isConnected()) {
-        JCS.getJcsCommandStation().connectInBackground();
+        Logger.info("Not connected to command station...");
+        //JCS.getJcsCommandStation().connectInBackground();
       }
 
     } else {
