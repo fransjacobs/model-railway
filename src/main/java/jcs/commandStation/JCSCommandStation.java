@@ -174,7 +174,14 @@ public class JCSCommandStation {
       Logger.trace("Connected to " + decoderController.getCommandStationBean().getDescription() + " in " + (now - start) + " ms");
       //Switch the track power on
       //TODO: make this configurable via property
-      this.decoderController.power(true);
+      boolean power = decoderController.power(true);
+
+      if (!isVirtual()) {
+        ConnectionEvent ce = new ConnectionEvent(commandStation.getDescription(), true);
+        for (ConnectionEventListener cel : connectionEventListeners) {
+          cel.onConnectionChange(ce);
+        }
+      }
 
     } else {
       Logger.trace("Timeout connecting...");
@@ -289,6 +296,7 @@ public class JCSCommandStation {
 
     if (decoderController != null && decoderController.isConnected()) {
       decoderController.addConnectionEventListener(new ControllerConnectionListener(this));
+
       decoderController.addPowerEventListener(new ControllerPowerListener(this));
 
       if (!locomotiveEventHandlerThread.isRunning()) {
@@ -339,7 +347,13 @@ public class JCSCommandStation {
         }
       }
     }
-    
+
+    boolean power = this.isPowerOn();
+    PowerEvent pe = new PowerEvent(power);
+    for (PowerEventListener pl : powerEventListeners) {
+      pl.onPowerChange(pe);
+    }
+
     return decoderControllerConnected;
   }
 

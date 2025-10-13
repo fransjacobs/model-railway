@@ -307,16 +307,18 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   private void setControllerProperties() {
     if (JCS.getJcsCommandStation() != null) {
       InfoBean info = JCS.getJcsCommandStation().getCommandStationInfo();
-      boolean connected = JCS.getJcsCommandStation().isConnected();
-      if (info != null) {
-        this.connectButton.setSelected(connected);
-        this.powerButton.setSelected(JCS.getJcsCommandStation().isPowerOn());
-      } else {
-        this.connectButton.setSelected(connected);
-        this.powerButton.setSelected(connected);
-      }
-      boolean virt = JCS.getJcsCommandStation().isVirtual();
-      virtualCBMI.setSelected(virt);
+
+      java.awt.EventQueue.invokeLater(() -> {
+        if (info != null) {
+          this.connectButton.setSelected(JCS.getJcsCommandStation().isConnected());
+          this.powerButton.setSelected(JCS.getJcsCommandStation().isPowerOn());
+        } else {
+          this.connectButton.setSelected(JCS.getJcsCommandStation().isConnected());
+          this.powerButton.setSelected(JCS.getJcsCommandStation().isConnected());
+        }
+        boolean virt = JCS.getJcsCommandStation().isVirtual();
+        virtualCBMI.setSelected(virt);
+      });
     }
   }
 
@@ -1280,13 +1282,13 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   private String getTitleString() {
     String jcsVersion = VersionInfo.getVersion();
 
-//    if (JCS.getJcsCommandStation() != null && JCS.getJcsCommandStation().getCommandStationInfo() != null && JCS.getJcsCommandStation().getCommandStationInfo().getProductName() != null) {
-//      InfoBean info = JCS.getJcsCommandStation().getCommandStationInfo();
-//      return "JCS " + "Connected to " + info.getProductName();
-//    } else {
-//      return "JCS " + jcsVersion + " - NOT Connected!";
-//    }
-    return "JCS " + jcsVersion;
+    if (JCS.getJcsCommandStation() != null && JCS.getJcsCommandStation().getCommandStationInfo() != null && JCS.getJcsCommandStation().getCommandStationInfo().getProductName() != null) {
+      InfoBean info = JCS.getJcsCommandStation().getCommandStationInfo();
+      return "JCS " + "Connected to " + info.getProductName();
+    } else {
+      return "JCS " + jcsVersion + " - NOT Connected!";
+    }
+    //return "JCS " + jcsVersion;
   }
 
   @Override
@@ -1297,18 +1299,24 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   @Override
   public void onConnectionChange(ConnectionEvent event) {
     if (event.isConnected()) {
-      connectMI.setText("DisConnect");
-      connectButton.setSelected(true);
-      if (JCS.getJcsCommandStation().isSupportVNC()) {
-        showVNCBtn.setEnabled(true);
-      } else {
-        showVNCBtn.setEnabled(false);
-      }
+      java.awt.EventQueue.invokeLater(() -> {
+        connectMI.setText("DisConnect");
+        connectButton.setSelected(true);
+        if (JCS.getJcsCommandStation().isSupportVNC()) {
+          showVNCBtn.setEnabled(true);
+        } else {
+          showVNCBtn.setEnabled(false);
+        }
+        setTitle(getTitleString());
+      });
     } else {
-      JOptionPane.showMessageDialog(this, "CommandStation " + event.getSource() + " is not connected.", "Not Connected", JOptionPane.ERROR_MESSAGE);
-      connectMI.setText("Connect");
-      connectButton.setSelected(false);
-      showVNCBtn.setEnabled(false);
+      java.awt.EventQueue.invokeLater(() -> {
+        connectMI.setText("Connect");
+        connectButton.setSelected(false);
+        showVNCBtn.setEnabled(false);
+        setTitle(getTitleString());
+        JOptionPane.showMessageDialog(this, "CommandStation " + event.getSource() + " is not connected.", "Not Connected", JOptionPane.ERROR_MESSAGE);
+      });
     }
   }
 
@@ -1316,7 +1324,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   public void onPowerChange(PowerEvent event) {
     boolean power = event.isPower();
     java.awt.EventQueue.invokeLater(() -> {
-      this.powerButton.setSelected(power);
+      powerButton.setSelected(power);
       if (event.isOverload()) {
         Logger.info("Power overload detected!");
         JOptionPane.showMessageDialog(this, "Power Overload detected!", "Overload", JOptionPane.ERROR_MESSAGE);

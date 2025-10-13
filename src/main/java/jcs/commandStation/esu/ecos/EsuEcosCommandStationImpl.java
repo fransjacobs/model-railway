@@ -52,6 +52,8 @@ import jcs.commandStation.autopilot.DriveSimulator;
 import jcs.commandStation.VirtualConnection;
 import jcs.commandStation.entities.Device;
 import jcs.commandStation.events.AllSensorEventsListener;
+import jcs.commandStation.events.ConnectionEvent;
+import jcs.commandStation.events.ConnectionEventListener;
 import static jcs.entities.AccessoryBean.AccessoryValue.GREEN;
 import static jcs.entities.AccessoryBean.AccessoryValue.RED;
 import jcs.entities.LocomotiveBean;
@@ -59,7 +61,7 @@ import jcs.entities.SensorBean;
 import jcs.util.Ping;
 import org.tinylog.Logger;
 
-public class EsuEcosCommandStationImpl extends AbstractController implements DecoderController, AccessoryController, FeedbackController {
+public class EsuEcosCommandStationImpl extends AbstractController implements DecoderController, AccessoryController, FeedbackController, ConnectionEventListener {
 
   private EcosConnection connection;
   private EventHandler eventMessageHandler;
@@ -258,6 +260,8 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
   public void disconnect() {
     try {
       if (connected) {
+        power(false);
+        
         Logger.trace("Unsubsribe from " + feedbackManager.getSize() + " feedback modules...");
         for (FeedbackModule fm : feedbackManager.getModules().values()) {
           connection.sendMessage(EcosMessageFactory.unSubscribeFeedbackModule(fm.getId()));
@@ -291,6 +295,21 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
       EcosConnectionFactory.disconnectAll();
     } catch (Exception ex) {
       Logger.error(ex);
+    }
+  }
+
+  @Override
+  public void onConnectionChange(ConnectionEvent event) {
+    String s = event.getSource();
+    boolean con = event.isConnected();
+    if (con) {
+      Logger.trace(s + " has re-connected");
+    } else {
+      disconnect();
+    }
+
+    for (ConnectionEventListener listener : connectionEventListeners) {
+      listener.onConnectionChange(event);
     }
   }
 

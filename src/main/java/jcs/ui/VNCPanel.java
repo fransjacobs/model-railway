@@ -68,25 +68,29 @@ public class VNCPanel extends JPanel {
   }
 
   private void initVnc() {
+    //Do not show these Future use...
+    this.commandStationCB.setVisible(false);
+    this.connectBtn.setVisible(false);
     try {
-      if (JCS.getJcsCommandStation() != null) {        
-        boolean virtual = "virtual".equals(JCS.getJcsCommandStation().getCommandStationBean().getId());       
+      if (JCS.getJcsCommandStation() != null) {
+        boolean virtual = "virtual".equals(JCS.getJcsCommandStation().getCommandStationBean().getId());
         virtual = virtual || JCS.getJcsCommandStation().getCommandStationBean().isVirtual();
-        
+
         if (!virtual) {
           addDrawingSurface();
           //clipboardMonitor.start();
           initialiseVernacularClient();
-          if (JCS.getJcsCommandStation().isConnected()) {
-            String ip = JCS.getJcsCommandStation().getCommandStationInfo().getIpAddress();
-            int port = DEFAULT_VNC_PORT;
 
-            if (Ping.IsReachable(ip)) {
-              connect(ip, port);
-            } else {
-              Logger.trace("Can't reach " + ip + " ...");
-            }
-          }
+//          if (JCS.getJcsCommandStation().isConnected()) {
+//            String ip = JCS.getJcsCommandStation().getCommandStationInfo().getIpAddress();
+//            int port = DEFAULT_VNC_PORT;
+//
+//            if (Ping.IsReachable(ip)) {
+//              connect(ip, port);
+//            } else {
+//              Logger.trace("Can't reach " + ip + " ...");
+//            }
+//          }
         }
       }
     } catch (Exception e) {
@@ -97,6 +101,7 @@ public class VNCPanel extends JPanel {
   private void addDrawingSurface() {
     this.viewerPanel.add(new JPanel() {
       private static final long serialVersionUID = -1852494391952623917L;
+
       @Override
       public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -233,6 +238,14 @@ public class VNCPanel extends JPanel {
     viewerPanel = new javax.swing.JPanel();
 
     setPreferredSize(new java.awt.Dimension(1024, 700));
+    addComponentListener(new java.awt.event.ComponentAdapter() {
+      public void componentHidden(java.awt.event.ComponentEvent evt) {
+        formComponentHidden(evt);
+      }
+      public void componentShown(java.awt.event.ComponentEvent evt) {
+        formComponentShown(evt);
+      }
+    });
     setLayout(new java.awt.BorderLayout());
 
     menuPanel.setPreferredSize(new java.awt.Dimension(1024, 40));
@@ -344,6 +357,22 @@ public class VNCPanel extends JPanel {
   private void connectBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectBtnActionPerformed
     // TODO add your handling code here:
   }//GEN-LAST:event_connectBtnActionPerformed
+
+  private void formComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_formComponentShown
+    if (JCS.getJcsCommandStation().isConnected()) {
+      String ip = JCS.getJcsCommandStation().getCommandStationInfo().getIpAddress();
+      int port = DEFAULT_VNC_PORT;
+
+      if (Ping.IsReachable(ip)) {
+        connect(ip, port);
+      }
+    }
+
+
+  }//GEN-LAST:event_formComponentShown
+
+  private void formComponentHidden(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_formComponentHidden
+  }//GEN-LAST:event_formComponentHidden
 
 //  private volatile boolean shutdown = false;
 //  private final Thread clipboardMonitor = new Thread(() -> {
