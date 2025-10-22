@@ -414,7 +414,7 @@ public final class AutoPilot {
     Logger.debug("Occupied blocks: " + occupiedBlockCounter + " Free blocks " + freeBlockCounter + " of total " + blocks.size() + " blocks");
   }
 
-  public static synchronized List<Dispatcher> getLocomotiveDispatchers() {
+  public static List<Dispatcher> getLocomotiveDispatchers() {
     return new ArrayList<>(dispatchers.values());
   }
 

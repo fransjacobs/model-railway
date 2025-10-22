@@ -38,15 +38,15 @@ public class LocomotiveDispatcherTableModel extends AbstractBeanTableModel<Dispa
   public void refresh() {
     if (AutoPilot.isAutoModeActive()) {
       setBeans(AutoPilot.getLocomotiveDispatchers());
-      Logger.trace("There are " + this.beans.size() + " dispatchers");
+      Logger.trace("There are " + beans.size() + " dispatchers");
 
-      for (Dispatcher ld : this.beans) {
+      for (Dispatcher ld : beans) {
         ld.addStateEventListener(this);
         Logger.trace("Listen to dispatcher " + ld.getName());
       }
     } else {
-      if (this.beans != null) {
-        for (Dispatcher ld : this.beans) {
+      if (beans != null) {
+        for (Dispatcher ld : beans) {
           ld.removeStateEventListener(this);
           Logger.trace("Remove Listen to dispatcher " + ld.getName());
         }
@@ -57,13 +57,13 @@ public class LocomotiveDispatcherTableModel extends AbstractBeanTableModel<Dispa
 
   @Override
   public void onStateChange(Dispatcher dispatcher) {
-    if (this.beans.contains(dispatcher)) {
+    if (beans.contains(dispatcher)) {
       //replace
-      int idx = this.beans.indexOf(dispatcher);
-      this.beans.set(idx, dispatcher);
+      int idx = beans.indexOf(dispatcher);
+      beans.set(idx, dispatcher);
       //Logger.trace("idx: "+idx+" "+dispatcher.getName()+" "+dispatcher.getDispatcherStateString());
       //table data changed is too much?
-      this.fireTableDataChanged();
+      fireTableDataChanged();
     }
   }
 
@@ -77,9 +77,9 @@ public class LocomotiveDispatcherTableModel extends AbstractBeanTableModel<Dispa
     Object idValue = bean.getName();
 
     if (idValue != null) {
-      for (int i = 0; i < this.beans.size(); i++) {
+      for (int i = 0; i < beans.size(); i++) {
         Dispatcher b = beans.get(i);
-        Object id = bean.getName();
+        Object id = b.getName();
 
         if (idValue.equals(id)) {
           row = i;

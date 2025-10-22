@@ -1,8 +1,8 @@
-# Java Central Station
+# JCS - Java Central Station
 
 🌐 **[Read this README in english](README.md)**
 
-🎯 Een hobbyproject om je modeltreinen zelfstandig te laten rijden — of om ze zelf te besturen, alles in Java.
+🎯 *Een open source project voor modelspoor automatisering.*
 
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](#license)  
 [![Release](https://img.shields.io/github/v/release/fransjacobs/model-railway)](https://github.com/fransjacobs/model-railway/releases)  
@@ -13,21 +13,26 @@
 
 ## 🚂 Over
 
-Java Central Station (JCS) is mijn persoonlijke passieproject om een modelspoorbaan tot leven te brengen met software.  
-Met JCS kun je je layout tekenen, treinen op de rails plaatsen en zien hoe ze van blok naar blok rijden — onder handmatige bediening of volledig geautomatiseerd.  
+JCS, Java Central Station, is een open source project om een modelspoorbaan tot leven te brengen met software.  
 
-Ik ben dit project begonnen uit nieuwsgierigheid (en plezier!) om te ontdekken hoe ver ik automatisering op een modelspoorbaan kon brengen zonder afhankelijk te zijn van gesloten, commerciële systemen. Inmiddels is het uitgegroeid tot een volledige tool die:
+Ik ben dit project begonnen uit nieuwsgierigheid (en plezier!),
+om te ontdekken hoe ver ik automatisering op een modelspoorbaan kon brengen,
+zonder afhankelijk te zijn van gesloten, commerciële systemen.
 
+Inmiddels is het uitgegroeid tot een volledige tool die:
+
+- een layout tekenen, en treinen laten rijden met *handmatige* of *automatische* bediening.
 - Werkt met centrales zoals de Märklin CS2/CS3, ESU ECoS, DCC-EX en HSI-S88.  
 - Je de mogelijkheid geeft om in Autopilot-modus te rijden of handmatig met de Driver Cab.  
 - Live feedback van sensoren en wissels op je layout toont.  
 - Een Virtueel Command Station bevat, zodat je ook zonder hardware kunt experimenteren.  
+- een "op afstand" scherm voor centrales die VNC onder steunen
 
-Het doel is niet om te concurreren met professionele producten, maar om iets open, uitbreidbaar en leuk te creëren — voor iedereen die graag met treinen en code knutselt. 🚉✨
+Het doel is niet om te concurreren met professionele producten, maar om iets open, uitbreidbaar en gemakkelijk te bedienen te creëren, — voor iedereen die graag met treinen en code knutselt. 🚉✨
 
 ## 🎯 Waarom dit project?
 
-De meeste commerciële oplossingen voor modelspoorautomatisering voelen als een **black box** — krachtig, maar gesloten, star en overkill voor (mijn) hobby-layout(s).  
+De meeste commerciële oplossingen voor modelspoorautomatisering voelen als een **black box** — met (heel) veel functionaliteit, maar gesloten, star en overkill voor mijn hobby-layout(s).  
 
 Ik begon **JCS** omdat ik iets anders wilde:  
 
@@ -159,7 +164,9 @@ Bijdragen zijn **altijd welkom**! Je kunt helpen door:
 
 - Bugs of issues te melden op de [GitHub Issues pagina](https://github.com/fransjacobs/model-railway/issues)  
 - Nieuwe functies of verbeteringen voor te stellen  
-- Pull requests in te dienen met fixes of uitbreidingen  
+- Pull requests in te dienen met fixes of uitbreidingen 
+- Chat of email
+- Kop koffie 
 
 Jouw input helpt JCS beter te maken voor iedereen.  
 
@@ -175,13 +182,6 @@ Heel veel dank aan iedereen die dit project ondersteunt!
 <table>
 <tr>
     <td align="center">
-        <a href="https://github.com/fransjacobs">
-            <img src="https://avatars.githubusercontent.com/u/41232225?v=4" width="100;" alt="frans"/>
-            <br />
-            <sub><b>Frans Jacobs</b></sub>
-        </a>
-    </td>
-    <td align="center">
         <a href="https://www.buymeacoffee.com/fransjacobs" target="_blank">
             <img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Trakteer me op een koffie" height="41" width="174"/>
         </a>
@@ -193,9 +193,8 @@ Heel veel dank aan iedereen die dit project ondersteunt!
 
 Ik hoop dat dit project je inspireert om **te experimenteren, knutselen en plezier te hebben met modeltreinen en code!**  
 
-— Frans
 
-## 📜 Copyright 2019 - 2025 Frans Jacobs
+## 📜 Copyright 2018 - 2025 Frans Jacobs
 
 Hierbij wordt gratis toestemming verleend aan iedereen die een kopie van deze software en bijbehorende documentatiebestanden (de "Software") verkrijgt om te werken met de Software **zonder enige beperking**, inclusief de rechten om te gebruiken, kopiëren, wijzigen, samenvoegen, publiceren, distribueren, sublicentiëren en/of verkopen van kopieën van de Software, en om personen aan wie de Software wordt verstrekt dit te doen, onder de volgende voorwaarden:
 

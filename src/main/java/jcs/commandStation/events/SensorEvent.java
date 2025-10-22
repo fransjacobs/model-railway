@@ -20,13 +20,13 @@ import jcs.entities.SensorBean;
 /**
  * Value change happened on a Sensor.
  */
-public class SensorEvent { 
+public class SensorEvent {
 
   private final SensorBean sensorBean;
   private final boolean newValue;
 
   public SensorEvent(SensorBean sensorBean) {
-    this(sensorBean, sensorBean.isActive());
+    this(sensorBean, sensorBean != null ? sensorBean.isActive() : false);
   }
 
   public SensorEvent(SensorBean sensorBean, boolean newValue) {

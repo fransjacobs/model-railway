@@ -445,6 +445,10 @@ public class JCSCommandStation {
     return commandStation != null && ("marklin.cs".equals(commandStation.getId()) || "esu-ecos".equals(commandStation.getId()));
   }
 
+  public boolean isSupportTrackMeasurements() {
+    return commandStation != null && decoderController != null && decoderController.isSupportTrackMeasurements();
+  }
+
   public Image getLocomotiveImage(String imageName) {
     Image image = null;
 
@@ -831,8 +835,10 @@ public class JCSCommandStation {
     for (FeedbackController fbc : feedbackControllers.values()) {
       SensorBean sb = fbc.getSensorStatus(sensorBean);
       SensorEvent se = new SensorEvent(sb);
-      sensorEventQueue.offer(se);
-      sensorBean.setActive(sb.isActive());
+      if (sb != null) {
+        sensorEventQueue.offer(se);
+        sensorBean.setActive(sb.isActive());
+      }
     }
     return sensorBean;
   }
