@@ -17,7 +17,6 @@ package jcs.ui;
 
 import javax.swing.JPanel;
 import jcs.ui.util.LocomotiveSelectionChangedListener;
-import org.tinylog.Logger;
 
 /**
  *
@@ -41,6 +40,7 @@ public class DispatcherStatusPanel extends JPanel {
     }
 
     tabsPane.setSelectedIndex(1);
+    dispatcherTablePanel.refresh();
   }
 
   public void showLocomotiveTab() {

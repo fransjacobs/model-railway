@@ -31,6 +31,8 @@ import org.tinylog.Logger;
  */
 public class StatusPanel extends javax.swing.JPanel implements MeasurementEventListener {
 
+  private static final long serialVersionUID = 7132844382832996985L;
+
   /**
    * Creates new form StatusPanel
    */
@@ -41,7 +43,17 @@ public class StatusPanel extends javax.swing.JPanel implements MeasurementEventL
 
   private void postInit() {
     if (JCS.getJcsCommandStation() != null) {
-      JCS.getJcsCommandStation().addMeasurementEventListener(this);
+      boolean supportMeasuments = JCS.getJcsCommandStation().isSupportTrackMeasurements();
+      if (supportMeasuments) {
+        JCS.getJcsCommandStation().addMeasurementEventListener(this);
+      }
+
+      this.connectedLbl.setVisible(supportMeasuments);
+      this.virtualConnectionLbl.setVisible(supportMeasuments);
+      this.autopilotLbl.setVisible(supportMeasuments);
+      this.currentLbl.setVisible(supportMeasuments);
+      this.voltageLbl.setVisible(supportMeasuments);
+      this.tempLbl.setVisible(supportMeasuments);
     }
   }
 

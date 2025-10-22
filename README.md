@@ -1,8 +1,9 @@
-# Java Central Station (JCS)
+# JCS - Java Central Station
 
 🌐 **[Lees deze README in het Nederlands](LEESMIJ.md)**
 
-*A hobbyist open-source project to automate model railways, written in Java.*
+🎯 *An open-source project to automate model railways.*
+
 
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](#license)  
 [![Release](https://img.shields.io/github/v/release/fransjacobs/model-railway)](https://github.com/fransjacobs/model-railway/releases)  
@@ -144,6 +145,8 @@ We welcome all kinds of contributions:
 - Help with docs (especially translations)  
 - Test writing  
 - GUI / UX improvements  
+- A Chat or email 
+- Cup of coffee
 
 Please follow the project’s conventions and open an issue to discuss large changes.
 
@@ -155,6 +158,32 @@ This project is licensed under **Apache‑2.0**. See the [LICENSE](LICENSE) file
 
 Thanks to all contributors, testers, and model railway enthusiasts who help make JCS better every day.  
 
----
+<table>
+<tr>
+    <td align="center">
+        <a href="https://www.buymeacoffee.com/fransjacobs" target="_blank">
+            <img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy me a coffee" height="41" width="174"/>
+        </a>
+        <br />
+        <sub>Support this project and keep the trains rolling!</sub>
+    </td>
+</tr>
+</table>
 
-*Frans Jacobs — 2019–2025*
+
+
+## 📜 Copyright 2018 - 2025 Frans Jacobs
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+**WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND**, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+> Thanks for being a part of the JCS-community — every contribution, suggestion or cup of coffee keeps this project alive! 🚂✨
