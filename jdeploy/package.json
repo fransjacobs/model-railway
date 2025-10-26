@@ -1,0 +1,34 @@
+{
+    "bin": {"jcs": "jdeploy-bundle/jdeploy.js"},
+    "author": "Frans Jacobs",
+    "description": "JCS is model raiway automation software",
+    "main": "index.js",
+    "preferGlobal": true,
+    "repository": "",
+    "version": "0.0.3",
+    "jdeploy": {
+        "jdk": false,
+        "fallbackToUniversal": false,
+        "generateLegacyBundles": false,
+        "publishTargets": [],
+        "javaVersion": "21",
+        "permissions": [{"name": "local_network"}],
+        "jar": "jcs-0.0.3.jar",
+        "javafx": false,
+        "title": "JCS 0.0.3 SNAPSHOT",
+        "downloadPage": {"platforms": ["default"]},
+        "platformBundlesEnabled": false
+    },
+    "dependencies": {
+        "command-exists-promise": "^2.0.2",
+        "node-fetch": "2.6.7",
+        "tar": "^4.4.8",
+        "yauzl": "^2.10.0",
+        "shelljs": "^0.8.4"
+    },
+    "license": "Apache",
+    "name": "JCS-0.0.3-SNAPSHOT",
+    "files": ["jdeploy-bundle"],
+    "scripts": {"test": "echo \"Error: no test specified\" && exit 1"},
+    "homepage": "https://github.com/fransjacobs/model-railway"
+}

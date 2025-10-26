@@ -1162,6 +1162,7 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
         String id = accessory.getId();
         AccessoryBean dbAccessory = PersistenceFactory.getService().getAccessory(id);
         boolean store = true;
+
         if (dbAccessory != null && accessory.getId().equals(dbAccessory.getId())) {
           if (dbAccessory.isSynchronize()) {
             Logger.trace("Accessory id: " + accessory.getId() + ", " + accessory.getName() + " Addres: " + accessory.getAddress() + " Exists");
@@ -1175,6 +1176,13 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
           Logger.trace("New Accessory, id:" + accessory.getId() + ", " + accessory.getName() + " Addres: " + accessory.getAddress());
           accessory.setSynchronize(true);
           accessory.setSource(importedFrom);
+        }
+
+        if (accessory.getAddress() == null) {
+          //store = false;
+          //use id as address.....?
+          accessory.setAddress(Integer.parseInt(accessory.getId()));
+          Logger.warn("Accessory " + id + " does not have an address?");
         }
 
         if (store) {
