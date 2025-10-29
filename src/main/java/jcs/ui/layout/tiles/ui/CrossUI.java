@@ -17,10 +17,15 @@ package jcs.ui.layout.tiles.ui;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Graphics2D;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.geom.Ellipse2D;
 import javax.swing.JComponent;
 import javax.swing.plaf.ComponentUI;
+import jcs.commandStation.events.AccessoryEvent;
 import jcs.entities.AccessoryBean;
 import static jcs.entities.AccessoryBean.AccessoryValue.GREEN;
 import static jcs.entities.AccessoryBean.AccessoryValue.RED;
@@ -30,9 +35,11 @@ import static jcs.entities.TileBean.Orientation.SOUTH;
 import static jcs.entities.TileBean.Orientation.WEST;
 import jcs.ui.layout.tiles.Cross;
 import jcs.ui.layout.tiles.Tile;
+import jcs.ui.layout.tiles.TileCache;
 import jcs.ui.layout.tiles.TileModel;
+import org.tinylog.Logger;
 
-public class CrossUI extends TileUI {
+public class CrossUI extends TileUI implements MouseListener, MouseMotionListener {
 
   public CrossUI() {
     super();
@@ -40,6 +47,20 @@ public class CrossUI extends TileUI {
 
   public static ComponentUI createUI(JComponent c) {
     return new CrossUI();
+  }
+
+  @Override
+  public void installUI(JComponent c) {
+    Tile tile = (Tile) c;
+    tile.addMouseListener(this);
+    tile.addMouseMotionListener(this);
+  }
+
+  @Override
+  public void uninstallUI(JComponent c) {
+    Tile tile = (Tile) c;
+    tile.removeMouseListener(this);
+    tile.removeMouseMotionListener(this);
   }
 
   protected void renderStraight(Graphics2D g2, Color color) {
@@ -326,6 +347,68 @@ public class CrossUI extends TileUI {
     g2d.setColor(color);
     g2d.fill(new Ellipse2D.Double(dX1, dY1, size, size));
     g2d.fill(new Ellipse2D.Double(dX2, dY2, size / 2, size / 2));
+  }
+
+  @Override
+  public void mousePressed(MouseEvent e) {
+    //Only JCS is in CONTROL mode (readonly) activate accessory action events. 
+    if (isControlMode((Component) e.getSource()) && e.getButton() == MouseEvent.BUTTON1) {
+      Tile tile = (Tile) e.getSource();
+      tile.setActive(!tile.isActive());
+
+      if (tile.getAccessoryBean() != null) {
+        AccessoryBean ab = tile.getAccessoryBean();
+        ab.toggle();
+        tile.setAccessoryValue(ab.getAccessoryValue());
+
+        AccessoryEvent aae = new AccessoryEvent(ab);
+        TileCache.enqueTileAction(aae);
+        Logger.trace("Changing Tile " + tile.getId() + " Accessory " + ab.getId() + " to " + ab.getAccessoryValue().getValue() + "...");
+      }
+    } else {
+      redispatchToParent(e);
+    }
+  }
+
+  @Override
+  public void mouseReleased(MouseEvent e) {
+    redispatchToParent(e);
+  }
+
+  @Override
+  public void mouseClicked(MouseEvent e) {
+    redispatchToParent(e);
+  }
+
+  @Override
+  public void mouseEntered(MouseEvent e) {
+    Tile tile = (Tile) e.getSource();
+    String toolTipText = tile.getId();
+    if (tile.getAccessoryBean() != null) {
+      toolTipText = toolTipText + "; Id: " + tile.getAccessoryBean().getId();
+    }
+    tile.setToolTipText(toolTipText);
+    redispatchToParent(e);
+  }
+
+  @Override
+  public void mouseExited(MouseEvent e) {
+    //Logger.trace("Mouse button " + e.getButton() + " @ (" + e.getXOnScreen() + ",");
+    Tile tile = (Tile) e.getSource();
+    tile.setToolTipText(null);
+    redispatchToParent(e);
+  }
+
+  @Override
+  public void mouseDragged(MouseEvent e) {
+    //Logger.trace("Mouse button " + e.getButton() + " @ (" + e.getXOnScreen() + "," + e.getYOnScreen());
+    redispatchToParent(e);
+  }
+
+  @Override
+  public void mouseMoved(MouseEvent e) {
+    //Logger.trace("Mouse button " + e.getButton() + " @ (" + e.getXOnScreen() + "," + e.getYOnScreen());
+    redispatchToParent(e);
   }
 
 }

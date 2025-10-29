@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.UIManager;
+import jcs.commandStation.events.AccessoryEventListener;
 import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.TileBean;
 import jcs.entities.TileBean.Direction;
@@ -43,7 +44,7 @@ import jcs.ui.layout.tiles.ui.TileUI;
 /**
  * Representation of a Cross switch on the layout
  */
-public class Cross extends Switch {
+public class Cross extends Switch implements AccessoryEventListener {
 
   public static final int CROSS_WIDTH = DEFAULT_WIDTH * 2;
   public static final int CROSS_HEIGHT = DEFAULT_HEIGHT * 2;
@@ -55,6 +56,7 @@ public class Cross extends Switch {
   public static final Color VERY_LIGHT_GREEN = new Color(102, 255, 102);
   public static final Color LIGHT_GREEN = new Color(0, 255, 51);
   public static final Color DARK_GREEN = new Color(0, 153, 0);
+  private static final long serialVersionUID = 471193107877761707L;
 
   public Cross(Orientation orientation, Direction direction, Point center) {
     this(orientation, direction, center.x, center.y);
