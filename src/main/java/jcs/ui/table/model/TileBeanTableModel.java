@@ -62,7 +62,7 @@ public class TileBeanTableModel extends AbstractBeanTableModel<TileBean> {
         case "Turnout Right" ->
           direction = TileBean.Direction.RIGHT;
         case "Cross Right" ->
-          direction = TileBean.Direction.LEFT;
+          direction = TileBean.Direction.RIGHT;
         default ->
           direction = TileBean.Direction.CENTER;
       }
@@ -77,8 +77,8 @@ public class TileBeanTableModel extends AbstractBeanTableModel<TileBean> {
         image = ImageUtil.rotate(image, 90);
       }
 
-      int height = image.getHeight(null);
-      int width = image.getWidth(null);
+      //int height = image.getHeight(null);
+      //int width = image.getWidth(null);
       tb.setTileIcon(new ImageIcon(image));
 
       tileBeans.add(tb);
@@ -86,7 +86,7 @@ public class TileBeanTableModel extends AbstractBeanTableModel<TileBean> {
 
     Logger.trace("In total there are " + tileBeans.size() + " TileBeans");
 
-    this.setBeans(tileBeans);
+    setBeans(tileBeans);
   }
 
   /**

@@ -146,7 +146,7 @@ public class LayoutCanvas extends JPanel {
   }
 
   /**
-   * Initialize Dialog's
+   * Initialize Dialogs
    */
   private void postInit() {
     routesDialog = new RoutesDialog(getParentFrame(), false, this, readonly);

@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
@@ -71,7 +72,7 @@ class EcosTCPConnection implements EcosConnection {
     } catch (IOException ex) {
       clientSocket = null;
       Logger.error("Can't (re)connect with ESU Ecos " + ecosAddress.getHostAddress() + ". Cause: " + ex.getMessage());
-      Logger.trace(ex);
+      //Logger.trace(ex);
     }
   }
 
