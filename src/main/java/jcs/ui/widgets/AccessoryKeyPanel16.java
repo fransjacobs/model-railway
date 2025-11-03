@@ -125,11 +125,11 @@ public class AccessoryKeyPanel16 extends JPanel {
         button.setForeground(new Color(0, 0, 0));
       }
       AccessoryStatusListener asl = new AccessoryStatusListener(button, address);
-      if(ab != null && ab.getId() != null) {
+      if (ab != null && ab.getId() != null) {
         JCS.getJcsCommandStation().addAccessoryEventListener(ab.getId(), asl);
       } else {
         //Logger.trace("Can't add button "+button.getText()+" as an AccessoryListener because the is no AccessoryBean...");
-      }  
+      }
     }
   }
 
@@ -444,7 +444,7 @@ public class AccessoryKeyPanel16 extends JPanel {
     Logger.trace("ID: " + id + " Value: " + value);
 
     if (JCS.getJcsCommandStation() != null) {
-      AccessoryBean a = new AccessoryBean(id, address, (name != null ? name : actionCommand), null, (selected ? 1 : 0), null, null, null, commandStationId);
+      AccessoryBean a = new AccessoryBean(id, address, null, (name != null ? name : actionCommand), null, (selected ? 1 : 0), null, null, null, commandStationId);
 
       JCS.getJcsCommandStation().switchAccessory(a, value);
     }

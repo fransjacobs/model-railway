@@ -30,6 +30,7 @@ public class AccessoryBean {
 
   private String id;
   private Integer address;
+  private Integer address2;
   private String name;
   private String type;
   private Integer state;
@@ -47,17 +48,18 @@ public class AccessoryBean {
   private boolean locked;
 
   public AccessoryBean() {
-    this(null, null, null, null, null, null, null, null, null);
+    this(null, null, null, null, null, null, null, null, null, null);
   }
 
-  public AccessoryBean(String id, Integer address, String name, String type, Integer state, Integer switchTime, String protocol, String decoder, String commandStationId) {
-    this(id, address, name, type, state, null, switchTime, protocol, decoder, null, null, null, commandStationId);
+  public AccessoryBean(String id, Integer address, Integer address2, String name, String type, Integer state, Integer switchTime, String protocol, String decoder, String commandStationId) {
+    this(id, address, address2, name, type, state, null, switchTime, protocol, decoder, null, null, null, commandStationId);
   }
 
-  public AccessoryBean(String id, Integer address, String name, String type, Integer state, Integer states, Integer switchTime, String protocol,
+  public AccessoryBean(String id, Integer address, Integer address2, String name, String type, Integer state, Integer states, Integer switchTime, String protocol,
           String decoder, String group, String icon, String iconFile, String commandStationId) {
     this.id = id;
     this.address = address;
+    this.address2 = address2;
     this.name = name;
     this.type = type;
     this.state = state;
@@ -88,6 +90,15 @@ public class AccessoryBean {
 
   public void setAddress(Integer address) {
     this.address = address;
+  }
+
+  @Column(name = "address2", nullable = true)
+  public Integer getAddress2() {
+    return address2;
+  }
+
+  public void setAddress2(Integer address) {
+    this.address2 = address;
   }
 
   @Column(name = "name", length = 255, nullable = false)
@@ -129,18 +140,18 @@ public class AccessoryBean {
   @Transient
   public void toggle() {
     // based on number of states
-    if (this.states == null) {
-      this.states = 2;
+    if (states == null) {
+      states = 2;
     }
-    int s = this.states;
+
+    int s = states;
     if (s == 0) {
       s = 2;
     }
 
-    if (this.state == null) {
-      this.state = 0;
-    }
-
+    //if (state == null) {
+    //  state = 0;
+    //}
     s = s - 1;
     state = state + 1;
 
@@ -151,21 +162,21 @@ public class AccessoryBean {
 
   @Transient
   public AccessoryValue getAccessoryValue() {
-    if (this.state != null) {
-      return AccessoryValue.get(this.state);
+    if (state != null) {
+      return AccessoryValue.get(state);
     } else {
       return AccessoryValue.OFF;
     }
   }
 
   public void setAccessoryValue(AccessoryValue accessoryValue) {
-    this.setState(accessoryValue.getState());
+    setState(accessoryValue.getState());
   }
 
   @Transient
   public SignalValue getSignalValue() {
-    if (this.state != null) {
-      return SignalValue.csGet(this.state);
+    if (state != null) {
+      return SignalValue.csGet(state);
     } else {
       return SignalValue.OFF;
     }
@@ -176,7 +187,7 @@ public class AccessoryBean {
   }
 
   public void setAccessoryValue(SignalValue signalValue) {
-    this.setState(signalValue.getCSValue());
+    setState(signalValue.getCSValue());
   }
 
   @Column(name = "switch_time")
@@ -272,6 +283,7 @@ public class AccessoryBean {
   public void copyInto(AccessoryBean other) {
     this.id = other.id;
     this.address = other.address;
+    this.address2 = other.address2;
     this.name = other.name;
     this.type = other.type;
     this.state = other.state;
@@ -321,6 +333,7 @@ public class AccessoryBean {
     sb.append("AccessoryBean{");
     sb.append("id=").append(id);
     sb.append(", address=").append(address);
+    sb.append(", address2=").append(address2);
     sb.append(", name=").append(name);
     sb.append(", type=").append(type);
     sb.append(", position=").append(state);
@@ -343,6 +356,7 @@ public class AccessoryBean {
     int hash = 7;
     hash = 67 * hash + Objects.hashCode(this.id);
     hash = 67 * hash + Objects.hashCode(this.address);
+    hash = 67 * hash + Objects.hashCode(this.address2);
     hash = 67 * hash + Objects.hashCode(this.name);
     hash = 67 * hash + Objects.hashCode(this.type);
     hash = 67 * hash + Objects.hashCode(this.state);
@@ -407,6 +421,9 @@ public class AccessoryBean {
     if (!Objects.equals(this.address, other.address)) {
       return false;
     }
+    if (!Objects.equals(this.address2, other.address2)) {
+      return false;
+    }
     if (!Objects.equals(this.state, other.state)) {
       return false;
     }
@@ -417,7 +434,7 @@ public class AccessoryBean {
   }
 
   public enum AccessoryValue {
-    RED("Red"), GREEN("Green"), WHITE("White"), YELLOW("Yellow"), OFF("Off");
+    RED("Red"), RED2("Red2"), GREEN("Green"), WHITE("White"), YELLOW("Yellow"), OFF("Off");
 
     private final String value;
     private static final Map<String, AccessoryValue> ENUM_MAP;
@@ -431,7 +448,7 @@ public class AccessoryBean {
     }
 
     public String getDBValue() {
-      return translate2DBValue(this.value);
+      return translate2DBValue(value);
     }
 
     static {
@@ -482,7 +499,18 @@ public class AccessoryBean {
     }
 
     public Integer getState() {
-      return AccessoryValue.GREEN.getValue().equals(this.value) ? 1 : 0;
+      AccessoryValue av = get(value);
+      return switch (av) {
+        case GREEN ->
+          1;
+        case RED ->
+          0;
+        case RED2 ->
+          2;
+        default ->
+          1;
+      };
+      //return AccessoryValue.GREEN.getValue().equals(value) ? 1 : 0;
     }
 
     public static AccessoryValue get(Integer state) {
@@ -588,7 +616,7 @@ public class AccessoryBean {
       }
     }
 
-    //TODO move this to Markil Command station as it is Marklin specific
+    //TODO move this to Marklin Command station as it is Marklin specific
     public static SignalType getSignalType(String marklinType) {
       return ENUM_MAP.get(translateSignalString(marklinType));
     }

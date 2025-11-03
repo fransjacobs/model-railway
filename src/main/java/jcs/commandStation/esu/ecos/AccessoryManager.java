@@ -83,7 +83,7 @@ class AccessoryManager implements AccessoryEventListener {
     String id = values.get(Ecos.ID).toString();
     AccessoryBean accessory;
     if (accessories.containsKey(id)) {
-      accessory = this.accessories.get(id);
+      accessory = accessories.get(id);
     } else {
       accessory = new AccessoryBean();
       accessory.setId(id);
@@ -93,6 +93,7 @@ class AccessoryManager implements AccessoryEventListener {
         accessory.setCommandStationId(EcosMessage.ECOS_COMMANDSTATION_ID);
       }
     }
+
     if (values.containsKey(Ecos.NAME1)) {
       String name1 = values.get(Ecos.NAME1).toString();
       accessory.setName(name1);
@@ -152,8 +153,13 @@ class AccessoryManager implements AccessoryEventListener {
           value = AccessoryBean.AccessoryValue.GREEN;
         case "1" ->
           value = AccessoryBean.AccessoryValue.RED;
-        case "2" ->
-          value = AccessoryBean.AccessoryValue.WHITE;
+        case "2" -> {
+          if (accessory.isTurnout()) {
+            value = AccessoryBean.AccessoryValue.RED2;
+          } else {
+            value = AccessoryBean.AccessoryValue.WHITE;
+          }
+        }
         case "3" ->
           value = AccessoryBean.AccessoryValue.YELLOW;
         default ->
@@ -161,17 +167,43 @@ class AccessoryManager implements AccessoryEventListener {
       }
       accessory.setAccessoryValue(value);
 
-      if (event) {
-        AccessoryEvent ae = new AccessoryEvent(accessory);
-        this.ecosCommandStation.fireAccessoryEventListeners(ae);
-      }
-
+      //if (event) {
+      //  AccessoryEvent ae = new AccessoryEvent(accessory);
+      //  ecosCommandStation.fireAccessoryEventListeners(ae);
+      //}
     }
 
     if (values.containsKey(Ecos.ADDREXT)) {
       String addrext = values.get(Ecos.ADDREXT).toString();
-      //contains the addresses also in case of multi addresses.
-      //accessory.setName(name);
+      Integer address = accessory.getAddress();
+      Integer address2 = null;
+      if (addrext != null) {
+        String ae[] = addrext.split(",");
+        for (int i = 0; i < ae.length; i++) {
+          try {
+            //filter the switch values to obtain a address
+            String a = ae[i].replaceAll("g", "").replaceAll("r", "");
+            int addressExt = Integer.parseInt(a);
+            //Extended address are enties 2 and 3
+            if (i > 1) {
+              //addresses are no equal so mustbe the extension...
+              address2 = addressExt;
+            } else {
+              if (address == null) {
+                address = addressExt;
+              }
+            }
+          } catch (NumberFormatException e) {
+            //ignore 
+            Logger.trace("Filtered ADDREXT: " + addrext + " does not contain a number.");
+          }
+        }
+      }
+
+      if (accessory.getAddress() == null) {
+        accessory.setAddress(address);
+      }
+      accessory.setAddress2(address2);
     }
 
     if (values.containsKey(Ecos.DURATION)) {
@@ -197,10 +229,69 @@ class AccessoryManager implements AccessoryEventListener {
 
     if (values.containsKey(Ecos.SWITCHING)) {
       String var = values.get(Ecos.SWITCHING).toString();
-
-      if (event) {
-
+      //an accessory has changed value
+      AccessoryBean.AccessoryValue value;
+      switch (var) {
+        case "0" ->
+          value = AccessoryBean.AccessoryValue.GREEN;
+        case "1" ->
+          value = AccessoryBean.AccessoryValue.RED;
+        case "2" -> {
+          if (accessory.isTurnout()) {
+            value = AccessoryBean.AccessoryValue.RED2;
+          } else {
+            value = AccessoryBean.AccessoryValue.WHITE;
+          }
+        }
+        case "3" ->
+          value = AccessoryBean.AccessoryValue.YELLOW;
+        default ->
+          value = AccessoryBean.AccessoryValue.GREEN;
       }
+      accessory.setAccessoryValue(value);
+
+//      if (event) {
+//        AccessoryEvent ae = new AccessoryEvent(accessory);
+//        ecosCommandStation.fireAccessoryEventListeners(ae);
+//
+//      }
+    }
+
+    //Checks
+    Integer adrs = accessory.getAddress();
+    Integer adrsExt = accessory.getAddress2();
+
+    if (adrs == null) {
+      Logger.warn("Accessory " + accessory.getId() + " does not have an address?");
+      try {
+        Integer idInt = Integer.parseInt(accessory.getId());
+        adrs = idInt;
+        accessory.setAddress(adrs);
+      } catch (NumberFormatException e) {
+        //ignore for this check
+      }
+    }
+
+    //Check address and address 2
+    if (adrs != null && adrs.equals(adrsExt)) {
+      accessory.setAddress2(null);
+      Logger.trace("Reset address2 for address: " + accessory.getAddress());
+    }
+
+    //also check against the id in case the id is a number
+    try {
+      Integer idInt = Integer.parseInt(accessory.getId());
+      if (idInt.equals(accessory.getAddress2())) {
+        accessory.setAddress2(null);
+        Logger.trace("Reset address2 for id: " + idInt);
+      }
+    } catch (NumberFormatException e) {
+      //ignore for this check
+    }
+
+    if (event) {
+      AccessoryEvent ae = new AccessoryEvent(accessory);
+      ecosCommandStation.fireAccessoryEventListeners(ae);
     }
 
     return accessory;
@@ -220,8 +311,20 @@ class AccessoryManager implements AccessoryEventListener {
 
   AccessoryBean getAccessory(Integer address) {
     AccessoryBean result = null;
-    for (AccessoryBean accessory : this.accessories.values()) {
+    for (AccessoryBean accessory : accessories.values()) {
       if (address.equals(accessory.getAddress())) {
+        result = accessory;
+        break;
+      }
+    }
+
+    return result;
+  }
+
+  AccessoryBean getAccessoryViaAddress2(Integer address2) {
+    AccessoryBean result = null;
+    for (AccessoryBean accessory : accessories.values()) {
+      if (address2.equals(accessory.getAddress2())) {
         result = accessory;
         break;
       }
@@ -245,11 +348,11 @@ class AccessoryManager implements AccessoryEventListener {
   public void onAccessoryChange(AccessoryEvent accessoryEvent) {
     AccessoryBean ab = accessoryEvent.getAccessoryBean();
     String id = accessoryEvent.getAccessoryBean().getId();
-    if (!this.accessories.containsKey(id)) {
+    if (!accessories.containsKey(id)) {
       id = findId(ab.getAddress());
     }
 
-    AccessoryBean accessory = this.accessories.get(id);
+    AccessoryBean accessory = accessories.get(id);
     if (accessory != null) {
       accessory.setAccessoryValue(ab.getAccessoryValue());
     }
@@ -412,6 +515,7 @@ class AccessoryManager implements AccessoryEventListener {
 //20005 name1["Sein mini"]20005 name2["artikel"]20005 name3[">0001<"]20005 addr[16]20005 protocol[MM]20005 mode[SWITCH]20005 symbol[13]20005
 //state[0]20005 type[ACCESSORY]20005 addrext[16g,16r]20005 duration[500]20005 gates[2]20005 variant[0]20005 position[ok]20005 switching[0]
 //  <END 0 (OK, but obsolete attribute at 64)>
+
 
 ////
 //<EVENT 20000>20000 switching[1]<END 0 (OK)>

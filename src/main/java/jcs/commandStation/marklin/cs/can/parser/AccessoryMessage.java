@@ -58,7 +58,7 @@ public class AccessoryMessage {
       int position = data[4];
 
       String id = Integer.toString(address);
-      AccessoryBean accessoryBean = new AccessoryBean(id, address, null, null, position, null, protocol, null, CanMessage.MARKLIN_COMMANDSTATION_ID);
+      AccessoryBean accessoryBean = new AccessoryBean(id, address, null, null, null, position, null, protocol, null, CanMessage.MARKLIN_COMMANDSTATION_ID);
 
       if (CanMessage.DLC_8 == dlc) {
         int switchTime = CanMessage.toInt(new byte[]{data[6], data[7]});

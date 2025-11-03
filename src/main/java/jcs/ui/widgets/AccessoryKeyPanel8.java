@@ -271,7 +271,7 @@ public class AccessoryKeyPanel8 extends JPanel {
     Logger.trace("ID: " + id + " Value: " + value);
 
     if (JCS.getJcsCommandStation() != null) {
-      AccessoryBean a = new AccessoryBean(id, address, (name != null ? name : actionCommand), null, (selected ? 1 : 0), null, null, null, commandStationId);
+      AccessoryBean a = new AccessoryBean(id, address, null, (name != null ? name : actionCommand), null, (selected ? 1 : 0), null, null, null, commandStationId);
 
       JCS.getJcsCommandStation().switchAccessory(a, value);
     }

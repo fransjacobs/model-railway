@@ -390,6 +390,7 @@ public class TileBean implements Comparable, Serializable {
     CURVED("Curved"),
     SWITCH("Switch"),
     CROSS("Cross"),
+    THREEWAY("ThreeWay"),
     SIGNAL("Signal"),
     SENSOR("Sensor"),
     BLOCK("Block"),

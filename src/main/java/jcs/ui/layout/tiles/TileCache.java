@@ -58,6 +58,7 @@ public class TileCache {
   private static int crossingIdSeq;
   private static int curvedIdSeq;
   private static int switchIdSeq;
+  private static int threeWaySwitchIdSeq;
   private static int crossIdSeq;
   private static int signalIdSeq;
   private static int sensorIdSeq;
@@ -105,6 +106,10 @@ public class TileCache {
       case SWITCH -> {
         switchIdSeq++;
         return "sw-" + switchIdSeq;
+      }
+      case THREEWAY -> {
+        threeWaySwitchIdSeq++;
+        return "tw-" + threeWaySwitchIdSeq;
       }
       case CROSS -> {
         crossIdSeq++;
@@ -170,6 +175,20 @@ public class TileCache {
         tile.setAccessoryBean(tileBean.getAccessoryBean());
 
         switchIdSeq = maxIdSeq(switchIdSeq, getIdSeq(tileBean.getId()));
+        if (showValues && tileBean.getAccessoryBean() != null) {
+          tile.setAccessoryValue((tileBean.getAccessoryBean()).getAccessoryValue());
+        }
+        if (tileBean.getAccessoryBean() != null && tileBean.getAccessoryBean().getId() != null) {
+          JCS.getJcsCommandStation().addAccessoryEventListener(tileBean.getAccessoryBean().getId(), (AccessoryEventListener) tile);
+        } else {
+          Logger.trace("Can't add tile " + tile.getId() + " as an AccessorListener as the AccessoryId is null...");
+        }
+      }
+      case THREEWAY -> {
+        tile = new ThreeWaySwitch(tileBean);
+        tile.setAccessoryBean(tileBean.getAccessoryBean());
+
+        threeWaySwitchIdSeq = maxIdSeq(threeWaySwitchIdSeq, getIdSeq(tileBean.getId()));
         if (showValues && tileBean.getAccessoryBean() != null) {
           tile.setAccessoryValue((tileBean.getAccessoryBean()).getAccessoryValue());
         }
@@ -278,6 +297,8 @@ public class TileCache {
         tile = new Curved(orientation, center);
       case SWITCH ->
         tile = new Switch(orientation, direction, center);
+      case THREEWAY ->
+        tile = new ThreeWaySwitch(orientation, direction, center);
       case CROSS ->
         tile = new Cross(orientation, direction, center);
       case SIGNAL ->
@@ -314,6 +335,9 @@ public class TileCache {
       }
       case SWITCH -> {
         switchIdSeq--;
+      }
+      case THREEWAY -> {
+        threeWaySwitchIdSeq--;
       }
       case CROSS -> {
         crossIdSeq--;
@@ -576,7 +600,7 @@ public class TileCache {
 
   public static void enqueTileAction(AccessoryEvent accessoryEvent) {
     eventsQueue.offer(new ActionEventWrapper(accessoryEvent));
-    
+
     synchronized (TileCache.actionEventQueueHandler) {
       actionEventQueueHandler.notifyAll();
     }
@@ -633,6 +657,5 @@ public class TileCache {
         }
       }
     }
-
   }
 }
