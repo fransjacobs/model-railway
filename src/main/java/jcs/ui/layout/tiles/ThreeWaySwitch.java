@@ -38,7 +38,7 @@ import org.tinylog.Logger;
 /**
  * Representation of a Switch or Turnout on the layout
  */
-public class ThreeWaySwitch extends Tile implements AccessoryEventListener {
+public class ThreeWaySwitch extends Switch implements AccessoryEventListener {
 
   public ThreeWaySwitch(Orientation orientation, Direction direction, Point center) {
     this(orientation, direction, center.x, center.y);

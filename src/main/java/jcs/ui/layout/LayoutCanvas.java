@@ -273,10 +273,10 @@ public class LayoutCanvas extends JPanel {
     }
   }
 
-  private void loadLayout() {
-    List<Tile> tiles = TileCache.loadTiles(readonly);
-    loadTiles(tiles);
-  }
+//  private void loadLayout() {
+//    List<Tile> tiles = TileCache.loadTiles(readonly);
+//    loadTiles(tiles);
+//  }
 
   private void loadTiles(List<Tile> tiles) {
     removeAll();
@@ -313,7 +313,6 @@ public class LayoutCanvas extends JPanel {
         tile.setDrawCenterPoint(showCenter);
       }
     }
-
   }
 
   private void mouseMoveAction(MouseEvent evt) {
@@ -347,7 +346,7 @@ public class LayoutCanvas extends JPanel {
       case CONTROL -> {
         if (selectedTile != null) {
           if (evt.getButton() == MouseEvent.BUTTON1) {
-            executeControlActionForTile(selectedTile, snapPoint);
+            executeControlActionForTile(selectedTile);
           } else {
             if (selectedTile.isBlock()) {
               showBlockPopupMenu(selectedTile, snapPoint);
@@ -544,7 +543,7 @@ public class LayoutCanvas extends JPanel {
     }
   }
 
-  private void executeControlActionForTile(Tile tile, Point p) {
+  private void executeControlActionForTile(Tile tile) {
     TileBean.TileType tt = tile.getTileType();
     switch (tt) {
       case STRAIGHT -> {
@@ -616,6 +615,10 @@ public class LayoutCanvas extends JPanel {
           sd.setVisible(true);
         }
         case SWITCH -> {
+          SwitchDialog td = new SwitchDialog(getParentFrame(), (Switch) selectedTile);
+          td.setVisible(true);
+        }
+        case THREEWAY -> {
           SwitchDialog td = new SwitchDialog(getParentFrame(), (Switch) selectedTile);
           td.setVisible(true);
         }
@@ -695,6 +698,12 @@ public class LayoutCanvas extends JPanel {
         showDelete = true;
       }
       case SWITCH -> {
+        showProperties = true;
+        showFlip = true;
+        showRotate = true;
+        showDelete = true;
+      }
+      case THREEWAY -> {
         showProperties = true;
         showFlip = true;
         showRotate = true;
