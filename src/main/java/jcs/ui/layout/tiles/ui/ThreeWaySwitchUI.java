@@ -135,12 +135,12 @@ public class ThreeWaySwitchUI extends TileUI implements MouseListener, MouseMoti
       Logger.trace(tile.getId() + ", Accessory " + model.getAccessory().getId() + " value " + accessoryValue);
     }
     switch (accessoryValue) {
-      case RED -> {
+      case RED2 -> {
         renderStraight(g2, trackColor, c);
         renderDiagonalSouth(g2, Color.red, c);
         renderDiagonalNorth(g2, trackColor, c);
       }
-      case RED2 -> {
+      case RED -> {
         renderStraight(g2, trackColor, c);
         renderDiagonalSouth(g2, trackColor, c);
         renderDiagonalNorth(g2, Color.red, c);

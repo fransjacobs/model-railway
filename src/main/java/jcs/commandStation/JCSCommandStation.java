@@ -649,26 +649,24 @@ public class JCSCommandStation {
     if (protocol == null) {
       protocol = AccessoryBean.Protocol.DCC;
     }
-    AccessoryValue val = value;
-    Integer states = accessory.getStates();
-    Integer state = accessory.getState();
+    //AccessoryValue val = value;
+    //Integer states = accessory.getStates();
+    //Integer state = accessory.getState();
 
-    if (states == null) {
-      states = 2;
-    }
-    if (state == null) {
-      state = AccessoryValue.RED == val ? 0 : 1;
-    }
-
-    if (states > 2) {
-      if (accessory.getState() > 1) {
-        address = address + 1;
-        val = AccessoryValue.get(state - 2);
-      }
-    }
-
-    Logger.trace("Changing accessory with address: " + address + ", " + accessory.getName() + " to " + val.getValue());
-    changeAccessory(address, protocol.getValue(), val, switchTime);
+    //if (states == null) {
+    //  states = 2;
+    //}
+    //if (state == null) {
+    //  state = AccessoryValue.RED == val ? 0 : 1;
+    //}
+    //if (states > 2) {
+    //  if (accessory.getState() > 1) {
+    //    address = address + 1;
+    //    val = AccessoryValue.get(state - 2);
+    //  }
+    //}
+    Logger.trace("Changing accessory with address: " + address + ", " + accessory.getName() + " to " + value.getValue());
+    changeAccessory(address, protocol.getValue(), value, switchTime);
   }
 
   private void changeAccessory(final Integer address, final String protocol, final AccessoryValue value, final Integer switchTime) {

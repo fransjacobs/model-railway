@@ -34,6 +34,7 @@ public class AccessoryBean {
   private String name;
   private String type;
   private Integer state;
+  private Integer toggleState;
   private Integer switchTime;
   private String decType;
   private String decoder;
@@ -71,6 +72,16 @@ public class AccessoryBean {
     this.iconFile = iconFile;
     this.states = states;
     this.commandStationId = commandStationId;
+
+    if (this.state == null) {
+      this.state = 0;
+    }
+
+//    if (this.state == 0) {
+//      toggleState = 1;
+//    } else {
+//      toggleState = 0;
+//    }
   }
 
   @Id
@@ -128,6 +139,11 @@ public class AccessoryBean {
     this.state = state;
   }
 
+  @Transient
+  public Integer getToggleState() {
+    return toggleState;
+  }
+
   @Column(name = "states")
   public Integer getStates() {
     return states;
@@ -143,20 +159,40 @@ public class AccessoryBean {
     if (states == null) {
       states = 2;
     }
-
-    int s = states;
-    if (s == 0) {
-      s = 2;
+    if (state == null) {
+      this.state = 0;
     }
 
-    //if (state == null) {
-    //  state = 0;
-    //}
-    s = s - 1;
-    state = state + 1;
+    if (states == 3 && isTurnout()) {
+      if (toggleState == null) {
+        toggleState = state;
+      }
 
-    if (state > s) {
-      state = 0;
+      toggleState++;
+      switch (toggleState) {
+        case 0 ->
+          state = 0;
+        case 1 ->
+          state = 1;
+        case 2 ->
+          state = 2;
+        case 3 ->
+          state = 1;
+        default -> {
+          toggleState = 0;
+          state = 0;
+        }
+      }
+    } else {
+      int s = states;
+      if (s == 0) {
+        s = 2;
+      }
+      s = s - 1;
+      state = state + 1;
+      if (state > s) {
+        state = 0;
+      }
     }
   }
 
@@ -513,8 +549,24 @@ public class AccessoryBean {
       //return AccessoryValue.GREEN.getValue().equals(value) ? 1 : 0;
     }
 
-    public static AccessoryValue get(Integer state) {
+    public static AccessoryValue get1(Integer state) {
       return 1 == state ? GREEN : RED;
+    }
+
+    public static AccessoryValue get(Integer state) {
+      if (state == null) {
+        return GREEN;
+      } else {
+        return switch (state) {
+          case 0 ->
+            RED;
+          case 2 ->
+            RED2;
+          default ->
+            GREEN;
+        };
+        //return 1 == state ? GREEN : RED;
+      }
     }
   }
 
@@ -694,5 +746,4 @@ public class AccessoryBean {
     }
 
   }
-
 }

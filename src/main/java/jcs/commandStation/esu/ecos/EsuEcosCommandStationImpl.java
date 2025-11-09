@@ -261,7 +261,7 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     try {
       if (connected) {
         power(false);
-        
+
         Logger.trace("Unsubsribe from " + feedbackManager.getSize() + " feedback modules...");
         for (FeedbackModule fm : feedbackManager.getModules().values()) {
           connection.sendMessage(EcosMessageFactory.unSubscribeFeedbackModule(fm.getId()));
@@ -545,9 +545,7 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     }
   }
 
-  //@Override
   void switchAccessory(String id, AccessoryBean.AccessoryValue value) {
-    //if (this.power && this.connected) {
     Logger.trace("Changing Accessory " + id + " to " + value);
     int state;
     switch (value) {
@@ -555,6 +553,8 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
         state = 0;
       case RED ->
         state = 1;
+      case RED2 ->
+        state = 2;
       case WHITE ->
         state = 2;
       case YELLOW ->
@@ -699,7 +699,6 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
             case 11 -> {
               //Accessory Manager change
               accessoryManager.updateManager(eventMessage);
-
             }
             default -> {
               //Events

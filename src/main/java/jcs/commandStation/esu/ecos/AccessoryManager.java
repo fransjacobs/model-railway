@@ -167,10 +167,13 @@ class AccessoryManager implements AccessoryEventListener {
       }
       accessory.setAccessoryValue(value);
 
-      //if (event) {
-      //  AccessoryEvent ae = new AccessoryEvent(accessory);
-      //  ecosCommandStation.fireAccessoryEventListeners(ae);
-      //}
+      if (event) {
+        Logger.debug(Ecos.STATE + " : " + accessory.getId() + " -> " + accessory.getAccessoryValue() + " State: " + state);
+
+        //  AccessoryEvent ae = new AccessoryEvent(accessory);
+        //  ecosCommandStation.fireAccessoryEventListeners(ae);
+      }
+
     }
 
     if (values.containsKey(Ecos.ADDREXT)) {
@@ -231,26 +234,27 @@ class AccessoryManager implements AccessoryEventListener {
       String var = values.get(Ecos.SWITCHING).toString();
       //an accessory has changed value
       AccessoryBean.AccessoryValue value;
-      switch (var) {
-        case "0" ->
-          value = AccessoryBean.AccessoryValue.GREEN;
-        case "1" ->
-          value = AccessoryBean.AccessoryValue.RED;
-        case "2" -> {
-          if (accessory.isTurnout()) {
-            value = AccessoryBean.AccessoryValue.RED2;
-          } else {
-            value = AccessoryBean.AccessoryValue.WHITE;
-          }
-        }
-        case "3" ->
-          value = AccessoryBean.AccessoryValue.YELLOW;
-        default ->
-          value = AccessoryBean.AccessoryValue.GREEN;
-      }
-      accessory.setAccessoryValue(value);
+//      switch (var) {
+//        case "0" ->
+//          value = AccessoryBean.AccessoryValue.RED;
+//        case "1" ->
+//          value = AccessoryBean.AccessoryValue.GREEN;
+//        case "2" -> {
+//          if (accessory.isTurnout()) {
+//            value = AccessoryBean.AccessoryValue.RED2;
+//          } else {
+//            value = AccessoryBean.AccessoryValue.WHITE;
+//          }
+//        }
+//        case "3" ->
+//          value = AccessoryBean.AccessoryValue.YELLOW;
+//        default ->
+//          value = AccessoryBean.AccessoryValue.GREEN;
+//      }
+//      accessory.setAccessoryValue(value);
 
 //      if (event) {
+//        Logger.debug(Ecos.SWITCHING + " : " + accessory.getId() + " -> " + accessory.getAccessoryValue() + " Var: " + var);
 //        AccessoryEvent ae = new AccessoryEvent(accessory);
 //        ecosCommandStation.fireAccessoryEventListeners(ae);
 //
@@ -290,6 +294,7 @@ class AccessoryManager implements AccessoryEventListener {
     }
 
     if (event) {
+      Logger.debug("Raise AccessoryEvent "+accessory.getId()+" "+accessory.getAccessoryValue());
       AccessoryEvent ae = new AccessoryEvent(accessory);
       ecosCommandStation.fireAccessoryEventListeners(ae);
     }
