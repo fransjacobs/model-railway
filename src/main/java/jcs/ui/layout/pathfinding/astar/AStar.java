@@ -210,8 +210,8 @@ public class AStar {
               String fid = from.getId() + fromSuffix;
               String tid = to.getId() + toSuffix;
 
-              //if ("bk-4-".equals(fid) && "bk-2-".equals(tid)) {
-              //        || ("bk-3+".equals(fid) && "bk-2-".equals(tid))) {
+              if ("bk-2-".equals(fid) && "bk-4+".equals(tid)) {
+                      //|| ("bk-1-".equals(fid) && "bk-2-".equals(tid))) {
               //if ("bk-2-".equals(fid) && "bk-3+".equals(tid)) {
               List<Node> path = findPath(from, fromSuffix, to, toSuffix);
 
@@ -222,7 +222,7 @@ public class AStar {
                 routes.put(routeBean.getId(), routeBean);
               }
 
-              //}
+              }
             }
           }
         }

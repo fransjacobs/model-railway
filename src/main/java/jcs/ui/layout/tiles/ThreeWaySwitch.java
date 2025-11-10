@@ -24,8 +24,6 @@ import jcs.commandStation.events.AccessoryEventListener;
 import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.TileBean;
 import jcs.entities.TileBean.Direction;
-import static jcs.entities.TileBean.Direction.LEFT;
-import static jcs.entities.TileBean.Direction.RIGHT;
 import jcs.entities.TileBean.Orientation;
 import static jcs.entities.TileBean.Orientation.NORTH;
 import static jcs.entities.TileBean.Orientation.SOUTH;
@@ -87,7 +85,7 @@ public class ThreeWaySwitch extends Switch implements AccessoryEventListener {
   @Override
   public Map<Orientation, Point> getNeighborPoints() {
     Map<Orientation, Point> neighbors = new HashMap<>();
-    Orientation orientation = this.getOrientation();
+    Orientation orientation = getOrientation();
     //Direction direction = this.getDirection();
     int cx = this.getCenterX();
     int cy = this.getCenterY();
@@ -96,21 +94,18 @@ public class ThreeWaySwitch extends Switch implements AccessoryEventListener {
       case SOUTH -> {
         neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
         neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
-
         neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
         neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
       }
       case WEST -> {
         neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
         neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
-
         neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
         neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
       }
       case NORTH -> {
         neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
         neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
-
         neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
         neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
       }
@@ -118,7 +113,6 @@ public class ThreeWaySwitch extends Switch implements AccessoryEventListener {
         //EAST
         neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
         neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
-
         neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
         neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
       }
@@ -129,8 +123,8 @@ public class ThreeWaySwitch extends Switch implements AccessoryEventListener {
   @Override
   public Map<Orientation, Point> getEdgePoints() {
     Map<Orientation, Point> edgeConnections = new HashMap<>();
-    Orientation orientation = this.getOrientation();
-    Direction direction = this.getDirection();
+    Orientation orientation = getOrientation();
+    //Direction direction = this.getDirection();
     int cx = this.getCenterX();
     int cy = this.getCenterY();
 
@@ -138,39 +132,27 @@ public class ThreeWaySwitch extends Switch implements AccessoryEventListener {
       case SOUTH -> {
         edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
         edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
-        if (Direction.LEFT == direction) {
-          edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
-        } else {
-          edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
-        }
+        edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
+        edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
       }
       case WEST -> {
         edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
         edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
-        if (Direction.LEFT == direction) {
-          edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
-        } else {
-          edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
-        }
+        edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
+        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
       }
       case NORTH -> {
         edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
         edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
-        if (Direction.LEFT == direction) {
-          edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
-        } else {
-          edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
-        }
+        edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
+        edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
       }
       default -> {
         //EAST
         edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
         edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
-        if (Direction.LEFT == direction) {
-          edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
-        } else {
-          edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
-        }
+        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
+        edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
       }
     }
     return edgeConnections;
@@ -191,57 +173,29 @@ public class ThreeWaySwitch extends Switch implements AccessoryEventListener {
 
   @Override
   public AccessoryValue accessoryValueForRoute(Orientation from, Orientation to) {
-    if (from != null && to != null && this.getDirection() != null) {
-      switch (this.getDirection()) {
-        case LEFT -> {
-          if (this.isHorizontal()) {
-            if ((from == Orientation.WEST && to == Orientation.EAST) || (from == Orientation.EAST && to == Orientation.WEST)) {
-              return AccessoryValue.GREEN;
-            } else if (((from == Orientation.EAST && to == Orientation.SOUTH) || (from == Orientation.SOUTH && to == Orientation.EAST)) && Orientation.EAST == this.getOrientation()) {
-              return AccessoryValue.RED;
-            } else if (((from == Orientation.WEST && to == Orientation.NORTH) || (from == Orientation.NORTH && to == Orientation.WEST)) && Orientation.WEST == this.getOrientation()) {
-              return AccessoryValue.RED;
-            } else {
-              return AccessoryValue.OFF;
-            }
-          } else {
-            //Vertical
-            if ((from == Orientation.NORTH && to == Orientation.SOUTH) || (from == Orientation.SOUTH && to == Orientation.NORTH)) {
-              return AccessoryValue.GREEN;
-            } else if (((from == Orientation.SOUTH && to == Orientation.WEST) || (from == Orientation.WEST && to == Orientation.SOUTH)) && Orientation.SOUTH == this.getOrientation()) {
-              return AccessoryValue.RED;
-            } else if (((from == Orientation.NORTH && to == Orientation.EAST) || (from == Orientation.EAST && to == Orientation.NORTH)) && Orientation.NORTH == this.getOrientation()) {
-              return AccessoryValue.RED;
-            } else {
-              return AccessoryValue.OFF;
-            }
-          }
+    if (from != null && to != null) {
+      if (isHorizontal()) {
+        if ((from == Orientation.WEST && to == Orientation.EAST) || (from == Orientation.EAST && to == Orientation.WEST)) {
+          return AccessoryValue.GREEN;
+        } else if (((from == Orientation.EAST && to == Orientation.SOUTH) || (from == Orientation.SOUTH && to == Orientation.EAST)) && Orientation.EAST == getOrientation()) {
+          return AccessoryValue.RED;
+        } else if (((from == Orientation.WEST && to == Orientation.NORTH) || (from == Orientation.NORTH && to == Orientation.WEST)) && Orientation.WEST == getOrientation()) {
+          return AccessoryValue.RED2;
+        } else {
+          return AccessoryValue.OFF;
         }
-        case RIGHT -> {
-          if (this.isHorizontal()) {
-            if ((from == Orientation.WEST && to == Orientation.EAST) || (from == Orientation.EAST && to == Orientation.WEST)) {
-              return AccessoryValue.GREEN;
-            } else if (((from == Orientation.EAST && to == Orientation.NORTH) || (from == Orientation.NORTH && to == Orientation.EAST)) && Orientation.EAST == this.getOrientation()) {
-              return AccessoryValue.RED;
-            } else if (((from == Orientation.WEST && to == Orientation.SOUTH) || (from == Orientation.SOUTH && to == Orientation.WEST)) && Orientation.WEST == this.getOrientation()) {
-              return AccessoryValue.RED;
-            } else {
-              return AccessoryValue.OFF;
-            }
-          } else {
-            //Vertical
-            if ((from == Orientation.NORTH && to == Orientation.SOUTH) || (from == Orientation.SOUTH && to == Orientation.NORTH)) {
-              return AccessoryValue.GREEN;
-            } else if (((from == Orientation.EAST && to == Orientation.SOUTH) || (from == Orientation.SOUTH && to == Orientation.EAST)) && Orientation.SOUTH == this.getOrientation()) {
-              return AccessoryValue.RED;
-            } else if (((from == Orientation.WEST && to == Orientation.NORTH) || (from == Orientation.NORTH && to == Orientation.WEST)) && Orientation.NORTH == this.getOrientation()) {
-              return AccessoryValue.RED;
-            } else {
-              return AccessoryValue.OFF;
-            }
-          }
-        }
-        default -> {
+      } else {
+        //Vertical
+        if ((from == Orientation.NORTH && to == Orientation.SOUTH) || (from == Orientation.SOUTH && to == Orientation.NORTH)) {
+          return AccessoryValue.GREEN;
+        } else if (((from == Orientation.SOUTH && to == Orientation.WEST) || (from == Orientation.WEST && to == Orientation.SOUTH)) && Orientation.SOUTH == getOrientation()) {
+          return AccessoryValue.RED2;
+        } else if (((from == Orientation.NORTH && to == Orientation.EAST) || (from == Orientation.EAST && to == Orientation.NORTH)) && Orientation.NORTH == getOrientation()) {
+          return AccessoryValue.RED;
+        } else if (((from == Orientation.SOUTH && to == Orientation.EAST) || (from == Orientation.EAST && to == Orientation.SOUTH)) && Orientation.SOUTH == getOrientation()) {
+          return AccessoryValue.RED;
+
+        } else {
           return AccessoryValue.OFF;
         }
       }
