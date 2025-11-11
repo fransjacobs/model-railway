@@ -516,6 +516,8 @@ public class AccessoryBean {
       return switch (dbValue) {
         case "R" ->
           "Red";
+        case "R2" ->
+          "Red2";
         case "G" ->
           "Green";
         default ->
@@ -527,6 +529,8 @@ public class AccessoryBean {
       return switch (value) {
         case "Red" ->
           "R";
+        case "Red2" ->
+          "R2";
         case "Green" ->
           "G";
         default ->

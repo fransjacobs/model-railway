@@ -237,27 +237,6 @@ public class Node implements Comparable<Node> {
       Logger.trace(from.getId() + " from " + fromInComingSide + " to " + fromExitSide + " route value " + routeValue);
 
       return routeValue;
-      //} 
-//
-//    if (from.getPreviousNode() != null && from.getTile().isJunction() && 1==2) {
-//      boolean isParentOnSwitchSide = from.getTile().isSwitchSide(from.getPreviousNode().getTile());
-//      boolean isParentOnStraightSide = from.getTile().isStraightSide(from.getPreviousNode().getTile());
-//      boolean isParentOnDivergingSide = from.getTile().isDivergingSide(from.getPreviousNode().getTile());
-//
-//      boolean isToOnSwitchSide = from.getTile().isSwitchSide(to.getTile());
-//      boolean isToOnStraightSide = from.getTile().isStraightSide(to.getTile());
-//      boolean isToOnDivergingSide = from.getTile().isDivergingSide(to.getTile());
-//
-//      if (isParentOnSwitchSide && (isToOnDivergingSide || isToOnStraightSide)) {
-//        return (isToOnDivergingSide ? AccessoryValue.RED : AccessoryValue.GREEN);
-//      } else if (isParentOnStraightSide && isToOnSwitchSide) {
-//        return AccessoryValue.GREEN;
-//      } else if (isParentOnDivergingSide && isToOnSwitchSide) {
-//        return AccessoryValue.RED;
-//      } else {
-//        Logger.trace("Path from " + from.getPreviousNode().getId() + " via " + from.getId() + " to " + to.getId() + " is NOT possible");
-//        return AccessoryValue.OFF;
-//      }
     } else {
       return AccessoryValue.OFF;
     }

@@ -46,9 +46,6 @@ public class AStarThreeWaySwitchSouth {
   public void tearDown() {
   }
 
-  /**
-   * Test of buildGraph method, of class AStar.
-   */
   @Test
   public void testBuildGraph() {
     System.out.println("buildGraph");
@@ -60,9 +57,6 @@ public class AStarThreeWaySwitchSouth {
     assertEquals(tiles.size(), allNodes.size());
   }
 
-  /**
-   * Test of getAllBlockToBlockNodes method, of class AStar.
-   */
   @Test
   public void testGetAllBlockToBlockNodes() {
     System.out.println("getAllBlockToBlockNodes");
@@ -89,7 +83,6 @@ public class AStarThreeWaySwitchSouth {
     String result = instance.pathToString(path);
 
     System.out.println("#" + result);
-
     assertEquals(expPath, result);
   }
 
@@ -109,10 +102,9 @@ public class AStarThreeWaySwitchSouth {
     String result = instance.pathToString(path);
 
     System.out.println("#" + result);
-
     assertEquals(expPath, result);
   }
-  
+
   @Test
   public void testFindPath_bk2m_bk3p() {
     System.out.println("findPath [bk-2-]->[bk-3+]");
@@ -127,9 +119,8 @@ public class AStarThreeWaySwitchSouth {
 
     List<Node> path = instance.findPath(fromNodeId, fromSuffix, toNodeId, toSuffix);
     String result = instance.pathToString(path);
-    
+
     System.out.println("#" + result);
-    
     assertEquals(expPath, result);
   }
 
@@ -144,15 +135,13 @@ public class AStarThreeWaySwitchSouth {
     List<Tile> tiles = jcs.ui.layout.tiles.TileCache.loadTiles(false);
     instance.buildGraph(tiles);
     String expPath = "[bk-3+]->[bk-2-]: bk-3+[bk-3] -> se-4 -> st-1 -> ct-1 -> ct-2 -> ct-3 -> tw-1[RED2] -> st-5 -> se-7 -> bk-2-[bk-2]";
- 
+
     List<Node> path = instance.findPath(fromNodeId, fromSuffix, toNodeId, toSuffix);
     String result = instance.pathToString(path);
-    
+
     System.out.println("#" + result);
-    
     assertEquals(expPath, result);
   }
-  
 
   @Test
   public void testFindPath_bk2m_bk4p() {
@@ -164,41 +153,111 @@ public class AStarThreeWaySwitchSouth {
     AStar instance = new AStar();
     List<Tile> tiles = jcs.ui.layout.tiles.TileCache.loadTiles(false);
     instance.buildGraph(tiles);
-    String expPath = "[bk-2-]->[bk-3+]: bk-2-[bk-2] -> se-7 -> st-5 -> tw-1[RED] -> ct-4 -> ct-6 -> ct-5 -> st-3 -> se-6 -> bk-4+[bk-4]";
-
+    String expPath = "[bk-2-]->[bk-4+]: bk-2-[bk-2] -> se-7 -> st-5 -> tw-1[RED] -> ct-4 -> ct-6 -> ct-5 -> st-3 -> se-6 -> bk-4+[bk-4]";
     List<Node> path = instance.findPath(fromNodeId, fromSuffix, toNodeId, toSuffix);
     String result = instance.pathToString(path);
-    
+
     System.out.println("#" + result);
-    
     assertEquals(expPath, result);
   }
 
-
-
-
-  
-  //@Test
-  public void testFindPath_bk_2m_bk4m() {
-    System.out.println("findPath [bk-2-]->[bk-4-]");
-    String fromNodeId = "bk-2";
-    String fromSuffix = "-";
-    String toNodeId = "bk-4";
+  @Test
+  public void testFindPath_bk4p_bk2m() {
+    System.out.println("findPath [bk-4+]->[bk-2-]");
+    String fromNodeId = "bk-4";
+    String fromSuffix = "+";
+    String toNodeId = "bk-2";
     String toSuffix = "-";
     AStar instance = new AStar();
     List<Tile> tiles = jcs.ui.layout.tiles.TileCache.loadTiles(false);
     instance.buildGraph(tiles);
-    String expPath = "[bk-2-]->[bk-4-]: bk-2-[bk-2] -> st-6 -> st-5 -> sw-1[RED] -> st-30 -> st-29 -> bk-4-[bk-4]";
-
+    String expPath = "[bk-4+]->[bk-2-]: bk-4+[bk-4] -> se-6 -> st-3 -> ct-5 -> ct-6 -> ct-4 -> tw-1[RED] -> st-5 -> se-7 -> bk-2-[bk-2]";
     List<Node> path = instance.findPath(fromNodeId, fromSuffix, toNodeId, toSuffix);
     String result = instance.pathToString(path);
+
+    System.out.println("#" + result);
     assertEquals(expPath, result);
   }
 
-  //@Test
-  public void testFindPath_bk_2m_bk3p1() {
-    System.out.println("findPath [bk-2-]->[bk-3+]");
-    String fromNodeId = "bk-2";
+  @Test
+  public void testRouteAll() {
+    System.out.println("routeAll");
+    List<Tile> tiles = jcs.ui.layout.tiles.TileCache.loadTiles(false);
+
+    List<String> expRouteDesc = new ArrayList<>();
+
+    String r1 = "Route: [bk-2-]->[bk-4+]: bk-2 -> bk-2-[bk-2] -> se-7 -> st-5 -> tw-1[RED] -> ct-4 -> ct-6 -> ct-5 -> st-3 -> se-6 -> bk-4+[bk-4]";
+    String r2 = "Route: [bk-2-]->[bk-3+]: bk-2 -> bk-2-[bk-2] -> se-7 -> st-5 -> tw-1[RED2] -> ct-3 -> ct-2 -> ct-1 -> st-1 -> se-4 -> bk-3+[bk-3]";
+    String r3 = "Route: [bk-1-]->[bk-2-]: bk-1 -> bk-1-[bk-1] -> se-5 -> st-2 -> st-4 -> tw-1[GREEN] -> st-5 -> se-7 -> bk-2-[bk-2]";
+    String r4 = "Route: [bk-4+]->[bk-2-]: bk-4 -> bk-4+[bk-4] -> se-6 -> st-3 -> ct-5 -> ct-6 -> ct-4 -> tw-1[RED] -> st-5 -> se-7 -> bk-2-[bk-2]";
+    String r5 = "Route: [bk-3+]->[bk-2-]: bk-3 -> bk-3+[bk-3] -> se-4 -> st-1 -> ct-1 -> ct-2 -> ct-3 -> tw-1[RED2] -> st-5 -> se-7 -> bk-2-[bk-2]";
+    String r6 = "Route: [bk-2-]->[bk-1-]: bk-2 -> bk-2-[bk-2] -> se-7 -> st-5 -> tw-1[GREEN] -> st-4 -> st-2 -> se-5 -> bk-1-[bk-1]";
+
+    expRouteDesc.add(r1);
+    expRouteDesc.add(r2);
+    expRouteDesc.add(r3);
+    expRouteDesc.add(r4);
+    expRouteDesc.add(r5);
+    expRouteDesc.add(r6);
+
+    AStar instance = new AStar();
+    instance.buildGraph(tiles);
+    List<RouteBean> routeBeans = instance.routeAll();
+    assertEquals(6, routeBeans.size());
+
+    List<String> resultRouteDesc = new ArrayList<>();
+
+    for (RouteBean r : routeBeans) {
+      resultRouteDesc.add(r.toLogString());
+      System.out.println("#" + r.toLogString());
+    }
+
+    assertEquals(expRouteDesc, resultRouteDesc);
+  }
+
+  //Check the impossible routes
+  @Test
+  public void testFindPath_bk1m_bk4p() {
+    System.out.println("findPath [bk-1-]->[bk-4+]");
+    String fromNodeId = "bk-1";
+    String fromSuffix = "-";
+    String toNodeId = "bk-4";
+    String toSuffix = "+";
+    AStar instance = new AStar();
+    List<Tile> tiles = jcs.ui.layout.tiles.TileCache.loadTiles(false);
+    instance.buildGraph(tiles);
+    String expPath = "";
+
+    List<Node> path = instance.findPath(fromNodeId, fromSuffix, toNodeId, toSuffix);
+    String result = instance.pathToString(path);
+
+    System.out.println("#" + result);
+    assertEquals(expPath, result);
+  }
+
+  @Test
+  public void testFindPath_bk4p_bk1m() {
+    System.out.println("findPath [bk-1-]->[bk-4+]");
+    String fromNodeId = "bk-4";
+    String fromSuffix = "+";
+    String toNodeId = "bk-1";
+    String toSuffix = "-";
+    AStar instance = new AStar();
+    List<Tile> tiles = jcs.ui.layout.tiles.TileCache.loadTiles(false);
+    instance.buildGraph(tiles);
+    String expPath = "";
+
+    List<Node> path = instance.findPath(fromNodeId, fromSuffix, toNodeId, toSuffix);
+    String result = instance.pathToString(path);
+
+    System.out.println("#" + result);
+    assertEquals(expPath, result);
+  }
+
+  @Test
+  public void testFindPath_bk1m_bk3p() {
+    System.out.println("findPath [bk-1-]->[bk-3+]");
+    String fromNodeId = "bk-1";
     String fromSuffix = "-";
     String toNodeId = "bk-3";
     String toSuffix = "+";
@@ -209,41 +268,66 @@ public class AStarThreeWaySwitchSouth {
 
     List<Node> path = instance.findPath(fromNodeId, fromSuffix, toNodeId, toSuffix);
     String result = instance.pathToString(path);
+
+    System.out.println("#" + result);
     assertEquals(expPath, result);
   }
 
-  /**
-   * Test of routeAll method, of class AStar.
-   */
-  //@Test
-  public void testRouteAll() {
-    System.out.println("routeAll");
-    List<Tile> tiles = jcs.ui.layout.tiles.TileCache.loadTiles(false);
-
-    List<String> expRouteDesc = new ArrayList<>();
-
-    String r1 = "Route: [bk-2-]->[bk-4-]: bk-2 -> bk-2-[bk-2] -> st-6 -> st-5 -> sw-1[RED] -> st-30 -> st-29 -> bk-4-[bk-4]";
-    String r2 = "Route: [bk-3+]->[bk-4-]: bk-3 -> bk-3+[bk-3] -> st-26 -> st-25 -> sw-1[GREEN] -> st-30 -> st-29 -> bk-4-[bk-4]";
-    String r3 = "Route: [bk-4-]->[bk-3+]: bk-4 -> bk-4-[bk-4] -> st-29 -> st-30 -> sw-1[GREEN] -> st-25 -> st-26 -> bk-3+[bk-3]";
-    String r4 = "Route: [bk-4-]->[bk-2-]: bk-4 -> bk-4-[bk-4] -> st-29 -> st-30 -> sw-1[RED] -> st-5 -> st-6 -> bk-2-[bk-2]";
-
-    expRouteDesc.add(r1);
-    expRouteDesc.add(r2);
-    expRouteDesc.add(r3);
-    expRouteDesc.add(r4);
-
+  @Test
+  public void testFindPath_bk3p_bk1m() {
+    System.out.println("findPath [bk-3+]->[bk-1-]");
+    String fromNodeId = "bk-3";
+    String fromSuffix = "+";
+    String toNodeId = "bk-1";
+    String toSuffix = "-";
     AStar instance = new AStar();
+    List<Tile> tiles = jcs.ui.layout.tiles.TileCache.loadTiles(false);
     instance.buildGraph(tiles);
-    List<RouteBean> routeBeans = instance.routeAll();
-    assertEquals(4, routeBeans.size());
+    String expPath = "";
 
-    List<String> resultRouteDesc = new ArrayList<>();
+    List<Node> path = instance.findPath(fromNodeId, fromSuffix, toNodeId, toSuffix);
+    String result = instance.pathToString(path);
 
-    for (RouteBean r : routeBeans) {
-      resultRouteDesc.add(r.toLogString());
-    }
+    System.out.println("#" + result);
+    assertEquals(expPath, result);
+  }
 
-    assertEquals(expRouteDesc, resultRouteDesc);
+  @Test
+  public void testFindPath_bk3p_bk4p() {
+    System.out.println("findPath [bk-3+]->[bk-4p]");
+    String fromNodeId = "bk-3";
+    String fromSuffix = "+";
+    String toNodeId = "bk-4";
+    String toSuffix = "+";
+    AStar instance = new AStar();
+    List<Tile> tiles = jcs.ui.layout.tiles.TileCache.loadTiles(false);
+    instance.buildGraph(tiles);
+    String expPath = "";
+
+    List<Node> path = instance.findPath(fromNodeId, fromSuffix, toNodeId, toSuffix);
+    String result = instance.pathToString(path);
+
+    System.out.println("#" + result);
+    assertEquals(expPath, result);
+  }
+
+  @Test
+  public void testFindPath_bk4p_bk3p() {
+    System.out.println("findPath [bk-4+]->[bk-3p]");
+    String fromNodeId = "bk-4";
+    String fromSuffix = "+";
+    String toNodeId = "bk-3";
+    String toSuffix = "+";
+    AStar instance = new AStar();
+    List<Tile> tiles = jcs.ui.layout.tiles.TileCache.loadTiles(false);
+    instance.buildGraph(tiles);
+    String expPath = "";
+
+    List<Node> path = instance.findPath(fromNodeId, fromSuffix, toNodeId, toSuffix);
+    String result = instance.pathToString(path);
+
+    System.out.println("#" + result);
+    assertEquals(expPath, result);
   }
 
 }
