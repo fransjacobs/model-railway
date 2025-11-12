@@ -76,12 +76,6 @@ public class AccessoryBean {
     if (this.state == null) {
       this.state = 0;
     }
-
-//    if (this.state == 0) {
-//      toggleState = 1;
-//    } else {
-//      toggleState = 0;
-//    }
   }
 
   @Id
@@ -139,11 +133,6 @@ public class AccessoryBean {
     this.state = state;
   }
 
-  @Transient
-  public Integer getToggleState() {
-    return toggleState;
-  }
-
   @Column(name = "states")
   public Integer getStates() {
     return states;
@@ -151,6 +140,16 @@ public class AccessoryBean {
 
   public void setStates(Integer states) {
     this.states = states;
+  }
+
+  @Transient
+  public boolean isBiAddress() {
+    return this.states > 2;
+  }
+
+  @Transient
+  public Integer getToggleState() {
+    return toggleState;
   }
 
   @Transient

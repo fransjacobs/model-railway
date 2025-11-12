@@ -13,12 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation.marklin.cs2;
+package jcs.commandStation.marklin.cs.can.parser;
 
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
 import jcs.entities.AccessoryBean;
@@ -31,14 +27,14 @@ import org.tinylog.Logger;
  * @author fransjacobs
  */
 public class AccessoryBeanParser {
-
+  
   public final static String MAGNETARTIKEL = "magnetartikel.cs2";
   public final static String MAGS_JSON = "mags.json";
-
+  
   public static List<AccessoryBean> parseAccessoryFile(String file, String commandStationId, String source) {
     List<AccessoryBean> accessories = new LinkedList<>();
     String[] lines = file.split("\n");
-
+    
     AccessoryBean ab = new AccessoryBean();
     for (String line : lines) {
       int eqidx = line.indexOf("=");
@@ -47,7 +43,7 @@ public class AccessoryBeanParser {
       }
       String key = line.substring(0, eqidx).trim();
       String value = line.substring(eqidx).replace("=", "").trim();
-
+      
       Logger.trace("key: " + key + " value: " + value);
       switch (key) {
         case "[magnetartikel]" -> {
@@ -81,6 +77,9 @@ public class AccessoryBeanParser {
         case ".typ" -> {
           ab.setType(value);
           ab.setStates(deriveStates(value));
+          if (ab.isBiAddress()) {
+            ab.setAddress2(ab.getAddress() + 1);
+          }
         }
         case ".stellung" -> {
           int pos = Integer.parseInt(value);
@@ -105,7 +104,7 @@ public class AccessoryBeanParser {
     accessories.add(ab);
     return accessories;
   }
-
+  
   private static int deriveStates(String type) {
     return switch (type) {
       case "std_rot_gruen" ->
@@ -158,7 +157,7 @@ public class AccessoryBeanParser {
         2;
     };
   }
-
+  
   public static List<AccessoryBean> parseAccessoryJSON(String json, String commandStationId, String source) {
     List<AccessoryBean> accessories = new LinkedList<>();
     JSONArray aa = new JSONArray(json);
@@ -167,25 +166,29 @@ public class AccessoryBeanParser {
       ab.setSynchronize(true);
       ab.setSource(source + ":" + MAGS_JSON);
       ab.setCommandStationId(commandStationId);
-
+      
       JSONObject ajo = aa.getJSONObject(i);
-
+      
       ab.setName(ajo.getString("name"));
-
+      
       ab.setId(ajo.getInt("id") + "");
-
+      
       ab.setAddress(ajo.optInt("address"));
-
+      
       ab.setIcon(ajo.optString("icon"));
       ab.setIconFile(ajo.optString("iconFile"));
-
+      
       ab.setType(ajo.getString("typ"));
       ab.setGroup(ajo.getString("group"));
-
+      
       ab.setSwitchTime(ajo.optInt("schaltzeit"));
       ab.setStates(ajo.getInt("states"));
+      if (ab.isBiAddress()) {
+        ab.setAddress2(ab.getAddress() + 1);
+      }
+      
       ab.setState(ajo.getInt("state"));
-
+      
       ab.setDecType(ajo.optString("prot"));
       ab.setDecoder(ajo.optString("dectyp"));
 
@@ -195,29 +198,8 @@ public class AccessoryBeanParser {
         accessories.add(ab);
       }
     }
-
+    
     return accessories;
   }
-
-//  public static void main(String[] a) throws Exception {
-//
-//    Path accessoryFile = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "magnetartikel.cs2");
-//    String file = Files.readString(accessoryFile);
-//    List<AccessoryBean> accessories = AccessoryBeanParser.parseAccessoryFile(file, "marklin.cs", "CS");
-//    for (AccessoryBean acc : accessories) {
-//      Logger.trace(acc.toLogString());
-//    }
-//    Logger.trace("Total " + accessories.size());
-//
-//    Path accessoryJson = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "mags.json");
-//
-//    String json = Files.readString(accessoryJson);
-//    accessories = AccessoryBeanParser.parseAccessoryJSON(json, "marklin.cs", "CS");
-//
-//    for (AccessoryBean acc : accessories) {
-//      Logger.trace(acc.toLogString());
-//    }
-//    Logger.trace("Total " + accessories.size());
-//
-//  }
+  
 }

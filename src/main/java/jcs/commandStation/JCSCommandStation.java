@@ -175,6 +175,7 @@ public class JCSCommandStation {
       //Switch the track power on
       //TODO: make this configurable via property
       boolean power = decoderController.power(true);
+      Logger.trace("Power is " + (power ? "On" : "Off"));
 
       if (!isVirtual()) {
         ConnectionEvent ce = new ConnectionEvent(commandStation.getDescription(), true);
@@ -642,29 +643,14 @@ public class JCSCommandStation {
   }
 
   public void switchAccessory(AccessoryBean accessory, AccessoryValue value) {
-    String id = accessory.getId();
+    //String id = accessory.getId();
     Integer address = accessory.getAddress();
     Integer switchTime = accessory.getSwitchTime();
     AccessoryBean.Protocol protocol = accessory.getProtocol();
     if (protocol == null) {
       protocol = AccessoryBean.Protocol.DCC;
     }
-    //AccessoryValue val = value;
-    //Integer states = accessory.getStates();
-    //Integer state = accessory.getState();
 
-    //if (states == null) {
-    //  states = 2;
-    //}
-    //if (state == null) {
-    //  state = AccessoryValue.RED == val ? 0 : 1;
-    //}
-    //if (states > 2) {
-    //  if (accessory.getState() > 1) {
-    //    address = address + 1;
-    //    val = AccessoryValue.get(state - 2);
-    //  }
-    //}
     Logger.trace("Changing accessory with address: " + address + ", " + accessory.getName() + " to " + value.getValue());
     changeAccessory(address, protocol.getValue(), value, switchTime);
   }
@@ -1126,7 +1112,7 @@ public class JCSCommandStation {
             if (changed) {
               if (jcsCommandStation.accessoryEventListeners.containsKey(ab.getId())) {
                 List<AccessoryEventListener> snapshot = new ArrayList<>(jcsCommandStation.accessoryEventListeners.get(ab.getId()));
-                Logger.trace("Obtaining listener for accessory " + ab.getId() + " which has " + snapshot.size() + " listeners to set to values" + event.getValue());
+                Logger.trace("Obtaining listener for accessory " + ab.getId() + " which has " + snapshot.size() + " listeners to set to value " + event.getValue());
 
                 for (AccessoryEventListener al : snapshot) {
                   Logger.trace("Listener source " + al.getClass().getName());
