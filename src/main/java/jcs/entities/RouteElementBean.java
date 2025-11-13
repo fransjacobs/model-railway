@@ -170,7 +170,7 @@ public class RouteElementBean implements Serializable {
   @Transient
   public boolean isTurnout() {
     if (tileBean != null) {
-      return TileType.SWITCH == tileBean.getTileType() || TileType.CROSS == tileBean.getTileType();
+      return TileType.SWITCH == tileBean.getTileType() || TileType.CROSS == tileBean.getTileType() || TileType.THREEWAY == tileBean.getTileType();
     } else {
       return false;
     }
