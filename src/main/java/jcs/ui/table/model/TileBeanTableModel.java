@@ -38,7 +38,7 @@ public class TileBeanTableModel extends AbstractBeanTableModel<TileBean> {
   private final Map<String, String> tileIcons;
 
   private final static String[] COMPONENTS = new String[]{
-    "Straight", "Straight Direction", "Curved", "Sensor", "Block", "Signal", "Turnout Left", "Turnout Right", "Cross Left", "Cross Right", "Crossing", "End Track"};
+    "Straight", "Straight Direction", "Curved", "Sensor", "Block", "Signal", "Turnout Left", "Turnout Right", "Cross Left", "Cross Right", "Three Way", "Crossing", "End Track"};
 
   public TileBeanTableModel() {
     super(TileBean.class, DISPLAY_COLUMNS, false, true);
@@ -155,6 +155,7 @@ public class TileBeanTableModel extends AbstractBeanTableModel<TileBean> {
     tileIcons.put("Turnout Right", "/media/new-R-turnout.png");
     tileIcons.put("Cross Left", "/media/new-cross-L.png");
     tileIcons.put("Cross Right", "/media/new-cross-R.png");
+    tileIcons.put("Three Way", "/media/new-3W-turnout.png");
     tileIcons.put("Crossing", "/media/new-crossing.png");
     tileIcons.put("End Track", "/media/new-end-track.png");
     tileIcons.put("Block", "/media/new-block.png");
@@ -188,6 +189,9 @@ public class TileBeanTableModel extends AbstractBeanTableModel<TileBean> {
       }
       case "Cross Right" -> {
         return TileBean.TileType.CROSS;
+      }
+      case "Three Way" -> {
+        return TileBean.TileType.THREEWAY;
       }
       case "Crossing" -> {
         return TileBean.TileType.CROSSING;

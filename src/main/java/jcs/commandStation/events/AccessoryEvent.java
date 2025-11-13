@@ -22,18 +22,23 @@ import jcs.entities.AccessoryBean.SignalValue;
 public class AccessoryEvent {
 
   private final AccessoryBean accessoryBean;
+  private boolean power;
 
   public AccessoryEvent(AccessoryBean accessoryBean) {
+    this(accessoryBean, false);
+  }
+
+  public AccessoryEvent(AccessoryBean accessoryBean, boolean power) {
     this.accessoryBean = accessoryBean;
+    this.power = power;
   }
 
   public AccessoryBean getAccessoryBean() {
     return accessoryBean;
   }
 
-  @Deprecated
-  public boolean isValid() {
-    return accessoryBean != null && (accessoryBean.getAddress() != null || accessoryBean.getId() != null);
+  public boolean isPower() {
+    return power;
   }
 
   public boolean isEventFor(AccessoryBean accessory) {
@@ -59,12 +64,20 @@ public class AccessoryEvent {
     return AccessoryValue.RED == accessoryBean.getAccessoryValue();
   }
 
+  public boolean isRed2() {
+    return AccessoryValue.RED2 == accessoryBean.getAccessoryValue();
+  }
+
   public Integer getAddress() {
     return accessoryBean.getAddress();
   }
 
   public String getId() {
     return accessoryBean.getId();
+  }
+
+  public boolean isBiAddress() {
+    return this.accessoryBean.isBiAddress();
   }
 
 }

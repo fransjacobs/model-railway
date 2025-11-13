@@ -54,7 +54,7 @@ import jcs.commandStation.marklin.cs.can.parser.MessageInflator;
 import jcs.commandStation.marklin.cs.can.parser.SystemStatus;
 import jcs.commandStation.marklin.cs.net.CSConnection;
 import jcs.commandStation.marklin.cs.net.CSConnectionFactory;
-import jcs.commandStation.marklin.cs2.AccessoryBeanParser;
+import jcs.commandStation.marklin.cs.can.parser.AccessoryBeanParser;
 import jcs.commandStation.marklin.cs2.LocomotiveBeanParser;
 import jcs.commandStation.marklin.cs3.FunctionSvgToPngConverter;
 import jcs.commandStation.marklin.cs3.LocomotiveBeanJSONParser;
@@ -121,6 +121,8 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 
   private SortedMap<Long, MeasuredChannels> measuredValues;
 
+  private final AccessoryManager accessoryManager;
+
   public MarklinCentralStationImpl(CommandStationBean commandStationBean) {
     this(commandStationBean, false);
   }
@@ -129,6 +131,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     super(autoConnect, commandStationBean);
     canDevices = new HashMap<>();
     measuredValues = new ConcurrentSkipListMap<>();
+    accessoryManager = new AccessoryManager(this);
 
     if (commandStationBean != null) {
       if (autoConnect) {
@@ -260,6 +263,9 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 
           connection.addDisconnectionEventListener(this);
           startWatchdog();
+
+          //Load the accessories in the Accessory manager
+          getAccessories();
 
           power = isPower();
           JCS.logProgress("Power is " + (power ? "On" : "Off"));
@@ -806,6 +812,19 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     }
   }
 
+  private int getCSAddress(Integer address, String protocol) {
+    int adr; // zero based!
+    if ("dcc".equals(protocol)) {
+      adr = address - 1;
+      adr = adr + CanMessage.DCC_ACCESSORY_OFFSET;
+    } else {
+      //assume MM
+      adr = address - 1;
+      adr = adr + CanMessage.MM_ACCESSORY_OFFSET;
+    }
+    return adr;
+  }
+
   @Override
   public void switchAccessory(Integer address, String protocol, AccessoryValue value, Integer switchTime) {
     if (power && connected) {
@@ -818,24 +837,94 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
         st = switchTime / 10;
       }
 
-      int adr; // zero based!
-      if ("dcc".equals(protocol)) {
-        adr = address - 1;
-        adr = adr + CanMessage.DCC_ACCESSORY_OFFSET;
+      //Need to check whether the value is for the main or the secondary address
+      AccessoryBean ac = accessoryManager.getAccessory(address);
+      if (ac.isBiAddress()) {
+        //need to send 2 messages for both addresses       
+        int adr = getCSAddress(address, protocol);
+        int adr2 = adr + 1;
+
+        CanMessage switchMessage;
+        CanMessage switchMessage2;
+        switch (value) {
+          case RED -> {
+            switchMessage = CanMessageFactory.switchAccessory(adr2, AccessoryValue.GREEN, true, st, csUid);
+            switchMessage2 = CanMessageFactory.switchAccessory(adr, value, true, st, csUid);
+          }
+          case RED2 -> {
+            switchMessage = CanMessageFactory.switchAccessory(adr, AccessoryValue.GREEN, true, st, csUid);
+            switchMessage2 = CanMessageFactory.switchAccessory(adr2, AccessoryValue.RED, true, st, csUid);
+          }
+          default -> {
+            switchMessage = CanMessageFactory.switchAccessory(adr, value, true, st, csUid);
+            switchMessage2 = CanMessageFactory.switchAccessory(adr2, value, true, st, csUid);
+
+            CanMessage message = sendMessage(switchMessage);
+            CanMessage message2 = sendMessage(switchMessage2);
+
+            AccessoryEvent ae = AccessoryMessage.parse(message);
+            AccessoryEvent ae2 = AccessoryMessage.parse(message2);
+            accessoryManager.notifyAccessoryEventListeners(ae);
+            accessoryManager.notifyAccessoryEventListeners(ae2);
+          }
+        }
+
+        CanMessage message = sendMessage(switchMessage);
+        CanMessage message2 = sendMessage(switchMessage2);
+
+        AccessoryEvent ae = AccessoryMessage.parse(message);
+        AccessoryEvent ae2 = AccessoryMessage.parse(message2);
+        accessoryManager.notifyAccessoryEventListeners(ae);
+        accessoryManager.notifyAccessoryEventListeners(ae2);
+
+        Logger.trace("Switching biAddress Accessory with main " + adr + " to: " + value);
+
       } else {
-        //assume MM
-        adr = address - 1;
-        adr = adr + CanMessage.MM_ACCESSORY_OFFSET;
+
+        int adr = getCSAddress(address, protocol);
+        CanMessage switchMessage = CanMessageFactory.switchAccessory(adr, value, true, st, csUid);
+
+        Logger.trace("Switching accessory " + adr + " to: " + value + " Message: " + switchMessage);
+
+        CanMessage message = sendMessage(switchMessage);
+        //Notify listeners
+        AccessoryEvent ae = AccessoryMessage.parse(message);
+
+        notifyAccessoryEventListeners(ae);
       }
 
-      CanMessage switchMessage = CanMessageFactory.switchAccessory(adr, value, true, st, csUid);
-
-      Logger.trace("Switching accessory " + adr + " to: " + value + " Message: " + switchMessage);
-
-      CanMessage message = sendMessage(switchMessage);
-      //Notify listeners
-      AccessoryEvent ae = AccessoryMessage.parse(message);
-      notifyAccessoryEventListeners(ae);
+//      int a;
+//      AccessoryValue v;
+//      switch (value) {
+//        case RED2 -> {
+//          //RED2 is for the secondairy address
+//          a = address + 1;
+//          v = AccessoryValue.RED;
+//        }
+//        default -> {
+//          a = address;
+//          v = value;
+//        }
+//      }
+      //int adr = getCSAddress(a, protocol);
+//      // zero based!
+//      if ("dcc".equals(protocol)) {
+//        adr = a - 1;
+//        adr = adr + CanMessage.DCC_ACCESSORY_OFFSET;
+//      } else {
+//        //assume MM
+//        adr = a - 1;
+//        adr = adr + CanMessage.MM_ACCESSORY_OFFSET;
+//      }
+//      CanMessage switchMessage = CanMessageFactory.switchAccessory(adr, v, true, st, csUid);
+//
+//      Logger.trace("Switching accessory " + adr + " to: " + value + " Message: " + switchMessage);
+//
+//      CanMessage message = sendMessage(switchMessage);
+//      //Notify listeners
+//      AccessoryEvent ae = AccessoryMessage.parse(message);
+//
+//      notifyAccessoryEventListeners(ae);
     } else {
       Logger.trace("Trackpower is OFF! Can't switch Accessory: " + address + " to: " + value + "!");
     }
@@ -925,6 +1014,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     } else {
       accessories = getAccessoriesViaCan();
     }
+    this.accessoryManager.refreshAccessories(accessories);
     return accessories;
   }
 
@@ -972,7 +1062,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     }
   }
 
-  private void notifyAccessoryEventListeners(final AccessoryEvent accessoryEvent) {
+  void notifyAccessoryEventListeners(final AccessoryEvent accessoryEvent) {
     for (AccessoryEventListener listener : this.accessoryEventListeners) {
       listener.onAccessoryChange(accessoryEvent);
     }
@@ -1122,11 +1212,17 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
                 }
               }
               case CanMessage.ACCESSORY_SWITCHING -> {
-                Logger.trace("AccessorySwitching RX: " + eventMessage);
+                //Logger.trace("AccessorySwitching RX: " + eventMessage);
               }
               case CanMessage.ACCESSORY_SWITCHING_RESP -> {
                 AccessoryEvent ae = AccessoryMessage.parse(eventMessage);
-                notifyAccessoryEventListeners(ae);
+                if (!ae.isPower()) {
+                  Logger.trace("AccessorySwitching RX: " + eventMessage);
+                  //Only notify when the power of the accessory is turned off, so the action should have been done.
+                  //notifyAccessoryEventListeners(ae);
+
+                  accessoryManager.notifyAccessoryEventListeners(ae);
+                }
               }
               case CanMessage.LOC_VELOCITY -> {
                 Logger.trace("VelocityChange# " + eventMessage);
@@ -1316,16 +1412,15 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 //      }
       //cs.getLocomotivesViaCAN();
       //cs.getAccessoriesViaCan();
-      
       Logger.debug("Getting all accessories...");
       List<AccessoryBean> accessories = cs.getAccessories();
 
-      Logger.debug("List with "+accessories.size()+" accessories...");
-      
-      for(AccessoryBean ab : accessories) {
-        Logger.debug("Id: "+ab.getId()+" address: "+ab.getAddress()+" name "+ab.getName());
+      Logger.debug("List with " + accessories.size() + " accessories...");
+
+      for (AccessoryBean ab : accessories) {
+        Logger.debug("Id: " + ab.getId() + " address: " + ab.getAddress() + " name " + ab.getName());
       }
-      
+
 //      Logger.debug("Query SensorStatus for sensor : 1 node 65");
 //      SensorBean sb = cs.getSensorStatus(65, 1006);
 //      Logger.trace("1 SensorStatus: " + sb.toLogString());
@@ -1341,7 +1436,6 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 //      cs.pause(1000);
 //      sb = cs.getSensorStatus(65, 1006);
 //      Logger.trace("5 SensorStatus: " + sb.toLogString());
-
 //      
       //cs.getMembers();
       //cs.memberPing();

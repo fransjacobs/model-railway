@@ -80,91 +80,97 @@ import org.tinylog.Logger;
  * @author Frans Jacobs
  */
 public class AccessorySettingsPanel extends JPanel implements PropertyChangeListener {
-
+  
   private static final long serialVersionUID = -8354030030958257426L;
-
+  
   private final AccessoryBeanListModel accessoryListModel;
   //TODO: support for multiple AccessoryControllers 
   private CommandStationBean commandStationBean;
   private AccessoryBean selectedAccessory;
   private final DefaultComboBoxModel<Protocol> protocolCBModel;
   private final DefaultComboBoxModel<KeyValuePair> typeCBModel;
-
+  
   private final Map<String, KeyValuePair> typeMap = new HashMap<>();
-
+  
   private SynchronizationTask task;
-
+  
   public AccessorySettingsPanel() {
     accessoryListModel = new AccessoryBeanListModel();
     protocolCBModel = new DefaultComboBoxModel(Protocol.values());
-
+    
     List<KeyValuePair> kvl = createTypeKeyValuePairs();
     typeCBModel = new DefaultComboBoxModel(kvl.toArray());
     //Lookup for types
     for (KeyValuePair kv : kvl) {
       typeMap.put(kv.getKey(), kv);
     }
-
+    
     initComponents();
     initModels();
   }
-
+  
   private void initModels() {
     if (PersistenceFactory.getService() != null) {
       commandStationBean = PersistenceFactory.getService().getDefaultCommandStation();
       commandStationLbl.setText(commandStationBean.getDescription());
-
+      
       accessoryListModel.clear();
       List<AccessoryBean> accessories = PersistenceFactory.getService().getAccessoriesByCommandStationId(commandStationBean.getId());
       accessoryListModel.addAll(accessories);
       this.accessoryList.setModel(accessoryListModel);
-
+      
       setFieldValues();
     }
   }
-
+  
   private void setFieldValues() {
     if (selectedAccessory != null) {
       String id = selectedAccessory.getId();
       if (id != null) {
         this.idLabel.setText(id);
       }
-
+      
       Integer address = selectedAccessory.getAddress();
       if (address == null) {
         address = 0;
       }
       this.addressSpinner.setValue(address);
-
+      
+      Integer address2 = selectedAccessory.getAddress2();
+      if (address2 == null) {
+        address2 = 0;
+      }
+      this.address2Spinner.setValue(address2);
+      
       String name = selectedAccessory.getName();
       this.nameTF.setText(name);
-
+      
       String type = selectedAccessory.getType();
       if (type != null) {
         KeyValuePair kv = typeMap.get(type);
         typeCBModel.setSelectedItem(kv);
       }
-
+      
       Integer switchTime = selectedAccessory.getSwitchTime();
       if (switchTime == null) {
         switchTime = 200;
         selectedAccessory.setSwitchTime(switchTime);
       }
       this.switchTimeSpinner.setValue(switchTime);
-
+      
       Protocol protocol = selectedAccessory.getProtocol();
       this.protocolCBModel.setSelectedItem(protocol);
-
+      
       String decoder = selectedAccessory.getDecoder();
       this.decoderTF.setText(decoder);
-
+      
       Integer states = selectedAccessory.getStates();
       if (states == null) {
         states = 2;
         selectedAccessory.setStates(states);
       }
       this.statesSpinner.setValue(states);
-
+      
       if (null == selectedAccessory.getAccessoryValue()) {
         this.currentGreenStateLabel.setVisible(false);
         this.currentRedStateLabel.setVisible(false);
@@ -200,12 +206,12 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
       //String icon = selectedAccessory.getIcon();
       String iconFile = selectedAccessory.getIconFile();
       this.iconTF.setText(iconFile);
-
+      
       String source = selectedAccessory.getSource();
       if (source == null) {
         selectedAccessory.setSource("Manual Inserted");
       }
-
+      
       boolean synch = selectedAccessory.isSynchronize();
       synchronizeCB.setSelected(synch);
     } else {
@@ -225,38 +231,38 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
     }
     enableFields(selectedAccessory != null);
   }
-
+  
   private void enableFields(boolean enable) {
     //ProgressBar
     this.synchPB.setVisible(false);
-
+    
     this.synchronizeBtn.setEnabled(this.commandStationBean.isAccessoryControlSupport());
     this.synchronizeBtn.setVisible(this.commandStationBean.isAccessorySynchronizationSupport());
-
+    
     this.synchronizeCB.setEnabled(this.commandStationBean.isAccessorySynchronizationSupport() && enable);
-
+    
     boolean showId = selectedAccessory != null && selectedAccessory.getId() != null;
     this.idNameLbl.setVisible(showId);
     this.idLabel.setVisible(showId);
-
+    
     boolean showGrp = selectedAccessory != null && selectedAccessory.getGroup() != null;
     this.groupLbl.setVisible(showGrp);
     this.groupLabel.setVisible(showGrp);
-
+    
     boolean enableFields = enable && !this.synchronizeCB.isSelected();
     this.nameTF.setEnabled(enableFields);
     this.addressSpinner.setEnabled(enableFields);
     this.protocolCB.setEnabled(enableFields);
     this.typeCB.setEnabled(enableFields);
     this.decoderTF.setEnabled(enableFields);
-
+    
     boolean acsup = this.commandStationBean.isAccessorySynchronizationSupport();
     this.iconTF.setEnabled(enableFields && acsup);
     this.iconFileDialogBtn.setEnabled(enableFields && acsup);
-
+    
     this.switchTimeSpinner.setEnabled(enableFields);
     this.statesSpinner.setEnabled(enableFields);
-
+    
     this.saveBtn.setEnabled(!this.synchronizeCB.isSelected() && enable);
   }
 
@@ -287,35 +293,37 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
     synchronizeCB = new JCheckBox();
     addressLbl = new JLabel();
     addressSpinner = new JSpinner();
+    address2Lbl = new JLabel();
+    address2Spinner = new JSpinner();
     protocolLabel = new JLabel();
     protocolCB = new JComboBox<>();
+    row2Panel = new JPanel();
     typeLbl = new JLabel();
     typeCB = new JComboBox<>();
-    row2Panel = new JPanel();
+    row3Panel = new JPanel();
     nameLbl = new JLabel();
     nameTF = new JTextField();
     idNameLbl = new JLabel();
     idLabel = new JLabel();
-    row3Panel = new JPanel();
+    row4Panel = new JPanel();
     decoderLbl = new JLabel();
     decoderTF = new JTextField();
     groupLbl = new JLabel();
     groupLabel = new JLabel();
-    row4Panel = new JPanel();
+    row5Panel = new JPanel();
     statesLbl = new JLabel();
-    statesSpinner = new JSpinner();
     currentStateLbl = new JLabel();
+    statesSpinner = new JSpinner();
     currentGreenStateLabel = new JLabel();
     currentRedStateLabel = new JLabel();
-    row5Panel = new JPanel();
+    row6Panel = new JPanel();
     switchTimeLbl = new JLabel();
     switchTimeSpinner = new JSpinner();
-    row6Panel = new JPanel();
-    iconNameLbl = new JLabel();
-    iconTF = new JTextField();
-    iconFileDialogBtn = new JButton();
-    imageLabel = new JLabel();
     row7Panel = new JPanel();
+    iconNameLbl = new JLabel();
+    iconFileDialogBtn = new JButton();
+    iconTF = new JTextField();
+    imageLabel = new JLabel();
     row9Panel = new JPanel();
     filler2 = new Box.Filler(new Dimension(0, 50), new Dimension(0, 50), new Dimension(32767, 300));
     buttonPanel = new JPanel();
@@ -486,6 +494,27 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
     });
     row1Panel.add(addressSpinner);
 
+    address2Lbl.setHorizontalAlignment(SwingConstants.TRAILING);
+    address2Lbl.setLabelFor(address2Spinner);
+    address2Lbl.setText("Address2:");
+    address2Lbl.setPreferredSize(new Dimension(80, 16));
+    row1Panel.add(address2Lbl);
+
+    address2Spinner.setModel(new SpinnerNumberModel(0, 0, null, 1));
+    address2Spinner.setToolTipText("The accessorry address");
+    address2Spinner.setDoubleBuffered(true);
+    address2Spinner.setEditor(new JSpinner.NumberEditor(address2Spinner, ""));
+    address2Spinner.setMinimumSize(new Dimension(50, 26));
+    address2Spinner.setName(""); // NOI18N
+    address2Spinner.setNextFocusableComponent(nameTF);
+    address2Spinner.setPreferredSize(new Dimension(85, 26));
+    address2Spinner.addChangeListener(new ChangeListener() {
+      public void stateChanged(ChangeEvent evt) {
+        address2SpinnerStateChanged(evt);
+      }
+    });
+    row1Panel.add(address2Spinner);
+
     protocolLabel.setHorizontalAlignment(SwingConstants.TRAILING);
     protocolLabel.setLabelFor(protocolCB);
     protocolLabel.setText("Protocol:");
@@ -503,10 +532,18 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
     });
     row1Panel.add(protocolCB);
 
+    detailPanel.add(row1Panel);
+
+    row2Panel.setMinimumSize(new Dimension(380, 30));
+    row2Panel.setPreferredSize(new Dimension(380, 30));
+    FlowLayout flowLayout3 = new FlowLayout(FlowLayout.LEFT);
+    flowLayout3.setAlignOnBaseline(true);
+    row2Panel.setLayout(flowLayout3);
+
     typeLbl.setHorizontalAlignment(SwingConstants.TRAILING);
     typeLbl.setText("Type:");
-    typeLbl.setPreferredSize(new Dimension(60, 17));
-    row1Panel.add(typeLbl);
+    typeLbl.setPreferredSize(new Dimension(100, 17));
+    row2Panel.add(typeLbl);
 
     typeCB.setModel(typeCBModel);
     typeCB.setToolTipText("Accessory Type");
@@ -517,21 +554,21 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
         typeCBActionPerformed(evt);
       }
     });
-    row1Panel.add(typeCB);
+    row2Panel.add(typeCB);
 
-    detailPanel.add(row1Panel);
+    detailPanel.add(row2Panel);
 
-    row2Panel.setMinimumSize(new Dimension(380, 30));
-    row2Panel.setPreferredSize(new Dimension(380, 30));
-    FlowLayout flowLayout3 = new FlowLayout(FlowLayout.LEFT);
-    flowLayout3.setAlignOnBaseline(true);
-    row2Panel.setLayout(flowLayout3);
+    row3Panel.setMinimumSize(new Dimension(380, 30));
+    row3Panel.setPreferredSize(new Dimension(380, 30));
+    FlowLayout flowLayout4 = new FlowLayout(FlowLayout.LEFT);
+    flowLayout4.setAlignOnBaseline(true);
+    row3Panel.setLayout(flowLayout4);
 
     nameLbl.setHorizontalAlignment(SwingConstants.TRAILING);
     nameLbl.setLabelFor(nameTF);
     nameLbl.setText("Name:");
     nameLbl.setPreferredSize(new Dimension(100, 16));
-    row2Panel.add(nameLbl);
+    row3Panel.add(nameLbl);
 
     nameTF.setToolTipText("Name of the Accessory");
     nameTF.setDoubleBuffered(true);
@@ -542,50 +579,17 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
         nameTFFocusLost(evt);
       }
     });
-    row2Panel.add(nameTF);
+    row3Panel.add(nameTF);
 
     idNameLbl.setHorizontalAlignment(SwingConstants.TRAILING);
     idNameLbl.setLabelFor(idNameLbl);
     idNameLbl.setText("Id:");
     idNameLbl.setToolTipText("Accessory ID");
     idNameLbl.setPreferredSize(new Dimension(100, 17));
-    row2Panel.add(idNameLbl);
+    row3Panel.add(idNameLbl);
 
     idLabel.setPreferredSize(new Dimension(85, 17));
-    row2Panel.add(idLabel);
-
-    detailPanel.add(row2Panel);
-
-    row3Panel.setMinimumSize(new Dimension(380, 30));
-    row3Panel.setPreferredSize(new Dimension(380, 30));
-    FlowLayout flowLayout4 = new FlowLayout(FlowLayout.LEFT);
-    flowLayout4.setAlignOnBaseline(true);
-    row3Panel.setLayout(flowLayout4);
-
-    decoderLbl.setHorizontalAlignment(SwingConstants.TRAILING);
-    decoderLbl.setText("Decoder:");
-    decoderLbl.setPreferredSize(new Dimension(100, 17));
-    row3Panel.add(decoderLbl);
-
-    decoderTF.setToolTipText("Decoder Type");
-    decoderTF.setDoubleBuffered(true);
-    decoderTF.setPreferredSize(new Dimension(150, 26));
-    decoderTF.addFocusListener(new FocusAdapter() {
-      public void focusLost(FocusEvent evt) {
-        decoderTFFocusLost(evt);
-      }
-    });
-    row3Panel.add(decoderTF);
-
-    groupLbl.setHorizontalAlignment(SwingConstants.TRAILING);
-    groupLbl.setLabelFor(groupLabel);
-    groupLbl.setText("Group:");
-    groupLbl.setToolTipText("Accessory Group");
-    groupLbl.setPreferredSize(new Dimension(100, 17));
-    row3Panel.add(groupLbl);
-
-    groupLabel.setPreferredSize(new Dimension(85, 17));
-    row3Panel.add(groupLabel);
+    row3Panel.add(idLabel);
 
     detailPanel.add(row3Panel);
 
@@ -595,12 +599,50 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
     flowLayout5.setAlignOnBaseline(true);
     row4Panel.setLayout(flowLayout5);
 
+    decoderLbl.setHorizontalAlignment(SwingConstants.TRAILING);
+    decoderLbl.setText("Decoder:");
+    decoderLbl.setPreferredSize(new Dimension(100, 17));
+    row4Panel.add(decoderLbl);
+
+    decoderTF.setToolTipText("Decoder Type");
+    decoderTF.setDoubleBuffered(true);
+    decoderTF.setPreferredSize(new Dimension(150, 26));
+    decoderTF.addFocusListener(new FocusAdapter() {
+      public void focusLost(FocusEvent evt) {
+        decoderTFFocusLost(evt);
+      }
+    });
+    row4Panel.add(decoderTF);
+
+    groupLbl.setHorizontalAlignment(SwingConstants.TRAILING);
+    groupLbl.setLabelFor(groupLabel);
+    groupLbl.setText("Group:");
+    groupLbl.setToolTipText("Accessory Group");
+    groupLbl.setPreferredSize(new Dimension(100, 17));
+    row4Panel.add(groupLbl);
+
+    groupLabel.setPreferredSize(new Dimension(85, 17));
+    row4Panel.add(groupLabel);
+
+    detailPanel.add(row4Panel);
+
+    row5Panel.setMinimumSize(new Dimension(380, 30));
+    row5Panel.setPreferredSize(new Dimension(380, 30));
+    FlowLayout flowLayout6 = new FlowLayout(FlowLayout.LEFT);
+    flowLayout6.setAlignOnBaseline(true);
+    row5Panel.setLayout(flowLayout6);
+
     statesLbl.setHorizontalAlignment(SwingConstants.TRAILING);
     statesLbl.setLabelFor(statesSpinner);
     statesLbl.setText("States:");
     statesLbl.setToolTipText("");
     statesLbl.setPreferredSize(new Dimension(100, 17));
-    row4Panel.add(statesLbl);
+    row5Panel.add(statesLbl);
+
+    currentStateLbl.setHorizontalAlignment(SwingConstants.TRAILING);
+    currentStateLbl.setText("Current State:");
+    currentStateLbl.setPreferredSize(new Dimension(100, 17));
+    row5Panel.add(currentStateLbl);
 
     statesSpinner.setModel(new SpinnerNumberModel(0, 0, 300, 1));
     statesSpinner.setToolTipText("Nr of States the accessory can perform/show");
@@ -611,44 +653,15 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
         statesSpinnerStateChanged(evt);
       }
     });
-    row4Panel.add(statesSpinner);
-
-    currentStateLbl.setHorizontalAlignment(SwingConstants.TRAILING);
-    currentStateLbl.setText("Current State:");
-    currentStateLbl.setPreferredSize(new Dimension(100, 17));
-    row4Panel.add(currentStateLbl);
+    row5Panel.add(statesSpinner);
 
     currentGreenStateLabel.setIcon(new ImageIcon(getClass().getResource("/media/Button-Green-14px.png"))); // NOI18N
     currentGreenStateLabel.setPreferredSize(new Dimension(17, 17));
-    row4Panel.add(currentGreenStateLabel);
+    row5Panel.add(currentGreenStateLabel);
 
     currentRedStateLabel.setIcon(new ImageIcon(getClass().getResource("/media/Button-Red-14px.png"))); // NOI18N
     currentRedStateLabel.setPreferredSize(new Dimension(17, 17));
-    row4Panel.add(currentRedStateLabel);
-
-    detailPanel.add(row4Panel);
-
-    row5Panel.setMinimumSize(new Dimension(380, 30));
-    row5Panel.setPreferredSize(new Dimension(380, 30));
-    FlowLayout flowLayout6 = new FlowLayout(FlowLayout.LEFT);
-    flowLayout6.setAlignOnBaseline(true);
-    row5Panel.setLayout(flowLayout6);
-
-    switchTimeLbl.setHorizontalAlignment(SwingConstants.TRAILING);
-    switchTimeLbl.setLabelFor(switchTimeSpinner);
-    switchTimeLbl.setText("Switchtime (ms):");
-    switchTimeLbl.setPreferredSize(new Dimension(100, 17));
-    row5Panel.add(switchTimeLbl);
-
-    switchTimeSpinner.setModel(new SpinnerNumberModel(0, 0, null, 10));
-    switchTimeSpinner.setDoubleBuffered(true);
-    switchTimeSpinner.setPreferredSize(new Dimension(85, 26));
-    switchTimeSpinner.addChangeListener(new ChangeListener() {
-      public void stateChanged(ChangeEvent evt) {
-        switchTimeSpinnerStateChanged(evt);
-      }
-    });
-    row5Panel.add(switchTimeSpinner);
+    row5Panel.add(currentRedStateLabel);
 
     detailPanel.add(row5Panel);
 
@@ -658,32 +671,21 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
     flowLayout7.setAlignOnBaseline(true);
     row6Panel.setLayout(flowLayout7);
 
-    iconNameLbl.setHorizontalAlignment(SwingConstants.TRAILING);
-    iconNameLbl.setText("Icon:");
-    iconNameLbl.setPreferredSize(new Dimension(100, 17));
-    row6Panel.add(iconNameLbl);
+    switchTimeLbl.setHorizontalAlignment(SwingConstants.TRAILING);
+    switchTimeLbl.setLabelFor(switchTimeSpinner);
+    switchTimeLbl.setText("Switchtime (ms):");
+    switchTimeLbl.setPreferredSize(new Dimension(100, 17));
+    row6Panel.add(switchTimeLbl);
 
-    iconTF.setPreferredSize(new Dimension(375, 26));
-    iconTF.addFocusListener(new FocusAdapter() {
-      public void focusLost(FocusEvent evt) {
-        iconTFFocusLost(evt);
+    switchTimeSpinner.setModel(new SpinnerNumberModel(0, 0, null, 10));
+    switchTimeSpinner.setDoubleBuffered(true);
+    switchTimeSpinner.setPreferredSize(new Dimension(85, 26));
+    switchTimeSpinner.addChangeListener(new ChangeListener() {
+      public void stateChanged(ChangeEvent evt) {
+        switchTimeSpinnerStateChanged(evt);
       }
     });
-    row6Panel.add(iconTF);
-
-    iconFileDialogBtn.setText("...");
-    iconFileDialogBtn.setPreferredSize(new Dimension(26, 26));
-    iconFileDialogBtn.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        iconFileDialogBtnActionPerformed(evt);
-      }
-    });
-    row6Panel.add(iconFileDialogBtn);
-
-    imageLabel.setHorizontalAlignment(SwingConstants.TRAILING);
-    imageLabel.setToolTipText("The locomotive image");
-    imageLabel.setPreferredSize(new Dimension(128, 48));
-    row6Panel.add(imageLabel);
+    row6Panel.add(switchTimeSpinner);
 
     detailPanel.add(row6Panel);
 
@@ -692,6 +694,34 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
     FlowLayout flowLayout9 = new FlowLayout(FlowLayout.LEFT);
     flowLayout9.setAlignOnBaseline(true);
     row7Panel.setLayout(flowLayout9);
+
+    iconNameLbl.setHorizontalAlignment(SwingConstants.TRAILING);
+    iconNameLbl.setText("Icon:");
+    iconNameLbl.setPreferredSize(new Dimension(100, 17));
+    row7Panel.add(iconNameLbl);
+
+    iconFileDialogBtn.setText("...");
+    iconFileDialogBtn.setPreferredSize(new Dimension(26, 26));
+    iconFileDialogBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        iconFileDialogBtnActionPerformed(evt);
+      }
+    });
+    row7Panel.add(iconFileDialogBtn);
+
+    iconTF.setPreferredSize(new Dimension(375, 26));
+    iconTF.addFocusListener(new FocusAdapter() {
+      public void focusLost(FocusEvent evt) {
+        iconTFFocusLost(evt);
+      }
+    });
+    row7Panel.add(iconTF);
+
+    imageLabel.setHorizontalAlignment(SwingConstants.TRAILING);
+    imageLabel.setToolTipText("The locomotive image");
+    imageLabel.setPreferredSize(new Dimension(128, 48));
+    row7Panel.add(imageLabel);
+
     detailPanel.add(row7Panel);
 
     row9Panel.setMinimumSize(new Dimension(380, 30));
@@ -755,16 +785,16 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
     int last = accessories.size();
     String id = String.format("%03d", (last + 1));
     newAccessory.setId(id);
-
+    
     newAccessory.setSource("Manual Inserted");
-
+    
     newAccessory.setProtocol(Protocol.DCC);
     newAccessory.setSynchronize(false);
-
+    
     this.accessoryListModel.add(newAccessory);
     this.accessoryList.setSelectedValue(newAccessory, true);
     this.selectedAccessory = newAccessory;
-
+    
     setFieldValues();
   }//GEN-LAST:event_newBtnActionPerformed
 
@@ -774,8 +804,16 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
         String id = String.format("%03d", selectedAccessory.getAddress());
         selectedAccessory.setId(id);
       }
-      Logger.trace("Saving: " + selectedAccessory.toLogString());
 
+      //check address 2
+      int address = selectedAccessory.getAddress();
+      int address2 = selectedAccessory.getAddress2();
+      if (address2 == 0 || address2 == address || address2 < address) {
+        selectedAccessory.setAddress2(null);
+      }
+      
+      Logger.trace("Saving: " + selectedAccessory.toLogString());
+      
       selectedAccessory = PersistenceFactory.getService().persist(selectedAccessory);
       initModels();
       accessoryList.setSelectedValue(selectedAccessory, true);
@@ -798,11 +836,11 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
       this.synchronizeBtn.setEnabled(false);
       this.accessoryList.setEnabled(false);
       this.showAllRB.setSelected(true);
-
+      
       this.synchPB.setValue(0);
       this.synchPB.setIndeterminate(true);
       this.synchPB.setVisible(true);
-
+      
       task = new SynchronizationTask();
       task.addPropertyChangeListener(this);
       task.execute();
@@ -821,7 +859,7 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
     JFrame parentFrame = (JFrame) SwingUtilities.getAncestorOfClass(JFrame.class, this);
     IconFileChooser fileDialog = new IconFileChooser(parentFrame, true);
     fileDialog.setVisible(true);
-
+    
     File iconFile = fileDialog.getSelectedIconFile();
     if (iconFile != null) {
       //iconTF.setText(iconFile.getPath());
@@ -851,7 +889,7 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
   private void addressSpinnerStateChanged(ChangeEvent evt) {//GEN-FIRST:event_addressSpinnerStateChanged
     if (selectedAccessory != null) {
       selectedAccessory.setAddress((Integer) addressSpinner.getValue());
-      long uid = this.selectedAccessory.getAddress();
+      //long uid = this.selectedAccessory.getAddress();
       //this.selectedAccessory.setUid(uid);
     }
   }//GEN-LAST:event_addressSpinnerStateChanged
@@ -930,9 +968,22 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
     // TODO add your handling code here:
   }//GEN-LAST:event_decoderTFFocusLost
 
+  private void address2SpinnerStateChanged(ChangeEvent evt) {//GEN-FIRST:event_address2SpinnerStateChanged
+    if (selectedAccessory != null) {
+      Integer address = (Integer) addressSpinner.getValue();
+      Integer address2 = (Integer) address2Spinner.getValue();
+      
+      if (address2 > 0 && address2 > address) {
+        selectedAccessory.setAddress2(address2);
+      } else {
+        selectedAccessory.setAddress2(null);
+      }
+    }
+  }//GEN-LAST:event_address2SpinnerStateChanged
+  
   private List<KeyValuePair> createTypeKeyValuePairs() {
     List<KeyValuePair> kvl = new ArrayList<>();
-
+    
     kvl.add(new KeyValuePair("null", ""));
     kvl.add(new KeyValuePair("std_rot_gruen", "Red/Green"));
     kvl.add(new KeyValuePair("std_rot", "Red only"));
@@ -943,13 +994,13 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
     kvl.add(new KeyValuePair("dreiwegweiche", "3 way Turnout"));
     kvl.add(new KeyValuePair("entkupplungsgleis", "Decoupler"));
     kvl.add(new KeyValuePair("entkupplungsgleis_1", "Decoupler 1"));
-
+    
     kvl.add(new KeyValuePair("lichtsignal_HP01", "Signal Hp0/1"));
     kvl.add(new KeyValuePair("lichtsignal_HP02", "Signal Hp0/2"));
     kvl.add(new KeyValuePair("lichtsignal_HP012", "Signal Hp0/1/2"));
     kvl.add(new KeyValuePair("lichtsignal_HP012_SH01", "Signal Hp0/1/2 Sh0/1"));
     kvl.add(new KeyValuePair("lichtsignal_SH01", "Signal Sh0/1"));
-
+    
     kvl.add(new KeyValuePair("formsignal_HP01", "Semaphore Hp0/1"));
     kvl.add(new KeyValuePair("formsignal_HP02", "Semaphore Hp0/2"));
     kvl.add(new KeyValuePair("formsignal_HP012", "Semaphore Hp0/1/2"));
@@ -960,12 +1011,12 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
     kvl.add(new KeyValuePair("urc_lichtsignal_HP012", "Signal URC Hp0/1/2"));
     kvl.add(new KeyValuePair("urc_lichtsignal_HP012_SH01", "Signal URC Hp0/1/2"));
     kvl.add(new KeyValuePair("urc_lichtsignal_SH01", "Signal URC Sh0/1"));
-
+    
     return kvl;
   }
-
+  
   class AccessoryBeanByNameSorter implements Comparator<AccessoryBean> {
-
+    
     @Override
     public int compare(AccessoryBean a, AccessoryBean b) {
       //Avoid null pointers
@@ -977,57 +1028,57 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
       if (bb == null) {
         bb = "000";
       }
-
+      
       return aa.compareTo(bb);
     }
   }
-
+  
   class AccessoryBeanListModel extends AbstractListModel<AccessoryBean> {
-
+    
     private static final long serialVersionUID = 3490682684799724780L;
-
+    
     private final List<AccessoryBean> all;
     private final List<AccessoryBean> filtered;
-
+    
     private boolean turnoutsOnly;
     private boolean signalsOnly;
-
+    
     public AccessoryBeanListModel() {
       all = new ArrayList<>();
       filtered = new ArrayList<>();
     }
-
+    
     public void showTurnoutsOnly(boolean flag) {
       turnoutsOnly = flag;
       signalsOnly = !flag;
       filterList();
       fireContentsChanged(this, 0, getSize());
     }
-
+    
     public void showSignalsOnly(boolean flag) {
       turnoutsOnly = !flag;
       signalsOnly = flag;
       filterList();
       fireContentsChanged(this, 0, getSize());
     }
-
+    
     public void resetFilters() {
       turnoutsOnly = false;
       signalsOnly = false;
       filterList();
       fireContentsChanged(this, 0, getSize());
     }
-
+    
     @Override
     public int getSize() {
       return filtered.size();
     }
-
+    
     @Override
     public AccessoryBean getElementAt(int index) {
       return (AccessoryBean) filtered.toArray()[index];
     }
-
+    
     public void add(AccessoryBean element) {
       if (all.add(element)) {
         filterList();
@@ -1035,7 +1086,7 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
         fireContentsChanged(this, 0, getSize());
       }
     }
-
+    
     public void addAll(AccessoryBean elements[]) {
       Collection<AccessoryBean> c = Arrays.asList(elements);
       all.addAll(c);
@@ -1043,24 +1094,24 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
       Collections.sort(filtered, new AccessoryBeanByNameSorter());
       fireContentsChanged(this, 0, getSize());
     }
-
+    
     public void addAll(Collection<AccessoryBean> elements) {
       all.addAll(elements);
       filterList();
       Collections.sort(filtered, new AccessoryBeanByNameSorter());
       fireContentsChanged(this, 0, getSize());
     }
-
+    
     public void clear() {
       all.clear();
       filterList();
       fireContentsChanged(this, 0, getSize());
     }
-
+    
     public boolean contains(AccessoryBean element) {
       return filtered.contains(element);
     }
-
+    
     public AccessoryBean firstElement() {
       if (!filtered.isEmpty()) {
         return filtered.get(0);
@@ -1068,11 +1119,11 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
         return null;
       }
     }
-
+    
     public Iterator<AccessoryBean> iterator() {
       return filtered.iterator();
     }
-
+    
     public AccessoryBean lastElement() {
       if (!filtered.isEmpty()) {
         return filtered.get(filtered.size() - 1);
@@ -1080,7 +1131,7 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
         return null;
       }
     }
-
+    
     public boolean removeElement(AccessoryBean element) {
       boolean removed = all.remove(element);
       if (removed) {
@@ -1090,7 +1141,7 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
       }
       return removed;
     }
-
+    
     private void filterList() {
       filtered.clear();
       for (AccessoryBean ab : all) {
@@ -1104,14 +1155,14 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
       }
     }
   }
-
+  
   @Override
   public void propertyChange(PropertyChangeEvent evt) {
     if ("progress".equals(evt.getPropertyName())) {
       int progress = (Integer) evt.getNewValue();
       synchPB.setIndeterminate(progress < 20);
       synchPB.setValue(progress);
-
+      
       if (task.isDone()) {
         synchronizeBtn.setEnabled(commandStationBean.isLocomotiveSynchronizationSupport());
       }
@@ -1123,7 +1174,7 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
       //}
       this.accessoryList.setSelectedValue(evt.getNewValue(), true);
     }
-
+    
     if ("done".equals(evt.getPropertyName())) {
       Logger.trace("Done: " + evt.getNewValue());
       //this.connectionTestResultLbl.setText((String) evt.getNewValue());
@@ -1132,37 +1183,37 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
       accessoryList.clearSelection();
     }
   }
-
+  
   class SynchronizationTask extends SwingWorker<Void, Void> {
-
+    
     @Override
     public Void doInBackground() {
       setProgress(0);
-
+      
       AccessoryController accessoryController = ControllerFactory.getAccessoryController(commandStationBean);
       if (accessoryController != null && !accessoryController.isConnected()) {
         accessoryController.connect();
       }
-
+      
       if (accessoryController == null || !accessoryController.isConnected()) {
-
+        
         Logger.warn("No Controller or No connection!");
         firePropertyChange("done", "", "Can't Connect with Controller!");
         setProgress(0);
         return null;
       }
-
+      
       List<AccessoryBean> fromController = accessoryController.getAccessories();
       String importedFrom = commandStationBean.getShortName();
-
+      
       int accCount = fromController.size();
       int processedCount = 0;
-
+      
       for (AccessoryBean accessory : fromController) {
         String id = accessory.getId();
         AccessoryBean dbAccessory = PersistenceFactory.getService().getAccessory(id);
         boolean store = true;
-
+        
         if (dbAccessory != null && accessory.getId().equals(dbAccessory.getId())) {
           if (dbAccessory.isSynchronize()) {
             Logger.trace("Accessory id: " + accessory.getId() + ", " + accessory.getName() + " Addres: " + accessory.getAddress() + " Exists");
@@ -1178,35 +1229,34 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
           accessory.setSource(importedFrom);
         }
 
-        if (accessory.getAddress() == null) {
-          //store = false;
-          //use id as address.....?
-          accessory.setAddress(Integer.parseInt(accessory.getId()));
-          Logger.warn("Accessory " + id + " does not have an address?");
-        }
-
+        //if (accessory.getAddress() == null) {
+        //  //store = false;
+        //  //use id as address.....?
+        //  accessory.setAddress(Integer.parseInt(accessory.getId()));
+        //  Logger.warn("Accessory " + id + " does not have an address?");
+        //}
         if (store) {
           try {
             PersistenceFactory.getService().persist(accessory);
-
+            
             firePropertyChange("updated", null, accessory);
-
+            
           } catch (Exception e) {
             Logger.error(e);
           }
-
+          
         }
         processedCount++;
-
+        
         double progress = (double) processedCount / accCount * 100;
         setProgress((int) progress);
       }
-
+      
       firePropertyChange("done", "", "Accessories Synchronized");
-
+      
       return null;
     }
-
+    
     @Override
     public void done() {
       initModels();
@@ -1217,6 +1267,8 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
   // Variables declaration - do not modify//GEN-BEGIN:variables
   JScrollPane accessoriesSP;
   JList<AccessoryBean> accessoryList;
+  JLabel address2Lbl;
+  JSpinner address2Spinner;
   JLabel addressLbl;
   JSpinner addressSpinner;
   JPanel bottomPanel;

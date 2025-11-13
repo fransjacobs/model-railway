@@ -101,10 +101,10 @@ public class PersistenceServiceTest {
     jcsPropertyList.add(p10);
     jcsPropertyList.add(p11);
 
-    SensorBean s1 = new SensorBean(1, "M1", 65, 1, null, 0, 0, 0,"marklin.cs", 1);
+    SensorBean s1 = new SensorBean(1, "M1", 65, 1, null, 0, 0, 0, "marklin.cs", 1);
 
     sensors.add(s1);
-    SensorBean s2 = new SensorBean(2, "M2", 65, 2, null, 1, 1, 0,"marklin.cs", 1);
+    SensorBean s2 = new SensorBean(2, "M2", 65, 2, null, 1, 1, 0, "marklin.cs", 1);
     sensors.add(s2);
 
     LocomotiveBean loco2 = new LocomotiveBean(2L, "BR 81 002", 2L, 2, "DB BR 81 008", "mm_prg", 120, 1, 0, 0, false, true, true);
@@ -171,35 +171,35 @@ public class PersistenceServiceTest {
     FunctionBean fb49156_4 = new FunctionBean(21L, 49156L, 4, 18, 0);
     functions.add(fb49156_4);
 
-    AccessoryBean w1 = new AccessoryBean("1", 1, "W 1R", "rechtsweiche", 1, 2, 200, "mm", "ein_alt", "weichen", "005", "magicon_a_005_01.svg", "marklin.cs");
+    AccessoryBean w1 = new AccessoryBean("1", 1, null, "W 1R", "rechtsweiche", 1, 2, 200, "mm", "ein_alt", "weichen", "005", "magicon_a_005_01.svg", "marklin.cs");
     w1.setSynchronize(true);
     this.turnouts.add(w1);
 
-    AccessoryBean w2 = new AccessoryBean("2", 2, "W 2L", "linksweiche", 1, 2, 200, "mm", "ein_alt", "weichen", "006", "magicon_a_006_01.svg", "marklin.cs");
+    AccessoryBean w2 = new AccessoryBean("2", 2, null, "W 2L", "linksweiche", 1, 2, 200, "mm", "ein_alt", "weichen", "006", "magicon_a_006_01.svg", "marklin.cs");
     w2.setSynchronize(true);
     this.turnouts.add(w2);
 
-    AccessoryBean w6 = new AccessoryBean("6", 6, "W 6R", "rechtsweiche", 1, 2, 200, "mm", "ein_alt", "weichen", "005", "magicon_a_005_01.svg", "marklin.cs");
+    AccessoryBean w6 = new AccessoryBean("6", 6, null, "W 6R", "rechtsweiche", 1, 2, 200, "mm", "ein_alt", "weichen", "005", "magicon_a_005_01.svg", "marklin.cs");
     w6.setSynchronize(true);
     this.turnouts.add(w6);
 
-    AccessoryBean w7 = new AccessoryBean("7", 7, "W 7L", "linksweiche", 1, 2, 200, "mm", "ein_alt", "weichen", "006", "magicon_a_006_01.svg", "marklin.cs");
+    AccessoryBean w7 = new AccessoryBean("7", 7, null, "W 7L", "linksweiche", 1, 2, 200, "mm", "ein_alt", "weichen", "006", "magicon_a_006_01.svg", "marklin.cs");
     w7.setSynchronize(true);
     this.turnouts.add(w7);
 
-    AccessoryBean s15 = new AccessoryBean("15", 15, "S 15", "lichtsignal_SH01", 0, 2, 200, "mm", "ein_alt", "lichtsignale", "019", "magicon_a_019_00.svg", "marklin.cs");
+    AccessoryBean s15 = new AccessoryBean("15", 15, null, "S 15", "lichtsignal_SH01", 0, 2, 200, "mm", "ein_alt", "lichtsignale", "019", "magicon_a_019_00.svg", "marklin.cs");
     s15.setSynchronize(true);
     this.signals.add(s15);
 
-    AccessoryBean s19 = new AccessoryBean("19", 19, "S 19", "lichtsignal_HP01", 0, 2, 200, "mm", "ein_alt", "lichtsignale", "015", "magicon_a_015_00.svg", "marklin.cs");
+    AccessoryBean s19 = new AccessoryBean("19", 19, null, "S 19", "lichtsignal_HP01", 0, 2, 200, "mm", "ein_alt", "lichtsignale", "015", "magicon_a_015_00.svg", "marklin.cs");
     s19.setSynchronize(true);
     this.signals.add(s19);
 
-    AccessoryBean s25 = new AccessoryBean("25", 25, "S 25/26", "urc_lichtsignal_HP012_SH01", 0, 4, 200, "mm", "ein_alt", "lichtsignale", "027", "magicon_a_027_00.svg", "marklin.cs");
+    AccessoryBean s25 = new AccessoryBean("25", 25, null, "S 25/26", "urc_lichtsignal_HP012_SH01", 0, 4, 200, "mm", "ein_alt", "lichtsignale", "027", "magicon_a_027_00.svg", "marklin.cs");
     s25.setSynchronize(true);
     this.signals.add(s25);
 
-    AccessoryBean s41 = new AccessoryBean("41", 41, "S 41", "urc_lichtsignal_HP012", 0, 3, 200, "mm", "ein_alt", "lichtsignale", "026", "magicon_a_026_00.svg", "marklin.cs");
+    AccessoryBean s41 = new AccessoryBean("41", 41, null, "S 41", "urc_lichtsignal_HP012", 0, 3, 200, "mm", "ein_alt", "lichtsignale", "026", "magicon_a_026_00.svg", "marklin.cs");
     s41.setSynchronize(true);
     this.signals.add(s41);
 
@@ -405,7 +405,7 @@ public class PersistenceServiceTest {
   @Order(9)
   public void testRemoveSensorBean() {
     System.out.println("removeSensorBean");
-    SensorBean sensor = new SensorBean(4, "M1P4", 1, 4, 65, 0, 1, 0,"marklin.cs", 2);
+    SensorBean sensor = new SensorBean(4, "M1P4", 1, 4, 65, 0, 1, 0, "marklin.cs", 2);
 
     PersistenceService instance = PersistenceFactory.getService();
 
@@ -669,7 +669,7 @@ public class PersistenceServiceTest {
   @Order(19)
   public void testPersistAccessoryBean() {
     System.out.println("persistAccessoryBean");
-    AccessoryBean accessory = new AccessoryBean("100", 100, "W 100", "rechtsweiche", 1, 2, 200, "mm", "ein_alt", "weichen", "005", "magicon_a_005_01.svg", "marklin.cs");
+    AccessoryBean accessory = new AccessoryBean("100", 100, null, "W 100", "rechtsweiche", 1, 2, 200, "mm", "ein_alt", "weichen", "005", "magicon_a_005_01.svg", "marklin.cs");
 
     PersistenceService instance = PersistenceFactory.getService();
 
@@ -699,7 +699,7 @@ public class PersistenceServiceTest {
   @Order(20)
   public void testRemoveAccessoryBean() {
     System.out.println("removeAccessoryBean");
-    AccessoryBean accessory = new AccessoryBean("101", 101, "W 101", "rechtsweiche", 1, 2, 200, "mm", "ein_alt", "weichen", "005", "magicon_a_005_01.svg", "marklin.cs");
+    AccessoryBean accessory = new AccessoryBean("101", 101, null, "W 101", "rechtsweiche", 1, 2, 200, "mm", "ein_alt", "weichen", "005", "magicon_a_005_01.svg", "marklin.cs");
     PersistenceService instance = PersistenceFactory.getService();
 
     AccessoryBean result = instance.persist(accessory);
