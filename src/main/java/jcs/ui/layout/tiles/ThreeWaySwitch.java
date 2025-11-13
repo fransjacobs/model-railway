@@ -178,6 +178,8 @@ public class ThreeWaySwitch extends Switch implements AccessoryEventListener {
         if ((from == Orientation.WEST && to == Orientation.EAST) || (from == Orientation.EAST && to == Orientation.WEST)) {
           return AccessoryValue.GREEN;
         } else if (((from == Orientation.EAST && to == Orientation.SOUTH) || (from == Orientation.SOUTH && to == Orientation.EAST)) && Orientation.EAST == getOrientation()) {
+          return AccessoryValue.RED2;
+        } else if (((from == Orientation.EAST && to == Orientation.NORTH) || (from == Orientation.NORTH && to == Orientation.EAST)) && Orientation.EAST == getOrientation()) {
           return AccessoryValue.RED;
         } else if (((from == Orientation.WEST && to == Orientation.NORTH) || (from == Orientation.NORTH && to == Orientation.WEST)) && Orientation.WEST == getOrientation()) {
           return AccessoryValue.RED2;
