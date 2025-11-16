@@ -3,7 +3,7 @@
 var path = require('path');
 var os = require('os');
 var jdeployHomeDir = process.env.JDEPLOY_HOME || path.join(os.homedir(), '.jdeploy');
-var jarName = "jcs-0.0.3.jar";
+var jarName = "jcs-0.0.3-rc1.jar";
 var mainClass = "{{MAIN_CLASS}}";
 var classPath = "{{CLASSPATH}}";
 var port = "0";

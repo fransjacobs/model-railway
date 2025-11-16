@@ -3,12 +3,4 @@
 src/main/resources/media/Thumbs.db
 src/main/resources/media/Thumbs.db
 src/main/resources/media/Thumbs.db:encryptable
-jdeploy/jcs-0.0.3-rc1.jar
-jdeploy/jcs-0.0.3.jar
-jdeploy/jdeploy-bundle/jcs-0.0.3-rc1.jar
-jdeploy/jcs-0.0.3.jar
-jdeploy/jdeploy/publish/jdeploy-bundle/jcs-0.0.3.jar
-jdeploy/jdeploy/publish/jdeploy-bundle/jcs-0.0.3-rc1.jar
-jdeploy/jdeploy/cheerpj/jdeploy-cheerpj.jar
-jdeploy/jdeploy/cheerpj/jcs-0.0.3-rc1.jar
-jdeploy/jdeploy-bundle/jcs-0.0.3.jar
+*.jar
