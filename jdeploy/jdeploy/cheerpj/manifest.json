@@ -1,0 +1,13 @@
+{
+    "background_color": "#fff",
+    "display": "standalone",
+    "name": "JCS 0.0.3 RC 1",
+    "start_url": ".",
+    "description": "JCS is model railway automation software",
+    "short_name": "JCS 0.0.3 RC 1",
+    "icons": [{
+        "sizes": "512x512",
+        "src": "icon.png",
+        "type": "image/png"
+    }]
+}

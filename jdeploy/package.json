@@ -1,22 +1,33 @@
 {
     "bin": {"jcs": "jdeploy-bundle/jdeploy.js"},
     "author": "Frans Jacobs",
-    "description": "JCS is model raiway automation software",
+    "description": "JCS is model railway automation software",
     "main": "index.js",
     "preferGlobal": true,
     "repository": "",
     "version": "0.0.3",
     "jdeploy": {
-        "jdk": false,
-        "fallbackToUniversal": false,
         "generateLegacyBundles": false,
-        "publishTargets": [],
         "javaVersion": "21",
-        "permissions": [{"name": "local_network"}],
-        "jar": "jcs-0.0.3.jar",
-        "javafx": false,
-        "title": "JCS 0.0.3 SNAPSHOT",
+        "title": "JCS 0.0.3 RC 2",
         "downloadPage": {"platforms": ["default"]},
+        "jdk": false,
+        "args": ["-Xms256m -Xmx1024m --add-opens=java.desktop/sun.lwawt.macosx=ALL-UNNAMED -Dsun.java2d.metal=true"],
+        "fallbackToUniversal": false,
+        "publishTargets": [],
+        "permissions": [
+            {
+                "name": "local_network",
+                "description": "JCS needs access to the network to be able to connect with a command station"
+            },
+            {
+                "name": "file_provider_presence",
+                "description": "JCS need permission to write files in you home folder"
+            }
+        ],
+        "documentTypes": [],
+        "jar": "jcs-0.0.3-rc1.jar",
+        "javafx": false,
         "platformBundlesEnabled": false
     },
     "dependencies": {
@@ -26,8 +37,8 @@
         "yauzl": "^2.10.0",
         "shelljs": "^0.8.4"
     },
-    "license": "Apache",
-    "name": "JCS-0.0.3-SNAPSHOT",
+    "license": "Apache 2.0",
+    "name": "jcs003rc2",
     "files": ["jdeploy-bundle"],
     "scripts": {"test": "echo \"Error: no test specified\" && exit 1"},
     "homepage": "https://github.com/fransjacobs/model-railway"
