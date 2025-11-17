@@ -438,10 +438,10 @@
                             <bundleJre>true</bundleJre>
                             <customizedJre>false</customizedJre>
                             <jreDirectoryName>jre</jreDirectoryName>
-                            <jrePath>${user.home}/Java/Windows/jdk-21.0.9+10-jre</jrePath>
+                            <!--Comment next line out to be sure the github tests will not fail -->
+                            <!--jrePath>${user.home}/Java/Windows/jdk-21.0.9+10-jre</jrePath-->
                             <!--platform>auto|linux|mac|windows</platform-->
                             <platform>windows</platform>
-                            <!--platform>auto</platform-->
                             <winConfig>
                                 <headerType>gui</headerType>
                                 <icoFile>target/classes/media/jcs.ico</icoFile>
@@ -600,96 +600,7 @@
                     </execution>
                 </executions>
             </plugin-->
-            <!--plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>appassembler-maven-plugin</artifactId>
-                <version>2.1.0</version>
-                <configuration>
-                    <assembleDirectory>${project.build.directory}/binary</assembleDirectory>
-                    <repositoryLayout>flat</repositoryLayout>
-                    <repositoryName>lib</repositoryName>
-                    <extraJvmArguments>-Xms256m -Xmx10242m</extraJvmArguments>
-                    <platforms>
-                        <platform>unix</platform>
-                        <platform>windows</platform>
-                    </platforms>
-                    <programs>
-                        <program>
-                            <mainClass>${app.main.class}</mainClass>
-                            <id>jcs</id>
-                        </program>
-                    </programs>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>make-distribution</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>assemble</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin-->
-            <!--plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.7.1</version>
-                <executions>    
-                    <execution>
-                        <id>server</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                        <configuration>
-                            <archive>
-                                <manifest>
-                                    <addClasspath>true</addClasspath>
-                                    <mainClass>${app.main.class}</mainClass>
-                                </manifest>
-                            </archive>
-                            <descriptorRefs>
-                                <descriptorRef>jar-with-dependencies</descriptorRef>
-                            </descriptorRefs>
-                            <appendAssemblyId>true</appendAssemblyId>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin-->
-            <!--plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.7.1</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                        <configuration>
-                            <appendAssemblyId>false</appendAssemblyId>
-                            <finalName>${project.artifactId}</finalName>
-                            <outputDirectory>${project.build.directory}/dist</outputDirectory>
-                            <descriptorRefs>
-                                <descriptorRef>jar-with-dependencies</descriptorRef>
-                            </descriptorRefs>
-                            <archive>
-                                <manifest> 
-                                    <addClasspath>false</addClasspath>
-                                    <mainClass>${app.main.class}</mainClass>
-                                    <classpathPrefix>lib/</classpathPrefix>
-                                </manifest>
-                                <manifestEntries>
-                                    <Release-Version>${project.version}</Release-Version>
-                                </manifestEntries>
-                            </archive>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin-->
-
         </plugins>
-        
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
@@ -705,7 +616,7 @@
                 <filtering>false</filtering>
             </resource>
             <resource>
-                <directory>${project.build.directory}/generated-resources/licenses</directory>
+                <directory>${project.basedir}/licenses</directory>
                 <targetPath>META-INF/licenses</targetPath>
                 <includes>
                     <include>**/*.txt</include>
