@@ -419,14 +419,14 @@
                             <goal>package</goal>
                         </goals>
                         <configuration>
-                            <name>windows</name>
+                            <name>with-jre</name>
                             <bundleJre>true</bundleJre>
                             <customizedJre>false</customizedJre>
                             <jreDirectoryName>jre</jreDirectoryName>
                             <!--Comment next line out to be sure the github tests will not fail -->
                             <!--jrePath>${user.home}/Java/Windows/jdk-21.0.9+10-jre</jrePath-->
                             <!--platform>auto|linux|mac|windows</platform-->
-                            <platform>windows</platform>
+                            <platform>auto</platform>
                             <winConfig>
                                 <headerType>gui</headerType>
                                 <icoFile>target/classes/media/jcs.ico</icoFile>
@@ -462,9 +462,9 @@
                             <goal>package</goal>
                         </goals>
                         <configuration>
-                            <name>jcs</name>
+                            <name>without-jre</name>
                             <bundleJre>false</bundleJre>
-                            <platform>mac</platform>
+                            <platform>auto</platform>
                             <winConfig>
                                 <headerType>gui</headerType>
                                 <icoFile>target/classes/media/jcs.ico</icoFile>
