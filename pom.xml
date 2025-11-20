@@ -433,7 +433,7 @@
                                 <setupMode>installForCurrentUser</setupMode>
                                 <generateMsi>false</generateMsi>
                                 <generateMsm>false</generateMsm>
-                                <generateSetup>true</generateSetup>
+                                <generateSetup>false</generateSetup>
                                 <wrapJar>false</wrapJar>
                                 <companyName>${organizationName}</companyName>
                                 <productVersion>1.0.0.0</productVersion>
@@ -462,7 +462,7 @@
                             <goal>package</goal>
                         </goals>
                         <configuration>
-                            <name>without-jre</name>
+                            <name>jcs</name>
                             <bundleJre>false</bundleJre>
                             <platform>auto</platform>
                             <winConfig>
