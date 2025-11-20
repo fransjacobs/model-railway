@@ -397,7 +397,7 @@
                     <createTarball>false</createTarball>
                     <assetsDir>${project.basedir}/assets</assetsDir>
                     <additionalResources>
-                        <additionalResource>${project.basedir}/assets/${name}.l4j.ini</additionalResource>
+                        <additionalResource>${project.basedir}/assets/${project.name}.l4j.ini</additionalResource>
                         <additionalResource>${project.basedir}/README.md</additionalResource>
                         <additionalResource>${project.basedir}/JCS_SETUP.md</additionalResource>
                         <additionalResource>${project.basedir}/JCS_SETUP_NL.md</additionalResource>
@@ -444,6 +444,27 @@
                                 <originalFilename>${project.name}.exe</originalFilename>
                                 <exeCreationTool>launch4j</exeCreationTool>
                             </winConfig>
+                            <macConfig>
+                                <appId>${app.main.class}</appId>
+                                <icnsFile>target/classes/media/jcs.icns</icnsFile>
+                                <generateDmg>false</generateDmg>
+                                <generatePkg>false</generatePkg>
+                                <volumeName>jcs</volumeName>
+                                <macStartup>UNIVERSAL</macStartup>
+                                <relocateJar>false</relocateJar>
+                                <codesignApp>false</codesignApp>
+                                <hardenedCodesign>false</hardenedCodesign>
+                                <notarizeApp>false</notarizeApp>
+                                <infoPlist>
+                                    <bundlePackageType>BNDL</bundlePackageType>
+                                    <additionalEntries>
+                                    <![CDATA[
+                                      <key>NSLocalNetworkUsageDescription</key>
+                                      <string>The local network permission is required for functionality of this application.</string>
+                                    ]]>
+                                    </additionalEntries>
+                                </infoPlist>
+                            </macConfig>
                             <linuxConfig>
                                 <generateAppImage>false</generateAppImage>
                                 <generateDeb>true</generateDeb>
@@ -488,8 +509,8 @@
                                 <generateDmg>false</generateDmg>
                                 <generatePkg>false</generatePkg>
                                 <volumeName>jcs</volumeName>
-                                <!--macStartup>SCRIPT</macStartup-->
-                                <macStartup>UNIVERSAL</macStartup>
+                                <macStartup>SCRIPT</macStartup>
+                                <!--macStartup>UNIVERSAL</macStartup-->
                                 <relocateJar>false</relocateJar>
                                 <codesignApp>false</codesignApp>
                                 <hardenedCodesign>false</hardenedCodesign>
