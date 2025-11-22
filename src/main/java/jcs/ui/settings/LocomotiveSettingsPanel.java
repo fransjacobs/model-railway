@@ -1192,6 +1192,13 @@ public class LocomotiveSettingsPanel extends JPanel implements PropertyChangeLis
             loco.setShow(dbLoco.isShow());
             loco.setImported(importedFrom);
             loco.setSynchronize(true);
+            
+            loco.setSpeedOne(dbLoco.getSpeedOne());
+            loco.setSpeedTwo(dbLoco.getSpeedTwo());
+            loco.setSpeedThree(dbLoco.getSpeedThree());
+            loco.setSpeedFour(dbLoco.getSpeedFour());
+            
+            
           } else {
             Logger.trace("Skip Loco id: " + loco.getId() + ", " + loco.getName() + " Addres: " + loco.getAddress() + " Decoder: " + loco.getDecoderTypeString() + " Exists");
             store = false;

@@ -113,7 +113,7 @@ public class AboutDialog extends javax.swing.JDialog {
     northPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 5, 0));
 
     jcsIconLbl.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-    jcsIconLbl.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/jcs-train-64.png"))); // NOI18N
+    jcsIconLbl.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/jcs-train-2-64.png"))); // NOI18N
     jcsIconLbl.setPreferredSize(new java.awt.Dimension(75, 75));
     iconPanel.add(jcsIconLbl);
 

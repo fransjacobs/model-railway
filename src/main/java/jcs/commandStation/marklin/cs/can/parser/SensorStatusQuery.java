@@ -63,7 +63,14 @@ public class SensorStatusQuery {
       SensorBean sensorBean = new SensorBean(contactId, null, null, null, identifier, status, previousStatus, millis, System.currentTimeMillis(), MARKLIN_CS, busNumber);
       return sensorBean;
     } else {
-      Logger.warn("Can't parse message, not a Sensor Response! " + resp);
+      if (CanMessage.S88_EVENT_QUERY == resp.getCommand()) {
+        byte[] data = resp.getData();
+        Integer identifier = ByteUtil.toInt(new byte[]{data[0], data[1]});
+        Integer contactId = ByteUtil.toInt(new byte[]{data[2], data[3]});
+        Logger.warn("No response for query to node: " + identifier + " contactId " + contactId);
+      } else {
+        Logger.error("Can't parse message, not a Sensor Response! " + resp);
+      }
       return null;
     }
   }

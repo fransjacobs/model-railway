@@ -47,6 +47,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 import javax.swing.TransferHandler.TransferSupport;
 import jcs.commandStation.autopilot.AutoPilot;
+import static jcs.commandStation.autopilot.AutoPilot.getLocomotiveDispatcher;
+import jcs.commandStation.autopilot.state.Dispatcher;
 import jcs.entities.BlockBean;
 import jcs.entities.BlockBean.BlockState;
 import jcs.entities.LocomotiveBean;
@@ -277,7 +279,6 @@ public class LayoutCanvas extends JPanel {
 //    List<Tile> tiles = TileCache.loadTiles(readonly);
 //    loadTiles(tiles);
 //  }
-
   private void loadTiles(List<Tile> tiles) {
     removeAll();
     validate();
@@ -649,7 +650,6 @@ public class LayoutCanvas extends JPanel {
     boolean isGhost = ((Block) tile).getBlockBean().getBlockState() == BlockState.GHOST;
     this.startLocomotiveMI.setEnabled(autoPilotEnabled && hasLoco);
     this.stopLocomotiveMI.setEnabled(autoPilotEnabled && hasLoco);
-    this.resetDispatcherMI.setEnabled(autoPilotEnabled && hasLoco);
     this.removeLocMI.setEnabled(hasLoco);
     this.toggleLocomotiveDirectionMI.setEnabled(hasLoco);
     this.reverseArrivalSideMI.setEnabled(hasLoco);
@@ -662,6 +662,18 @@ public class LayoutCanvas extends JPanel {
     } else {
       this.toggleOutOfOrderMI.setText("Set Out of Order");
     }
+
+    this.resetDispatcherMI.setEnabled(autoPilotEnabled && hasLoco);
+    
+    if (hasLoco  && !this.resetDispatcherMI.isEnabled() ) {
+      //Dispatcher might still be active
+      LocomotiveBean locomotiveBean = ((Block) tile).getBlockBean().getLocomotive();
+
+      Dispatcher d = AutoPilot.getLocomotiveDispatcher(locomotiveBean);
+
+      this.resetDispatcherMI.setEnabled(d != null && d.isRunning());
+    }
+
 
     this.blockPopupMenu.show(this, p.x, p.y);
   }
