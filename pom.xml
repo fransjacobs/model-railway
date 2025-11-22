@@ -450,7 +450,7 @@
                                 <generateDmg>false</generateDmg>
                                 <generatePkg>false</generatePkg>
                                 <volumeName>jcs</volumeName>
-                                <macStartup>UNIVERSAL</macStartup>
+                                <macStartup>SCRIPT</macStartup>
                                 <relocateJar>false</relocateJar>
                                 <codesignApp>false</codesignApp>
                                 <hardenedCodesign>false</hardenedCodesign>

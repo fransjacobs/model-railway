@@ -5,3 +5,4 @@ src/main/resources/media/Thumbs.db
 src/main/resources/media/Thumbs.db:encryptable
 *.jar
 dependency-reduced-pom.xml
+/apple_build/
