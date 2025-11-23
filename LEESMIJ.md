@@ -30,6 +30,11 @@ Inmiddels is het uitgegroeid tot een volledige tool die:
 
 Het doel is niet om te concurreren met professionele producten, maar om iets open, uitbreidbaar en gemakkelijk te bedienen te creëren, — voor iedereen die graag met treinen en code knutselt. 🚉✨
 
+
+## 📄 Gebruikers handleiding
+De [Gebruikers handleiding](https://github.com/fransjacobs/model-railway/wiki) is aan de Wiki toegevoegd.
+ 
+
 ## 🎯 Waarom dit project?
 
 De meeste commerciële oplossingen voor modelspoorautomatisering voelen als een **black box** — met (heel) veel functionaliteit, maar gesloten, star en overkill voor mijn hobby-layout(s).  
