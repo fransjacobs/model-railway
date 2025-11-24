@@ -467,8 +467,8 @@
                             </macConfig>
                             <linuxConfig>
                                 <generateAppImage>false</generateAppImage>
-                                <generateDeb>true</generateDeb>
-                                <generateRpm>true</generateRpm>
+                                <generateDeb>false</generateDeb>
+                                <generateRpm>false</generateRpm>
                                 <wrapJar>true</wrapJar>
                                 <categories>
                                     <category>Education</category>
@@ -527,8 +527,8 @@
                             </macConfig>
                             <linuxConfig>
                                 <generateAppImage>false</generateAppImage>
-                                <generateDeb>true</generateDeb>
-                                <generateRpm>true</generateRpm>
+                                <generateDeb>false</generateDeb>
+                                <generateRpm>false</generateRpm>
                                 <wrapJar>true</wrapJar>
                                 <categories>
                                     <category>Education</category>
