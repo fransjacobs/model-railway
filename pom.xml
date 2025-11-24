@@ -393,7 +393,7 @@
                     <vmArgs>-Dtinylog.writer.level=trace -Xms256m -Xmx1024m</vmArgs> 
                     <licenseFile>${project.basedir}/LICENSE</licenseFile>
                     <url>https://github.com/fransjacobs/model-railway</url>
-                    <createZipball>false</createZipball>
+                    <createZipball>true</createZipball>
                     <createTarball>false</createTarball>
                     <assetsDir>${project.basedir}/assets</assetsDir>
                     <additionalResources>
@@ -419,7 +419,7 @@
                             <goal>package</goal>
                         </goals>
                         <configuration>
-                            <name>with-jre</name>
+                            <name>jcs-jre</name>
                             <bundleJre>true</bundleJre>
                             <customizedJre>false</customizedJre>
                             <jreDirectoryName>jre</jreDirectoryName>
