@@ -28,6 +28,11 @@ It’s built for hobbyists who like software, trains, and tinkering.
 
 ---
 
+## 📄 User Manual
+The [User Manual](https://github.com/fransjacobs/model-railway/wiki) is added to the Wiki.
+ 
+---
+
 ## 🎯 Why Build This?
 
 Many commercial model railway automation tools are powerful but not open, or are restricted in flexibility. JCS is about:

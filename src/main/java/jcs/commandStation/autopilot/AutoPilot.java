@@ -591,7 +591,11 @@ public final class AutoPilot {
     private void refreshAllSensorValues() {
       List<SensorBean> sensors = PersistenceFactory.getService().getAssignedSensors();
       for (SensorBean sb : sensors) {
-        JCS.getJcsCommandStation().getSensorStatus(sb);
+        if (AutoPilot.isAutoModeActive()) {
+          JCS.getJcsCommandStation().getSensorStatus(sb);
+        } else {
+          break;
+        }
       }
     }
 
