@@ -2,9 +2,43 @@
 <licenseSummary>
   <dependencies>
     <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>1.5.21</version>
+      <licenses>
+        <license>
+          <name>Eclipse Public License - v 1.0</name>
+          <url>http://www.eclipse.org/legal/epl-v10.html</url>
+          <file>eclipse public license - v 1.0 - epl-v10.html</file>
+        </license>
+        <license>
+          <name>GNU Lesser General Public License</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
+          <file>gnu lesser general public license - lgpl-2.1.html</file>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-core</artifactId>
+      <version>1.5.21</version>
+      <licenses>
+        <license>
+          <name>Eclipse Public License - v 1.0</name>
+          <url>http://www.eclipse.org/legal/epl-v10.html</url>
+          <file>eclipse public license - v 1.0 - epl-v10.html</file>
+        </license>
+        <license>
+          <name>GNU Lesser General Public License</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
+          <file>gnu lesser general public license - lgpl-2.1.html</file>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
       <groupId>com.dieselpoint</groupId>
       <artifactId>norm</artifactId>
-      <version>1.1</version>
+      <version>1.2</version>
       <licenses>
         <license>
           <name>The Apache Software License, Version 2.0</name>
@@ -17,7 +51,7 @@
     <dependency>
       <groupId>com.fazecast</groupId>
       <artifactId>jSerialComm</artifactId>
-      <version>2.10.4</version>
+      <version>2.11.4</version>
       <licenses>
         <license>
           <name>GNU Lesser GPL, Version 3</name>
@@ -34,7 +68,7 @@
     <dependency>
       <groupId>com.formdev</groupId>
       <artifactId>flatlaf</artifactId>
-      <version>3.4</version>
+      <version>3.6.2</version>
       <licenses>
         <license>
           <name>The Apache License, Version 2.0</name>
@@ -59,7 +93,7 @@
     <dependency>
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
-      <version>2.2.222</version>
+      <version>2.4.240</version>
       <licenses>
         <license>
           <name>MPL 2.0</name>
@@ -76,21 +110,21 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>com.thizzer.jtouchbar</groupId>
-      <artifactId>jtouchbar</artifactId>
-      <version>1.0.0</version>
+      <groupId>com.shinyhut</groupId>
+      <artifactId>vernacular</artifactId>
+      <version>1.14</version>
       <licenses>
         <license>
           <name>MIT License</name>
-          <url>https://github.com/Thizzer/JTouchBar/blob/master/LICENSE</url>
-          <file>mit license - license.html</file>
+          <url>http://www.opensource.org/licenses/mit-license.php</url>
+          <file>mit license - mit-license.html</file>
         </license>
       </licenses>
     </dependency>
     <dependency>
       <groupId>com.twelvemonkeys.common</groupId>
       <artifactId>common-image</artifactId>
-      <version>3.10.1</version>
+      <version>3.12.0</version>
       <licenses>
         <license>
           <name>The BSD License</name>
@@ -103,7 +137,7 @@
     <dependency>
       <groupId>com.twelvemonkeys.common</groupId>
       <artifactId>common-io</artifactId>
-      <version>3.10.1</version>
+      <version>3.12.0</version>
       <licenses>
         <license>
           <name>The BSD License</name>
@@ -116,7 +150,7 @@
     <dependency>
       <groupId>com.twelvemonkeys.common</groupId>
       <artifactId>common-lang</artifactId>
-      <version>3.10.1</version>
+      <version>3.12.0</version>
       <licenses>
         <license>
           <name>The BSD License</name>
@@ -129,7 +163,7 @@
     <dependency>
       <groupId>com.twelvemonkeys.imageio</groupId>
       <artifactId>imageio-batik</artifactId>
-      <version>3.10.1</version>
+      <version>3.12.0</version>
       <licenses>
         <license>
           <name>The BSD License</name>
@@ -142,7 +176,7 @@
     <dependency>
       <groupId>com.twelvemonkeys.imageio</groupId>
       <artifactId>imageio-core</artifactId>
-      <version>3.10.1</version>
+      <version>3.12.0</version>
       <licenses>
         <license>
           <name>The BSD License</name>
@@ -155,7 +189,7 @@
     <dependency>
       <groupId>com.zaxxer</groupId>
       <artifactId>HikariCP</artifactId>
-      <version>5.1.0</version>
+      <version>6.3.3</version>
       <licenses>
         <license>
           <name>The Apache Software License, Version 2.0</name>
@@ -168,10 +202,10 @@
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>2.11.0</version>
+      <version>2.17.0</version>
       <licenses>
         <license>
-          <name>Apache License, Version 2.0</name>
+          <name>Apache-2.0</name>
           <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
           <distribution>repo</distribution>
           <file>the apache license, version 2.0 - license-2.0.txt</file>
@@ -181,11 +215,13 @@
     <dependency>
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging</artifactId>
-      <version>1.0.4</version>
+      <version>1.3.0</version>
       <licenses>
         <license>
-          <name>The Apache Software License, Version 2.0</name>
-          <url>/LICENSE.txt</url>
+          <name>Apache-2.0</name>
+          <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+          <distribution>repo</distribution>
+          <file>the apache license, version 2.0 - license-2.0.txt</file>
         </license>
       </licenses>
     </dependency>
@@ -203,15 +239,15 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>javax.persistence</groupId>
-      <artifactId>javax.persistence-api</artifactId>
-      <version>2.2</version>
+      <groupId>jakarta.persistence</groupId>
+      <artifactId>jakarta.persistence-api</artifactId>
+      <version>3.2.0</version>
       <licenses>
         <license>
-          <name>Eclipse Public License v1.0</name>
-          <url>http://www.eclipse.org/legal/epl-v10.html</url>
+          <name>Eclipse Public License v. 2.0</name>
+          <url>http://www.eclipse.org/legal/epl-2.0</url>
           <distribution>repo</distribution>
-          <file>eclipse public license v1.0 - epl-v10.html</file>
+          <file>eclipse public license v. 2.0 - epl-2.0.html</file>
           <comments>Standard Eclipse Licence</comments>
         </license>
         <license>
@@ -232,31 +268,29 @@
           <name>Eclipse Public License 1.0</name>
           <url>http://www.eclipse.org/legal/epl-v10.html</url>
           <distribution>repo</distribution>
-          <file>eclipse public license v1.0 - epl-v10.html</file>
+          <file>eclipse public license - v 1.0 - epl-v10.html</file>
         </license>
       </licenses>
     </dependency>
     <dependency>
-      <groupId>net.bytebuddy</groupId>
-      <artifactId>byte-buddy</artifactId>
-      <version>1.14.11</version>
+      <groupId>net.straylightlabs</groupId>
+      <artifactId>hola</artifactId>
+      <version>0.2.3</version>
       <licenses>
         <license>
-          <name>Apache License, Version 2.0</name>
-          <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
-          <distribution>repo</distribution>
-          <file>the apache license, version 2.0 - license-2.0.txt</file>
-          <comments>A business-friendly OSS license</comments>
+          <name>The MIT License (MIT)</name>
+          <url>http://opensource.org/licenses/MIT</url>
+          <file>the mit license (mit) - mit.html</file>
         </license>
       </licenses>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>3.12.0</version>
+      <version>3.19.0</version>
       <licenses>
         <license>
-          <name>Apache License, Version 2.0</name>
+          <name>Apache-2.0</name>
           <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
           <distribution>repo</distribution>
           <file>the apache license, version 2.0 - license-2.0.txt</file>
@@ -266,7 +300,7 @@
     <dependency>
       <groupId>org.apache.xmlgraphics</groupId>
       <artifactId>batik</artifactId>
-      <version>1.17</version>
+      <version>1.19</version>
       <licenses>
         <license>
           <name>The Apache Software License, Version 2.0</name>
@@ -279,7 +313,7 @@
     <dependency>
       <groupId>org.apache.xmlgraphics</groupId>
       <artifactId>batik-anim</artifactId>
-      <version>1.17</version>
+      <version>1.19</version>
       <licenses>
         <license>
           <name>The Apache Software License, Version 2.0</name>
@@ -292,7 +326,7 @@
     <dependency>
       <groupId>org.apache.xmlgraphics</groupId>
       <artifactId>batik-awt-util</artifactId>
-      <version>1.17</version>
+      <version>1.19</version>
       <licenses>
         <license>
           <name>The Apache Software License, Version 2.0</name>
@@ -305,7 +339,7 @@
     <dependency>
       <groupId>org.apache.xmlgraphics</groupId>
       <artifactId>batik-bridge</artifactId>
-      <version>1.17</version>
+      <version>1.19</version>
       <licenses>
         <license>
           <name>The Apache Software License, Version 2.0</name>
@@ -318,7 +352,7 @@
     <dependency>
       <groupId>org.apache.xmlgraphics</groupId>
       <artifactId>batik-constants</artifactId>
-      <version>1.17</version>
+      <version>1.19</version>
       <licenses>
         <license>
           <name>The Apache Software License, Version 2.0</name>
@@ -331,7 +365,7 @@
     <dependency>
       <groupId>org.apache.xmlgraphics</groupId>
       <artifactId>batik-css</artifactId>
-      <version>1.17</version>
+      <version>1.19</version>
       <licenses>
         <license>
           <name>The Apache Software License, Version 2.0</name>
@@ -344,7 +378,7 @@
     <dependency>
       <groupId>org.apache.xmlgraphics</groupId>
       <artifactId>batik-dom</artifactId>
-      <version>1.17</version>
+      <version>1.19</version>
       <licenses>
         <license>
           <name>The Apache Software License, Version 2.0</name>
@@ -357,7 +391,7 @@
     <dependency>
       <groupId>org.apache.xmlgraphics</groupId>
       <artifactId>batik-ext</artifactId>
-      <version>1.17</version>
+      <version>1.19</version>
       <licenses>
         <license>
           <name>The Apache Software License, Version 2.0</name>
@@ -370,7 +404,7 @@
     <dependency>
       <groupId>org.apache.xmlgraphics</groupId>
       <artifactId>batik-gvt</artifactId>
-      <version>1.17</version>
+      <version>1.19</version>
       <licenses>
         <license>
           <name>The Apache Software License, Version 2.0</name>
@@ -383,7 +417,7 @@
     <dependency>
       <groupId>org.apache.xmlgraphics</groupId>
       <artifactId>batik-i18n</artifactId>
-      <version>1.17</version>
+      <version>1.19</version>
       <licenses>
         <license>
           <name>The Apache Software License, Version 2.0</name>
@@ -396,7 +430,7 @@
     <dependency>
       <groupId>org.apache.xmlgraphics</groupId>
       <artifactId>batik-parser</artifactId>
-      <version>1.17</version>
+      <version>1.19</version>
       <licenses>
         <license>
           <name>The Apache Software License, Version 2.0</name>
@@ -409,7 +443,7 @@
     <dependency>
       <groupId>org.apache.xmlgraphics</groupId>
       <artifactId>batik-script</artifactId>
-      <version>1.17</version>
+      <version>1.19</version>
       <licenses>
         <license>
           <name>The Apache Software License, Version 2.0</name>
@@ -422,7 +456,7 @@
     <dependency>
       <groupId>org.apache.xmlgraphics</groupId>
       <artifactId>batik-shared-resources</artifactId>
-      <version>1.17</version>
+      <version>1.19</version>
       <licenses>
         <license>
           <name>The Apache Software License, Version 2.0</name>
@@ -435,7 +469,7 @@
     <dependency>
       <groupId>org.apache.xmlgraphics</groupId>
       <artifactId>batik-svg-dom</artifactId>
-      <version>1.17</version>
+      <version>1.19</version>
       <licenses>
         <license>
           <name>The Apache Software License, Version 2.0</name>
@@ -448,7 +482,7 @@
     <dependency>
       <groupId>org.apache.xmlgraphics</groupId>
       <artifactId>batik-svggen</artifactId>
-      <version>1.17</version>
+      <version>1.19</version>
       <licenses>
         <license>
           <name>The Apache Software License, Version 2.0</name>
@@ -461,7 +495,7 @@
     <dependency>
       <groupId>org.apache.xmlgraphics</groupId>
       <artifactId>batik-transcoder</artifactId>
-      <version>1.17</version>
+      <version>1.19</version>
       <licenses>
         <license>
           <name>The Apache Software License, Version 2.0</name>
@@ -474,7 +508,7 @@
     <dependency>
       <groupId>org.apache.xmlgraphics</groupId>
       <artifactId>batik-util</artifactId>
-      <version>1.17</version>
+      <version>1.19</version>
       <licenses>
         <license>
           <name>The Apache Software License, Version 2.0</name>
@@ -487,7 +521,7 @@
     <dependency>
       <groupId>org.apache.xmlgraphics</groupId>
       <artifactId>batik-xml</artifactId>
-      <version>1.17</version>
+      <version>1.19</version>
       <licenses>
         <license>
           <name>The Apache Software License, Version 2.0</name>
@@ -500,7 +534,7 @@
     <dependency>
       <groupId>org.apache.xmlgraphics</groupId>
       <artifactId>xmlgraphics-commons</artifactId>
-      <version>2.9</version>
+      <version>2.11</version>
       <licenses>
         <license>
           <name>The Apache Software License, Version 2.0</name>
@@ -525,10 +559,10 @@
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
-      <version>3.25.3</version>
+      <version>3.27.6</version>
       <licenses>
         <license>
-          <name>Apache License, Version 2.0</name>
+          <name>Apache-2.0</name>
           <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
           <distribution>repo</distribution>
           <file>the apache license, version 2.0 - license-2.0.txt</file>
@@ -550,12 +584,12 @@
     <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest</artifactId>
-      <version>2.2</version>
+      <version>3.0</version>
       <licenses>
         <license>
-          <name>BSD License 3</name>
-          <url>http://opensource.org/licenses/BSD-3-Clause</url>
-          <file>bsd license 3 - bsd-3-clause.html</file>
+          <name>BSD-3-Clause</name>
+          <url>https://raw.githubusercontent.com/hamcrest/JavaHamcrest/master/LICENSE</url>
+          <file>bsd-3-clause - license.txt</file>
         </license>
       </licenses>
     </dependency>
@@ -587,13 +621,25 @@
     </dependency>
     <dependency>
       <groupId>org.httprpc</groupId>
-      <artifactId>sierra</artifactId>
-      <version>2.0.5</version>
+      <artifactId>kilo-client</artifactId>
+      <version>4.10</version>
       <licenses>
         <license>
           <name>The Apache License, Version 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-          <file>the apache software license, version 2.0 - license-2.0.txt</file>
+          <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+          <file>the apache license, version 2.0 - license-2.0.txt</file>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.httprpc</groupId>
+      <artifactId>sierra</artifactId>
+      <version>2.8</version>
+      <licenses>
+        <license>
+          <name>The Apache License, Version 2.0</name>
+          <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+          <file>the apache license, version 2.0 - license-2.0.txt</file>
         </license>
       </licenses>
     </dependency>
@@ -613,7 +659,7 @@
     <dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
-      <version>20240303</version>
+      <version>20250517</version>
       <licenses>
         <license>
           <name>Public Domain</name>
@@ -626,7 +672,7 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
-      <version>5.10.2</version>
+      <version>5.14.1</version>
       <licenses>
         <license>
           <name>Eclipse Public License v2.0</name>
@@ -638,7 +684,7 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-params</artifactId>
-      <version>5.10.2</version>
+      <version>5.14.1</version>
       <licenses>
         <license>
           <name>Eclipse Public License v2.0</name>
@@ -650,7 +696,7 @@
     <dependency>
       <groupId>org.junit.platform</groupId>
       <artifactId>junit-platform-commons</artifactId>
-      <version>1.10.2</version>
+      <version>1.14.1</version>
       <licenses>
         <license>
           <name>Eclipse Public License v2.0</name>
@@ -662,7 +708,7 @@
     <dependency>
       <groupId>org.junit.platform</groupId>
       <artifactId>junit-platform-engine</artifactId>
-      <version>1.10.2</version>
+      <version>1.14.1</version>
       <licenses>
         <license>
           <name>Eclipse Public License v2.0</name>
@@ -674,7 +720,7 @@
     <dependency>
       <groupId>org.junit.vintage</groupId>
       <artifactId>junit-vintage-engine</artifactId>
-      <version>5.10.2</version>
+      <version>5.14.1</version>
       <licenses>
         <license>
           <name>Eclipse Public License v2.0</name>
@@ -699,7 +745,7 @@
     <dependency>
       <groupId>org.netbeans.external</groupId>
       <artifactId>AbsoluteLayout</artifactId>
-      <version>RELEASE210</version>
+      <version>RELEASE270</version>
       <licenses>
         <license>
           <name>The Apache Software License, Version 2.0</name>
@@ -724,26 +770,26 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <version>2.0.12</version>
+      <version>2.0.17</version>
       <licenses>
         <license>
-          <name>MIT License</name>
-          <url>http://www.opensource.org/licenses/mit-license.php</url>
+          <name>MIT</name>
+          <url>https://opensource.org/license/mit</url>
           <distribution>repo</distribution>
-          <file>mit license - mit-license.html</file>
+          <file>mit - mit.html</file>
         </license>
       </licenses>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-nop</artifactId>
-      <version>2.0.12</version>
+      <version>2.0.17</version>
       <licenses>
         <license>
-          <name>MIT License</name>
-          <url>http://www.opensource.org/licenses/mit-license.php</url>
+          <name>MIT</name>
+          <url>https://opensource.org/license/mit</url>
           <distribution>repo</distribution>
-          <file>mit license - mit-license.html</file>
+          <file>mit - mit.html</file>
         </license>
       </licenses>
     </dependency>
@@ -768,31 +814,6 @@
           <name>The Apache Software License, Version 2.0</name>
           <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
           <file>the apache license, version 2.0 - license-2.0.txt</file>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>xml-apis</groupId>
-      <artifactId>xml-apis</artifactId>
-      <version>1.4.01</version>
-      <licenses>
-        <license>
-          <name>The Apache Software License, Version 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-          <distribution>repo</distribution>
-          <file>the apache software license, version 2.0 - license-2.0.txt</file>
-        </license>
-        <license>
-          <name>The SAX License</name>
-          <url>http://www.saxproject.org/copying.html</url>
-          <distribution>repo</distribution>
-          <file>the sax license - copying.html</file>
-        </license>
-        <license>
-          <name>The W3C License</name>
-          <url>http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407/java-binding.zip</url>
-          <distribution>repo</distribution>
-          <file>the w3c license - java-binding.txt</file>
         </license>
       </licenses>
     </dependency>
