@@ -28,6 +28,7 @@ import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.DecoderType;
 import jcs.entities.RouteBean;
 import jcs.entities.SensorBean;
+import jcs.entities.StationBean;
 import jcs.entities.TileBean;
 
 /**
@@ -243,7 +244,7 @@ public interface PersistenceService {
   /**
    * Retrieves a list of FunctionBeans associated with a locomotive.
    *
-   * @param locomotiveId The ID of the locomotive.
+   * @param locomotive
    * @return A List of FunctionBeans.
    */
   List<FunctionBean> getLocomotiveFunctions(LocomotiveBean locomotive);
@@ -251,7 +252,7 @@ public interface PersistenceService {
   /**
    * Retrieves a FunctionBean associated with a locomotive and function number.
    *
-   * @param locomotiveId The ID of the locomotive.
+   * @param locomotive
    * @param number The function number.
    * @return The FunctionBean, or null if not found.
    */
@@ -404,6 +405,7 @@ public interface PersistenceService {
    * Persists a list of TileBeans.
    *
    * @param tiles The list of TileBeans to persist.
+   * @return a List of persisted tiles
    */
   List<TileBean> persist(List<TileBean> tiles);
 
@@ -583,4 +585,25 @@ public interface PersistenceService {
    * @return The Image, or null if not found.
    */
   Image readImage(String imageName, boolean function);
+
+  /**
+   *
+   * @return a list of Stations
+   */
+  List<StationBean> getStations();
+
+  /**
+   *
+   * @param id
+   * @return
+   */
+  StationBean getStation(String id);
+
+  /**
+   *
+   * @param station
+   * @return the persisted StationBean
+   */
+  StationBean persist(StationBean station);
+
 }

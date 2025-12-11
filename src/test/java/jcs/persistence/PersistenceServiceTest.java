@@ -29,6 +29,7 @@ import jcs.entities.LocomotiveBean.DecoderType;
 import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
 import jcs.entities.SensorBean;
+import jcs.entities.StationBean;
 import jcs.entities.TileBean;
 import jcs.entities.TileBean.Direction;
 import jcs.entities.TileBean.Orientation;
@@ -796,8 +797,8 @@ public class PersistenceServiceTest {
   public void testPersistListTileBeans() {
     System.out.println("persistListTileBeans");
     PersistenceService instance = PersistenceFactory.getService();
-    List<TileBean> tbl = this.tiles;
-    TileBean sw22 = new TileBean("sw-22", TileBean.TileType.CROSS, Orientation.EAST, Direction.CENTER, 100, 100, null, null, null);
+    //List<TileBean> tbl = this.tiles;
+    //TileBean sw22 = new TileBean("sw-22", TileBean.TileType.CROSS, Orientation.EAST, Direction.CENTER, 100, 100, null, null, null);
     List<TileBean> current = instance.getTileBeans();
 
     // There should be 10 tiles...
@@ -1120,5 +1121,18 @@ public class PersistenceServiceTest {
     assertEquals("dcc-ex", defCS3.getId());
 
   }
+  
+  @Test
+  @Order(40)
+  public void testGetStations() {
+    System.out.println("getStations");
+    PersistenceService instance = PersistenceFactory.getService();
+
+    List<StationBean> stations = instance.getStations();
+    assertEquals(2, stations.size());
+    
+  }
+  
+  
 
 }

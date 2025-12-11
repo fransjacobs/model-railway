@@ -41,6 +41,7 @@ import jcs.entities.LocomotiveBean.DecoderType;
 import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
 import jcs.entities.SensorBean;
+import jcs.entities.StationBean;
 import jcs.entities.TileBean;
 import jcs.persistence.sqlmakers.H2SqlMaker;
 import org.tinylog.Logger;
@@ -271,7 +272,7 @@ public class H2PersistenceService implements PersistenceService {
       dt = DecoderType.DCC;
     }
 
-    Object[] args = new Object[]{address, dt.getDecoderType()+"%", commandStationId};
+    Object[] args = new Object[]{address, dt.getDecoderType() + "%", commandStationId};
 
     LocomotiveBean loco = database.where("address=? and decoder_type like ? and command_station_id=?", args).first(LocomotiveBean.class);
     if (loco != null) {
@@ -1053,6 +1054,29 @@ public class H2PersistenceService implements PersistenceService {
 
     changeSupport.firePropertyChange("data.commandStation", prev, newDefaultCommandStationBean);
     return newDefaultCommandStationBean;
+  }
+
+  @Override
+  public List<StationBean> getStations() {
+    List<StationBean> stationBeans = database.results(StationBean.class);
+    return stationBeans;
+  }
+
+  @Override
+  public StationBean getStation(String id) {
+    return database.where("id=?", id).first(StationBean.class);
+  }
+
+  @Override
+  public StationBean persist(StationBean station) {
+    StationBean dsb = getStation(station.getId());
+    if (dsb != null) {
+      database.update(station);
+    } else {
+      database.insert(station);
+    }
+
+    return station;
   }
 
 }

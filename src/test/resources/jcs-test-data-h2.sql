@@ -104,3 +104,7 @@ insert into blocks (id,tile_id,description,plus_sensor_id,min_sensor_id,plus_sig
   ('bk-2','bk-2','Block 2',null,null,null,null,null);
 
 commit;
+
+insert into stations(id, name, min_locs, loc_count, use_fifo) values 
+  ('st-1','Mittelstadt Hbf', 1, 0, true),
+  ('st-2','Wildpark', 2, 0, true);
