@@ -12,7 +12,7 @@
     <inceptionYear>2018</inceptionYear>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>21</java.version>
+        <java.version>25</java.version>
         <packaging>jar</packaging>
         <app.main.class>jcs.JCS</app.main.class>
         <maven.compiler.release>25</maven.compiler.release>
@@ -28,7 +28,7 @@
     <developers>
         <developer>
             <name>Frans Jacobs</name>
-            <email>frans.jacobs@gmail.com</email>
+            <email>frans.jacobs-at-gmail.com</email>
         </developer>
     </developers>
     <dependencies>
@@ -50,7 +50,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.19.0</version>
+            <version>3.20.0</version>
         </dependency>
         <dependency>
             <groupId>org.beryx</groupId>
@@ -75,7 +75,7 @@
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
-            <version>6.3.3</version>
+            <version>7.0.2</version>
         </dependency>
         <dependency>
             <groupId>org.json</groupId>
@@ -113,13 +113,13 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>5.14.1</version>
+            <version>6.0.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-params</artifactId>
-            <version>5.14.1</version>
+            <version>6.0.1</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -131,7 +131,7 @@
         <dependency>
             <groupId>org.junit.vintage</groupId>
             <artifactId>junit-vintage-engine</artifactId>
-            <version>5.14.1</version>
+            <version>6.0.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -172,7 +172,7 @@
         <dependency>
             <groupId>org.httprpc</groupId>
             <artifactId>sierra</artifactId>
-            <version>2.8</version>
+            <version>3.5.2</version>
         </dependency>     
         <dependency>
             <groupId>eu.hansolo</groupId>
@@ -207,7 +207,7 @@
         <dependency>
             <groupId>org.netbeans.external</groupId>
             <artifactId>AbsoluteLayout</artifactId>
-            <version>RELEASE270</version>
+            <version>RELEASE280</version>
         </dependency>
     </dependencies>
     <build>        
@@ -233,7 +233,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.4.2</version>
+                <version>3.5.0</version>
                 <configuration>
                     <skipIfEmpty>true</skipIfEmpty>
                     <archive>
@@ -305,7 +305,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>3.3.1</version>              
+                <version>3.4.0</version>              
                 <configuration>
                     <encoding>UTF-8</encoding>
                     <propertiesEncoding>${project.build.sourceEncoding}</propertiesEncoding>
