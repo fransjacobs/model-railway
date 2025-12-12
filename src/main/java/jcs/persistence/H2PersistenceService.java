@@ -42,6 +42,7 @@ import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
 import jcs.entities.SensorBean;
 import jcs.entities.StationBean;
+import jcs.entities.StationBlockBean;
 import jcs.entities.TileBean;
 import jcs.persistence.sqlmakers.H2SqlMaker;
 import org.tinylog.Logger;
@@ -1001,14 +1002,18 @@ public class H2PersistenceService implements PersistenceService {
 
   @Override
   public synchronized void remove(BlockBean block) {
-    int rows = database.delete(block).getRowsAffected();
-    Logger.trace(rows + " rows deleted");
+    int rows = database.sql("delete from station_blocks where block_id =?", block.getId()).execute().getRowsAffected();
+    Logger.trace("Deleted " + rows + " StationBlocks");
+    rows = database.delete(block).getRowsAffected();
+    Logger.trace("Deleted " + rows + " blocks");
     changeSupport.firePropertyChange("data.block.deleted", block, null);
   }
 
   @Override
   public synchronized void removeAllBlocks() {
-    int rows = database.sql("delete from blocks").execute().getRowsAffected();
+    int rows = database.sql("delete from station_blocks").execute().getRowsAffected();
+    Logger.trace("Deleted " + rows + " StationBlocks");
+    rows = database.sql("delete from blocks").execute().getRowsAffected();
     Logger.trace("Deleted " + rows + " blocks");
     changeSupport.firePropertyChange("data.block.deleted", null, null);
   }
@@ -1056,15 +1061,28 @@ public class H2PersistenceService implements PersistenceService {
     return newDefaultCommandStationBean;
   }
 
+  StationBean addReleatedObjects(StationBean stationBean) {
+    List<StationBlockBean> stationBlockBeans = database.where("station_id=?", stationBean.getId()).results(StationBlockBean.class);
+    for (StationBlockBean sbb : stationBlockBeans) {
+      sbb.setStation(stationBean);
+    }
+    stationBean.setBlocks(stationBlockBeans);
+    return stationBean;
+  }
+
   @Override
   public List<StationBean> getStations() {
     List<StationBean> stationBeans = database.results(StationBean.class);
+    for (StationBean sb : stationBeans) {
+      addReleatedObjects(sb);
+    }
     return stationBeans;
   }
 
   @Override
   public StationBean getStation(String id) {
-    return database.where("id=?", id).first(StationBean.class);
+    StationBean sb = database.where("id=?", id).first(StationBean.class);
+    return addReleatedObjects(sb);
   }
 
   @Override

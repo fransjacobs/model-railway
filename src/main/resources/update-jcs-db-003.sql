@@ -7,11 +7,12 @@ create table stations (
   constraint stat_pk primary key (id)
 );
 
+drop table if exists station_blocks;
 create table station_blocks (
   id            varchar(255) not null,
   station_id    varchar(255) not null,
   block_id      varchar(255) not null,
-  last_updated  date,
+  last_updated  timestamp,
   constraint stbl_pk primary key (id)
 );
 

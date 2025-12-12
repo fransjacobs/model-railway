@@ -20,7 +20,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -35,10 +38,12 @@ public class StationBean {
   private Integer minLocomotives;
   private boolean fifo;
 
-  private List<StationBlockBean> blocks;
+  private Map<String, StationBlockBean> stationBlockBeans;
+  private List<BlockBean> blockBeans;
 
   public StationBean() {
-    blocks = new ArrayList<>();
+    stationBlockBeans = new HashMap<>();
+    blockBeans = new ArrayList<>();
   }
 
   @Id
@@ -89,11 +94,32 @@ public class StationBean {
 
   @Transient
   public List<StationBlockBean> getBlocks() {
-    return blocks;
+    List<StationBlockBean> stationBlockList = new ArrayList(stationBlockBeans.values());
+
+    stationBlockList.sort(Comparator.comparing(StationBlockBean::getLastUpdated));
+    return stationBlockList;
   }
 
   public void setBlocks(List<StationBlockBean> blocks) {
-    this.blocks = blocks;
+    this.stationBlockBeans.clear();
+    this.blockBeans.clear();
+    for (StationBlockBean sbb : blocks) {
+      this.stationBlockBeans.put(sbb.getBlockId(), sbb);
+      this.blockBeans.add(sbb.getBlock());
+    }
+  }
+
+  public void addBlock(BlockBean block) {
+    if (!this.blockBeans.contains(block)) {
+      this.blockBeans.add(block);
+      StationBlockBean sbb = new StationBlockBean(this, block);
+      this.stationBlockBeans.put(sbb.getBlockId(), sbb);
+    }
+  }
+
+  public void removeBlock(BlockBean block) {
+    this.blockBeans.remove(block);
+    this.stationBlockBeans.remove(block.getId());
   }
 
   @Override

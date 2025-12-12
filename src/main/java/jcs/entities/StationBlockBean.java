@@ -16,7 +16,6 @@
 package jcs.entities;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
@@ -31,7 +30,7 @@ import java.util.Objects;
   @Index(name = "stbl_stat_blck_un_idx", columnList = "station_id, block_id", unique = true)})
 public class StationBlockBean {
 
-  private Long id;
+  private String id;
   private String stationId;
   private String blockId;
   private Date lastUpdated;
@@ -43,14 +42,21 @@ public class StationBlockBean {
 
   }
 
+  public StationBlockBean(StationBean station, BlockBean block) {
+    this.station = station;
+    this.block = block;
+    this.stationId = station.getId();
+    this.blockId = block.getId();
+    this.id = station.getId() + "~" + block.getId();
+  }
+
   @Id
-  @GeneratedValue
   @Column(name = "id")
-  public Long getId() {
+  public String getId() {
     return id;
   }
 
-  public void setId(Long id) {
+  public void setId(String id) {
     this.id = id;
   }
 
@@ -61,6 +67,9 @@ public class StationBlockBean {
 
   public void setStationId(String stationId) {
     this.stationId = stationId;
+    if (this.stationId != null && this.blockId != null) {
+      this.id = stationId + "~" + blockId;
+    }
   }
 
   @Column(name = "block_id", length = 255, nullable = false)
@@ -70,6 +79,9 @@ public class StationBlockBean {
 
   public void setBlockId(String blockId) {
     this.blockId = blockId;
+    if (this.stationId != null && this.blockId != null) {
+      this.id = stationId + "~" + blockId;
+    }
   }
 
   @Column(name = "last_updated")
@@ -88,6 +100,14 @@ public class StationBlockBean {
 
   public void setStation(StationBean station) {
     this.station = station;
+    if (station != null) {
+      this.stationId = station.getId();
+    } else {
+      this.stationId = null;
+    }
+    if (this.stationId != null && this.blockId != null) {
+      this.id = stationId + "~" + blockId;
+    }
   }
 
   @Transient
@@ -97,6 +117,14 @@ public class StationBlockBean {
 
   public void setBlock(BlockBean block) {
     this.block = block;
+    if (block != null) {
+      this.blockId = block.getId();
+    } else {
+      this.blockId = null;
+    }
+    if (this.stationId != null && this.blockId != null) {
+      this.id = stationId + "~" + blockId;
+    }
   }
 
   @Override
@@ -106,8 +134,6 @@ public class StationBlockBean {
     hash = 59 * hash + Objects.hashCode(this.stationId);
     hash = 59 * hash + Objects.hashCode(this.blockId);
     hash = 59 * hash + Objects.hashCode(this.lastUpdated);
-    hash = 59 * hash + Objects.hashCode(this.station);
-    hash = 59 * hash + Objects.hashCode(this.block);
     return hash;
   }
 
@@ -132,13 +158,7 @@ public class StationBlockBean {
     if (!Objects.equals(this.id, other.id)) {
       return false;
     }
-    if (!Objects.equals(this.lastUpdated, other.lastUpdated)) {
-      return false;
-    }
-    if (!Objects.equals(this.station, other.station)) {
-      return false;
-    }
-    return Objects.equals(this.block, other.block);
+    return Objects.equals(this.lastUpdated, other.lastUpdated);
   }
 
   @Override

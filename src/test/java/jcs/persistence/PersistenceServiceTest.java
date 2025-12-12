@@ -30,6 +30,7 @@ import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
 import jcs.entities.SensorBean;
 import jcs.entities.StationBean;
+import jcs.entities.StationBlockBean;
 import jcs.entities.TileBean;
 import jcs.entities.TileBean.Direction;
 import jcs.entities.TileBean.Orientation;
@@ -208,6 +209,10 @@ public class PersistenceServiceTest {
     tiles.add(bk1);
     TileBean bk2 = new TileBean("bk-2", TileBean.TileType.BLOCK, Orientation.EAST, Direction.CENTER, 420, 140, null, null, null);
     tiles.add(bk2);
+    TileBean bk3 = new TileBean("bk-3", TileBean.TileType.BLOCK, Orientation.EAST, Direction.CENTER, 620, 140, null, null, null);
+    tiles.add(bk3);
+    TileBean bk4 = new TileBean("bk-4", TileBean.TileType.BLOCK, Orientation.EAST, Direction.CENTER, 720, 140, null, null, null);
+    tiles.add(bk4);
     TileBean ct2 = new TileBean("ct-2", TileBean.TileType.CURVED, Orientation.EAST, Direction.CENTER, 260, 140, null, null, null);
     tiles.add(ct2);
     TileBean ct5 = new TileBean("ct-5", TileBean.TileType.CURVED, Orientation.SOUTH, Direction.CENTER, 180, 380, null, null, null);
@@ -254,6 +259,15 @@ public class PersistenceServiceTest {
     block2.setDescription("Block 2");
     block2.setId("bk-2");
     this.blocks.add(block2);
+
+    BlockBean block3 = new BlockBean(bk3);
+    block3.setDescription("Block 3");
+    block3.setId("bk-3");
+    this.blocks.add(block3);
+    BlockBean block4 = new BlockBean(bk4);
+    block4.setDescription("Block 4");
+    block4.setId("bk-4");
+    this.blocks.add(block4);
   }
 
   @After
@@ -741,7 +755,7 @@ public class PersistenceServiceTest {
     Integer x = 300;
     Integer y = 180;
     PersistenceService instance = PersistenceFactory.getService();
-    TileBean expResult = tiles.get(7);
+    TileBean expResult = tiles.get(9);
     TileBean result = instance.getTileBean(x, y);
     assertEquals(expResult, result);
   }
@@ -802,13 +816,13 @@ public class PersistenceServiceTest {
     List<TileBean> current = instance.getTileBeans();
 
     // There should be 10 tiles...
-    assertEquals(10, current.size());
+    assertEquals(12, current.size());
     // tbl.add(sw22);
     // instance.persist(tbl);
     List<TileBean> current2 = instance.getTileBeans();
 
     // There should now be 10 tiles...
-    assertEquals(10, current2.size());
+    assertEquals(12, current2.size());
 
     // TileBean tb = instance.getTileBean(100, 100);
     // assertEquals(sw22, tb);
@@ -989,6 +1003,9 @@ public class PersistenceServiceTest {
 
     //expected:<BlockBean{id=bk-1, tileId=bk-1, description=Block 1, status=null, arrivalSuffix=null, plusSensorId=null, minSensorId=null, plusSignalId=null, minSignalId=null, locomotiveId=null}> 
     //but was:<null>
+    System.out.println(expResult.toLogString());
+    System.out.println(result.toLogString());
+
     assertEquals(expResult, result);
   }
 
@@ -1121,7 +1138,7 @@ public class PersistenceServiceTest {
     assertEquals("dcc-ex", defCS3.getId());
 
   }
-  
+
   @Test
   @Order(40)
   public void testGetStations() {
@@ -1130,9 +1147,32 @@ public class PersistenceServiceTest {
 
     List<StationBean> stations = instance.getStations();
     assertEquals(2, stations.size());
-    
   }
-  
-  
+
+  @Test
+  @Order(40)
+  public void testGetStation() {
+    System.out.println("getStation");
+    PersistenceService instance = PersistenceFactory.getService();
+
+    StationBean station = instance.getStation("st-1");
+
+    assertEquals("Mittelstadt Hbf", station.getName());
+
+    List<StationBlockBean> stationBlockBeans = station.getBlocks();
+
+    assertEquals(2, stationBlockBeans.size());
+
+    for (int i = 0; i < stationBlockBeans.size(); i++) {
+      StationBlockBean sbb = stationBlockBeans.get(i);
+      if (i == 0) {
+        assertEquals("st-1~bk-3", sbb.getId());
+      }
+      if (i == 1) {
+        assertEquals("st-1~bk-4", sbb.getId());
+      }
+    }
+
+  }
 
 }
