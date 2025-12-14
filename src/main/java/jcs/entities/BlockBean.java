@@ -19,6 +19,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 
 import java.util.Collections;
 import java.util.Map;
@@ -59,7 +61,10 @@ public class BlockBean {
   private AccessoryBean minSignal;
   private LocomotiveBean locomotive;
 
+  private transient PropertyChangeSupport pcs;
+
   public BlockBean() {
+    this(null);
   }
 
   public BlockBean(TileBean tileBean) {
@@ -68,6 +73,7 @@ public class BlockBean {
       this.tileId = tileBean.getId();
       this.id = tileBean.getId();
     }
+    this.pcs = new PropertyChangeSupport(this);
   }
 
   @Id
@@ -315,6 +321,13 @@ public class BlockBean {
 
   public void setLogicalDirection(String logicalDirection) {
     this.logicalDirection = logicalDirection;
+  }
+
+  public void addPropertyChangeListener(PropertyChangeListener listener) {
+    if (pcs == null) {
+      pcs = new PropertyChangeSupport(this);
+    }
+    pcs.addPropertyChangeListener(listener);
   }
 
   @Transient
