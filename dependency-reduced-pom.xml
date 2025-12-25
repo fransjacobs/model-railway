@@ -11,7 +11,7 @@
   <developers>
     <developer>
       <name>Frans Jacobs</name>
-      <email>frans.jacobs@gmail.com</email>
+      <email>frans.jacobs-at-gmail.com</email>
     </developer>
   </developers>
   <licenses>
@@ -63,7 +63,7 @@
       </plugin>
       <plugin>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>3.4.2</version>
+        <version>3.5.0</version>
         <configuration>
           <skipIfEmpty>true</skipIfEmpty>
           <archive>
@@ -131,7 +131,7 @@
       </plugin>
       <plugin>
         <artifactId>maven-resources-plugin</artifactId>
-        <version>3.3.1</version>
+        <version>3.4.0</version>
         <configuration>
           <encoding>UTF-8</encoding>
           <propertiesEncoding>${project.build.sourceEncoding}</propertiesEncoding>
@@ -497,7 +497,7 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
-      <version>5.14.1</version>
+      <version>6.0.1</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -512,24 +512,32 @@
           <artifactId>apiguardian-api</artifactId>
           <groupId>org.apiguardian</groupId>
         </exclusion>
+        <exclusion>
+          <artifactId>jspecify</artifactId>
+          <groupId>org.jspecify</groupId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-params</artifactId>
-      <version>5.14.1</version>
+      <version>6.0.1</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
           <artifactId>apiguardian-api</artifactId>
           <groupId>org.apiguardian</groupId>
         </exclusion>
+        <exclusion>
+          <artifactId>jspecify</artifactId>
+          <groupId>org.jspecify</groupId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
       <groupId>org.junit.vintage</groupId>
       <artifactId>junit-vintage-engine</artifactId>
-      <version>5.14.1</version>
+      <version>6.0.1</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -543,6 +551,10 @@
         <exclusion>
           <artifactId>apiguardian-api</artifactId>
           <groupId>org.apiguardian</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>jspecify</artifactId>
+          <groupId>org.jspecify</groupId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -578,12 +590,10 @@
     </dependency>
   </dependencies>
   <properties>
-    <maven.compiler.release>${java.version}</maven.compiler.release>
-    <java.version>21</java.version>
-    <maven.compiler.source>${java.version}</maven.compiler.source>
-    <packaging>jar</packaging>
-    <maven.compiler.target>${java.version}</maven.compiler.target>
+    <maven.compiler.release>25</maven.compiler.release>
+    <java.version>25</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <packaging>jar</packaging>
     <app.main.class>jcs.JCS</app.main.class>
     <app.distribution.directory>${project.build.directory}/distributions/app</app.distribution.directory>
   </properties>

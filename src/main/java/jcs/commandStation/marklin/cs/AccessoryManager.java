@@ -25,10 +25,9 @@ import org.tinylog.Logger;
 
 /**
  * Accessory Manager for Marklin CS. <br>
- * This Manager check whether an accessory has 2 addresses like 3 way turnouts or Signals.<br>
- * The order event are give sometime matters, hence all accessory command go via this class.
+ * This Manager check whether an accessory has 2 addresses, like 3 way turnouts or Signals.<br>
+ * The order of events are given sometime matters, hence all accessory commands go via this class.
  *
- * @author frans
  */
 class AccessoryManager {
 
