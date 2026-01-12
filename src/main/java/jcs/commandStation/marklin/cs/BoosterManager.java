@@ -93,7 +93,7 @@ class BoosterManager {
     if(!measurements.isEmpty()) {
     //get the last measurement as template
     long lastKey = measurements.lastKey();
-    Map<String,MeasurementBean> lastMesurement = measurements.get(lastKey);
+    Map<String,MeasurementBean> lastMeasurement = measurements.get(lastKey);
     //hier gebleven
     
     //    //Signal listeners that there are no measurements

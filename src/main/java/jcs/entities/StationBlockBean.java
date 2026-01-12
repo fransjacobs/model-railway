@@ -155,10 +155,10 @@ public class StationBlockBean {
     if (!Objects.equals(this.blockId, other.blockId)) {
       return false;
     }
-    if (!Objects.equals(this.id, other.id)) {
-      return false;
-    }
-    return Objects.equals(this.lastUpdated, other.lastUpdated);
+    //if (!Objects.equals(this.lastUpdated, other.lastUpdated)) {
+    //  return false;
+    //}
+    return Objects.equals(this.id, other.id);
   }
 
   @Override

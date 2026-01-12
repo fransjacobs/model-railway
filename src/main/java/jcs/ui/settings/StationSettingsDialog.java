@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 Frans Jacobs.
+ * Copyright 2026 Frans Jacobs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,16 +21,15 @@ import org.tinylog.Logger;
 
 /**
  *
- * @author frans
  */
-public class DrivewaySettingsDialog extends javax.swing.JDialog {
+public class StationSettingsDialog extends javax.swing.JDialog {
 
-  private static final long serialVersionUID = 7353060423412514136L;
+  private static final long serialVersionUID = -269264011104087870L;
 
   /**
    * Creates new form RoutesDialog
    */
-  public DrivewaySettingsDialog(java.awt.Frame parent, boolean modal) {
+  public StationSettingsDialog(java.awt.Frame parent, boolean modal) {
     super(parent, modal);
     initComponents();
   }
@@ -42,11 +41,11 @@ public class DrivewaySettingsDialog extends javax.swing.JDialog {
   // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
   private void initComponents() {
 
-    drivewaySettingsPanel = new jcs.ui.settings.DrivewaySettingsPanel();
+    stationSettingsPanel1 = new jcs.ui.settings.StationSettingsPanel();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
     setTitle("Driveways");
-    getContentPane().add(drivewaySettingsPanel, java.awt.BorderLayout.CENTER);
+    getContentPane().add(stationSettingsPanel1, java.awt.BorderLayout.CENTER);
 
     pack();
   }// </editor-fold>//GEN-END:initComponents
@@ -66,7 +65,7 @@ public class DrivewaySettingsDialog extends javax.swing.JDialog {
 
     /* Create and display the dialog */
     java.awt.EventQueue.invokeLater(() -> {
-      DrivewaySettingsDialog dialog = new DrivewaySettingsDialog(new javax.swing.JFrame(), true);
+      StationSettingsDialog dialog = new StationSettingsDialog(new javax.swing.JFrame(), true);
       dialog.addWindowListener(new java.awt.event.WindowAdapter() {
         @Override
         public void windowClosing(java.awt.event.WindowEvent e) {
@@ -81,6 +80,6 @@ public class DrivewaySettingsDialog extends javax.swing.JDialog {
   }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
-  private jcs.ui.settings.DrivewaySettingsPanel drivewaySettingsPanel;
+  private jcs.ui.settings.StationSettingsPanel stationSettingsPanel1;
   // End of variables declaration//GEN-END:variables
 }

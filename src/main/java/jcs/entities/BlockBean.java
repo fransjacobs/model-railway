@@ -30,7 +30,7 @@ import jcs.entities.TileBean.Orientation;
 import jcs.ui.layout.tiles.Block;
 
 @Table(name = "blocks")
-public class BlockBean {
+public class BlockBean implements Comparable<BlockBean> {
 
   private String id;
   private String tileId;
@@ -516,6 +516,26 @@ public class BlockBean {
       }
       return ENUM_MAP.get(state);
     }
+  }
+
+  @Override
+  public int compareTo(BlockBean o) {
+    //Avoid null pointers
+    String oo = o.getDescription();
+    if (oo == null) {
+      oo = o.getId();
+      if (oo == null) {
+        oo = "bbb";
+      }
+    }
+    String aa = this.description;
+    if (aa == null) {
+      aa = this.id;
+      if (aa == null) {
+        aa = "aaa";
+      }
+    }
+    return aa.compareTo(oo);
   }
 
 }

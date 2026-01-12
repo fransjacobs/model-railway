@@ -1065,6 +1065,7 @@ public class H2PersistenceService implements PersistenceService {
     List<StationBlockBean> stationBlockBeans = database.where("station_id=?", stationBean.getId()).results(StationBlockBean.class);
     for (StationBlockBean sbb : stationBlockBeans) {
       sbb.setStation(stationBean);
+      sbb.setBlock(getBlock(sbb.getBlockId()));
     }
     stationBean.setBlocks(stationBlockBeans);
     return stationBean;
@@ -1082,7 +1083,16 @@ public class H2PersistenceService implements PersistenceService {
   @Override
   public StationBean getStation(String id) {
     StationBean sb = database.where("id=?", id).first(StationBean.class);
-    return addReleatedObjects(sb);
+    if (sb != null) {
+      return addReleatedObjects(sb);
+    } else {
+      return null;
+    }
+  }
+
+  StationBlockBean getStationBlock(String id) {
+    StationBlockBean sbb = database.where("id=?", id).first(StationBlockBean.class);
+    return sbb;
   }
 
   @Override
@@ -1093,8 +1103,40 @@ public class H2PersistenceService implements PersistenceService {
     } else {
       database.insert(station);
     }
+    List<StationBlockBean> currentStationBlockBeans = database.where("station_id=?", station.getId()).results(StationBlockBean.class);
+
+    List<StationBlockBean> updatedStationBlockBeans = station.getBlocks();
+
+    for (StationBlockBean sbb : currentStationBlockBeans) {
+      if (!updatedStationBlockBeans.contains(sbb)) {
+        Logger.trace("Deleting " + sbb);
+        int rows = database.delete(sbb).getRowsAffected();
+        //Object[] args = new Object[]{station.getId(), sbb.getBlockId()};
+        //int rows = database.sql("delete from station_blocks where station_id=? and block_id=?", args).execute().getRowsAffected();
+
+        Logger.trace("Deleting " + rows + " stationBlock(s)");
+      }
+    }
+
+    for (StationBlockBean sbb : updatedStationBlockBeans) {
+      StationBlockBean dsbb = getStationBlock(sbb.getId());
+      if (dsbb != null) {
+        database.update(sbb);
+      } else {
+        database.insert(sbb);
+      }
+    }
 
     return station;
+  }
+
+  @Override
+  public void remove(StationBean station) {
+    int rows = database.sql("delete from station_blocks where station_id =?", station.getId()).execute().getRowsAffected();
+    Logger.trace("Deleted " + rows + " StationBlocks");
+    rows = database.delete(station).getRowsAffected();
+    Logger.trace("Deleted " + rows + " station(s)");
+    changeSupport.firePropertyChange("data.station.deleted", station, null);
   }
 
 }

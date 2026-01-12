@@ -606,4 +606,11 @@ public interface PersistenceService {
    */
   StationBean persist(StationBean station);
 
+  /**
+   * Removes a StationBean.
+   *
+   * @param station The BlockBean to remove.
+   */
+  void remove(StationBean station);
+
 }

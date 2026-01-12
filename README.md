@@ -74,7 +74,7 @@ The **Autopilot** module allows fully automatic train operations once locomotive
 
 Before you run or build:
 
-- **Java 21** (e.g., Temurin JDK or equivalent)  
+- **Java 25** (e.g., Temurin JDK or equivalent)  
 - A supported command station or virtual mode setup  
 - Layout must satisfy some constraints:
   - Each block has working feedback sensors  
@@ -177,7 +177,7 @@ Thanks to all contributors, testers, and model railway enthusiasts who help make
 
 
 
-## 📜 Copyright 2018 - 2025 Frans Jacobs
+## 📜 Copyright 2018 - 2026 Frans Jacobs
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

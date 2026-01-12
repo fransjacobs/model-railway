@@ -21,6 +21,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -100,6 +101,16 @@ public class StationBean {
     return stationBlockList;
   }
 
+  @Transient
+  public List<BlockBean> getBlockBeans() {
+    List<StationBlockBean> stationBlockList = new ArrayList(stationBlockBeans.values());
+    List<BlockBean> blockList = new ArrayList<>();
+    for (StationBlockBean sbb : stationBlockList) {
+      blockList.add(sbb.getBlock());
+    }
+    return blockList;
+  }
+
   public void setBlocks(List<StationBlockBean> blocks) {
     this.stationBlockBeans.clear();
     this.blockBeans.clear();
@@ -113,6 +124,7 @@ public class StationBean {
     if (!this.blockBeans.contains(block)) {
       this.blockBeans.add(block);
       StationBlockBean sbb = new StationBlockBean(this, block);
+      sbb.setLastUpdated(new Date());
       this.stationBlockBeans.put(sbb.getBlockId(), sbb);
     }
   }
@@ -162,6 +174,15 @@ public class StationBean {
 
   @Override
   public String toString() {
+    StringBuilder sb = new StringBuilder();
+    if (name != null && !"".equals(name)) {
+      return name;
+    } else {
+      return id;
+    }
+  }
+
+  public String toLogString() {
     StringBuilder sb = new StringBuilder();
     sb.append("StationBean{");
     sb.append("id=").append(id);
