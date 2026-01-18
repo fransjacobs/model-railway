@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>jcs</groupId>
     <artifactId>jcs</artifactId>
-    <version>0.0.3</version>
+    <version>0.0.4-snapshot</version>
     <packaging>jar</packaging>
     <name>JCS</name>
     <url>https://github.com/fransjacobs/model-railway</url>
@@ -12,7 +12,7 @@
     <inceptionYear>2018</inceptionYear>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>21</java.version>
+        <java.version>25</java.version>
         <packaging>jar</packaging>
         <app.main.class>jcs.JCS</app.main.class>
         <maven.compiler.release>${java.version}</maven.compiler.release>
@@ -82,7 +82,7 @@
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20250517</version>
+            <version>20251224</version>
         </dependency>
         <dependency>
             <groupId>com.twelvemonkeys.imageio</groupId>
@@ -115,13 +115,13 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>5.14.1</version>
+            <version>5.14.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-params</artifactId>
-            <version>5.14.1</version>
+            <version>5.14.2</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -133,7 +133,7 @@
         <dependency>
             <groupId>org.junit.vintage</groupId>
             <artifactId>junit-vintage-engine</artifactId>
-            <version>5.14.1</version>
+            <version>5.14.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -209,7 +209,7 @@
         <dependency>
             <groupId>org.netbeans.external</groupId>
             <artifactId>AbsoluteLayout</artifactId>
-            <version>RELEASE270</version>
+            <version>RELEASE280</version>
         </dependency>
     </dependencies>
     <build>        
@@ -217,7 +217,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>3.6.2</version>
+                <version>3.6.3</version>
                 <configuration>
                     <mainClass>${app.main.class}</mainClass>
                 </configuration>
