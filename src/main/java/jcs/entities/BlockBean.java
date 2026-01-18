@@ -459,7 +459,11 @@ public class BlockBean implements Comparable<BlockBean> {
 
   @Override
   public String toString() {
-    return tileId;
+    if (description != null) {
+      return description + " [" + tileId + "]";
+    } else {
+      return tileId;
+    }
   }
 
   public String toLogString() {

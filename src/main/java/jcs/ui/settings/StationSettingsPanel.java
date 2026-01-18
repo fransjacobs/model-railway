@@ -45,10 +45,8 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.DefaultTableCellRenderer;
 import jcs.entities.BlockBean;
 import jcs.entities.StationBean;
-import jcs.entities.StationBlockBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.table.model.DrivewayCommandTableModel;
 import jcs.ui.widgets.Shuttle;
@@ -60,6 +58,8 @@ import org.tinylog.Logger;
  */
 public class StationSettingsPanel extends JPanel {
 
+  private static final long serialVersionUID = 4740648662345334085L;
+
   private final StationBeanListModel stationBeanListModel;
 
   private StationBean selectedStation;
@@ -69,10 +69,10 @@ public class StationSettingsPanel extends JPanel {
 
     initComponents();
 
-    initModels();
+    initStations();
   }
 
-  private void initModels() {
+  private void initStations() {
     if (PersistenceFactory.getService() != null) {
       stationBeanListModel.clear();
       List<StationBean> stations = PersistenceFactory.getService().getStations();
@@ -83,22 +83,19 @@ public class StationSettingsPanel extends JPanel {
     }
   }
 
-  private void initBlocks() {
-    List<BlockBean> allBlocks = PersistenceFactory.getService().getBlocks();
-    List<BlockBean> usedBlocks = new ArrayList<>();
+  private void initShuttle() {
+    List<BlockBean> nonMemberBlocks = PersistenceFactory.getService().getNonStationBlocks();
+    List<BlockBean> memberBlocks;
     if (selectedStation != null) {
-      List<StationBlockBean> stationBlocks = this.selectedStation.getBlocks();
-      for (StationBlockBean sbb : stationBlocks) {
-        BlockBean bb = sbb.getBlock();
-        usedBlocks.add(bb);
-
-        //filter the source for used blocks
-        allBlocks.remove(bb);
-      }
+      memberBlocks = PersistenceFactory.getService().getStationBlocks(selectedStation);
+    } else {
+      memberBlocks = new ArrayList();
     }
-    this.shuttlePanel1.setSourceElements(allBlocks);
-    this.shuttlePanel1.addDestinationElements(usedBlocks);
+    shuttlePanel.clearSourceListModel();
+    shuttlePanel.setSourceElements(nonMemberBlocks);
 
+    shuttlePanel.clearDestinationListModel();
+    shuttlePanel.addDestinationElements(memberBlocks);
   }
 
   private void setFieldValues() {
@@ -117,15 +114,17 @@ public class StationSettingsPanel extends JPanel {
       boolean useFifo = selectedStation.isFifo();
       useFifoCB.setSelected(useFifo);
 
-      initBlocks();
+      initShuttle();
 
     } else {
       idLbl.setText(null);
       stationNameTF.setText(null);
       minLocsSpinner.setValue(0);
       useFifoCB.setSelected(false);
-      List<BlockBean> allBlocks = PersistenceFactory.getService().getBlocks();
-      this.shuttlePanel1.setSourceElements(allBlocks);
+      List<BlockBean> nonMemberBlocks = PersistenceFactory.getService().getNonStationBlocks();
+      shuttlePanel.clearSourceListModel();
+      shuttlePanel.setSourceElements(nonMemberBlocks);
+      shuttlePanel.clearDestinationListModel();
     }
     enableFields(selectedStation != null);
   }
@@ -136,7 +135,6 @@ public class StationSettingsPanel extends JPanel {
     useFifoCB.setEnabled(enable);
     saveBtn.setEnabled(enable);
     mainTP.setEnabled(enable);
-
   }
 
   /**
@@ -173,9 +171,9 @@ public class StationSettingsPanel extends JPanel {
     buttonPanel = new JPanel();
     memberPanel = new JPanel();
     drivewayTableSP = new JScrollPane();
-    shuttlePanel1 = new Shuttle();
+    shuttlePanel = new Shuttle();
     westPanel = new JPanel();
-    staionsSP = new JScrollPane();
+    stationsSP = new JScrollPane();
     stationList = new JList<>();
     bottomPanel = new JPanel();
     filler1 = new Box.Filler(new Dimension(100, 0), new Dimension(200, 0), new Dimension(150, 32767));
@@ -338,7 +336,7 @@ public class StationSettingsPanel extends JPanel {
 
     memberPanel.setLayout(new BorderLayout());
 
-    drivewayTableSP.setViewportView(shuttlePanel1);
+    drivewayTableSP.setViewportView(shuttlePanel);
 
     memberPanel.add(drivewayTableSP, BorderLayout.CENTER);
 
@@ -350,16 +348,16 @@ public class StationSettingsPanel extends JPanel {
     westPanel.setPreferredSize(new Dimension(175, 500));
     westPanel.setLayout(new BorderLayout());
 
-    staionsSP.setPreferredSize(new Dimension(175, 130));
+    stationsSP.setPreferredSize(new Dimension(175, 130));
 
     stationList.addListSelectionListener(new ListSelectionListener() {
       public void valueChanged(ListSelectionEvent evt) {
         stationListValueChanged(evt);
       }
     });
-    staionsSP.setViewportView(stationList);
+    stationsSP.setViewportView(stationList);
 
-    westPanel.add(staionsSP, BorderLayout.CENTER);
+    westPanel.add(stationsSP, BorderLayout.CENTER);
 
     add(westPanel, BorderLayout.WEST);
 
@@ -405,8 +403,7 @@ public class StationSettingsPanel extends JPanel {
       selectedStation.setFifo(useFifoCB.isSelected());
       selectedStation.setMinLocomotives((Integer) minLocsSpinner.getValue());
 
-      List<BlockBean> blocks = shuttlePanel1.getSelectedItems();
-
+      List<BlockBean> blocks = shuttlePanel.getSelectedItems();
       List<BlockBean> currentBlocks = selectedStation.getBlockBeans();
 
       for (BlockBean bb : currentBlocks) {
@@ -416,7 +413,6 @@ public class StationSettingsPanel extends JPanel {
       }
 
       //Create station BlockBeans
-      //List<StationBlockBean> sbbl = new ArrayList<>();
       for (BlockBean block : blocks) {
         if (!currentBlocks.contains(block)) {
           selectedStation.addBlock(block);
@@ -424,9 +420,12 @@ public class StationSettingsPanel extends JPanel {
       }
 
       Logger.trace("Saving: " + selectedStation.toString());
+
       selectedStation = PersistenceFactory.getService().persist(selectedStation);
 
-      initModels();
+      int selectedIndex = stationList.getSelectedIndex();
+      initStations();
+      stationList.setSelectedIndex(selectedIndex);
     }
   }//GEN-LAST:event_saveBtnActionPerformed
 
@@ -434,26 +433,17 @@ public class StationSettingsPanel extends JPanel {
     Logger.trace("Delete: " + selectedStation.toString());
     PersistenceFactory.getService().remove(selectedStation);
     selectedStation = null;
-    initModels();
+    initStations();
   }//GEN-LAST:event_deleteBtnActionPerformed
 
   private void stationListValueChanged(ListSelectionEvent evt) {//GEN-FIRST:event_stationListValueChanged
     if (!evt.getValueIsAdjusting()) {
       selectedStation = stationList.getSelectedValue();
-      //drivewayCommandTableModel.setRouteBean(selectedStation);
-      //drivewayCommandTableModel.refresh();
       Logger.trace(selectedStation);
       setFieldValues();
 
     }
   }//GEN-LAST:event_stationListValueChanged
-
-  private void alignDrivewayCommandsTable() {
-    DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
-    centerRenderer.setHorizontalAlignment(JLabel.CENTER);
-    //drivewayCommandTable.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
-    //drivewayCommandTable.getColumnModel().getColumn(4).setCellRenderer(centerRenderer);
-  }
 
   class StationBeanByNameSorter implements Comparator<StationBean> {
 
@@ -577,12 +567,12 @@ public class StationSettingsPanel extends JPanel {
   JPanel row7Panel;
   JPanel row9Panel;
   JButton saveBtn;
-  Shuttle shuttlePanel1;
-  JScrollPane staionsSP;
+  Shuttle shuttlePanel;
   JList<StationBean> stationList;
   JLabel stationNameLbl;
   JTextField stationNameTF;
   JPanel stationPanel;
+  JScrollPane stationsSP;
   JPanel topPanel;
   JCheckBox useFifoCB;
   JLabel useFifoLbl;

@@ -482,6 +482,21 @@ public interface PersistenceService {
   List<BlockBean> getBlocks();
 
   /**
+   * Retrieves all BlockBeans which are not a member of a Station.
+   *
+   * @return A List of BlockBeans.
+   */
+  List<BlockBean> getNonStationBlocks();
+
+  /**
+   * Retrieves all BlockBeans which are a member of a Station.
+   *
+   * @param stationBean the station to find the members for
+   * @return A List of BlockBeans.
+   */
+  List<BlockBean> getStationBlocks(StationBean stationBean);
+
+  /**
    * Retrieves a BlockBean by ID.
    *
    * @param id The ID of the BlockBean to retrieve.

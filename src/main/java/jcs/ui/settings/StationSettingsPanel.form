@@ -1051,7 +1051,7 @@
 
               <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
               <SubComponents>
-                <Component class="jcs.ui.widgets.Shuttle" name="shuttlePanel1">
+                <Component class="jcs.ui.widgets.Shuttle" name="shuttlePanel">
                 </Component>
               </SubComponents>
             </Container>
@@ -1076,7 +1076,7 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
       <SubComponents>
-        <Container class="javax.swing.JScrollPane" name="staionsSP">
+        <Container class="javax.swing.JScrollPane" name="stationsSP">
           <Properties>
             <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[175, 130]"/>

@@ -81,6 +81,7 @@ import jcs.commandStation.events.ConnectionEventListener;
 import jcs.commandStation.events.PowerEventListener;
 import jcs.persistence.util.Backup;
 import jcs.ui.settings.DrivewaySettingsDialog;
+import jcs.ui.settings.StationSettingsDialog;
 import jcs.util.Ping;
 
 /**
@@ -100,6 +101,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   private DrivewaySettingsDialog drivewaySettingsDialog;
   private CommandStationDialog commandStationDialog;
   private PropertiesDialog propertiesDialog;
+  private StationSettingsDialog stationSettingsDialog;
 
   private SettingsDialog settingsDialog;
 
@@ -257,6 +259,15 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     drivewaySettingsDialog.setVisible(true);
   }
 
+  private void showStations() {
+    if (stationSettingsDialog == null) {
+      stationSettingsDialog = new StationSettingsDialog(this, true);
+      stationSettingsDialog.pack();
+      stationSettingsDialog.setLocationRelativeTo(null);
+    }
+    stationSettingsDialog.setVisible(true);
+  }
+
   private void showProperties() {
     if (propertiesDialog == null) {
       propertiesDialog = new PropertiesDialog(this, true);
@@ -412,6 +423,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     showDrivewaysMI = new JMenuItem();
     showCommandStationsMI = new JMenuItem();
     showPropertiesMI = new JMenuItem();
+    showStationsMI = new JMenuItem();
     helpMenu = new JMenu();
     aboutMI = new JMenuItem();
 
@@ -973,6 +985,15 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     });
     settingsMenu.add(showPropertiesMI);
 
+    showStationsMI.setText("Stations");
+    showStationsMI.setName("showStationsMI"); // NOI18N
+    showStationsMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        showStationsMIActionPerformed(evt);
+      }
+    });
+    settingsMenu.add(showStationsMI);
+
     jcsMenuBar.add(settingsMenu);
 
     helpMenu.setText("Help");
@@ -1272,6 +1293,10 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     showDriveways();
   }//GEN-LAST:event_showDrivewaysMIActionPerformed
 
+  private void showStationsMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showStationsMIActionPerformed
+    showStations();
+  }//GEN-LAST:event_showStationsMIActionPerformed
+
   private void startAllLocomotives() {
     int result = JOptionPane.showConfirmDialog(this, "Are you sure you want to start All Locomotives?", "Start ALL Locomotives", JOptionPane.YES_NO_OPTION);
     if (result == JOptionPane.YES_OPTION) {
@@ -1431,6 +1456,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   private JMenuItem showPropertiesMI;
   private JMenuItem showRoutesMI;
   private JMenuItem showSensorMonitor;
+  private JMenuItem showStationsMI;
   private JButton showVNCBtn;
   private SmallDriverCabPanel smallDriverCabPanel;
   private JButton startAllLocsBtn;

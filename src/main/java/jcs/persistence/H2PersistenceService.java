@@ -922,6 +922,18 @@ public class H2PersistenceService implements PersistenceService {
     return addBlockReleatedObjects(blocks);
   }
 
+  @Override
+  public List<BlockBean> getNonStationBlocks() {
+    List<BlockBean> blocks = database.sql("select b.* from blocks b left join station_blocks sb on b.id = sb.block_id where sb.block_id is null").results(BlockBean.class);
+    return addBlockReleatedObjects(blocks);
+  }
+
+  @Override
+  public List<BlockBean> getStationBlocks(StationBean stationBean) {
+    List<BlockBean> blocks = database.sql("select b.* from blocks b join station_blocks sb on b.id = sb.block_id where sb.station_id = ?", stationBean.getId()).results(BlockBean.class);
+    return addBlockReleatedObjects(blocks);
+  }
+
   private List<BlockBean> addBlockReleatedObjects(List<BlockBean> blockBeans) {
     for (BlockBean bb : blockBeans) {
       addReleatedObjects(bb);
