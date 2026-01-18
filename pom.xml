@@ -410,7 +410,8 @@
                     </additionalResources>
                 </configuration>
                 <executions>
-                    <execution>
+                    <!-- Issue in JDK 25 as it does not contain a jmods folder https://github.com/actions/setup-java/issues/804 -->
+                    <!--execution>
                         <id>bundle-with-jre</id>
                         <phase>package</phase>
                         <goals>
@@ -421,9 +422,9 @@
                             <bundleJre>true</bundleJre>
                             <customizedJre>false</customizedJre>
                             <jreDirectoryName>jre</jreDirectoryName>
-                            <!--Comment next line out to be sure the github tests will not fail -->
-                            <!--jrePath>${user.home}/Java/Windows/jdk-21.0.9+10-jre</jrePath-->
-                            <!--platform>auto|linux|mac|windows</platform-->
+                            < !-Comment next line out to be sure the github tests will not fail - ->
+                            < !-jrePath>${user.home}/Java/Windows/jdk-21.0.9+10-jre</jrePath - ->
+                            < !-platform>auto|linux|mac|windows</platform - ->
                             <platform>auto</platform>
                             <winConfig>
                                 <headerType>gui</headerType>
@@ -473,7 +474,7 @@
                                 </categories>
                             </linuxConfig>
                         </configuration>
-                    </execution>
+                    </execution-->
                     <execution>
                         <id>bundle-without-jre</id>
                         <phase>package</phase>
@@ -660,10 +661,10 @@
                                 <id>bundle-without-jre</id>
                                 <phase>none</phase>
                             </execution>
-                            <execution>
+                            <!--execution>
                                 <id>bundle-with-jre</id>
                                 <phase>none</phase>
-                            </execution>
+                            </execution-->
                         </executions>    
                     </plugin>
                     <plugin>

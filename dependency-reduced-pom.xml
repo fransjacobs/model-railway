@@ -47,7 +47,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
-        <version>3.6.2</version>
+        <version>3.6.3</version>
         <configuration>
           <mainClass>${app.main.class}</mainClass>
         </configuration>
@@ -202,63 +202,6 @@
         <artifactId>javapackager</artifactId>
         <version>1.7.6</version>
         <executions>
-          <execution>
-            <id>bundle-with-jre</id>
-            <phase>package</phase>
-            <goals>
-              <goal>package</goal>
-            </goals>
-            <configuration>
-              <name>jcs-jre</name>
-              <bundleJre>true</bundleJre>
-              <customizedJre>false</customizedJre>
-              <jreDirectoryName>jre</jreDirectoryName>
-              <platform>auto</platform>
-              <winConfig>
-                <headerType>gui</headerType>
-                <icoFile>target/classes/media/jcs.ico</icoFile>
-                <setupMode>installForCurrentUser</setupMode>
-                <generateMsi>false</generateMsi>
-                <generateMsm>false</generateMsm>
-                <generateSetup>false</generateSetup>
-                <wrapJar>false</wrapJar>
-                <companyName>${organizationName}</companyName>
-                <productVersion>1.0.0.0</productVersion>
-                <txtProductVersion>${project.version}</txtProductVersion>
-                <copyright>${organizationName}</copyright>
-                <productName>${project.name}</productName>
-                <internalName>${project.name}</internalName>
-                <originalFilename>${project.name}.exe</originalFilename>
-                <exeCreationTool>launch4j</exeCreationTool>
-              </winConfig>
-              <macConfig>
-                <appId>${app.main.class}</appId>
-                <icnsFile>target/classes/media/jcs.icns</icnsFile>
-                <generateDmg>false</generateDmg>
-                <generatePkg>false</generatePkg>
-                <volumeName>jcs</volumeName>
-                <macStartup>SCRIPT</macStartup>
-                <relocateJar>false</relocateJar>
-                <codesignApp>false</codesignApp>
-                <hardenedCodesign>false</hardenedCodesign>
-                <notarizeApp>false</notarizeApp>
-                <infoPlist>
-                  <bundlePackageType>BNDL</bundlePackageType>
-                  <additionalEntries>&lt;key&gt;NSLocalNetworkUsageDescription&lt;/key&gt;
-                                      &lt;string&gt;The local network permission is required for functionality of this application.&lt;/string&gt;</additionalEntries>
-                </infoPlist>
-              </macConfig>
-              <linuxConfig>
-                <generateAppImage>false</generateAppImage>
-                <generateDeb>false</generateDeb>
-                <generateRpm>false</generateRpm>
-                <wrapJar>true</wrapJar>
-                <categories>
-                  <category>Education</category>
-                </categories>
-              </linuxConfig>
-            </configuration>
-          </execution>
           <execution>
             <id>bundle-without-jre</id>
             <phase>package</phase>
@@ -442,10 +385,6 @@
             <executions>
               <execution>
                 <id>bundle-without-jre</id>
-                <phase>none</phase>
-              </execution>
-              <execution>
-                <id>bundle-with-jre</id>
                 <phase>none</phase>
               </execution>
             </executions>
