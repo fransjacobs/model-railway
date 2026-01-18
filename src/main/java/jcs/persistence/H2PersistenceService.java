@@ -1109,12 +1109,7 @@ public class H2PersistenceService implements PersistenceService {
 
     for (StationBlockBean sbb : currentStationBlockBeans) {
       if (!updatedStationBlockBeans.contains(sbb)) {
-        Logger.trace("Deleting " + sbb);
         int rows = database.delete(sbb).getRowsAffected();
-        //Object[] args = new Object[]{station.getId(), sbb.getBlockId()};
-        //int rows = database.sql("delete from station_blocks where station_id=? and block_id=?", args).execute().getRowsAffected();
-
-        Logger.trace("Deleting " + rows + " stationBlock(s)");
       }
     }
 
