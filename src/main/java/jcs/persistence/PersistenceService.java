@@ -616,6 +616,13 @@ public interface PersistenceService {
 
   /**
    *
+   * @param blockBean the BlockBean to find a Station for
+   * @return a StationBean in case the BlockBean is part of a station
+   */
+  StationBean getStation(BlockBean blockBean);
+
+  /**
+   *
    * @param station
    * @return the persisted StationBean
    */

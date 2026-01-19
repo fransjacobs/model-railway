@@ -30,6 +30,7 @@ import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.Direction;
 import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
+import jcs.entities.StationBean;
 import jcs.entities.TileBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.layout.tiles.TileCache;
@@ -228,6 +229,10 @@ public class Dispatcher {
     } else {
       return null;
     }
+  }
+
+  StationBean getStation(BlockBean blockBean) {
+    return PersistenceFactory.getService().getStation(blockBean);
   }
 
   public String getStateName() {

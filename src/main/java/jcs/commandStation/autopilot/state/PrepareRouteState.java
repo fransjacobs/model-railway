@@ -17,6 +17,7 @@ package jcs.commandStation.autopilot.state;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import jcs.commandStation.autopilot.AutoPilot;
 import jcs.entities.AccessoryBean;
@@ -26,6 +27,7 @@ import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.Direction;
 import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
+import jcs.entities.StationBean;
 import jcs.entities.TileBean;
 import jcs.entities.TileBean.Orientation;
 import jcs.persistence.PersistenceFactory;
@@ -76,6 +78,16 @@ class PrepareRouteState extends DispatcherState {
     Logger.trace("Search a free route for " + locomotive.getName() + "...");
 
     BlockBean departureBlock = dispatcher.getDepartureBlock();
+    //Is the departure block part of a station.
+    StationBean station = dispatcher.getStation(departureBlock);
+    int locCount = 1;
+    int minLocCount = 1;
+    if (station != null) {
+      minLocCount = station.getMinLocomotives();
+      locCount = station.getLocomotiveCount();
+      Logger.trace(departureBlock.getId() + " is member of Station " + station.getName() + " min Locs: " + minLocCount + " cur locs: " + locCount);
+    }
+
     if (departureBlock.getLogicalDirection() == null) {
       departureBlock.setLogicalDirection(locomotive.getDirection().getDirection());
     }
@@ -91,17 +103,28 @@ class PrepareRouteState extends DispatcherState {
 
     Logger.trace("Loco " + locomotive.getName() + " is in block " + departureBlock.getId() + ". Direction " + logicalDirection.getDirection() + ". DepartureSuffix " + departureSuffix + "...");
 
-    //Search for the possible routes
-    List<RouteBean> routes = PersistenceFactory.getService().getRoutes(departureBlock.getId(), departureSuffix);
-    Logger.trace("There " + (routes.size() == 1 ? "is" : "are") + " " + routes.size() + " possible route(s)...");
+    //only search for a route if we can depart
+    List<RouteBean> routes = Collections.emptyList();
+    if (locCount >= minLocCount) {
+      //Search for the possible routes
+      routes = PersistenceFactory.getService().getRoutes(departureBlock.getId(), departureSuffix);
+      Logger.trace("There " + (routes.size() == 1 ? "is" : "are") + " " + routes.size() + " possible route(s)...");
+    } else {
+      String stationName;
+      if (station != null) {
+        stationName = station.getName();
+      } else {
+        stationName = "?";
+      }
+      Logger.trace("nr of locs (" + locCount + ") is lower than min locs (" + minLocCount + ") for station " + stationName);
+    }
 
     List<RouteBean> checkedRoutes = new ArrayList<>();
-
     boolean commuter = locomotive.isCommuter();
 
     //No routes found or possible.
     //When the Locomotive is a commuter train and the departure block allows a direction change it can reverse direction. Lets try that...
-    if (routes.isEmpty() && commuter && departureBlock.isAllowDirectionChange()) {
+    if (routes.isEmpty() && commuter && departureBlock.isAllowDirectionChange() && locCount >= minLocCount) {
       Direction oldDirection = logicalDirection;
       //Direction newDirection = locomotive.toggleDispatcherDirection();
       Direction newDirection = LocomotiveBean.toggle(oldDirection);
@@ -161,7 +184,11 @@ class PrepareRouteState extends DispatcherState {
       //persist the departure block
       PersistenceFactory.getService().persist(departureBlock);
     } else {
-      Logger.debug("No route available for " + locomotive.getName() + " ...");
+      if (locCount >= minLocCount) {
+        Logger.debug("No route available for " + locomotive.getName() + " ...");
+      } else {
+        Logger.debug("No route available because the Station occupation (" + locCount + ") is less then the min occupation (" + minLocCount + ")");
+      }
       if (swapLocomotiveDirection) {
         //Reverse the direction change
         Direction oldDirection = LocomotiveBean.toggle(Direction.get(departureBlock.getLogicalDirection()));

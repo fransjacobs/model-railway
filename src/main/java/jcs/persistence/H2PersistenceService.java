@@ -1102,6 +1102,16 @@ public class H2PersistenceService implements PersistenceService {
     }
   }
 
+  @Override
+  public StationBean getStation(BlockBean blockBean) {
+    StationBean sb = database.sql("select s.* from stations s join station_blocks sb on s.id = sb.station_id where sb.block_id = ?", blockBean.getId()).first(StationBean.class);
+    if (sb != null) {
+      return addReleatedObjects(sb);
+    } else {
+      return null;
+    }
+  }
+
   StationBlockBean getStationBlock(String id) {
     StationBlockBean sbb = database.where("id=?", id).first(StationBlockBean.class);
     return sbb;
@@ -1122,6 +1132,7 @@ public class H2PersistenceService implements PersistenceService {
     for (StationBlockBean sbb : currentStationBlockBeans) {
       if (!updatedStationBlockBeans.contains(sbb)) {
         int rows = database.delete(sbb).getRowsAffected();
+        Logger.trace("Deleted " + rows + " stationBlock(s)");
       }
     }
 
