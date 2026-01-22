@@ -16,9 +16,12 @@
 package jcs.commandStation.autopilot.state;
 
 import java.awt.Color;
+import java.util.Date;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.RouteBean;
+import jcs.entities.StationBean;
+import jcs.entities.StationBlockBean;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
@@ -62,6 +65,15 @@ class InBlockState extends DispatcherState {
 
     PersistenceFactory.getService().persist(departureBlock);
     PersistenceFactory.getService().persist(destinationBlock);
+
+    //Is the destinationBlock block part of a station.
+    StationBean station = dispatcher.getStation(destinationBlock);
+    if (station != null) {
+      //Set the arrival time
+      StationBlockBean sbb = station.getStationBlockBean(destinationBlock);
+      sbb.setLastUpdated(new Date());
+      PersistenceFactory.getService().persist(station);
+    }
 
     RouteBean route = dispatcher.getRouteBean();
     route.setLocked(false);

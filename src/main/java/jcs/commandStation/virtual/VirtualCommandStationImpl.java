@@ -45,6 +45,9 @@ import jcs.commandStation.entities.InfoBean;
 import jcs.commandStation.events.AllSensorEventsListener;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.SensorBean;
+import jcs.entities.TileBean;
+import jcs.entities.TileBean.TileType;
+import jcs.persistence.PersistenceFactory;
 import jcs.util.NetworkUtil;
 import org.tinylog.Logger;
 
@@ -53,8 +56,6 @@ import org.tinylog.Logger;
  * @author frans
  */
 public class VirtualCommandStationImpl extends AbstractController implements DecoderController, AccessoryController, FeedbackController {
-
-  public static final String VIRTUAL_CS = "virtual";
 
   private InfoBean infoBean;
 
@@ -119,6 +120,13 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   @Override
   public List<Device> getDevices() {
     List<Device> devices = new ArrayList<>();
+    
+    Device s88 = new Device();
+    s88.setChannels(1);
+    s88.setFeedback(true);
+    s88.setId("vfb");
+    s88.setName("Virtual Feedback Device");
+    devices.add(s88);
 
     return devices;
   }
@@ -230,7 +238,8 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
 
   @Override
   public List<LocomotiveBean> getLocomotives() {
-    throw new UnsupportedOperationException("Not supported yet.");
+    //Use the Locomotive from the database
+    return PersistenceFactory.getService().getAllLocomotives();
   }
 
   @Override
@@ -284,12 +293,29 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
 
   @Override
   public List<AccessoryBean> getAccessories() {
-    return Collections.emptyList();
+    return PersistenceFactory.getService().getAccessories();
   }
 
   @Override
   public List<FeedbackModule> getFeedbackModules() {
-    return Collections.emptyList();
+    List<TileBean> tileBeans = PersistenceFactory.getService().getTileBeans();
+    List<TileBean> sensorTileBeans = new ArrayList<>();
+    //Filter the sensors
+    for(TileBean tb : tileBeans) {
+      if(TileType.SENSOR == tb.getTileType()) {
+        sensorTileBeans.add(tb);
+      }
+    }
+    Logger.trace("Found "+ sensorTileBeans.size()+" Sensors");
+    int nrOfFeedbackModules = (int) Math.ceil((double) sensorTileBeans.size() / 16);
+    
+    List<FeedbackModule> feedbackModules = new ArrayList<>();
+    for (int i=0;i< nrOfFeedbackModules;i++) {
+      FeedbackModule fm = new FeedbackModule(i, i+1,this.commandStationBean.getId());
+      feedbackModules.add(fm);
+    }
+    
+    return feedbackModules;
   }
 
   @Override

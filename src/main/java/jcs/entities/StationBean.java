@@ -39,8 +39,8 @@ public class StationBean {
   private Integer minLocomotives;
   private boolean fifo;
 
-  private Map<String, StationBlockBean> stationBlockBeans;
-  private List<BlockBean> blockBeans;
+  private final Map<String, StationBlockBean> stationBlockBeans;
+  private final List<BlockBean> blockBeans;
 
   public StationBean() {
     stationBlockBeans = new HashMap<>();
@@ -99,6 +99,11 @@ public class StationBean {
 
     stationBlockList.sort(Comparator.comparing(StationBlockBean::getLastUpdated));
     return stationBlockList;
+  }
+
+  @Transient
+  public StationBlockBean getStationBlockBean(BlockBean blockBean) {
+    return this.stationBlockBeans.get(blockBean.getId());
   }
 
   @Transient

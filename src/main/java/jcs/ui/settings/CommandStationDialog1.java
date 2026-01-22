@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Frans Jacobs.
+ * Copyright 2025 fransjacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,83 +16,49 @@
 package jcs.ui.settings;
 
 import com.fazecast.jSerialComm.SerialPort;
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.net.InetAddress;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.ButtonGroup;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.GroupLayout;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JSpinner;
-import javax.swing.JTextField;
-import javax.swing.JTree;
-import javax.swing.SpinnerNumberModel;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+import jcs.JCS;
+import jcs.commandStation.esu.ecos.net.EcosConnectionFactory;
+import jcs.commandStation.marklin.cs.net.CSConnectionFactory;
+import jcs.entities.CommandStationBean;
+import jcs.persistence.PersistenceFactory;
+import org.tinylog.Logger;
+import java.net.InetAddress;
+import java.util.Collections;
+import javax.swing.JDialog;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeSelectionModel;
-import jcs.JCS;
 import jcs.commandStation.DecoderController;
 import jcs.commandStation.FeedbackController;
 import jcs.commandStation.entities.Device;
-import jcs.commandStation.entities.FeedbackModule;
 import jcs.commandStation.entities.InfoBean;
 import jcs.commandStation.esu.ecos.EsuEcosCommandStationImpl;
-import jcs.commandStation.esu.ecos.net.EcosConnectionFactory;
 import jcs.commandStation.marklin.cs.MarklinCentralStationImpl;
-import jcs.commandStation.marklin.cs.net.CSConnectionFactory;
+import jcs.commandStation.entities.FeedbackModule;
 import jcs.commandStation.virtual.VirtualCommandStationImpl;
-import jcs.entities.CommandStationBean;
 import static jcs.entities.CommandStationBean.DCC_EX;
 import static jcs.entities.CommandStationBean.ESU_ECOS;
 import static jcs.entities.CommandStationBean.HSI_S88;
 import static jcs.entities.CommandStationBean.MARKLIN_CS;
 import static jcs.entities.CommandStationBean.VIRTUAL;
 import jcs.entities.SensorBean;
-import jcs.persistence.PersistenceFactory;
-import jcs.ui.JCSFrame;
-import jcs.ui.swing.layout.VerticalFlowLayout;
 import jcs.util.Ping;
-import org.tinylog.Logger;
 
 /**
- *
- *
- */
-public class CommandStationPanel extends JPanel implements TreeSelectionListener {
-
-  private static final long serialVersionUID = -6257688549267578845L;
+ * TODO use the CommandStation Panel!
+ */ 
+public class CommandStationDialog1 extends JDialog implements TreeSelectionListener {
 
   private ComboBoxModel<CommandStationBean> commandStationCBM;
   private ComboBoxModel<CommandStationBean> feedbackCBM;
@@ -108,7 +74,14 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
 
   private DecoderController controller;
 
-  public CommandStationPanel() {
+  /**
+   * Creates new form CommandStationDialog1
+   *
+   * @param parent
+   * @param modal
+   */
+  public CommandStationDialog1(java.awt.Frame parent, boolean modal) {
+    super(parent, modal);
     initComponents();
     executor = Executors.newSingleThreadExecutor();
     if (PersistenceFactory.getService() != null) {
@@ -128,7 +101,6 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
     }
 
     List<CommandStationBean> allCommandStations = PersistenceFactory.getService().getCommandStations();
-
     List<CommandStationBean> commandStations = new ArrayList<>();
     List<CommandStationBean> feedbackProviders = new ArrayList<>();
 
@@ -200,100 +172,88 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
     }
 
     setComponents();
+
     if (!selectedCommandStation.isVirtual() && CommandStationBean.ConnectionType.NETWORK == selectedCommandStation.getConnectionType() && selectedCommandStation.getIpAddress() != null && selectedCommandStation.getIpAddress().length() > 8) {
       executor.execute(() -> checkConnection(selectedCommandStation));
     }
+
   }
 
   /**
    * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this code. The content of this method is always regenerated by the Form Editor.
    */
-  @SuppressWarnings("deprecation")
+  @SuppressWarnings("unchecked")
   // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
   private void initComponents() {
 
-    connectionTypeBG = new ButtonGroup();
-    topPanel = new JPanel();
-    mainCSPanel = new JPanel();
-    commandStationLbl = new JLabel();
-    commandStationCB = new JComboBox<>();
-    virtualCB = new JCheckBox();
-    ipOrPortLbl = new JLabel();
-    ipTF = new JTextField();
-    serialCB = new JComboBox<>();
-    controllerLbl = new JLabel();
-    accessoryControllerLbl = new JLabel();
-    feedbackProviderLbl = new JLabel();
-    discoverBtn = new JButton();
-    checkBtn = new JButton();
-    networkRB = new JRadioButton();
-    serialRB = new JRadioButton();
-    feedbackCSPanel = new JPanel();
-    feedbackLbl = new JLabel();
-    feedbackCB = new JComboBox<>();
-    secondfbpLbl = new JLabel();
-    fbpSerialLbl = new JLabel();
-    fbpSerialCB = new JComboBox<>();
-    filler1 = new Box.Filler(new Dimension(0, 23), new Dimension(0, 23), new Dimension(32767, 23));
-    jPanel3 = new JPanel();
-    jPanel4 = new JPanel();
-    connectBtn = new JButton();
-    jPanel5 = new JPanel();
-    jPanel2 = new JPanel();
-    propertiesPanel = new JPanel();
-    controllerPanel = new JPanel();
-    connectedToLbl = new JLabel();
-    serialLbl = new JLabel();
-    swVersionLbl = new JLabel();
-    hwVersionLbl = new JLabel();
-    feedbackPanel = new JPanel();
-    feedbackModulesPanel = new JPanel();
-    mainLbl = new JLabel();
-    mainSpinner = new JSpinner();
-    bus1Lbl = new JLabel();
-    bus1Spinner = new JSpinner();
-    bus2Lbl = new JLabel();
-    bus2Spinner = new JSpinner();
-    bus3Lbl = new JLabel();
-    bus3Spinner = new JSpinner();
-    filler2 = new Box.Filler(new Dimension(100, 0), new Dimension(100, 0), new Dimension(100, 32767));
-    updatePanel = new JPanel();
-    updateBtn = new JButton();
-    rightPanel = new JPanel();
-    devicesPanel = new JPanel();
-    devicesSP = new JScrollPane();
-    devicesTree = new JTree();
+    connectionTypeBG = new javax.swing.ButtonGroup();
+    topPanel = new javax.swing.JPanel();
+    mainCSPanel = new javax.swing.JPanel();
+    commandStationLbl = new javax.swing.JLabel();
+    commandStationCB = new javax.swing.JComboBox<>();
+    virtualCB = new javax.swing.JCheckBox();
+    ipOrPortLbl = new javax.swing.JLabel();
+    ipTF = new javax.swing.JTextField();
+    serialCB = new javax.swing.JComboBox<>();
+    controllerLbl = new javax.swing.JLabel();
+    accessoryControllerLbl = new javax.swing.JLabel();
+    feedbackProviderLbl = new javax.swing.JLabel();
+    discoverBtn = new javax.swing.JButton();
+    checkBtn = new javax.swing.JButton();
+    networkRB = new javax.swing.JRadioButton();
+    serialRB = new javax.swing.JRadioButton();
+    feedbackCSPanel = new javax.swing.JPanel();
+    feedbackLbl = new javax.swing.JLabel();
+    feedbackCB = new javax.swing.JComboBox<>();
+    secondfbpLbl = new javax.swing.JLabel();
+    fbpSerialLbl = new javax.swing.JLabel();
+    fbpSerialCB = new javax.swing.JComboBox<>();
+    filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 23), new java.awt.Dimension(0, 23), new java.awt.Dimension(32767, 23));
+    jPanel3 = new javax.swing.JPanel();
+    jPanel4 = new javax.swing.JPanel();
+    connectBtn = new javax.swing.JButton();
+    jPanel5 = new javax.swing.JPanel();
+    jPanel2 = new javax.swing.JPanel();
+    propertiesPanel = new javax.swing.JPanel();
+    controllerPanel = new javax.swing.JPanel();
+    connectedToLbl = new javax.swing.JLabel();
+    serialLbl = new javax.swing.JLabel();
+    swVersionLbl = new javax.swing.JLabel();
+    hwVersionLbl = new javax.swing.JLabel();
+    feedbackPanel = new javax.swing.JPanel();
+    feedbackModulesPanel = new javax.swing.JPanel();
+    mainLbl = new javax.swing.JLabel();
+    mainSpinner = new javax.swing.JSpinner();
+    bus1Lbl = new javax.swing.JLabel();
+    bus1Spinner = new javax.swing.JSpinner();
+    bus2Lbl = new javax.swing.JLabel();
+    bus2Spinner = new javax.swing.JSpinner();
+    bus3Lbl = new javax.swing.JLabel();
+    bus3Spinner = new javax.swing.JSpinner();
+    filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(100, 0), new java.awt.Dimension(100, 0), new java.awt.Dimension(100, 32767));
+    updatePanel = new javax.swing.JPanel();
+    updateBtn = new javax.swing.JButton();
+    jPanel6 = new javax.swing.JPanel();
+    devicesPanel = new javax.swing.JPanel();
+    devicesSP = new javax.swing.JScrollPane();
+    devicesTree = new javax.swing.JTree();
 
-    setMinimumSize(new Dimension(1080, 600));
-    setName("Form"); // NOI18N
-    setPreferredSize(new Dimension(1200, 600));
-    addComponentListener(new ComponentAdapter() {
-      public void componentHidden(ComponentEvent evt) {
-        formComponentHidden(evt);
-      }
-      public void componentShown(ComponentEvent evt) {
-        formComponentShown(evt);
-      }
-    });
-    setLayout(new BorderLayout());
+    setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
-    topPanel.setName("topPanel"); // NOI18N
-    VerticalFlowLayout verticalFlowLayout2 = new VerticalFlowLayout();
-    verticalFlowLayout2.sethAlignment(0);
-    topPanel.setLayout(verticalFlowLayout2);
+    jcs.ui.swing.layout.VerticalFlowLayout verticalFlowLayout1 = new jcs.ui.swing.layout.VerticalFlowLayout();
+    verticalFlowLayout1.sethAlignment(0);
+    topPanel.setLayout(verticalFlowLayout1);
 
-    mainCSPanel.setName("mainCSPanel"); // NOI18N
-    mainCSPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+    mainCSPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
 
+    commandStationLbl.setLabelFor(commandStationCB);
     commandStationLbl.setText("Command Station");
-    commandStationLbl.setName("commandStationLbl"); // NOI18N
-    commandStationLbl.setPreferredSize(new Dimension(110, 17));
+    commandStationLbl.setPreferredSize(new java.awt.Dimension(110, 17));
     mainCSPanel.add(commandStationLbl);
 
-    commandStationCB.setName("commandStationCB"); // NOI18N
-    commandStationCB.setPreferredSize(new Dimension(200, 23));
-    commandStationCB.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
+    commandStationCB.setPreferredSize(new java.awt.Dimension(200, 23));
+    commandStationCB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
         commandStationCBActionPerformed(evt);
       }
     });
@@ -301,67 +261,60 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
 
     virtualCB.setText("Virtual");
     virtualCB.setToolTipText("Use Virtual Connection");
-    virtualCB.setName("virtualCB"); // NOI18N
-    virtualCB.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
+    virtualCB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
         virtualCBActionPerformed(evt);
       }
     });
     mainCSPanel.add(virtualCB);
 
-    ipOrPortLbl.setHorizontalAlignment(SwingConstants.RIGHT);
+    ipOrPortLbl.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+    ipOrPortLbl.setLabelFor(ipTF);
     ipOrPortLbl.setText("ip Address:");
-    ipOrPortLbl.setName("ipOrPortLbl"); // NOI18N
-    ipOrPortLbl.setPreferredSize(new Dimension(105, 17));
+    ipOrPortLbl.setPreferredSize(new java.awt.Dimension(105, 17));
     mainCSPanel.add(ipOrPortLbl);
 
-    ipTF.setName("ipTF"); // NOI18N
-    ipTF.setPreferredSize(new Dimension(120, 23));
-    ipTF.addFocusListener(new FocusAdapter() {
-      public void focusLost(FocusEvent evt) {
+    ipTF.setPreferredSize(new java.awt.Dimension(120, 23));
+    ipTF.addFocusListener(new java.awt.event.FocusAdapter() {
+      public void focusLost(java.awt.event.FocusEvent evt) {
         ipTFFocusLost(evt);
       }
     });
-    ipTF.addMouseListener(new MouseAdapter() {
-      public void mouseExited(MouseEvent evt) {
+    ipTF.addMouseListener(new java.awt.event.MouseAdapter() {
+      public void mouseExited(java.awt.event.MouseEvent evt) {
         ipTFMouseExited(evt);
       }
     });
-    ipTF.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
+    ipTF.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
         ipTFActionPerformed(evt);
       }
     });
     mainCSPanel.add(ipTF);
 
-    serialCB.setName("serialCB"); // NOI18N
-    serialCB.setPreferredSize(new Dimension(120, 23));
-    serialCB.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
+    serialCB.setPreferredSize(new java.awt.Dimension(120, 23));
+    serialCB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
         serialCBActionPerformed(evt);
       }
     });
     mainCSPanel.add(serialCB);
 
-    controllerLbl.setIcon(new ImageIcon(getClass().getResource("/media/controller-console-24.png"))); // NOI18N
+    controllerLbl.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/controller-console-24.png"))); // NOI18N
     controllerLbl.setToolTipText("Decoder Controller");
-    controllerLbl.setName("controllerLbl"); // NOI18N
     mainCSPanel.add(controllerLbl);
 
-    accessoryControllerLbl.setIcon(new ImageIcon(getClass().getResource("/media/branch-24.png"))); // NOI18N
+    accessoryControllerLbl.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/branch-24.png"))); // NOI18N
     accessoryControllerLbl.setToolTipText("Accessory Controller");
-    accessoryControllerLbl.setName("accessoryControllerLbl"); // NOI18N
     mainCSPanel.add(accessoryControllerLbl);
 
-    feedbackProviderLbl.setIcon(new ImageIcon(getClass().getResource("/media/chat-24.png"))); // NOI18N
+    feedbackProviderLbl.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/chat-24.png"))); // NOI18N
     feedbackProviderLbl.setToolTipText("Feedback Provider");
-    feedbackProviderLbl.setName("feedbackProviderLbl"); // NOI18N
     mainCSPanel.add(feedbackProviderLbl);
 
     discoverBtn.setText("Discover");
-    discoverBtn.setName("discoverBtn"); // NOI18N
-    discoverBtn.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
+    discoverBtn.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
         discoverBtnActionPerformed(evt);
       }
     });
@@ -369,27 +322,26 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
 
     checkBtn.setText("Check");
     checkBtn.setToolTipText("Check Connection");
-    checkBtn.setName("checkBtn"); // NOI18N
-    checkBtn.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
+    checkBtn.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
         checkBtnActionPerformed(evt);
       }
     });
     mainCSPanel.add(checkBtn);
 
+    connectionTypeBG.add(networkRB);
     networkRB.setText("Network");
-    networkRB.setName("networkRB"); // NOI18N
-    networkRB.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
+    networkRB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
         networkRBActionPerformed(evt);
       }
     });
     mainCSPanel.add(networkRB);
 
+    connectionTypeBG.add(serialRB);
     serialRB.setText("Serialport");
-    serialRB.setName("serialRB"); // NOI18N
-    serialRB.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
+    serialRB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
         serialRBActionPerformed(evt);
       }
     });
@@ -397,184 +349,152 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
 
     topPanel.add(mainCSPanel);
 
-    feedbackCSPanel.setName("feedbackCSPanel"); // NOI18N
-    FlowLayout flowLayout14 = new FlowLayout(FlowLayout.LEFT);
-    flowLayout14.setAlignOnBaseline(true);
-    feedbackCSPanel.setLayout(flowLayout14);
+    java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
+    flowLayout1.setAlignOnBaseline(true);
+    feedbackCSPanel.setLayout(flowLayout1);
 
+    feedbackLbl.setLabelFor(feedbackCB);
     feedbackLbl.setText("Feedback Device");
-    feedbackLbl.setName("feedbackLbl"); // NOI18N
-    feedbackLbl.setPreferredSize(new Dimension(110, 17));
+    feedbackLbl.setPreferredSize(new java.awt.Dimension(110, 17));
     feedbackCSPanel.add(feedbackLbl);
 
-    feedbackCB.setName("feedbackCB"); // NOI18N
-    feedbackCB.setPreferredSize(new Dimension(200, 23));
-    feedbackCB.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
+    feedbackCB.setPreferredSize(new java.awt.Dimension(200, 23));
+    feedbackCB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
         feedbackCBActionPerformed(evt);
       }
     });
     feedbackCSPanel.add(feedbackCB);
 
-    secondfbpLbl.setIcon(new ImageIcon(getClass().getResource("/media/chat-24.png"))); // NOI18N
+    secondfbpLbl.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/chat-24.png"))); // NOI18N
     secondfbpLbl.setToolTipText("Feedback Provicer");
-    secondfbpLbl.setName("secondfbpLbl"); // NOI18N
-    secondfbpLbl.setPreferredSize(new Dimension(25, 24));
+    secondfbpLbl.setPreferredSize(new java.awt.Dimension(25, 24));
     feedbackCSPanel.add(secondfbpLbl);
 
-    fbpSerialLbl.setHorizontalAlignment(SwingConstants.RIGHT);
+    fbpSerialLbl.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
     fbpSerialLbl.setText("Serial Port:");
-    fbpSerialLbl.setHorizontalTextPosition(SwingConstants.LEADING);
-    fbpSerialLbl.setName("fbpSerialLbl"); // NOI18N
-    fbpSerialLbl.setPreferredSize(new Dimension(75, 17));
+    fbpSerialLbl.setHorizontalTextPosition(javax.swing.SwingConstants.LEADING);
+    fbpSerialLbl.setPreferredSize(new java.awt.Dimension(75, 17));
     feedbackCSPanel.add(fbpSerialLbl);
 
-    fbpSerialCB.setName("fbpSerialCB"); // NOI18N
-    fbpSerialCB.setPreferredSize(new Dimension(120, 23));
-    fbpSerialCB.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
+    fbpSerialCB.setPreferredSize(new java.awt.Dimension(120, 23));
+    fbpSerialCB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
         fbpSerialCBActionPerformed(evt);
       }
     });
     feedbackCSPanel.add(fbpSerialCB);
-
-    filler1.setName("filler1"); // NOI18N
     feedbackCSPanel.add(filler1);
 
     topPanel.add(feedbackCSPanel);
 
-    add(topPanel, BorderLayout.PAGE_START);
+    getContentPane().add(topPanel, java.awt.BorderLayout.PAGE_START);
 
-    jPanel3.setName("jPanel3"); // NOI18N
-
-    GroupLayout jPanel3Layout = new GroupLayout(jPanel3);
+    javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
     jPanel3.setLayout(jPanel3Layout);
-    jPanel3Layout.setHorizontalGroup(jPanel3Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-      .addGap(0, 1220, Short.MAX_VALUE)
+    jPanel3Layout.setHorizontalGroup(
+      jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+      .addGap(0, 1400, Short.MAX_VALUE)
     );
-    jPanel3Layout.setVerticalGroup(jPanel3Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+    jPanel3Layout.setVerticalGroup(
+      jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
       .addGap(0, 100, Short.MAX_VALUE)
     );
 
-    add(jPanel3, BorderLayout.PAGE_END);
-
-    jPanel4.setName("jPanel4"); // NOI18N
+    getContentPane().add(jPanel3, java.awt.BorderLayout.PAGE_END);
 
     connectBtn.setText("Connect");
-    connectBtn.setName("connectBtn"); // NOI18N
-    connectBtn.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
+    connectBtn.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
         connectBtnActionPerformed(evt);
       }
     });
     jPanel4.add(connectBtn);
 
-    add(jPanel4, BorderLayout.LINE_END);
+    getContentPane().add(jPanel4, java.awt.BorderLayout.LINE_END);
 
-    jPanel5.setName("jPanel5"); // NOI18N
-    jPanel5.setPreferredSize(new Dimension(100, 400));
-    jPanel5.setLayout(new BorderLayout());
-    add(jPanel5, BorderLayout.LINE_START);
+    jPanel5.setPreferredSize(new java.awt.Dimension(100, 400));
+    jPanel5.setLayout(new java.awt.BorderLayout());
+    getContentPane().add(jPanel5, java.awt.BorderLayout.LINE_START);
 
-    jPanel2.setName("jPanel2"); // NOI18N
-    jPanel2.setLayout(new BorderLayout());
+    jPanel2.setLayout(new java.awt.BorderLayout());
 
-    propertiesPanel.setName("propertiesPanel"); // NOI18N
-    propertiesPanel.setLayout(new BorderLayout());
+    propertiesPanel.setLayout(new java.awt.BorderLayout());
 
-    controllerPanel.setName("controllerPanel"); // NOI18N
-    controllerPanel.setPreferredSize(new Dimension(695, 40));
-    FlowLayout flowLayout15 = new FlowLayout(FlowLayout.LEFT);
-    flowLayout15.setAlignOnBaseline(true);
-    controllerPanel.setLayout(flowLayout15);
+    controllerPanel.setPreferredSize(new java.awt.Dimension(695, 40));
+    java.awt.FlowLayout flowLayout3 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
+    flowLayout3.setAlignOnBaseline(true);
+    controllerPanel.setLayout(flowLayout3);
 
     connectedToLbl.setText("Connected to: command station");
-    connectedToLbl.setName("connectedToLbl"); // NOI18N
-    connectedToLbl.setPreferredSize(new Dimension(200, 17));
+    connectedToLbl.setPreferredSize(new java.awt.Dimension(200, 17));
     controllerPanel.add(connectedToLbl);
 
     serialLbl.setText("Serial: xxxxxx");
-    serialLbl.setName("serialLbl"); // NOI18N
-    serialLbl.setPreferredSize(new Dimension(150, 17));
+    serialLbl.setPreferredSize(new java.awt.Dimension(150, 17));
     controllerPanel.add(serialLbl);
 
     swVersionLbl.setText("Software version: xxxxxxx");
-    swVersionLbl.setName("swVersionLbl"); // NOI18N
-    swVersionLbl.setPreferredSize(new Dimension(160, 17));
+    swVersionLbl.setPreferredSize(new java.awt.Dimension(160, 17));
     controllerPanel.add(swVersionLbl);
 
     hwVersionLbl.setText("Hardware version: xxxxxx");
-    hwVersionLbl.setName("hwVersionLbl"); // NOI18N
-    hwVersionLbl.setPreferredSize(new Dimension(160, 17));
+    hwVersionLbl.setPreferredSize(new java.awt.Dimension(160, 17));
     controllerPanel.add(hwVersionLbl);
 
-    propertiesPanel.add(controllerPanel, BorderLayout.NORTH);
+    propertiesPanel.add(controllerPanel, java.awt.BorderLayout.NORTH);
 
-    feedbackPanel.setBorder(BorderFactory.createTitledBorder("Feedback Modules"));
-    feedbackPanel.setName("feedbackPanel"); // NOI18N
-    feedbackPanel.setPreferredSize(new Dimension(654, 60));
-    feedbackPanel.setLayout(new GridLayout(1, 2));
+    feedbackPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Feedback Modules"));
+    feedbackPanel.setPreferredSize(new java.awt.Dimension(654, 60));
+    feedbackPanel.setLayout(new java.awt.GridLayout(1, 2));
 
-    feedbackModulesPanel.setName("feedbackModulesPanel"); // NOI18N
-    FlowLayout flowLayout16 = new FlowLayout(FlowLayout.LEFT);
-    flowLayout16.setAlignOnBaseline(true);
-    feedbackModulesPanel.setLayout(flowLayout16);
+    java.awt.FlowLayout flowLayout4 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
+    flowLayout4.setAlignOnBaseline(true);
+    feedbackModulesPanel.setLayout(flowLayout4);
 
-    mainLbl.setHorizontalAlignment(SwingConstants.TRAILING);
+    mainLbl.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
     mainLbl.setText("Main");
-    mainLbl.setName("mainLbl"); // NOI18N
-    mainLbl.setPreferredSize(new Dimension(40, 17));
+    mainLbl.setPreferredSize(new java.awt.Dimension(40, 17));
     feedbackModulesPanel.add(mainLbl);
 
-    mainSpinner.setModel(new SpinnerNumberModel(0, null, 31, 1));
-    mainSpinner.setName("mainSpinner"); // NOI18N
+    mainSpinner.setModel(new javax.swing.SpinnerNumberModel(0, null, 31, 1));
     feedbackModulesPanel.add(mainSpinner);
 
-    bus1Lbl.setHorizontalAlignment(SwingConstants.TRAILING);
+    bus1Lbl.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
     bus1Lbl.setText("Bus 1");
-    bus1Lbl.setName("bus1Lbl"); // NOI18N
-    bus1Lbl.setPreferredSize(new Dimension(40, 17));
+    bus1Lbl.setPreferredSize(new java.awt.Dimension(40, 17));
     feedbackModulesPanel.add(bus1Lbl);
 
-    bus1Spinner.setModel(new SpinnerNumberModel(0, null, 31, 1));
-    bus1Spinner.setName("bus1Spinner"); // NOI18N
+    bus1Spinner.setModel(new javax.swing.SpinnerNumberModel(0, null, 31, 1));
     feedbackModulesPanel.add(bus1Spinner);
 
-    bus2Lbl.setHorizontalAlignment(SwingConstants.TRAILING);
+    bus2Lbl.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
     bus2Lbl.setText("Bus 2");
-    bus2Lbl.setName("bus2Lbl"); // NOI18N
-    bus2Lbl.setPreferredSize(new Dimension(40, 17));
+    bus2Lbl.setPreferredSize(new java.awt.Dimension(40, 17));
     feedbackModulesPanel.add(bus2Lbl);
 
-    bus2Spinner.setModel(new SpinnerNumberModel(0, null, 31, 1));
-    bus2Spinner.setName("bus2Spinner"); // NOI18N
+    bus2Spinner.setModel(new javax.swing.SpinnerNumberModel(0, null, 31, 1));
     feedbackModulesPanel.add(bus2Spinner);
 
-    bus3Lbl.setHorizontalAlignment(SwingConstants.TRAILING);
+    bus3Lbl.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
     bus3Lbl.setText("Bus 3");
-    bus3Lbl.setName("bus3Lbl"); // NOI18N
-    bus3Lbl.setPreferredSize(new Dimension(40, 17));
+    bus3Lbl.setPreferredSize(new java.awt.Dimension(40, 17));
     feedbackModulesPanel.add(bus3Lbl);
 
-    bus3Spinner.setModel(new SpinnerNumberModel(0, null, 31, 1));
-    bus3Spinner.setName("bus3Spinner"); // NOI18N
+    bus3Spinner.setModel(new javax.swing.SpinnerNumberModel(0, null, 31, 1));
     feedbackModulesPanel.add(bus3Spinner);
-
-    filler2.setName("filler2"); // NOI18N
     feedbackModulesPanel.add(filler2);
 
     feedbackPanel.add(feedbackModulesPanel);
 
-    updatePanel.setName("updatePanel"); // NOI18N
-    updatePanel.setPreferredSize(new Dimension(350, 57));
-    FlowLayout flowLayout17 = new FlowLayout(FlowLayout.RIGHT);
-    flowLayout17.setAlignOnBaseline(true);
-    updatePanel.setLayout(flowLayout17);
+    updatePanel.setPreferredSize(new java.awt.Dimension(350, 57));
+    java.awt.FlowLayout flowLayout2 = new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT);
+    flowLayout2.setAlignOnBaseline(true);
+    updatePanel.setLayout(flowLayout2);
 
     updateBtn.setText("Update");
-    updateBtn.setName("updateBtn"); // NOI18N
-    updateBtn.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
+    updateBtn.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
         updateBtnActionPerformed(evt);
       }
     });
@@ -582,39 +502,65 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
 
     feedbackPanel.add(updatePanel);
 
-    propertiesPanel.add(feedbackPanel, BorderLayout.SOUTH);
+    propertiesPanel.add(feedbackPanel, java.awt.BorderLayout.SOUTH);
 
-    jPanel2.add(propertiesPanel, BorderLayout.PAGE_START);
+    jPanel2.add(propertiesPanel, java.awt.BorderLayout.PAGE_START);
 
-    rightPanel.setName("rightPanel"); // NOI18N
-    rightPanel.setPreferredSize(new Dimension(750, 318));
+    jPanel6.setPreferredSize(new java.awt.Dimension(750, 318));
 
-    GroupLayout rightPanelLayout = new GroupLayout(rightPanel);
-    rightPanel.setLayout(rightPanelLayout);
-    rightPanelLayout.setHorizontalGroup(rightPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+    javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
+    jPanel6.setLayout(jPanel6Layout);
+    jPanel6Layout.setHorizontalGroup(
+      jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
       .addGap(0, 750, Short.MAX_VALUE)
     );
-    rightPanelLayout.setVerticalGroup(rightPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+    jPanel6Layout.setVerticalGroup(
+      jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
       .addGap(0, 317, Short.MAX_VALUE)
     );
 
-    jPanel2.add(rightPanel, BorderLayout.EAST);
+    jPanel2.add(jPanel6, java.awt.BorderLayout.EAST);
 
-    devicesPanel.setBorder(BorderFactory.createTitledBorder("Devices"));
-    devicesPanel.setName("devicesPanel"); // NOI18N
-    devicesPanel.setLayout(new GridLayout(1, 1));
+    devicesPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Devices"));
+    devicesPanel.setLayout(new java.awt.GridLayout(1, 1));
 
-    devicesSP.setName("devicesSP"); // NOI18N
-
-    devicesTree.setName("devicesTree"); // NOI18N
     devicesSP.setViewportView(devicesTree);
 
     devicesPanel.add(devicesSP);
 
-    jPanel2.add(devicesPanel, BorderLayout.CENTER);
+    jPanel2.add(devicesPanel, java.awt.BorderLayout.CENTER);
 
-    add(jPanel2, BorderLayout.CENTER);
+    getContentPane().add(jPanel2, java.awt.BorderLayout.CENTER);
+
+    pack();
   }// </editor-fold>//GEN-END:initComponents
+
+  private void commandStationCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_commandStationCBActionPerformed
+    CommandStationBean newSelectedCommandStation = (CommandStationBean) commandStationCBM.getSelectedItem();
+    if (selectedCommandStation != null && selectedCommandStation.getId() != null && !selectedCommandStation.getId().equals(newSelectedCommandStation.getId())) {
+      selectedCommandStation.setDefault(false);
+      selectedCommandStation.setEnabled(false);
+      try {
+        if (JCS.getJcsCommandStation() != null && JCS.getJcsCommandStation().isConnected()) {
+          JCS.getJcsCommandStation().switchPower(false);
+        }
+        if (JCS.getParentFrame() != null) {
+          JCS.getParentFrame().connect(false);
+        }
+      } catch (Exception e) {
+        Logger.error(e.getMessage());
+      }
+    } else {
+      selectedCommandStation = newSelectedCommandStation;
+    }
+
+    selectedCommandStation = (CommandStationBean) commandStationCBM.getSelectedItem();
+    selectedCommandStation.setEnabled(true);
+    selectedCommandStation.setDefault(true);
+    executor.execute(() -> changeDefaultCommandStation(selectedCommandStation));
+
+    Logger.trace("Selected CS: " + selectedCommandStation.getDescription());
+  }//GEN-LAST:event_commandStationCBActionPerformed
 
   private void setComponents() {
     controllerLbl.setVisible(selectedCommandStation.isDecoderControlSupport());
@@ -708,11 +654,7 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
             bus3Spinner.setValue(fbm.getBusSize());
           }
           default -> {
-            if (fbm.getBusSize() != null && fbm.getBusSize() > 0) {
-              mainSpinner.setValue(fbm.getBusSize());
-            } else {
-              mainSpinner.setValue(modules.size());
-            }
+            mainSpinner.setValue(fbm.getBusSize());
           }
         }
       }
@@ -822,18 +764,14 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
 
           DefaultMutableTreeNode moduleNode = new DefaultMutableTreeNode(sb);
           Logger.trace("M " + sb.toString());
-
           deviceNode.add(moduleNode);
         }
-
       }
-
       root.add(deviceNode);
     }
 
   }
 
-  //TODO
   public void valueChanged(TreeSelectionEvent e) {
     DefaultMutableTreeNode node = (DefaultMutableTreeNode) devicesTree.getLastSelectedPathComponent();
 
@@ -863,91 +801,12 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
     });
   }
 
-  private void commandStationCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_commandStationCBActionPerformed
-    CommandStationBean newSelectedCommandStation = (CommandStationBean) commandStationCBM.getSelectedItem();
-    if (selectedCommandStation != null && selectedCommandStation.getId() != null && !selectedCommandStation.getId().equals(newSelectedCommandStation.getId())) {
-      selectedCommandStation.setDefault(false);
-      selectedCommandStation.setEnabled(false);
-      try {
-        if (JCS.getJcsCommandStation() != null && JCS.getJcsCommandStation().isConnected()) {
-          JCS.getJcsCommandStation().switchPower(false);
-        }
-        if (JCS.getParentFrame() != null) {
-          JCS.getParentFrame().connect(false);
-        }
-      } catch (Exception e) {
-        Logger.error(e.getMessage());
-      }
-    } else {
-      selectedCommandStation = newSelectedCommandStation;
-    }
-
-    selectedCommandStation = (CommandStationBean) commandStationCBM.getSelectedItem();
-    selectedCommandStation.setEnabled(true);
-    selectedCommandStation.setDefault(true);
-    executor.execute(() -> changeDefaultCommandStation(selectedCommandStation));
-
-    Logger.trace("Selected CS: " + selectedCommandStation.getDescription());
-  }//GEN-LAST:event_commandStationCBActionPerformed
-
-  private void virtualCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_virtualCBActionPerformed
-    selectedCommandStation.setVirtual(virtualCB.isSelected());
-    persistCommandStation(selectedCommandStation);
-  }//GEN-LAST:event_virtualCBActionPerformed
-
-  private void ipTFFocusLost(FocusEvent evt) {//GEN-FIRST:event_ipTFFocusLost
-    Logger.trace("ip Address: " + this.ipTF.getText());
-    selectedCommandStation.setIpAddress(ipTF.getText());
-    persistCommandStation(selectedCommandStation);
-  }//GEN-LAST:event_ipTFFocusLost
-
-  private void ipTFMouseExited(MouseEvent evt) {//GEN-FIRST:event_ipTFMouseExited
-    Logger.trace("ip Address: " + this.ipTF.getText());
-    selectedCommandStation.setIpAddress(ipTF.getText());
-    persistCommandStation(selectedCommandStation);
-  }//GEN-LAST:event_ipTFMouseExited
-
-  private void ipTFActionPerformed(ActionEvent evt) {//GEN-FIRST:event_ipTFActionPerformed
-    Logger.trace("ip Address: " + this.ipTF.getText());
-    selectedCommandStation.setIpAddress(ipTF.getText());
-    persistCommandStation(selectedCommandStation);
-  }//GEN-LAST:event_ipTFActionPerformed
-
-  private void serialCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_serialCBActionPerformed
-    String selectedPort = (String) serialCB.getSelectedItem();
-    selectedCommandStation.setSerialPort(selectedPort);
-    persistCommandStation(selectedCommandStation);
-  }//GEN-LAST:event_serialCBActionPerformed
-
-  private void discoverBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_discoverBtnActionPerformed
+  private void discoverBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_discoverBtnActionPerformed
     Logger.trace("Try to discover " + selectedCommandStation.getDescription());
     executor.execute(() -> discover(selectedCommandStation));
   }//GEN-LAST:event_discoverBtnActionPerformed
 
-  private void checkBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_checkBtnActionPerformed
-    executor.execute(() -> checkConnection(selectedCommandStation));
-  }//GEN-LAST:event_checkBtnActionPerformed
-
-  private void networkRBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_networkRBActionPerformed
-    if (networkRB.isSelected()) {
-      selectedCommandStation.setConnectionType(CommandStationBean.ConnectionType.NETWORK);
-      selectedCommandStation.setSerialPort(null);
-    } else {
-      selectedCommandStation.setConnectionType(CommandStationBean.ConnectionType.SERIAL);
-    }
-    persistCommandStation(selectedCommandStation);
-  }//GEN-LAST:event_networkRBActionPerformed
-
-  private void serialRBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_serialRBActionPerformed
-    if (networkRB.isSelected()) {
-      selectedCommandStation.setConnectionType(CommandStationBean.ConnectionType.NETWORK);
-    } else {
-      selectedCommandStation.setConnectionType(CommandStationBean.ConnectionType.SERIAL);
-    }
-    persistCommandStation(selectedCommandStation);
-  }//GEN-LAST:event_serialRBActionPerformed
-
-  private void feedbackCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_feedbackCBActionPerformed
+  private void feedbackCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_feedbackCBActionPerformed
     CommandStationBean newSelectedFeedbackProvider = (CommandStationBean) feedbackCBM.getSelectedItem();
     //Check if it is not the empty one
     if (feedbackCB.isEnabled()) {
@@ -966,13 +825,56 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
     }
   }//GEN-LAST:event_feedbackCBActionPerformed
 
-  private void fbpSerialCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_fbpSerialCBActionPerformed
+  private void serialCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serialCBActionPerformed
+    String selectedPort = (String) serialCB.getSelectedItem();
+    selectedCommandStation.setSerialPort(selectedPort);
+    persistCommandStation(selectedCommandStation);
+  }//GEN-LAST:event_serialCBActionPerformed
+
+  private void fbpSerialCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fbpSerialCBActionPerformed
     String selectedPort = (String) fbpSerialCB.getSelectedItem();
     selectedFeedbackProvider.setSerialPort(selectedPort);
     persistCommandStation(selectedFeedbackProvider);
   }//GEN-LAST:event_fbpSerialCBActionPerformed
 
-  private void connectBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_connectBtnActionPerformed
+  private void networkRBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_networkRBActionPerformed
+    if (networkRB.isSelected()) {
+      selectedCommandStation.setConnectionType(CommandStationBean.ConnectionType.NETWORK);
+      selectedCommandStation.setSerialPort(null);
+    } else {
+      selectedCommandStation.setConnectionType(CommandStationBean.ConnectionType.SERIAL);
+    }
+    persistCommandStation(selectedCommandStation);
+  }//GEN-LAST:event_networkRBActionPerformed
+
+  private void serialRBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serialRBActionPerformed
+    if (networkRB.isSelected()) {
+      selectedCommandStation.setConnectionType(CommandStationBean.ConnectionType.NETWORK);
+    } else {
+      selectedCommandStation.setConnectionType(CommandStationBean.ConnectionType.SERIAL);
+    }
+    persistCommandStation(selectedCommandStation);
+  }//GEN-LAST:event_serialRBActionPerformed
+
+  private void ipTFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ipTFActionPerformed
+    Logger.trace("ip Address: " + this.ipTF.getText());
+    selectedCommandStation.setIpAddress(ipTF.getText());
+    persistCommandStation(selectedCommandStation);
+  }//GEN-LAST:event_ipTFActionPerformed
+
+  private void ipTFFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_ipTFFocusLost
+    Logger.trace("ip Address: " + this.ipTF.getText());
+    selectedCommandStation.setIpAddress(ipTF.getText());
+    persistCommandStation(selectedCommandStation);
+  }//GEN-LAST:event_ipTFFocusLost
+
+  private void ipTFMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ipTFMouseExited
+    Logger.trace("ip Address: " + this.ipTF.getText());
+    selectedCommandStation.setIpAddress(ipTF.getText());
+    persistCommandStation(selectedCommandStation);
+  }//GEN-LAST:event_ipTFMouseExited
+
+  private void connectBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectBtnActionPerformed
     Logger.trace("Try to connect to " + selectedCommandStation.getDescription());
 
     if ("Connect".equals(connectBtn.getText())) {
@@ -982,35 +884,21 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
     }
   }//GEN-LAST:event_connectBtnActionPerformed
 
-  private void updateBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_updateBtnActionPerformed
+  private void checkBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkBtnActionPerformed
+    executor.execute(() -> checkConnection(selectedCommandStation));
+  }//GEN-LAST:event_checkBtnActionPerformed
+
+  private void virtualCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_virtualCBActionPerformed
+    selectedCommandStation.setVirtual(virtualCB.isSelected());
+    persistCommandStation(selectedCommandStation);
+  }//GEN-LAST:event_virtualCBActionPerformed
+
+  private void updateBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateBtnActionPerformed
     executor.execute(() -> {
       updateBtn.setEnabled(false);
       updateSensors();
     });
   }//GEN-LAST:event_updateBtnActionPerformed
-
-  private void formComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_formComponentShown
-    Logger.trace("Shown");
-  }//GEN-LAST:event_formComponentShown
-
-  private void formComponentHidden(ComponentEvent evt) {//GEN-FIRST:event_formComponentHidden
-    Logger.trace("Hidden");
-  }//GEN-LAST:event_formComponentHidden
-
-  @Override
-  public void setVisible(boolean aFlag) {
-    super.setVisible(aFlag);
-    Logger.trace("Shown " + aFlag);
-
-    if (!aFlag && this.controller != null) {
-      if (controller.isConnected()) {
-        controller.disconnect();
-      }
-      controller = null;
-      Logger.trace("Disconnected from " + selectedCommandStation.getId());
-    }
-
-  }
 
   private void updateSensors() {
     List<FeedbackModule> modules = ((FeedbackController) controller).getFeedbackModules();
@@ -1035,31 +923,32 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
     });
   }
 
-//  private List<FeedbackModule> getFeedbackModules(String commandStationId) {
-//    List<SensorBean> sensors = PersistenceFactory.getService().getSensorsByCommandStationId(commandStationId);
-//
-//    List<FeedbackModule> modules = new ArrayList<>();
-//    if (!sensors.isEmpty()) {
-//      Integer id = -1;
-//      for (SensorBean sb : sensors) {
-//        if (!id.equals(sb.getDeviceId())) {
-//          FeedbackModule fbm = new FeedbackModule();
-//          fbm.setId(sb.getDeviceId());
-//          fbm.setIdentifier(sb.getNodeId());
-//          //The busnumber and address offset depend on the commandstation id 
-//          fbm.setBusNumber(sb.getBusNr());
-//        }
-//      }
-//    }
-//
-//    return modules;
-//  }
+  private List<FeedbackModule> getFeedbackModules(String commandStationId) {
+    List<SensorBean> sensors = PersistenceFactory.getService().getSensorsByCommandStationId(commandStationId);
+
+    List<FeedbackModule> modules = new ArrayList<>();
+    if (!sensors.isEmpty()) {
+      Integer id = -1;
+      for (SensorBean sb : sensors) {
+        if (!id.equals(sb.getDeviceId())) {
+          FeedbackModule fbm = new FeedbackModule();
+          fbm.setId(sb.getDeviceId());
+          fbm.setIdentifier(sb.getNodeId());
+          //The busnumber and address offset depend on the commandstation id 
+          fbm.setBusNumber(sb.getBusNr());
+        }
+      }
+    }
+
+    return modules;
+  }
+
   private InetAddress discover(final CommandStationBean commandStation) {
     final JOptionPane optionPane = new JOptionPane("Try to discovering a " + commandStation.getDescription(),
             JOptionPane.INFORMATION_MESSAGE,
             JOptionPane.DEFAULT_OPTION);
 
-    final JDialog discoverDialog = new JDialog((JDialog) null, "Discovering...");
+    final JDialog discoverDialog = new JDialog(this, "Discovering...");
     discoverDialog.setContentPane(optionPane);
     discoverDialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
     discoverDialog.pack();
@@ -1087,34 +976,29 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
     return inetAddress;
   }
 
-  private JFrame getParentFrame() {
-    if (SwingUtilities.getRoot(this) instanceof JFrame frame) {
-      return frame;
-    } else {
-      return null;
-    }
-  }
-
   private void checkConnection(final CommandStationBean commandStation) {
-    String ip = commandStation.getIpAddress();
-    boolean canConnect = Ping.IsReachable(ip);
+    //First check if we are already connected
+    boolean allreadyConnected = false;
+    if (JCS.getJcsCommandStation() != null) {
+      allreadyConnected = JCS.getJcsCommandStation().isConnected();
+      ipTF.setBackground(new java.awt.Color(204, 255, 204));
+    }
 
-    java.awt.EventQueue.invokeLater(() -> {
-      if (canConnect) {
-        ipTF.setBackground(new java.awt.Color(204, 255, 204));
-        connectBtn.setEnabled(true);
-      } else {
-        ipTF.setBackground(new java.awt.Color(255, 255, 255));
-        connectBtn.setEnabled(false);
+    if (!allreadyConnected) {
+      String ip = commandStation.getIpAddress();
+      boolean canConnect = Ping.IsReachable(ip);
 
-        //Only show the MessageDial when in Dialog
-        if (!(getParentFrame() instanceof JCSFrame)) {
-          JOptionPane.showMessageDialog(this, "Can't connect with host " + ip, "Can't Connect", JOptionPane.WARNING_MESSAGE);
+      java.awt.EventQueue.invokeLater(() -> {
+        if (canConnect) {
+          ipTF.setBackground(new java.awt.Color(204, 255, 204));
+          connectBtn.setEnabled(true);
         } else {
-          Logger.trace("Can't connect with host " + ip);
+          ipTF.setBackground(new java.awt.Color(255, 255, 255));
+          connectBtn.setEnabled(false);
+          JOptionPane.showMessageDialog(this, "Can't connect with host " + ip, "Can't Connect", JOptionPane.WARNING_MESSAGE);
         }
-      }
-    });
+      });
+    }
   }
 
   private void disconnect() {
@@ -1125,6 +1009,7 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
       java.awt.EventQueue.invokeLater(() -> {
         setComponents();
       });
+
     }
   }
 
@@ -1133,7 +1018,7 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
             JOptionPane.INFORMATION_MESSAGE,
             JOptionPane.DEFAULT_OPTION);
 
-    final JDialog connectingDialog = new JDialog((JDialog) null, "Connecting...");
+    final JDialog connectingDialog = new JDialog(this, "Connecting...");
     connectingDialog.setContentPane(optionPane);
     connectingDialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
     connectingDialog.pack();
@@ -1177,59 +1062,110 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
       connectingDialog.setVisible(false);
       connectingDialog.dispose();
     });
+
+    //} catch (UnknownHostException ex) {
+    //  Logger.error("Unknown host " + commandStation.getIpAddress());
+    //  return false;
+    //}
   }
 
+  @Override
+  public void setVisible(boolean b) {
+    super.setVisible(b);
+
+    if (!b && this.controller != null) {
+      if (controller.isConnected()) {
+        controller.disconnect();
+      }
+      controller = null;
+      Logger.trace("Disconnected from " + selectedCommandStation.getId());
+    }
+  }
+
+  /**
+   * @param args the command line arguments
+   */
+  public static void main(String args[]) {
+    /* Set the FlatLightLaf look and feel */
+    //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+    try {
+      UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
+    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
+      Logger.warn("Can't set the LookAndFeel: " + ex);
+    }
+    //</editor-fold>
+
+    /* Create and display the dialog */
+    java.awt.EventQueue.invokeLater(() -> {
+      CommandStationDialog1 dialog = new CommandStationDialog1(new javax.swing.JFrame(), true);
+      dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+        @Override
+        public void windowClosing(java.awt.event.WindowEvent e) {
+          dialog.setVisible(false);
+          System.exit(0);
+        }
+      });
+
+      dialog.pack();
+      dialog.setLocationRelativeTo(null);
+      dialog.setVisible(true);
+
+    });
+  }
+
+
   // Variables declaration - do not modify//GEN-BEGIN:variables
-  JLabel accessoryControllerLbl;
-  JLabel bus1Lbl;
-  JSpinner bus1Spinner;
-  JLabel bus2Lbl;
-  JSpinner bus2Spinner;
-  JLabel bus3Lbl;
-  JSpinner bus3Spinner;
-  JButton checkBtn;
-  JComboBox<CommandStationBean> commandStationCB;
-  JLabel commandStationLbl;
-  JButton connectBtn;
-  JLabel connectedToLbl;
-  ButtonGroup connectionTypeBG;
-  JLabel controllerLbl;
-  JPanel controllerPanel;
-  JPanel devicesPanel;
-  JScrollPane devicesSP;
-  JTree devicesTree;
-  JButton discoverBtn;
-  JComboBox<String> fbpSerialCB;
-  JLabel fbpSerialLbl;
-  JComboBox<CommandStationBean> feedbackCB;
-  JPanel feedbackCSPanel;
-  JLabel feedbackLbl;
-  JPanel feedbackModulesPanel;
-  JPanel feedbackPanel;
-  JLabel feedbackProviderLbl;
-  Box.Filler filler1;
-  Box.Filler filler2;
-  JLabel hwVersionLbl;
-  JLabel ipOrPortLbl;
-  JTextField ipTF;
-  JPanel jPanel2;
-  JPanel jPanel3;
-  JPanel jPanel4;
-  JPanel jPanel5;
-  JPanel mainCSPanel;
-  JLabel mainLbl;
-  JSpinner mainSpinner;
-  JRadioButton networkRB;
-  JPanel propertiesPanel;
-  JPanel rightPanel;
-  JLabel secondfbpLbl;
-  JComboBox<String> serialCB;
-  JLabel serialLbl;
-  JRadioButton serialRB;
-  JLabel swVersionLbl;
-  JPanel topPanel;
-  JButton updateBtn;
-  JPanel updatePanel;
-  JCheckBox virtualCB;
+  private javax.swing.JLabel accessoryControllerLbl;
+  private javax.swing.JLabel bus1Lbl;
+  private javax.swing.JSpinner bus1Spinner;
+  private javax.swing.JLabel bus2Lbl;
+  private javax.swing.JSpinner bus2Spinner;
+  private javax.swing.JLabel bus3Lbl;
+  private javax.swing.JSpinner bus3Spinner;
+  private javax.swing.JButton checkBtn;
+  private javax.swing.JComboBox<CommandStationBean> commandStationCB;
+  private javax.swing.JLabel commandStationLbl;
+  private javax.swing.JButton connectBtn;
+  private javax.swing.JLabel connectedToLbl;
+  private javax.swing.ButtonGroup connectionTypeBG;
+  private javax.swing.JLabel controllerLbl;
+  private javax.swing.JPanel controllerPanel;
+  private javax.swing.JPanel devicesPanel;
+  private javax.swing.JScrollPane devicesSP;
+  private javax.swing.JTree devicesTree;
+  private javax.swing.JButton discoverBtn;
+  private javax.swing.JComboBox<String> fbpSerialCB;
+  private javax.swing.JLabel fbpSerialLbl;
+  private javax.swing.JComboBox<CommandStationBean> feedbackCB;
+  private javax.swing.JPanel feedbackCSPanel;
+  private javax.swing.JLabel feedbackLbl;
+  private javax.swing.JPanel feedbackModulesPanel;
+  private javax.swing.JPanel feedbackPanel;
+  private javax.swing.JLabel feedbackProviderLbl;
+  private javax.swing.Box.Filler filler1;
+  private javax.swing.Box.Filler filler2;
+  private javax.swing.JLabel hwVersionLbl;
+  private javax.swing.JLabel ipOrPortLbl;
+  private javax.swing.JTextField ipTF;
+  private javax.swing.JPanel jPanel2;
+  private javax.swing.JPanel jPanel3;
+  private javax.swing.JPanel jPanel4;
+  private javax.swing.JPanel jPanel5;
+  private javax.swing.JPanel jPanel6;
+  private javax.swing.JPanel mainCSPanel;
+  private javax.swing.JLabel mainLbl;
+  private javax.swing.JSpinner mainSpinner;
+  private javax.swing.JRadioButton networkRB;
+  private javax.swing.JPanel propertiesPanel;
+  private javax.swing.JLabel secondfbpLbl;
+  private javax.swing.JComboBox<String> serialCB;
+  private javax.swing.JLabel serialLbl;
+  private javax.swing.JRadioButton serialRB;
+  private javax.swing.JLabel swVersionLbl;
+  private javax.swing.JPanel topPanel;
+  private javax.swing.JButton updateBtn;
+  private javax.swing.JPanel updatePanel;
+  private javax.swing.JCheckBox virtualCB;
   // End of variables declaration//GEN-END:variables
+
 }
