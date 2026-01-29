@@ -27,26 +27,27 @@ import org.tinylog.Logger;
 
 /**
  *
- * @author frans
+ * State InBlock is the state when a train has arrived in the target block.<br>
+ * The block status is Occupied.
  */
 class InBlockState extends DispatcherState {
-
+  
   @Override
   DispatcherState execute(Dispatcher dispatcher) {
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
-
+    
     BlockBean destinationBlock = dispatcher.getDestinationBlock();
     BlockBean departureBlock = dispatcher.getDepartureBlock();
-
+    
     destinationBlock.setLocomotive(locomotive);
     destinationBlock.setBlockState(BlockBean.BlockState.OCCUPIED);
     destinationBlock.setLogicalDirection(locomotive.getDirection().getDirection());
     destinationBlock.setArrivalSuffix(dispatcher.getRouteBean().getToSuffix());
-
+    
     boolean alwaysStop = destinationBlock.isAlwaysStop();
-
+    
     Logger.trace("Locomotive " + locomotive.getName() + " has arrived in destination " + destinationBlock.getDescription() + " and must stop " + alwaysStop);
-
+    
     if (alwaysStop || dispatcher.getNextRouteBean() == null || !dispatcher.isLocomotiveAutomodeOn()) {
       //Stop the locomotive
       dispatcher.changeLocomotiveVelocity(locomotive, 0);
@@ -57,12 +58,12 @@ class InBlockState extends DispatcherState {
     dispatcher.clearDepartureIgnoreEventHandlers();
     dispatcher.setOccupationSensorId(null);
     dispatcher.setExitSensorId(null);
-
+    
     departureBlock.setBlockState(BlockBean.BlockState.FREE);
     departureBlock.setLocomotive(null);
     departureBlock.setArrivalSuffix(null);
     departureBlock.setLogicalDirection(null);
-
+    
     PersistenceFactory.getService().persist(departureBlock);
     PersistenceFactory.getService().persist(destinationBlock);
 
@@ -72,19 +73,23 @@ class InBlockState extends DispatcherState {
       //Set the arrival time
       StationBlockBean sbb = station.getStationBlockBean(destinationBlock);
       sbb.setLastUpdated(new Date());
+      
+      int locCount = station.getLocomotiveCount();
+      locCount = locCount + 1;
+      station.setLocomotiveCount(locCount);
       PersistenceFactory.getService().persist(station);
     }
-
+    
     RouteBean route = dispatcher.getRouteBean();
     route.setLocked(false);
     PersistenceFactory.getService().persist(route);
-
+    
     dispatcher.showBlockState(departureBlock);
     dispatcher.showBlockState(destinationBlock);
-
+    
     Dispatcher.resetRoute(route);
     dispatcher.setRouteBean(null);
-
+    
     if (dispatcher.getNextRouteBean() != null) {
       //Now setup the next route
       route = dispatcher.getNextRouteBean();
@@ -121,21 +126,21 @@ class InBlockState extends DispatcherState {
         enterSensorId = destinationBlock.getMinSensorId();
         inSensorId = destinationBlock.getPlusSensorId();
       }
-
+      
       dispatcher.setEnterSensorId(enterSensorId);
       dispatcher.setInSensorId(inSensorId);
-
+      
       Logger.trace("Departure: " + departureBlock.getId() + " Occupancy Sensor: " + occupancySensorId + " Exit Sensor: " + exitSensorId);
       Logger.trace("Destination: " + destinationBlock.getId() + " Enter Sensor: " + enterSensorId + " In Sensor: " + inSensorId);
-
+      
       PersistenceFactory.getService().persist(departureBlock);
       PersistenceFactory.getService().persist(destinationBlock);
-
+      
       dispatcher.showRoute(route, Color.green);
 
       //Clear the next routes
       dispatcher.setNextRouteBean(null);
-
+      
       return new StartingState();
     } else {
       if (dispatcher.isLocomotiveAutomodeOn()) {
@@ -149,5 +154,5 @@ class InBlockState extends DispatcherState {
       }
     }
   }
-
+  
 }

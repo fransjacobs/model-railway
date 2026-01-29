@@ -120,7 +120,7 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   @Override
   public List<Device> getDevices() {
     List<Device> devices = new ArrayList<>();
-    
+
     Device s88 = new Device();
     s88.setChannels(1);
     s88.setFeedback(true);
@@ -301,20 +301,20 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
     List<TileBean> tileBeans = PersistenceFactory.getService().getTileBeans();
     List<TileBean> sensorTileBeans = new ArrayList<>();
     //Filter the sensors
-    for(TileBean tb : tileBeans) {
-      if(TileType.SENSOR == tb.getTileType()) {
+    for (TileBean tb : tileBeans) {
+      if (TileType.SENSOR == tb.getTileType()) {
         sensorTileBeans.add(tb);
       }
     }
-    Logger.trace("Found "+ sensorTileBeans.size()+" Sensors");
+    Logger.trace("Found " + sensorTileBeans.size() + " Sensors");
     int nrOfFeedbackModules = (int) Math.ceil((double) sensorTileBeans.size() / 16);
-    
+
     List<FeedbackModule> feedbackModules = new ArrayList<>();
-    for (int i=0;i< nrOfFeedbackModules;i++) {
-      FeedbackModule fm = new FeedbackModule(i, i+1,this.commandStationBean.getId());
+    for (int i = 0; i < nrOfFeedbackModules; i++) {
+      FeedbackModule fm = new FeedbackModule(i, i + 1, this.commandStationBean.getId());
       feedbackModules.add(fm);
     }
-    
+
     return feedbackModules;
   }
 

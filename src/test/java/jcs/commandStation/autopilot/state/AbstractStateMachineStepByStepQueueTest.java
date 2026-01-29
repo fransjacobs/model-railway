@@ -36,14 +36,15 @@ import org.tinylog.Logger;
 @TestMethodOrder(OrderAnnotation.class)
 public abstract class AbstractStateMachineStepByStepQueueTest {
 
-  protected static final Long BR_101_003_2 = 23L;
-  protected static final Long NS_1631 = 39L;
+  protected static final long BR_101_003_2 = 23;
+  protected static final long NS_1631 = 39;
 
   protected final PersistenceTestHelper testHelper;
   protected final PersistenceService ps;
-  protected LocomotiveBean dhg;
+  protected LocomotiveBean br101;
   protected LocomotiveBean ns1631;
-  protected Dispatcher dispatcher;
+  protected Dispatcher dispatcherBr101;
+  protected Dispatcher dispatcherNS1631;
 
   public AbstractStateMachineStepByStepQueueTest() {
     System.setProperty("persistenceService", "jcs.persistence.TestH2PersistenceService");

@@ -53,24 +53,24 @@ VALUES (39,0,1,1,'fkticon_a_001',false),
        (39,4,18,0,'fkticon_i_018',false);
 commit;
 
-INSERT INTO sensors (id,name,device_id,contact_id,status,previous_status,millis,last_updated,command_station_id)
-VALUES (2,'M00-C02',0,2,0,1,NULL,NULL,'virtual'),
-       (13,'M00-C13',0,13,0,1,NULL,NULL,'virtual'),
-       (1,'M00-C01',0,1,0,1,0,NULL,'virtual'),
-       (12,'M00-C12',0,12,0,1,NULL,NULL,'virtual'),
-       (4,'M00-C04',0,4,0,1,NULL,NULL,'virtual'),
-       (15,'M00-C15',0,15,0,NULL,NULL,NULL,'virtual'),
-       (3,'M00-C03',0,3,0,1,0,NULL,'virtual'),
-       (14,'M00-C14',0,14,0,NULL,NULL,NULL,'virtual'),
-       (6,'M00-C06',0,6,0,NULL,NULL,NULL,'virtual'),
-       (5,'M00-C05',0,5,0,NULL,NULL,NULL,'virtual');
-INSERT INTO sensors (id,name,device_id,contact_id,status,previous_status,millis,last_updated,command_station_id)
-VALUES (16,'M00-C16',0,16,0,NULL,NULL,NULL,'virtual'),
-       (8,'M00-C08',0,8,0,NULL,NULL,NULL,'virtual'),
-       (7,'M00-C07',0,7,0,NULL,NULL,NULL,'virtual'),
-       (9,'M00-C09',0,9,0,NULL,NULL,NULL,'virtual'),
-       (11,'M00-C11',0,11,0,1,1,null,'virtual'),
-       (10,'M00-C10',0,10,0,1,1,null,'virtual');
+INSERT INTO jcs.sensors (id,name,device_id,contact_id,status,previous_status,millis,last_updated,node_id,bus_nr,command_station_id) VALUES
+	 (0,'M01-C01',1,1,0,0,NULL,NULL,0,0,'virtual'),
+	 (1,'M01-C02',1,2,0,0,NULL,NULL,0,0,'virtual'),
+	 (2,'M01-C03',1,3,0,0,NULL,NULL,0,0,'virtual'),
+	 (3,'M01-C04',1,4,0,0,NULL,NULL,0,0,'virtual'),
+	 (4,'M01-C05',1,5,0,0,NULL,NULL,0,0,'virtual'),
+	 (5,'M01-C06',1,6,0,0,NULL,NULL,0,0,'virtual'),
+	 (6,'M01-C07',1,7,0,0,NULL,NULL,0,0,'virtual'),
+	 (7,'M01-C08',1,8,0,0,NULL,NULL,0,0,'virtual'),
+	 (8,'M01-C09',1,9,0,0,NULL,NULL,0,0,'virtual'),
+	 (9,'M01-C10',1,10,0,0,NULL,NULL,0,0,'virtual');
+INSERT INTO jcs.sensors (id,name,device_id,contact_id,status,previous_status,millis,last_updated,node_id,bus_nr,command_station_id) VALUES
+	 (10,'M01-C11',1,11,0,0,NULL,NULL,0,0,'virtual'),
+	 (11,'M01-C12',1,12,0,0,NULL,NULL,0,0,'virtual'),
+	 (12,'M01-C13',1,13,0,0,NULL,NULL,0,0,'virtual'),
+	 (13,'M01-C14',1,14,0,0,NULL,NULL,0,0,'virtual'),
+	 (14,'M01-C15',1,15,0,0,NULL,NULL,0,0,'virtual'),
+	 (15,'M01-C16',1,16,0,0,NULL,NULL,0,0,'virtual');
 
 commit;
 
@@ -120,10 +120,10 @@ INSERT INTO jcs.tiles (id,tile_type,orientation,direction,x,y,signal_type,access
 commit;
 
 INSERT INTO jcs.blocks (id,tile_id,description,plus_sensor_id,min_sensor_id,plus_signal_id,min_signal_id,locomotive_id,allow_non_commuter_only,status,incoming_suffix,min_wait_time,max_wait_time,random_wait,always_stop,allow_commuter_only,logical_direction,allow_direction_change) VALUES
-	 ('bk-1','bk-1','spoor 1',1,0,NULL,NULL,NULL,false,'Free',NULL,10,NULL,false,true,false,NULL,false),
-	 ('bk-2','bk-2','spoor 2',3,2,NULL,NULL,NULL,false,'Free',NULL,10,NULL,false,true,false,NULL,false),
-	 ('bk-3','bk-3','blok 3',4,5,NULL,NULL,23,false,'Occupied','-',10,NULL,false,true,false,NULL,false),
-	 ('bk-4','bk-4','blok 4',6,7,NULL,NULL,39,false,'Occupied','-',10,NULL,false,true,false,NULL,false);
+	 ('bk-1','bk-1','spoor 1',1,0,NULL,NULL,NULL,false,'Free',NULL,3,NULL,false,true,false,NULL,false),
+	 ('bk-2','bk-2','spoor 2',3,2,NULL,NULL,NULL,false,'Free',NULL,3,NULL,false,true,false,NULL,false),
+	 ('bk-3','bk-3','blok 3',4,5,NULL,NULL,23,false,'Occupied','-',3,NULL,false,true,false,NULL,false),
+	 ('bk-4','bk-4','blok 4',6,7,NULL,NULL,39,false,'Occupied','-',3,NULL,false,true,false,NULL,false);
 
 commit;
 
