@@ -17,6 +17,7 @@ package jcs.commandStation.autopilot.state;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import jcs.commandStation.autopilot.AutoPilot;
 import jcs.entities.AccessoryBean;
@@ -26,6 +27,7 @@ import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.Direction;
 import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
+import jcs.entities.StationBean;
 import jcs.entities.TileBean;
 import jcs.entities.TileBean.Orientation;
 import jcs.persistence.PersistenceFactory;
@@ -91,6 +93,15 @@ class PrepareNextRouteState extends DispatcherState {
 
     // In this state the we are checking whether there is a valid nextRoute from the destination to the next block.
     BlockBean departureBlock = dispatcher.getDestinationBlock();
+    //Is the departure block part of a station.
+    StationBean station = dispatcher.getStation(departureBlock);
+    int locCount = 1;
+    int minLocCount = 1;
+    if (station != null) {
+      minLocCount = station.getMinLocomotives();
+      locCount = station.getLocomotiveCount();
+      Logger.trace(departureBlock.getId() + " is member of Station " + station.getName() + " min Locs: " + minLocCount + " cur locs: " + locCount);
+    }
 
     //Use the current running locomotive direction
     Direction logicalDirection = locomotive.getDirection();
@@ -106,8 +117,21 @@ class PrepareNextRouteState extends DispatcherState {
     Logger.trace("Loco " + locomotive.getName() + " is entering block " + departureBlock.getId() + ". Direction " + logicalDirection.getDirection() + ". DepartureSuffix " + departureSuffix + "...");
 
     //Search for the possible routes
-    List<RouteBean> routes = PersistenceFactory.getService().getRoutes(departureBlock.getId(), departureSuffix);
-    Logger.trace("There " + (routes.size() == 1 ? "is" : "are") + " " + routes.size() + " possible route(s)...");
+    List<RouteBean> routes = Collections.emptyList();
+    //Is the departure block part of a station.
+    if (locCount >= minLocCount) {
+      //Search for the possible routes
+      routes = PersistenceFactory.getService().getRoutes(departureBlock.getId(), departureSuffix);
+      Logger.trace("There " + (routes.size() == 1 ? "is" : "are") + " " + routes.size() + " possible route(s)...");
+    } else {
+      String stationName;
+      if (station != null) {
+        stationName = station.getName();
+      } else {
+        stationName = "?";
+      }
+      Logger.trace("nr of locs (" + locCount + ") is lower than min locs (" + minLocCount + ") for station " + stationName);
+    }
 
     List<RouteBean> checkedRoutes = new ArrayList<>();
     boolean commuter = locomotive.isCommuter();
@@ -150,7 +174,11 @@ class PrepareNextRouteState extends DispatcherState {
       //persist the departure block
       //PersistenceFactory.getService().persist(departureBlock);
     } else {
-      Logger.debug("No route available for " + locomotive.getName() + " ...");
+      if (locCount >= minLocCount) {
+        Logger.debug("No route available for " + locomotive.getName() + " ...");
+      } else {
+        Logger.debug("No route available because the Station occupation (" + locCount + ") is less then the min occupation (" + minLocCount + ")");
+      }
     }
     dispatcher.setNextRouteBean(nextRoute);
     return nextRoute != null;

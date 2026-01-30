@@ -15,6 +15,7 @@
  */
 package jcs.commandStation.autopilot.state;
 
+import java.util.Date;
 import jcs.commandStation.autopilot.ExpectedSensorEventHandler;
 import jcs.JCS;
 import jcs.commandStation.autopilot.AutoPilot;
@@ -22,6 +23,9 @@ import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
+import jcs.entities.StationBean;
+import jcs.entities.StationBlockBean;
+import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
 /**
@@ -31,30 +35,30 @@ import org.tinylog.Logger;
  * The state will advance to a next state when the enter sensor becomes active or a reset is requested.
  */
 class RunningState extends DispatcherState implements SensorEventListener {
-  
+
   private boolean sensorsRegistered = false;
   private boolean canAdvanceToNextState = false;
   private Integer enterSensorId;
-  
+
   @Override
   DispatcherState execute(Dispatcher dispatcher) {
     this.dispatcher = dispatcher;
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
-    
+
     if (!sensorsRegistered) {
       BlockBean departureBlock = dispatcher.getDepartureBlock();
       BlockBean destinationBlock = dispatcher.getDestinationBlock();
-      
+
       Integer occupancySensorId = dispatcher.getOccupationSensorId();
       Integer exitSensorId = dispatcher.getExitSensorId();
 
       //Register them both to ignore event for these sensors.
       ExpectedSensorEventHandler osh = new ExpectedSensorEventHandler(occupancySensorId, dispatcher);
       AutoPilot.addSensorEventHandler(osh);
-      
+
       ExpectedSensorEventHandler xsh = new ExpectedSensorEventHandler(exitSensorId, dispatcher);
       AutoPilot.addSensorEventHandler(xsh);
-      
+
       Logger.trace("Departure: " + departureBlock.getId() + " Ignoring Occupancy Sensor: " + occupancySensorId + " and Exit Sensor: " + exitSensorId);
 
       //The enter Sensor triggering will switch states.
@@ -70,12 +74,28 @@ class RunningState extends DispatcherState implements SensorEventListener {
         Logger.warn("Can't register the enterSensor. Is is null!");
       }
 
-      //TODO This is the simulator can be improved!
+      //If the departure is from a station, lower the locCount
+      StationBean station = dispatcher.getStation(departureBlock);
+      if (station != null) {
+        StationBlockBean sbb = station.getStationBlockBean(departureBlock);
+        //reset arrival time
+        sbb.setLastUpdated(new Date());
+
+        int locCount = station.getLocomotiveCount();
+        locCount = locCount + 1;
+        if (locCount < 0) {
+          locCount = 0;
+        }
+        station.setLocomotiveCount(locCount);
+
+        PersistenceFactory.getService().persist(station);
+      }
+
       dispatcher.setWaitForSensorid(enterSensorId);
       sensorsRegistered = true;
       Logger.trace("Waiting for the enter event from SensorId: " + enterSensorId + " Running loco: " + locomotive.getName() + " [" + locomotive.getDecoderType().getDecoderType() + " (" + locomotive.getAddress() + ")] Direction: " + locomotive.getDirection().getDirection() + " current velocity: " + locomotive.getVelocity());
     }
-    
+
     if (canAdvanceToNextState || resetRequested) {
       DispatcherState newState;
       if (resetRequested) {
@@ -101,12 +121,12 @@ class RunningState extends DispatcherState implements SensorEventListener {
       return this;
     }
   }
-  
+
   @Override
   public Integer getSensorId() {
     return enterSensorId;
   }
-  
+
   @Override
   public void onSensorChange(SensorEvent sensorEvent) {
     if (enterSensorId.equals(sensorEvent.getSensorId())) {

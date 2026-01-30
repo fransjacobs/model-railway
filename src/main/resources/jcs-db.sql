@@ -8,6 +8,9 @@ drop table if exists blocks cascade;
 drop table if exists routes cascade;
 drop table if exists route_elements cascade;
 drop table if exists jcs_properties cascade;
+--
+drop table if exists station_blocks cascade;
+drop table if exists stations cascade;
 
 create table command_stations (
   id                            varchar(255) not null,

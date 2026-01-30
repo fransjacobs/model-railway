@@ -389,7 +389,6 @@ public final class AutoPilot {
                 //TODO...
                 tile.setArrivalSuffix(null);
                 //arrival suffix should be set to the default also...
-
                 occupiedBlockCounter++;
               }
             }
@@ -425,6 +424,14 @@ public final class AutoPilot {
 
   public static Dispatcher getLocomotiveDispatcher(int locUid) {
     LocomotiveBean locomotiveBean = PersistenceFactory.getService().getLocomotive(locUid, commandStationBean.getId());
+    return getLocomotiveDispatcher(locomotiveBean);
+  }
+
+  public static Dispatcher getLocomotiveDispatcher(long locId) {
+    if (AutoPilot.commandStationBean == null) {
+      AutoPilot.commandStationBean = PersistenceFactory.getService().getDefaultCommandStation();
+    }
+    LocomotiveBean locomotiveBean = PersistenceFactory.getService().getLocomotive((int) locId, commandStationBean.getId());
     return getLocomotiveDispatcher(locomotiveBean);
   }
 
@@ -553,7 +560,9 @@ public final class AutoPilot {
     return semaphore.availablePermits();
   }
 
-  private static class AutoPilotMonitorThread extends Thread {
+  //Need to facilitate in simulation test run the test run to resgister the sensors and to 
+  //System.setProperty("state.machine.stepTest", "true");
+  protected static class AutoPilotMonitorThread extends Thread {
 
     private final List<SensorListener> sensorListeners = new ArrayList<>();
 
@@ -588,7 +597,7 @@ public final class AutoPilot {
       }
     }
 
-    private void refreshAllSensorValues() {
+    protected void refreshAllSensorValues() {
       List<SensorBean> sensors = PersistenceFactory.getService().getAssignedSensors();
       for (SensorBean sb : sensors) {
         if (AutoPilot.isAutoModeActive()) {
@@ -599,7 +608,7 @@ public final class AutoPilot {
       }
     }
 
-    private void registerAllSensors() {
+    protected void registerAllSensors() {
       //Use only assigned sensors, ignore sensors which are not assigned to a Tile
       //First refresh the sensors...
       refreshAllSensorValues();
@@ -620,7 +629,7 @@ public final class AutoPilot {
       Logger.trace("Registered " + sensors.size() + " sensor event handlers");
     }
 
-    private void unRegisterAllSensors() {
+    protected void unRegisterAllSensors() {
       for (SensorListener seh : this.sensorListeners) {
         JCS.getJcsCommandStation().removeSensorEventListener(seh.getSensorId(), seh);
       }

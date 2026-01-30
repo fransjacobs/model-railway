@@ -497,7 +497,7 @@ public class DrivewaySettingsPanel extends JPanel {
   }// </editor-fold>//GEN-END:initComponents
 
   private void newBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_newBtnActionPerformed
-    Logger.trace("Create new Accessory...");
+    Logger.trace("Create new Route...");
     selectedRoute = new RouteBean();
     setFieldValues();
   }//GEN-LAST:event_newBtnActionPerformed

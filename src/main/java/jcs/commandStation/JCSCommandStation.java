@@ -837,7 +837,57 @@ public class JCSCommandStation {
 
     @Override
     public void onSensorChange(SensorEvent sensorEvent) {
-      commandStation.sensorEventQueue.offer(sensorEvent);
+      if ("true".equals(System.getProperty("state.machine.stepTest", "false"))) {
+        Logger.warn("Handle sensorevent inline...");
+        handleSensorEvent(sensorEvent);
+      } else {
+        commandStation.sensorEventQueue.offer(sensorEvent);
+      }
+    }
+  }
+
+  private void handleSensorEvent(SensorEvent event) {
+    SensorBean sb = event.getSensorBean();
+    boolean newValue = event.isActive();
+    SensorBean dbsb = PersistenceFactory.getService().getSensor(event.getSensorId());
+
+    if (dbsb == null) {
+      //Try using the deviceId and contactId and command station...
+      dbsb = PersistenceFactory.getService().getSensor(sb.getDeviceId(), sb.getContactId());
+    }
+
+    if (dbsb != null) {
+      if (sb.getId() == null) {
+        sb.setId(dbsb.getId());
+      }
+
+      sb.setName(dbsb.getName());
+      sb.setActive(dbsb.isActive());
+      sb.setActive(newValue);
+
+      PersistenceFactory.getService().persist(sb);
+    }
+
+    if (sensorListeners.containsKey(sb.getId())) {
+      //Avoid concurrent modification exceptions
+      List<SensorEventListener> snapshot = new ArrayList<>(sensorListeners.get(sb.getId()));
+      //Logger.trace("SensorEvent from Sensor " + event.getSensorId() + ": " + event.isActive() + " Firing " + snapshot.size() + " SensorListeners...");
+
+      for (SensorEventListener sl : snapshot) {
+        if (sl != null) {
+          sl.onSensorChange(event);
+        }
+      }
+    }
+
+    //For generic sensor listeners which are interested in every event...
+    if (allSensorEventsListeners.isEmpty()) {
+      List<AllSensorEventsListener> snapshot = new ArrayList<>(allSensorEventsListeners);
+      for (AllSensorEventsListener sl : snapshot) {
+        if (sl != null) {
+          sl.onSensorChange(event);
+        }
+      }
     }
   }
 
@@ -951,6 +1001,7 @@ public class JCSCommandStation {
       this.jcsCommandStation = jcsCommandStation;
     }
 
+    @SuppressWarnings("unused")
     void quit() {
       this.quit = true;
     }
@@ -959,6 +1010,7 @@ public class JCSCommandStation {
       return !this.quit;
     }
 
+    @SuppressWarnings("unused")
     boolean isFinished() {
       return this.stop;
     }
@@ -973,49 +1025,51 @@ public class JCSCommandStation {
         try {
           try {
             SensorEvent event = jcsCommandStation.sensorEventQueue.take();
-            SensorBean sb = event.getSensorBean();
-            boolean newValue = event.isActive();
-            SensorBean dbsb = PersistenceFactory.getService().getSensor(event.getSensorId());
 
-            if (dbsb == null) {
-              //Try using the deviceId and contactId and command station...
-              dbsb = PersistenceFactory.getService().getSensor(sb.getDeviceId(), sb.getContactId());
-            }
+            jcsCommandStation.handleSensorEvent(event);
 
-            if (dbsb != null) {
-              if (sb.getId() == null) {
-                sb.setId(dbsb.getId());
-              }
-
-              sb.setName(dbsb.getName());
-              sb.setActive(dbsb.isActive());
-              sb.setActive(newValue);
-
-              PersistenceFactory.getService().persist(sb);
-            }
-
-            if (this.jcsCommandStation.sensorListeners.containsKey(sb.getId())) {
-              //Avoid concurrent modification exceptions
-              List<SensorEventListener> snapshot = new ArrayList<>(this.jcsCommandStation.sensorListeners.get(sb.getId()));
-              //Logger.trace("SensorEvent from Sensor " + event.getSensorId() + ": " + event.isActive() + " Firing " + snapshot.size() + " SensorListeners...");
-
-              for (SensorEventListener sl : snapshot) {
-                if (sl != null) {
-                  sl.onSensorChange(event);
-                }
-              }
-            }
-
-            //For generic sensor listeners which are interested in every event...
-            if (!jcsCommandStation.allSensorEventsListeners.isEmpty()) {
-              List<AllSensorEventsListener> snapshot = new ArrayList<>(jcsCommandStation.allSensorEventsListeners);
-              for (AllSensorEventsListener sl : snapshot) {
-                if (sl != null) {
-                  sl.onSensorChange(event);
-                }
-              }
-            }
-
+//            SensorBean sb = event.getSensorBean();
+//            boolean newValue = event.isActive();
+//            SensorBean dbsb = PersistenceFactory.getService().getSensor(event.getSensorId());
+//
+//            if (dbsb == null) {
+//              //Try using the deviceId and contactId and command station...
+//              dbsb = PersistenceFactory.getService().getSensor(sb.getDeviceId(), sb.getContactId());
+//            }
+//
+//            if (dbsb != null) {
+//              if (sb.getId() == null) {
+//                sb.setId(dbsb.getId());
+//              }
+//
+//              sb.setName(dbsb.getName());
+//              sb.setActive(dbsb.isActive());
+//              sb.setActive(newValue);
+//
+//              PersistenceFactory.getService().persist(sb);
+//            }
+//
+//            if (this.jcsCommandStation.sensorListeners.containsKey(sb.getId())) {
+//              //Avoid concurrent modification exceptions
+//              List<SensorEventListener> snapshot = new ArrayList<>(this.jcsCommandStation.sensorListeners.get(sb.getId()));
+//              //Logger.trace("SensorEvent from Sensor " + event.getSensorId() + ": " + event.isActive() + " Firing " + snapshot.size() + " SensorListeners...");
+//
+//              for (SensorEventListener sl : snapshot) {
+//                if (sl != null) {
+//                  sl.onSensorChange(event);
+//                }
+//              }
+//            }
+//
+//            //For generic sensor listeners which are interested in every event...
+//            if (!jcsCommandStation.allSensorEventsListeners.isEmpty()) {
+//              List<AllSensorEventsListener> snapshot = new ArrayList<>(jcsCommandStation.allSensorEventsListeners);
+//              for (AllSensorEventsListener sl : snapshot) {
+//                if (sl != null) {
+//                  sl.onSensorChange(event);
+//                }
+//              }
+//            }
           } catch (InterruptedException ex) {
             Logger.error(ex);
           }
@@ -1045,6 +1099,7 @@ public class JCSCommandStation {
       this.jcsCommandStation = jcsCommandStation;
     }
 
+    @SuppressWarnings("unused")
     void quit() {
       this.quit = true;
     }
@@ -1053,6 +1108,7 @@ public class JCSCommandStation {
       return !this.quit;
     }
 
+    @SuppressWarnings("unused")
     boolean isFinished() {
       return this.stop;
     }
@@ -1150,6 +1206,7 @@ public class JCSCommandStation {
       this.jcsCommandStation = jcsCommandStation;
     }
 
+    @SuppressWarnings("unused")
     void quit() {
       this.quit = true;
     }
@@ -1158,6 +1215,7 @@ public class JCSCommandStation {
       return !this.quit;
     }
 
+    @SuppressWarnings("unused")
     boolean isFinished() {
       return this.stop;
     }

@@ -70,6 +70,7 @@ public class CommandStationBean {
   public static final String ESU_ECOS = "esu-ecos";
   public static final String DCC_EX = "dcc-ex";
   public static final String HSI_S88 = "hsi-s88";
+  public static final String VIRTUAL = "virtual";
 
   @Id
   @Column(name = "id")

@@ -72,11 +72,13 @@ import jcs.commandStation.esu.ecos.EsuEcosCommandStationImpl;
 import jcs.commandStation.esu.ecos.net.EcosConnectionFactory;
 import jcs.commandStation.marklin.cs.MarklinCentralStationImpl;
 import jcs.commandStation.marklin.cs.net.CSConnectionFactory;
+import jcs.commandStation.virtual.VirtualCommandStationImpl;
 import jcs.entities.CommandStationBean;
 import static jcs.entities.CommandStationBean.DCC_EX;
 import static jcs.entities.CommandStationBean.ESU_ECOS;
 import static jcs.entities.CommandStationBean.HSI_S88;
 import static jcs.entities.CommandStationBean.MARKLIN_CS;
+import static jcs.entities.CommandStationBean.VIRTUAL;
 import jcs.entities.SensorBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.JCSFrame;
@@ -86,7 +88,7 @@ import org.tinylog.Logger;
 
 /**
  *
- * @author frans
+ *
  */
 public class CommandStationPanel extends JPanel implements TreeSelectionListener {
 
@@ -706,7 +708,11 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
             bus3Spinner.setValue(fbm.getBusSize());
           }
           default -> {
-            mainSpinner.setValue(fbm.getBusSize());
+            if (fbm.getBusSize() != null && fbm.getBusSize() > 0) {
+              mainSpinner.setValue(fbm.getBusSize());
+            } else {
+              mainSpinner.setValue(modules.size());
+            }
           }
         }
       }
@@ -1029,26 +1035,25 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
     });
   }
 
-  private List<FeedbackModule> getFeedbackModules(String commandStationId) {
-    List<SensorBean> sensors = PersistenceFactory.getService().getSensorsByCommandStationId(commandStationId);
-
-    List<FeedbackModule> modules = new ArrayList<>();
-    if (!sensors.isEmpty()) {
-      Integer id = -1;
-      for (SensorBean sb : sensors) {
-        if (!id.equals(sb.getDeviceId())) {
-          FeedbackModule fbm = new FeedbackModule();
-          fbm.setId(sb.getDeviceId());
-          fbm.setIdentifier(sb.getNodeId());
-          //The busnumber and address offset depend on the commandstation id 
-          fbm.setBusNumber(sb.getBusNr());
-        }
-      }
-    }
-
-    return modules;
-  }
-
+//  private List<FeedbackModule> getFeedbackModules(String commandStationId) {
+//    List<SensorBean> sensors = PersistenceFactory.getService().getSensorsByCommandStationId(commandStationId);
+//
+//    List<FeedbackModule> modules = new ArrayList<>();
+//    if (!sensors.isEmpty()) {
+//      Integer id = -1;
+//      for (SensorBean sb : sensors) {
+//        if (!id.equals(sb.getDeviceId())) {
+//          FeedbackModule fbm = new FeedbackModule();
+//          fbm.setId(sb.getDeviceId());
+//          fbm.setIdentifier(sb.getNodeId());
+//          //The busnumber and address offset depend on the commandstation id 
+//          fbm.setBusNumber(sb.getBusNr());
+//        }
+//      }
+//    }
+//
+//    return modules;
+//  }
   private InetAddress discover(final CommandStationBean commandStation) {
     final JOptionPane optionPane = new JOptionPane("Try to discovering a " + commandStation.getDescription(),
             JOptionPane.INFORMATION_MESSAGE,
@@ -1147,6 +1152,8 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
           Logger.info("TODO: DCC-EX!");
         case HSI_S88 ->
           Logger.info("TODO: HSI-S88!");
+        case VIRTUAL ->
+          controller = new VirtualCommandStationImpl(commandStation);
         default ->
           Logger.trace("Unknown Controller!");
       }

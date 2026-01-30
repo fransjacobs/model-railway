@@ -99,7 +99,7 @@ abstract class DispatcherState {
 
     boolean switchesNotLocked = true;
     for (RouteElementBean reb : turnouts) {
-      AccessoryBean.AccessoryValue av = reb.getAccessoryValue();
+      //AccessoryBean.AccessoryValue av = reb.getAccessoryValue();
       AccessoryBean turnout = reb.getTileBean().getAccessoryBean();
       //check if the accessory is not set by an other reserved nextRoute
       boolean locked = PersistenceFactory.getService().isAccessoryLocked(turnout.getId());
