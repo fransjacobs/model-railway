@@ -283,7 +283,8 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
       if (eventMessageHandler != null) {
         Logger.trace("Stopping event handling...");
         eventMessageHandler.quit();
-        eventMessageHandler.join();
+        
+        //eventMessageHandler.join();
 
         eventMessageHandler = null;
       }
