@@ -1,4 +1,3 @@
-
 ALTER TABLE command_stations ADD loco_synch bool not null default false;
 ALTER TABLE command_stations ADD loco_func_synch bool not null default false;
 ALTER TABLE command_stations ADD loco_img_synch bool not null default false;
