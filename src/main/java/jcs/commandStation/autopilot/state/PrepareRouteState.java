@@ -84,7 +84,12 @@ class PrepareRouteState extends DispatcherState {
     int minLocCount = 1;
     if (station != null) {
       minLocCount = station.getMinLocomotives();
-      locCount = station.getLocomotiveCount();
+      locCount = PersistenceFactory.getService().getLocomotiveCount(station).intValue();
+      if (station.getLocomotiveCount() != locCount) {
+        Logger.warn("Adjusting number of locomotives in station " + station.getName() + " to " + locCount);
+        station.setLocomotiveCount(locCount);
+        PersistenceFactory.getService().persist(station);
+      }
       Logger.trace(departureBlock.getId() + " is member of Station " + station.getName() + " min Locs: " + minLocCount + " cur locs: " + locCount);
     }
 

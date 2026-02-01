@@ -497,12 +497,21 @@ public interface PersistenceService {
   List<BlockBean> getStationBlocks(StationBean stationBean);
 
   /**
+   * Obtain the number of locomotives in the station
+   *
+   * @param stationBean the station to query
+   * @return the number of locomotives
+   */
+  Long getLocomotiveCount(StationBean stationBean);
+
+  /**
    * Retrieves a BlockBean by ID.
    *
    * @param id The ID of the BlockBean to retrieve.
    * @return The BlockBean, or null if not found.
    */
-  BlockBean getBlock(String id);
+  BlockBean getBlock(String id
+  );
 
   /**
    * Retrieves a BlockBean by tile ID.
@@ -510,7 +519,8 @@ public interface PersistenceService {
    * @param tileId The tile ID.
    * @return The BlockBean, or null if not found.
    */
-  BlockBean getBlockByTileId(String tileId);
+  BlockBean getBlockByTileId(String tileId
+  );
 
   /**
    * Persists a BlockBean.
@@ -518,14 +528,16 @@ public interface PersistenceService {
    * @param block The BlockBean to persist.
    * @return The persisted BlockBean.
    */
-  BlockBean persist(BlockBean block);
+  BlockBean persist(BlockBean block
+  );
 
   /**
    * Removes a BlockBean.
    *
    * @param block The BlockBean to remove.
    */
-  void remove(BlockBean block);
+  void remove(BlockBean block
+  );
 
   /**
    * Removes all BlockBeans.
@@ -545,7 +557,8 @@ public interface PersistenceService {
    * @param id The ID of the CommandStationBean to retrieve.
    * @return The CommandStationBean, or null if not found.
    */
-  CommandStationBean getCommandStation(String id);
+  CommandStationBean getCommandStation(String id
+  );
 
   /**
    * Retrieves the default CommandStationBean.
@@ -566,7 +579,8 @@ public interface PersistenceService {
    * @param commandStationBean The CommandStationBean to persist.
    * @return The persisted CommandStationBean.
    */
-  CommandStationBean persist(CommandStationBean commandStationBean);
+  CommandStationBean persist(CommandStationBean commandStationBean
+  );
 
   /**
    * Changes the default CommandStationBean.
@@ -574,7 +588,8 @@ public interface PersistenceService {
    * @param newDefaultCommandStationBean The new default CommandStationBean.
    * @return The new default CommandStationBean.
    */
-  CommandStationBean changeDefaultCommandStation(CommandStationBean newDefaultCommandStationBean);
+  CommandStationBean changeDefaultCommandStation(CommandStationBean newDefaultCommandStationBean
+  );
 
   /**
    * Retrieves a locomotive image.
@@ -582,7 +597,8 @@ public interface PersistenceService {
    * @param imageName The name of the image file.
    * @return The Image, or null if not found.
    */
-  ImageIcon getLocomotiveImage(String imageName);
+  ImageIcon getLocomotiveImage(String imageName
+  );
 
   /**
    * Retrieves a function image.
@@ -590,7 +606,8 @@ public interface PersistenceService {
    * @param imageName The name of the image file.
    * @return The Image, or null if not found.
    */
-  ImageIcon getFunctionImage(String imageName);
+  ImageIcon getFunctionImage(String imageName
+  );
 
   /**
    * Reads an image file.
@@ -599,7 +616,8 @@ public interface PersistenceService {
    * @param function True if the image is a function image, false otherwise.
    * @return The Image, or null if not found.
    */
-  Image readImage(String imageName, boolean function);
+  Image readImage(String imageName, boolean function
+  );
 
   /**
    *
@@ -612,27 +630,31 @@ public interface PersistenceService {
    * @param id
    * @return
    */
-  StationBean getStation(String id);
+  StationBean getStation(String id
+  );
 
   /**
    *
    * @param blockBean the BlockBean to find a Station for
    * @return a StationBean in case the BlockBean is part of a station
    */
-  StationBean getStation(BlockBean blockBean);
+  StationBean getStation(BlockBean blockBean
+  );
 
   /**
    *
    * @param station
    * @return the persisted StationBean
    */
-  StationBean persist(StationBean station);
+  StationBean persist(StationBean station
+  );
 
   /**
    * Removes a StationBean.
    *
    * @param station The BlockBean to remove.
    */
-  void remove(StationBean station);
+  void remove(StationBean station
+  );
 
 }

@@ -348,9 +348,13 @@ public class CanMessage implements MarklinCan {
         switch (this.command) {
           case STATUS_CONFIG -> {
             //Should have at least 5 responses and the last response has dlc 6 (cs3) or dlc 5 (cs2) 
-            CanMessage r = this.responses.get(this.responses.size() - 1);
-            int rdlc = r.getDlc();
-            return rdlc == DLC_5 || rdlc == DLC_6;
+            if(responses != null && !responses.isEmpty()) {
+              CanMessage r = responses.get(responses.size() - 1);
+              int rdlc = r.getDlc();
+              return rdlc == DLC_5 || rdlc == DLC_6;
+            } else {
+              return false;
+            }
           }
           case REQUEST_CONFIG_DATA -> {
             if (!this.responses.isEmpty()) {

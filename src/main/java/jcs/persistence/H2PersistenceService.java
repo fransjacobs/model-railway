@@ -933,6 +933,11 @@ public class H2PersistenceService implements PersistenceService {
     List<BlockBean> blocks = database.sql("select b.* from blocks b join station_blocks sb on b.id = sb.block_id where sb.station_id = ?", stationBean.getId()).results(BlockBean.class);
     return addBlockReleatedObjects(blocks);
   }
+  
+  @Override
+  public Long getLocomotiveCount(StationBean stationBean) {
+    return database.sql("select count(*) from stations s join station_blocks sb on s.id = sb.station_id join blocks b on sb.block_id = b.id and b.locomotive_id is not null where s.id = ?", stationBean.getId()).first(Long.class);   
+  }
 
   private List<BlockBean> addBlockReleatedObjects(List<BlockBean> blockBeans) {
     for (BlockBean bb : blockBeans) {
