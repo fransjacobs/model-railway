@@ -139,7 +139,7 @@
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>3.27.6</version>
+            <version>3.27.7</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -204,7 +204,7 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.5.21</version>
+            <version>1.5.25</version>
         </dependency>
         <dependency>
             <groupId>org.netbeans.external</groupId>
