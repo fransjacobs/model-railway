@@ -64,7 +64,7 @@ public final class AutoPilot {
 
   private static final Semaphore semaphore = new Semaphore(1);
 
-  private static final ThreadGroup autoPilotRunners = new ThreadGroup("AUTOPILOT");
+  public static final ThreadGroup autoPilotRunners = new ThreadGroup("AUTOPILOT");
 
   private static final ConcurrentLinkedQueue<AutoPilotActionEvent> actionCommandQueue = new ConcurrentLinkedQueue();
 
@@ -562,14 +562,14 @@ public final class AutoPilot {
 
   //Need to facilitate in simulation test run the test run to resgister the sensors and to 
   //System.setProperty("state.machine.stepTest", "true");
-  protected static class AutoPilotMonitorThread extends Thread {
+  public static class AutoPilotMonitorThread extends Thread {
 
     private final List<SensorListener> sensorListeners = new ArrayList<>();
 
     private boolean running = false;
     private boolean stopped = false;
 
-    AutoPilotMonitorThread(ThreadGroup parent) {
+    public AutoPilotMonitorThread(ThreadGroup parent) {
       super(parent, "AUTOPILOT-MONITOR");
     }
 
@@ -597,7 +597,7 @@ public final class AutoPilot {
       }
     }
 
-    protected void refreshAllSensorValues() {
+    public void refreshAllSensorValues() {
       List<SensorBean> sensors = PersistenceFactory.getService().getAssignedSensors();
       for (SensorBean sb : sensors) {
         if (AutoPilot.isAutoModeActive()) {
@@ -608,7 +608,7 @@ public final class AutoPilot {
       }
     }
 
-    protected void registerAllSensors() {
+    public void registerAllSensors() {
       //Use only assigned sensors, ignore sensors which are not assigned to a Tile
       //First refresh the sensors...
       refreshAllSensorValues();
@@ -629,7 +629,7 @@ public final class AutoPilot {
       Logger.trace("Registered " + sensors.size() + " sensor event handlers");
     }
 
-    protected void unRegisterAllSensors() {
+    public void unRegisterAllSensors() {
       for (SensorListener seh : this.sensorListeners) {
         JCS.getJcsCommandStation().removeSensorEventListener(seh.getSensorId(), seh);
       }

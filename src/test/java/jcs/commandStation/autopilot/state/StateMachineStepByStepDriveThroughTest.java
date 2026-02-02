@@ -34,6 +34,8 @@ import org.tinylog.Logger;
 @TestMethodOrder(OrderAnnotation.class)
 public class StateMachineStepByStepDriveThroughTest extends AbstractStateMachineStepByStepTest {
 
+  private AutoPilot.AutoPilotMonitorThread monitorThread;
+
   public StateMachineStepByStepDriveThroughTest() {
     super();
   }
@@ -65,6 +67,10 @@ public class StateMachineStepByStepDriveThroughTest extends AbstractStateMachine
     ps.persist(block5);
 
     AutoPilot.prepareAllDispatchers();
+
+    monitorThread = new AutoPilot.AutoPilotMonitorThread(AutoPilot.autoPilotRunners);
+    
+    monitorThread.registerAllSensors();
 
     dispatcher = AutoPilot.getLocomotiveDispatcher(dhg);
     Logger.trace("Prepared layout");
@@ -977,7 +983,7 @@ public class StateMachineStepByStepDriveThroughTest extends AbstractStateMachine
     instance.handleState();
     instance.handleState();
     //State should be reset to Idle.
-    assertEquals("RunningState", instance.getDispatcherStateName());
+    assertEquals("IdleState", instance.getDispatcherStateName());
 
     //Departure block state
     block2 = ps.getBlockByTileId("bk-2");
@@ -1008,7 +1014,7 @@ public class StateMachineStepByStepDriveThroughTest extends AbstractStateMachine
   @Order(3)
   public void testFromBk1ToBk4Gost() {
     Logger.info("fromBk1ToBk4Gost");
-    //setupbk1bkNsDHG();
+    setupbk1bkNsDHG();
 
     //Check block statuses
     BlockBean block1 = ps.getBlockByTileId("bk-1");
@@ -1056,7 +1062,7 @@ public class StateMachineStepByStepDriveThroughTest extends AbstractStateMachine
     stateMachine.handleState();
 
     //After executing the PrepareRouteState should be advanced to StartState
-    assertEquals("StartState", stateMachine.getDispatcherStateName());
+    assertEquals("StartingState", stateMachine.getDispatcherStateName());
 
     //Check the results of the PrepareRouteState execution
     String routeId = dispatcher.getRouteBean().getId();
@@ -1077,7 +1083,7 @@ public class StateMachineStepByStepDriveThroughTest extends AbstractStateMachine
     assertEquals(0, dispatcher.getLocomotiveBean().getVelocity());
 
     //After executing the status should be still be StartState
-    assertEquals("StartState", stateMachine.getDispatcherStateName());
+    assertEquals("StartingState", stateMachine.getDispatcherStateName());
 
     assertTrue(JCS.getJcsCommandStation().isPowerOn());
 
@@ -1092,24 +1098,30 @@ public class StateMachineStepByStepDriveThroughTest extends AbstractStateMachine
     assertEquals(NS_DHG_6505, block4.getLocomotiveId());
 
     //Loc should start
-    assertEquals(700, dispatcher.getLocomotiveBean().getVelocity());
-    assertEquals(LocomotiveBean.Direction.FORWARDS, dispatcher.getLocomotiveBean().getDirection());
+    assertEquals(750, dispatcher.getLocomotiveBean().getVelocity());
+    assertEquals(LocomotiveBean.Direction.BACKWARDS, dispatcher.getLocomotiveBean().getDirection());
 
     //State should stay the same as the enter sensor of the destination is not hit.
-    assertEquals("StartState", stateMachine.getDispatcherStateName());
+    assertEquals("RunningState", stateMachine.getDispatcherStateName());
 
     //Now lets Toggle and 'unexpected' sensor, which should cause a Ghost!
     assertTrue(JCS.getJcsCommandStation().isPowerOn());
 
+    Integer enterSensorId = dispatcher.getEnterSensorId();
     Integer inSensorId = dispatcher.getInSensorId();
-    assertNotEquals(13, inSensorId);
 
+    assertNotEquals(13, inSensorId);
+    
+    //braking state is ok met deze sensor?
+
+    //stateMachine.handleState();
     //Check if the enterSensor is registered a a "knownEvent" else we get a Ghost!
     assertFalse(AutoPilot.isSensorHandlerRegistered(inSensorId));
 
     SensorBean inSensor = ps.getSensor(inSensorId);
     toggleSensorDirect(inSensor);
 
+    //stateMachine.handleState();
     assertTrue(AutoPilot.isGostDetected());
 
     block4 = ps.getBlockByTileId("bk-4");

@@ -174,6 +174,9 @@ class StateMachine extends Thread {
       PersistenceFactory.getService().persist(route);
       dispatcher.setRouteBean(null);
     }
+
+    dispatcherState.setResetRequested(true);
+
     dispatcher.fireStateListeners(dispatcherState.getName());
   }
 

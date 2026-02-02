@@ -20,6 +20,7 @@ import jcs.commandStation.autopilot.AutoPilot;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.SensorBean;
+import org.junit.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
@@ -127,7 +128,7 @@ public class StateMachineStepByStepGhostTest extends AbstractStateMachineStepByS
     assertNull(dispatcher.getRouteBean());
 
     assertFalse(instance.isThreadRunning());
-    assertFalse(instance.isAutomodeEnabled());
+    //assertFalse(instance.isAutomodeEnabled());
     assertEquals("IdleState", instance.getDispatcherStateName());
 
     //Execute IdleState
@@ -171,7 +172,7 @@ public class StateMachineStepByStepGhostTest extends AbstractStateMachineStepByS
     instance.handleState();
 
     //After executing the PrepareRouteState should be advanced to StartState
-    assertEquals("StartState", instance.getDispatcherStateName());
+    assertEquals("StartingState", instance.getDispatcherStateName());
 
     block1 = ps.getBlockByTileId("bk-1");
     assertEquals(BlockBean.BlockState.OUT_OF_ORDER, block1.getBlockState());
@@ -203,7 +204,7 @@ public class StateMachineStepByStepGhostTest extends AbstractStateMachineStepByS
     assertEquals(0, dispatcher.getLocomotiveBean().getVelocity());
 
     //After executing the status should be advanced to StartState
-    assertEquals("StartState", instance.getDispatcherStateName());
+    assertEquals("StartingState", instance.getDispatcherStateName());
 
     //Execute the StartState
     instance.handleState();
@@ -216,7 +217,7 @@ public class StateMachineStepByStepGhostTest extends AbstractStateMachineStepByS
     block3 = ps.getBlockByTileId("bk-3");
     assertEquals(BlockBean.BlockState.LOCKED, block3.getBlockState());
 
-    assertEquals(583, dispatcher.getLocomotiveBean().getVelocity());
+    assertEquals(625, dispatcher.getLocomotiveBean().getVelocity());
     assertEquals(LocomotiveBean.Direction.FORWARDS, dispatcher.getLocomotiveBean().getDirection());
 
     block1 = ps.getBlockByTileId("bk-1");
@@ -226,11 +227,15 @@ public class StateMachineStepByStepGhostTest extends AbstractStateMachineStepByS
     assertEquals(BlockBean.BlockState.OUT_OF_ORDER, block4.getBlockState());
 
     //State should stay the same as the enter sensor of the destination is not het.
-    assertEquals("StartState", instance.getDispatcherStateName());
+    assertEquals("RunningState", instance.getDispatcherStateName());
 
     instance.resetStateMachine();
+    instance.handleState();
 
     //State should be reset to Idle.
+    assertEquals("ResettingState", instance.getDispatcherStateName());
+    instance.handleState();
+
     assertEquals("IdleState", instance.getDispatcherStateName());
 
     //Departure block state

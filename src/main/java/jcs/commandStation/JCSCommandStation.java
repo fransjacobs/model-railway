@@ -583,10 +583,17 @@ public class JCSCommandStation {
       decoderController.changeVelocity(address, 0, locomotive.getDirection());
       decoderController.changeDirection(address, newDirection);
     } else {
-      executor.execute(() -> {
+      if ("true".equals(System.getProperty("state.machine.stepTest", "false"))) {
+        Logger.warn("Handle sensorevent inline...");
         decoderController.changeVelocity(address, 0, locomotive.getDirection());
         decoderController.changeDirection(address, newDirection);
-      });
+
+      } else {
+        executor.execute(() -> {
+          decoderController.changeVelocity(address, 0, locomotive.getDirection());
+          decoderController.changeDirection(address, newDirection);
+        });
+      }
     }
   }
 
@@ -612,7 +619,12 @@ public class JCSCommandStation {
     if (decoderController != null && !AWT_THREAD.equals(Thread.currentThread().getName())) {
       decoderController.changeVelocity(address, newVelocity, locomotive.getDirection());
     } else {
-      executor.execute(() -> decoderController.changeVelocity(address, newVelocity, locomotive.getDirection()));
+      if ("true".equals(System.getProperty("state.machine.stepTest", "false"))) {
+        Logger.warn("Handle sensorevent inline...");
+        decoderController.changeVelocity(address, newVelocity, locomotive.getDirection());
+      } else {
+        executor.execute(() -> decoderController.changeVelocity(address, newVelocity, locomotive.getDirection()));
+      }
     }
   }
 
