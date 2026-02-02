@@ -118,9 +118,9 @@ public class VerticalFlowLayout implements LayoutManager, Serializable {
   }
 
   /**
-   * Gets the Valignment attribute of the VerticalFlowLayout object
+   * Gets the V-alignment attribute of the VerticalFlowLayout object
    *
-   * @return The Valignment value
+   * @return The V-alignment value
    */
   public int getvAlignment() {
     return vAlignment;
@@ -131,18 +131,18 @@ public class VerticalFlowLayout implements LayoutManager, Serializable {
   }
 
   /**
-   * Gets the Hgap attribute of the VerticalFlowLayout object
+   * Gets the H-gap attribute of the VerticalFlowLayout object
    *
-   * @return The Hgap value
+   * @return The H-gap value
    */
   public int gethGap() {
     return hGap;
   }
 
   /**
-   * Gets the Vgap attribute of the VerticalFlowLayout object
+   * Gets the V-gap attribute of the VerticalFlowLayout object
    *
-   * @return The Vgap value
+   * @return The V-gap value
    */
   public int getvGap() {
     return vGap;
@@ -281,7 +281,7 @@ public class VerticalFlowLayout implements LayoutManager, Serializable {
 
             m.setLocation(x, y);
 
-            y += d.getHeight();
+            y += (int) d.getHeight();
 
           } else {
             break;
