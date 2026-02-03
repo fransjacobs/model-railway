@@ -33,6 +33,7 @@ import jcs.persistence.PersistenceFactory;
 import jcs.persistence.PersistenceService;
 import jcs.persistence.util.PersistenceTestHelper;
 import jcs.util.RunUtil;
+import org.junit.Test;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -221,7 +222,7 @@ public class StateMachineThreadTest {
   }
 
   //Disabled for now as in Github this test fails for yet unkown reasons
-  //@Test
+ // @Test
   public void testBk1ToBk4() {
     //StateMachine Threaded functionality test.
     //The Sate machine runs in its own Thread.
@@ -251,6 +252,14 @@ public class StateMachineThreadTest {
 
     BlockBean block4 = ps.getBlockByTileId("bk-4");
     assertEquals(BlockBean.BlockState.FREE, block4.getBlockState());
+    
+    BlockBean block5 = ps.getBlockByTileId("bk-5");
+    block5.setBlockState(BlockBean.BlockState.OUT_OF_ORDER);
+    ps.persist(block5);
+    
+    block5 = ps.getBlockByTileId("bk-5");
+    assertEquals(BlockBean.BlockState.OUT_OF_ORDER, block5.getBlockState());
+    
 
     //Start from bk-1
     assertEquals(NS_DHG_6505, block1.getLocomotiveId());
@@ -267,28 +276,36 @@ public class StateMachineThreadTest {
     assertEquals("IdleState", dhgDisp.getStateName());
     assertTrue(AutoPilot.isOnTrack(dhg));
 
-    assertTrue(AutoPilot.isAutoModeActive());
+    boolean active = AutoPilot.isAutoModeActive();
+
+    assertFalse(active);
+
     AutoPilot.runAutoPilot(true);
+    dhgDisp.startRunning();
 
     long now = System.currentTimeMillis();
     long timeout = now + 10000;
-    boolean started = dhgDisp.startLocomotiveAutomode();
-    assertTrue(started);
 
     boolean running = dhgDisp.isRunning();
-    while (!running && timeout > now) {
-      pause(1);
+    while (!running && now < timeout) {
+      pause(1000);
       running = dhgDisp.isRunning();
       now = System.currentTimeMillis();
     }
 
-    assertTrue(timeout > now);
+    assertTrue(now < timeout);
+    active = AutoPilot.isAutoModeActive();
+    assertTrue(active);
+
+    boolean started = dhgDisp.startLocomotiveAutomode();
+    assertTrue(started);
+
     assertTrue(dhgDisp.isRunning());
 
     assertTrue(dhgDisp.isLocomotiveAutomodeOn());
     assertTrue(dhgDisp.isRunning());
 
-    assertEquals(0, statesListener.getEventCount());
+    assertEquals(1, statesListener.getEventCount());
 
     //Departure
     //State should advance to PrepareRoute 
@@ -296,13 +313,13 @@ public class StateMachineThreadTest {
     timeout = now + 100000;
 
     int executedStates = statesListener.getEventCount();
-    while (executedStates < 1 && timeout > now) {
+    while (executedStates < 1 && now < timeout) {
       pause(1);
       executedStates = statesListener.getEventCount();
       now = System.currentTimeMillis();
     }
 
-    assertTrue(timeout > now);
+    assertTrue(now < timeout);
     assertEquals(1, statesListener.getEventCount());
     String dispatcherState = dhgDisp.getStateName();
     assertEquals("PrepareRouteState", dispatcherState);
@@ -319,7 +336,7 @@ public class StateMachineThreadTest {
 
     assertTrue(timeout > now);
     dispatcherState = dhgDisp.getStateName();
-    assertEquals("StartState", dispatcherState);
+    assertEquals("StartingState", dispatcherState);
     assertEquals(2, passedStates.size());
 
     String routeId = dhgDisp.getRouteBean().getId();
@@ -347,10 +364,10 @@ public class StateMachineThreadTest {
     assertNotNull(enterSensorId);
     assertNotNull(inSensorId);
 
-    assertEquals("0-0001", occupancySensorId);
-    assertEquals("0-0002", exitSensorId);
-    assertEquals("0-0013", enterSensorId);
-    assertEquals("0-0012", inSensorId);
+    assertEquals(1, occupancySensorId);
+    assertEquals(2, exitSensorId);
+    assertEquals(13, enterSensorId);
+    assertEquals(12, inSensorId);
 
     assertTrue(JCS.getJcsCommandStation().isPowerOn());
 
@@ -359,21 +376,33 @@ public class StateMachineThreadTest {
     boolean locStarted = dhgDisp.getLocomotiveBean().getVelocity() > 0;
 
     while (!locStarted && timeout > now) {
-      pause(1);
+      pause(100);
       locStarted = dhgDisp.getLocomotiveBean().getVelocity() > 0;
       now = System.currentTimeMillis();
     }
 
     assertTrue(timeout > now);
     dispatcherState = dhgDisp.getStateName();
-    assertEquals("StartState", dispatcherState);
+    assertEquals("RunningState", dispatcherState);
 
     //Loc should be started
-    assertEquals(700, dhgDisp.getLocomotiveBean().getVelocity());
-    assertEquals(LocomotiveBean.Direction.FORWARDS, dhgDisp.getLocomotiveBean().getDirection());
+    assertEquals(750, dhgDisp.getLocomotiveBean().getVelocity());
+    assertEquals(LocomotiveBean.Direction.BACKWARDS, dhgDisp.getLocomotiveBean().getDirection());
 
     //Should be waiting for the enter sensor
+    now = System.currentTimeMillis();
+    timeout = now + 10000;
     Integer waitForId = dhgDisp.getWaitingForSensorId();
+    boolean waitIdAquired = waitForId != null;
+    
+    while (!waitIdAquired && timeout > now) {
+      pause(1);
+      waitForId = dhgDisp.getWaitingForSensorId();
+      waitIdAquired = waitForId != null;
+      now = System.currentTimeMillis();
+    }
+    
+    assertTrue(timeout > now);
     assertEquals(enterSensorId, waitForId);
 
     //Now lets Toggle the enter sensor
@@ -387,13 +416,15 @@ public class StateMachineThreadTest {
 
     executedStates = statesListener.getEventCount();
     while (executedStates < 3 && timeout > now) {
-      pause(1);
+      pause(100);
       executedStates = statesListener.getEventCount();
       now = System.currentTimeMillis();
     }
 
     assertTrue(timeout > now);
     dispatcherState = dhgDisp.getStateName();
+    
+    //Tot hier gekomen komt niet uit running....
     assertEquals("EnterBlockState", dispatcherState);
     assertEquals(3, passedStates.size());
 

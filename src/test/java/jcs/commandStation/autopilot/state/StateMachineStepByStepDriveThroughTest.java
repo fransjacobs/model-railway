@@ -69,7 +69,7 @@ public class StateMachineStepByStepDriveThroughTest extends AbstractStateMachine
     AutoPilot.prepareAllDispatchers();
 
     monitorThread = new AutoPilot.AutoPilotMonitorThread(AutoPilot.autoPilotRunners);
-    
+
     monitorThread.registerAllSensors();
 
     dispatcher = AutoPilot.getLocomotiveDispatcher(dhg);
@@ -1008,130 +1008,6 @@ public class StateMachineStepByStepDriveThroughTest extends AbstractStateMachine
 
     block4 = ps.getBlockByTileId("bk-4");
     assertEquals(BlockBean.BlockState.OUT_OF_ORDER, block4.getBlockState());
-  }
-
-  //@Test
-  @Order(3)
-  public void testFromBk1ToBk4Gost() {
-    Logger.info("fromBk1ToBk4Gost");
-    setupbk1bkNsDHG();
-
-    //Check block statuses
-    BlockBean block1 = ps.getBlockByTileId("bk-1");
-    assertEquals(BlockBean.BlockState.OCCUPIED, block1.getBlockState());
-
-    BlockBean block2 = ps.getBlockByTileId("bk-2");
-    assertEquals(BlockBean.BlockState.OUT_OF_ORDER, block2.getBlockState());
-
-    BlockBean block3 = ps.getBlockByTileId("bk-3");
-    assertEquals(BlockBean.BlockState.OUT_OF_ORDER, block3.getBlockState());
-
-    BlockBean block4 = ps.getBlockByTileId("bk-4");
-    assertEquals(BlockBean.BlockState.FREE, block4.getBlockState());
-
-    StateMachine stateMachine = dispatcher.getStateMachine();
-
-    //Start from bk-1
-    assertEquals(NS_DHG_6505, block1.getLocomotiveId());
-    //Destination bk-4
-    assertNull(block4.getLocomotiveId());
-    assertNull(dispatcher.getRouteBean());
-
-    //Thread should NOT run!
-    assertFalse(stateMachine.isThreadRunning());
-    assertFalse(stateMachine.isAutomodeEnabled());
-    assertEquals("IdleState", stateMachine.getDispatcherStateName());
-
-    //Execute IdleState
-    stateMachine.handleState();
-    //Automode is off should stay Idle
-    assertEquals("IdleState", stateMachine.getDispatcherStateName());
-
-    //Departure
-    //Automode should be enabled
-    stateMachine.setEnableAutomode(true);
-    assertTrue(stateMachine.isAutomodeEnabled());
-
-    //Execute IdleState again
-    stateMachine.handleState();
-
-    //State should advance to PrepareRoute    
-    assertEquals("PrepareRouteState", stateMachine.getDispatcherStateName());
-
-    //execute the PrepareRouteState
-    stateMachine.handleState();
-
-    //After executing the PrepareRouteState should be advanced to StartState
-    assertEquals("StartingState", stateMachine.getDispatcherStateName());
-
-    //Check the results of the PrepareRouteState execution
-    String routeId = dispatcher.getRouteBean().getId();
-    assertEquals("[bk-1-]->[bk-4+]", routeId);
-    assertTrue(dispatcher.getRouteBean().isLocked());
-
-    //Departure block state
-    block1 = ps.getBlockByTileId("bk-1");
-    assertEquals(BlockBean.BlockState.OCCUPIED, block1.getBlockState());
-
-    //Destination block state
-    block4 = ps.getBlockByTileId("bk-4");
-    assertEquals(BlockBean.BlockState.LOCKED, block4.getBlockState());
-
-    //Block 4, destination block should be reserved for DHG to come
-    assertEquals(NS_DHG_6505, block4.getLocomotiveId());
-    //Speed shoul still be zero as the startState has not been executed
-    assertEquals(0, dispatcher.getLocomotiveBean().getVelocity());
-
-    //After executing the status should be still be StartState
-    assertEquals("StartingState", stateMachine.getDispatcherStateName());
-
-    assertTrue(JCS.getJcsCommandStation().isPowerOn());
-
-    //Execute the StartState
-    stateMachine.handleState();
-    //Departure block state
-    block1 = ps.getBlockByTileId("bk-1");
-    assertEquals(BlockBean.BlockState.OUTBOUND, block1.getBlockState());
-    //Destination block state
-    block4 = ps.getBlockByTileId("bk-4");
-    assertEquals(BlockBean.BlockState.LOCKED, block4.getBlockState());
-    assertEquals(NS_DHG_6505, block4.getLocomotiveId());
-
-    //Loc should start
-    assertEquals(750, dispatcher.getLocomotiveBean().getVelocity());
-    assertEquals(LocomotiveBean.Direction.BACKWARDS, dispatcher.getLocomotiveBean().getDirection());
-
-    //State should stay the same as the enter sensor of the destination is not hit.
-    assertEquals("RunningState", stateMachine.getDispatcherStateName());
-
-    //Now lets Toggle and 'unexpected' sensor, which should cause a Ghost!
-    assertTrue(JCS.getJcsCommandStation().isPowerOn());
-
-    Integer enterSensorId = dispatcher.getEnterSensorId();
-    Integer inSensorId = dispatcher.getInSensorId();
-
-    assertNotEquals(13, inSensorId);
-    
-    //braking state is ok met deze sensor?
-
-    //stateMachine.handleState();
-    //Check if the enterSensor is registered a a "knownEvent" else we get a Ghost!
-    assertFalse(AutoPilot.isSensorHandlerRegistered(inSensorId));
-
-    SensorBean inSensor = ps.getSensor(inSensorId);
-    toggleSensorDirect(inSensor);
-
-    //stateMachine.handleState();
-    assertTrue(AutoPilot.isGostDetected());
-
-    block4 = ps.getBlockByTileId("bk-4");
-    assertEquals(BlockBean.BlockState.GHOST, block4.getBlockState());
-
-    assertFalse(JCS.getJcsCommandStation().isPowerOn());
-
-    //Execute the StartState
-    stateMachine.handleState();
-    assertEquals("StartState", stateMachine.getDispatcherStateName());
   }
 
 }

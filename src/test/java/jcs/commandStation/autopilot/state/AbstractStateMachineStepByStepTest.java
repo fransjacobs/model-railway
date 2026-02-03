@@ -104,67 +104,6 @@ public abstract class AbstractStateMachineStepByStepTest {
     AutoPilot.clearDispatchers();
   }
 
-//  private void setupbk1bkNsDHG() {
-//    dhg = ps.getLocomotive(NS_DHG_6505);
-//
-//    BlockBean block1 = ps.getBlockByTileId("bk-1");
-//    block1.setLocomotive(dhg);
-//    block1.setBlockState(BlockBean.BlockState.OCCUPIED);
-//    block1.setAlwaysStop(true);
-//    ps.persist(block1);
-//
-//    BlockBean block4 = ps.getBlockByTileId("bk-4");
-//    block4.setAlwaysStop(true);
-//    ps.persist(block4);
-//
-//    //force routes from bk-1 to bk-4 and bk-4 to bk-1
-//    BlockBean block2 = ps.getBlockByTileId("bk-2");
-//    block2.setBlockState(BlockBean.BlockState.OUT_OF_ORDER);
-//    ps.persist(block2);
-//
-//    BlockBean block3 = ps.getBlockByTileId("bk-3");
-//    block3.setBlockState(BlockBean.BlockState.OUT_OF_ORDER);
-//    ps.persist(block3);
-//
-//    BlockBean block5 = ps.getBlockByTileId("bk-5");
-//    block5.setBlockState(BlockBean.BlockState.OUT_OF_ORDER);
-//    ps.persist(block5);
-//
-//    AutoPilot.prepareAllDispatchers();
-//
-//    dispatcher = AutoPilot.getLocomotiveDispatcher(dhg);
-//    Logger.trace("Prepared layout");
-//  }
-//  private void setupbk2bkNs1631() {
-//    ns1631 = ps.getLocomotive(NS_1631);
-//
-//    BlockBean block2 = ps.getBlockByTileId("bk-2");
-//    block2.setLocomotive(ns1631);
-//    block2.setBlockState(BlockBean.BlockState.OCCUPIED);
-//    block2.setAlwaysStop(true);
-//    ps.persist(block2);
-//
-//    BlockBean block3 = ps.getBlockByTileId("bk-3");
-//    block3.setAlwaysStop(true);
-//    ps.persist(block3);
-//
-//    //force routes from bk-2 to bk-3 and bk-3 to bk-2
-//    BlockBean block1 = ps.getBlockByTileId("bk-1");
-//    block1.setBlockState(BlockBean.BlockState.OUT_OF_ORDER);
-//    ps.persist(block1);
-//
-//    BlockBean block4 = ps.getBlockByTileId("bk-4");
-//    block4.setBlockState(BlockBean.BlockState.OUT_OF_ORDER);
-//    ps.persist(block4);
-//
-//    BlockBean block5 = ps.getBlockByTileId("bk-5");
-//    block5.setBlockState(BlockBean.BlockState.OUT_OF_ORDER);
-//    ps.persist(block5);
-//
-//    AutoPilot.prepareAllDispatchers();
-//    dispatcher = AutoPilot.getLocomotiveDispatcher(ns1631);
-//    Logger.trace("Prepared layout");
-//  }
   protected void toggleSensorDirect(SensorBean sensorBean) {
     sensorBean.toggle();
     sensorBean.setActive((sensorBean.getStatus() == 1));

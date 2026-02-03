@@ -86,7 +86,7 @@ public class ActionCommandHandler extends Thread {
         } else {
           //lets sleep for a while
           synchronized (this) {
-            wait(10000);
+            wait(1000);
           }
         }
 
