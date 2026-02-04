@@ -17,6 +17,7 @@ package jcs.commandStation.autopilot.state;
 
 import jcs.JCS;
 import jcs.commandStation.autopilot.AutoPilot;
+import static jcs.commandStation.autopilot.state.AbstractStateMachineStepByStepTest.NS_1631;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.SensorBean;
@@ -97,8 +98,8 @@ public class StateMachineStepByStepGhostTest extends AbstractStateMachineStepByS
     Logger.trace("Prepared layout");
   }
 
-  //@Test
-  @Order(3)
+  @Test
+  @Order(1)
   public void testReset() {
     Logger.info("reset");
     setupbk2bkNs1631();
@@ -128,7 +129,7 @@ public class StateMachineStepByStepGhostTest extends AbstractStateMachineStepByS
     assertNull(dispatcher.getRouteBean());
 
     assertFalse(instance.isThreadRunning());
-    //assertFalse(instance.isAutomodeEnabled());
+    assertFalse(instance.isAutomodeEnabled());
     assertEquals("IdleState", instance.getDispatcherStateName());
 
     //Execute IdleState
@@ -137,14 +138,15 @@ public class StateMachineStepByStepGhostTest extends AbstractStateMachineStepByS
     assertEquals("IdleState", instance.getDispatcherStateName());
 
     //Departure 
+    block1 = ps.getBlockByTileId("bk-1");
+    assertEquals(BlockBean.BlockState.OUT_OF_ORDER, block1.getBlockState());
+
     block2 = ps.getBlockByTileId("bk-2");
     assertEquals(BlockBean.BlockState.OCCUPIED, block2.getBlockState());
+
     //Destination block state
     block3 = ps.getBlockByTileId("bk-3");
     assertEquals(BlockBean.BlockState.FREE, block3.getBlockState());
-
-    block1 = ps.getBlockByTileId("bk-1");
-    assertEquals(BlockBean.BlockState.OUT_OF_ORDER, block1.getBlockState());
 
     block4 = ps.getBlockByTileId("bk-4");
     assertEquals(BlockBean.BlockState.OUT_OF_ORDER, block4.getBlockState());
@@ -157,16 +159,16 @@ public class StateMachineStepByStepGhostTest extends AbstractStateMachineStepByS
     assertTrue(instance.isAutomodeEnabled());
     assertFalse(instance.isThreadRunning());
 
-    block1 = ps.getBlockByTileId("bk-1");
-    assertEquals(BlockBean.BlockState.OUT_OF_ORDER, block1.getBlockState());
+    block2 = ps.getBlockByTileId("bk-2");
+    assertEquals(BlockBean.BlockState.OCCUPIED, block2.getBlockState());
 
     //Execute IdleState
     instance.handleState();
     //State should advance to PrepareRoute    
     assertEquals("PrepareRouteState", instance.getDispatcherStateName());
 
-    block1 = ps.getBlockByTileId("bk-1");
-    assertEquals(BlockBean.BlockState.OUT_OF_ORDER, block1.getBlockState());
+    block2 = ps.getBlockByTileId("bk-2");
+    assertEquals(BlockBean.BlockState.OCCUPIED, block2.getBlockState());
 
     //execute the PrepareRouteState
     instance.handleState();
@@ -174,14 +176,14 @@ public class StateMachineStepByStepGhostTest extends AbstractStateMachineStepByS
     //After executing the PrepareRouteState should be advanced to StartState
     assertEquals("StartingState", instance.getDispatcherStateName());
 
-    block1 = ps.getBlockByTileId("bk-1");
-    assertEquals(BlockBean.BlockState.OUT_OF_ORDER, block1.getBlockState());
+    block2 = ps.getBlockByTileId("bk-2");
+    assertEquals(BlockBean.BlockState.OCCUPIED, block2.getBlockState());
+
+    block3 = ps.getBlockByTileId("bk-3");
+    assertEquals(BlockBean.BlockState.LOCKED, block3.getBlockState());
 
     block4 = ps.getBlockByTileId("bk-4");
     assertEquals(BlockBean.BlockState.OUT_OF_ORDER, block4.getBlockState());
-
-    block5 = ps.getBlockByTileId("bk-5");
-    assertEquals(BlockBean.BlockState.OUT_OF_ORDER, block5.getBlockState());
 
     //Check the results of the PrepareRouteState execution
     String routeId = dispatcher.getRouteBean().getId();
@@ -200,7 +202,7 @@ public class StateMachineStepByStepGhostTest extends AbstractStateMachineStepByS
     block4 = ps.getBlockByTileId("bk-4");
     assertEquals(BlockBean.BlockState.OUT_OF_ORDER, block4.getBlockState());
 
-    assertEquals(NS_1631, block3.getLocomotiveId());
+    assertEquals(NS_1631, block2.getLocomotiveId());
     assertEquals(0, dispatcher.getLocomotiveBean().getVelocity());
 
     //After executing the status should be advanced to StartState
@@ -220,8 +222,8 @@ public class StateMachineStepByStepGhostTest extends AbstractStateMachineStepByS
     assertEquals(625, dispatcher.getLocomotiveBean().getVelocity());
     assertEquals(LocomotiveBean.Direction.FORWARDS, dispatcher.getLocomotiveBean().getDirection());
 
-    block1 = ps.getBlockByTileId("bk-1");
-    assertEquals(BlockBean.BlockState.OUT_OF_ORDER, block1.getBlockState());
+    block2 = ps.getBlockByTileId("bk-2");
+    assertEquals(BlockBean.BlockState.OUTBOUND, block2.getBlockState());
 
     block4 = ps.getBlockByTileId("bk-4");
     assertEquals(BlockBean.BlockState.OUT_OF_ORDER, block4.getBlockState());
@@ -231,11 +233,8 @@ public class StateMachineStepByStepGhostTest extends AbstractStateMachineStepByS
 
     instance.resetStateMachine();
     instance.handleState();
-
-    //State should be reset to Idle.
-    assertEquals("ResettingState", instance.getDispatcherStateName());
     instance.handleState();
-
+    //State should be reset to Idle.
     assertEquals("IdleState", instance.getDispatcherStateName());
 
     //Departure block state
@@ -256,16 +255,15 @@ public class StateMachineStepByStepGhostTest extends AbstractStateMachineStepByS
 
     assertFalse(instance.isAutomodeEnabled());
 
-    block1 = ps.getBlockByTileId("bk-1");
-    assertEquals(BlockBean.BlockState.OUT_OF_ORDER, block1.getBlockState());
+    block2 = ps.getBlockByTileId("bk-2");
+    assertEquals(BlockBean.BlockState.OCCUPIED, block2.getBlockState());
 
     block4 = ps.getBlockByTileId("bk-4");
     assertEquals(BlockBean.BlockState.OUT_OF_ORDER, block4.getBlockState());
   }
 
-  //TODO !!!!!!
   //@Test
-  @Order(1)
+  @Order(2)
   public void testFromBk1ToBk4Gost() {
     Logger.info("fromBk1ToBk4Gost");
     setupbk1bkNsDHG();
