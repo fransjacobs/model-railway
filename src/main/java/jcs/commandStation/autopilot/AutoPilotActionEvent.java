@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 fransjacobs.
+ * Copyright 2025 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,27 +19,26 @@ import jcs.entities.LocomotiveBean;
 
 /**
  *
- * @author fransjacobs
  */
 public class AutoPilotActionEvent {
 
   private final String actionCommand;
   private final LocomotiveBean locomotiveBean;
 
-  AutoPilotActionEvent(String actionCommand) {
+  public AutoPilotActionEvent(String actionCommand) {
     this(actionCommand, null);
   }
 
-  AutoPilotActionEvent(String actionCommand, LocomotiveBean locomotiveBean) {
+  public AutoPilotActionEvent(String actionCommand, LocomotiveBean locomotiveBean) {
     this.actionCommand = actionCommand;
     this.locomotiveBean = locomotiveBean;
   }
 
-  String getActionCommand() {
+  public String getActionCommand() {
     return actionCommand;
   }
 
-  LocomotiveBean getLocomotiveBean() {
+  public LocomotiveBean getLocomotiveBean() {
     return locomotiveBean;
   }
 

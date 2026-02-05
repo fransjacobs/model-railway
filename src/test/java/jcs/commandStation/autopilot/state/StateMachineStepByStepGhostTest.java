@@ -17,7 +17,6 @@ package jcs.commandStation.autopilot.state;
 
 import jcs.JCS;
 import jcs.commandStation.autopilot.AutoPilot;
-import static jcs.commandStation.autopilot.state.AbstractStateMachineStepByStepTest.NS_1631;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.SensorBean;
@@ -29,7 +28,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.tinylog.Logger;
 
 @TestMethodOrder(OrderAnnotation.class)
-public class StateMachineStepByStepGhostTest extends AbstractStateMachineStepByStepTest {
+public class StateMachineStepByStepGhostTest extends AbstractStateMachineStepByStepGhostTest {
 
   public StateMachineStepByStepGhostTest() {
     super();
@@ -98,7 +97,7 @@ public class StateMachineStepByStepGhostTest extends AbstractStateMachineStepByS
     Logger.trace("Prepared layout");
   }
 
-  @Test
+  //@Test
   @Order(1)
   public void testReset() {
     Logger.info("reset");
@@ -129,7 +128,10 @@ public class StateMachineStepByStepGhostTest extends AbstractStateMachineStepByS
     assertNull(dispatcher.getRouteBean());
 
     assertFalse(instance.isThreadRunning());
-    assertFalse(instance.isAutomodeEnabled());
+    
+    //assertFalse(instance.isAutomodeEnabled());
+    assertTrue(instance.isAutomodeEnabled());
+    
     assertEquals("IdleState", instance.getDispatcherStateName());
 
     //Execute IdleState

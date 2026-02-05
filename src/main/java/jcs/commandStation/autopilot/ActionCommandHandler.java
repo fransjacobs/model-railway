@@ -30,7 +30,7 @@ public class ActionCommandHandler extends Thread {
 
   private final ConcurrentLinkedQueue<AutoPilotActionEvent> eventQueue;
 
-  ActionCommandHandler(ConcurrentLinkedQueue eventQueue) {
+  public ActionCommandHandler(ConcurrentLinkedQueue eventQueue) {
     this.eventQueue = eventQueue;
   }
 
