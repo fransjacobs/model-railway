@@ -34,7 +34,7 @@ import org.tinylog.Logger;
 /**
  *
  */
-class RailwayControllerMonitor extends Thread {
+class ControllerThread extends Thread {
 
   private final RailwayController railwayController;
   private final List<SensorListener> sensorListeners = new ArrayList<>();
@@ -42,7 +42,7 @@ class RailwayControllerMonitor extends Thread {
   private boolean running = false;
   private boolean stopped = false;
 
-  RailwayControllerMonitor(RailwayController railwayController, ThreadGroup parent) {
+  ControllerThread(RailwayController railwayController, ThreadGroup parent) {
     super(parent, "RW-CONTROLLER-MONITOR");
     this.railwayController = railwayController;
   }
