@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation.autopilot.state;
+package jcs.commandStation.automation;
+
 
 import jcs.JCS;
-import jcs.commandStation.autopilot.AutoPilot;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
@@ -91,7 +91,7 @@ class StateMachine extends Thread {
       Logger.debug("Current State: " + dispatcherState.getName() + " Previous State: " + previousState.getName());
     }
 
-    if (!AutoPilot.isAutoModeActive()) {
+    if (!dispatcher.getRailwayController().isAutoModeActive()) {
       //Automode has stopped, let the Thread finish when WaitingState is reached or is Idle
       if (dispatcherState instanceof IdleState || dispatcherState instanceof WaitingState) {
         Logger.trace(getName() + " Stopping thread as Autopilot automode is stopped");
