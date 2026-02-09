@@ -66,7 +66,6 @@ public class Dispatcher {
 
   private final List<StateEventListener> stateEventListeners;
 
-
   private StateMachine stateMachine;
 
   public Dispatcher(RailwayController railwayController, LocomotiveBean locomotiveBean) {
@@ -83,8 +82,6 @@ public class Dispatcher {
     return railwayController;
   }
 
-  
-  
   StateMachine getStateMachine() {
     return stateMachine;
   }
@@ -130,7 +127,7 @@ public class Dispatcher {
 
   public boolean startLocomotiveAutomode() {
     //Only when the Autopilot is ON!
-    if(railwayController.isAutoModeActive()) {  
+    if (railwayController.isAutoModeActive()) {
       stateMachine.setEnableAutomode(true);
       //is the thread running?
       startRunning();
@@ -294,9 +291,11 @@ public class Dispatcher {
     if (departureBlockId != null) {
       BlockBean departureBlock = getDepartureBlock();
       Integer minSensorId = departureBlock.getMinSensorId();
-      railwayController.removeHandler(minSensorId);
+      //railwayController.removeHandler(minSensorId);
+      railwayController.unRegisterSensorEventCallback(minSensorId);
       Integer plusSensorId = departureBlock.getPlusSensorId();
-      railwayController.removeHandler(plusSensorId);
+      //railwayController.removeHandler(plusSensorId);
+      railwayController.unRegisterSensorEventCallback(plusSensorId);
     }
   }
 

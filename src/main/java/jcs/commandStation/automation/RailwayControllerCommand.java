@@ -24,6 +24,7 @@ class RailwayControllerCommand {
 
   private final String command;
   private final LocomotiveBean locomotiveBean;
+  private final String status;
 
   final static String CMD_START = "start";
   final static String CMD_STOP = "stop";
@@ -34,14 +35,25 @@ class RailwayControllerCommand {
   final static String CMD_ADD_LOC = "addLocomotive";
   final static String CMD_RESET = "reset";
   final static String CMD_RESTORE_FUNC = "restoreFunctions";
+  final static String CMD_PREP_DISP = "prepareDispatchers";
+  final static String CMD_FIRE_STATUS_LST = "fireStatusListeners";
 
   RailwayControllerCommand(String command) {
-    this(command, null);
+    this(command, null, null);
+  }
+
+  RailwayControllerCommand(String command, String status) {
+    this(command, null, status);
   }
 
   RailwayControllerCommand(String command, LocomotiveBean locomotiveBean) {
+    this(command, locomotiveBean, null);
+  }
+
+  RailwayControllerCommand(String command, LocomotiveBean locomotiveBean, String status) {
     this.command = command;
     this.locomotiveBean = locomotiveBean;
+    this.status = status;
   }
 
   String getCommand() {
@@ -50,6 +62,10 @@ class RailwayControllerCommand {
 
   LocomotiveBean getLocomotiveBean() {
     return locomotiveBean;
+  }
+
+  String getStatus() {
+    return status;
   }
 
 }

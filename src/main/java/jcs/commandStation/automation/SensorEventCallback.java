@@ -15,31 +15,12 @@
  */
 package jcs.commandStation.automation;
 
-import jcs.commandStation.events.SensorEvent;
+import jcs.commandStation.events.SensorEventListener;
 
 /**
- * Handle Sensor event which are expected
+ * Callback for SensorEvent
  */
-public class ExpectedSensorEventHandler implements SensorEventHandler {
+interface SensorEventCallback extends SensorEventListener {
 
-  private final Integer sensorId;
-  private final Dispatcher dispatcher;
-
-  public ExpectedSensorEventHandler(Integer sensorId, Dispatcher dispatcher) {
-    this.sensorId = sensorId;
-    this.dispatcher = dispatcher;
-  }
-
-  @Override
-  public void handleEvent(SensorEvent event) {
-    if (this.sensorId.equals(event.getSensorId())) {
-      this.dispatcher.onIgnoreEvent(event);
-    }
-  }
-
-  @Override
-  public Integer getSensorId() {
-    return this.sensorId;
-  }
-
+  boolean isIgnoreEvent();
 }

@@ -56,8 +56,9 @@ class ProceedingState extends DispatcherState implements SensorEventListener {
     inSensorId = dispatcher.getInSensorId();
 
     //For the remaining states ignore events from the in sensor
-    ExpectedSensorEventHandler ish = new ExpectedSensorEventHandler(inSensorId, dispatcher);
-    dispatcher.getRailwayController().addSensorEventHandler(ish);
+    //ExpectedSensorEventHandler ish = new ExpectedSensorEventHandler(inSensorId, dispatcher);
+    //dispatcher.getRailwayController().addSensorEventHandler(ish);
+    dispatcher.getRailwayController().registerSensorEventCallback(new SensorEventCallbackHandler(inSensorId, this, true));
 
     dispatcher.setWaitForSensorid(inSensorId);
 

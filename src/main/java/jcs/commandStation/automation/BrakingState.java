@@ -44,8 +44,9 @@ class BrakingState extends DispatcherState implements SensorEventListener {
     Logger.trace("Locomotive " + locomotive.getName() + " has entered destination " + destinationBlock.getDescription() + " and prepares to stop...");
 
     inSensorId = dispatcher.getInSensorId();
-    ExpectedSensorEventHandler ish = new ExpectedSensorEventHandler(inSensorId, dispatcher);
-    this.dispatcher.getRailwayController().addSensorEventHandler(ish);
+    //ExpectedSensorEventHandler ish = new ExpectedSensorEventHandler(inSensorId, dispatcher);
+    //this.dispatcher.getRailwayController().addSensorEventHandler(ish);
+    dispatcher.getRailwayController().registerSensorEventCallback(new SensorEventCallbackHandler(inSensorId, this, true));
 
     dispatcher.setWaitForSensorid(inSensorId);
 

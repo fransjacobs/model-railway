@@ -17,7 +17,6 @@ package jcs.commandStation.automation;
 
 import java.util.Date;
 import jcs.JCS;
-import jcs.commandStation.autopilot.AutoPilot;
 import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.BlockBean;
@@ -51,13 +50,14 @@ class RunningState extends DispatcherState implements SensorEventListener {
       Integer occupancySensorId = dispatcher.getOccupationSensorId();
       Integer exitSensorId = dispatcher.getExitSensorId();
 
-      //Register them both to ignore event for these sensors.
-      ExpectedSensorEventHandler osh = new ExpectedSensorEventHandler(occupancySensorId, dispatcher);
-      this.dispatcher.getRailwayController().addSensorEventHandler(osh);
+      //Register a callback for both sensors to ignore event for these sensors.
+      //ExpectedSensorEventHandler osh = new ExpectedSensorEventHandler(occupancySensorId, dispatcher);
+      dispatcher.getRailwayController().registerSensorEventCallback(new SensorEventCallbackHandler(occupancySensorId, this, true));
+      dispatcher.getRailwayController().registerSensorEventCallback(new SensorEventCallbackHandler(exitSensorId, this, true));
+      //addSensorEventHandler(osh);
 
-      ExpectedSensorEventHandler xsh = new ExpectedSensorEventHandler(exitSensorId, dispatcher);
-      this.dispatcher.getRailwayController().addSensorEventHandler(xsh);
-
+      //ExpectedSensorEventHandler xsh = new ExpectedSensorEventHandler(exitSensorId, dispatcher);
+      //dispatcher.getRailwayController().registerSensorEventCallback(new SensorEventCallbackHandler(exitSensorId,this));
       Logger.trace("Departure: " + departureBlock.getId() + " Ignoring Occupancy Sensor: " + occupancySensorId + " and Exit Sensor: " + exitSensorId);
 
       //The enter Sensor triggering will switch states.
@@ -67,8 +67,10 @@ class RunningState extends DispatcherState implements SensorEventListener {
         JCS.getJcsCommandStation().addSensorEventListener(enterSensorId, this);
 
         //Register the sensor also a an expected event
-        ExpectedSensorEventHandler esh = new ExpectedSensorEventHandler(enterSensorId, dispatcher);
-        this.dispatcher.getRailwayController().addSensorEventHandler(esh);
+        //ExpectedSensorEventHandler esh = new ExpectedSensorEventHandler(enterSensorId, dispatcher);
+        //this.dispatcher.getRailwayController().addSensorEventHandler(esh);
+        dispatcher.getRailwayController().registerSensorEventCallback(new SensorEventCallbackHandler(enterSensorId, this));
+
       } else {
         Logger.warn("Can't register the enterSensor. Is is null!");
       }

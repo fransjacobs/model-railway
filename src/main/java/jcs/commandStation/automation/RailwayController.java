@@ -28,6 +28,7 @@ import java.util.concurrent.Semaphore;
 import java.util.stream.Collectors;
 import jcs.JCS;
 import static jcs.commandStation.automation.RailwayControllerCommand.CMD_ADD_LOC;
+import static jcs.commandStation.automation.RailwayControllerCommand.CMD_FIRE_STATUS_LST;
 import static jcs.commandStation.automation.RailwayControllerCommand.CMD_REMOVE_LOC;
 import static jcs.commandStation.automation.RailwayControllerCommand.CMD_RESET;
 import static jcs.commandStation.automation.RailwayControllerCommand.CMD_RESTORE_FUNC;
@@ -60,9 +61,11 @@ import org.tinylog.Logger;
  *
  * When the automatic driving is enabled:<br>
  * - The SensorMonitor Thread is started. The SensorMonitor will check the status of the sensor during the Automatic driving.<br>
- * - When the SensorMonitor has started a Dispatcher id created for every Locomotive on the track
+ * - The (Locomotive)Dispatchers are (re)created for every Locomotive on the track.<br>
+ * - The Status listeners are notified.<br>
  *
- * - automatic driving is started the following event happen to When the automatic driving is starter a few thing happen Every Locomotive on the layout will get its own (dispatcher) Thread.<br>
+ * When a/all Locomotives is/are started the following events should happen: - The dispatcher for the Locomotive of choice should be started.<br>
+ *
  * The Dispatcher is run in this Thread.<br>
  * The RailwayController has it own Monitor Thread: RailwayControllerMonitorThread.<br>
  * This moditorThread takes car of watching for ghost during automatic driving.
@@ -81,15 +84,12 @@ public final class RailwayController {
   private final CommandExecuter commandExecuter;
 
   private final Map<String, Dispatcher> dispatchers;
-  //private final Map<Integer, SensorEventHandler> sensorHandlers;
-  //private ControllerThread controllerMonitor = null;
 
   private static final Semaphore semaphore = new Semaphore(1);
 
   //Need a list to be able to unregister
   private final List<RailwayControllerStatusListener> railwayStatusListeners;
 
-  //private final ActionCommandHandler actionCommandHandler = new ActionCommandHandler(actionCommandQueue);
   private boolean stepTest = false;
 
   private RailwayController() {
@@ -99,9 +99,9 @@ public final class RailwayController {
     //railwayStatusListeners = Collections.synchronizedList(new ArrayList<>());
 
     actionCommandQueue = new ConcurrentLinkedQueue();
-
     commandExecuter = new CommandExecuter(actionCommandQueue);
-    stepTest = "true".equals(System.getProperty("state.machine.stepTest", "false"));
+    stepTest = Boolean.valueOf(System.getProperty("state.machine.stepTest", "false"));
+
     init();
   }
 
@@ -109,7 +109,6 @@ public final class RailwayController {
     //The steptest property is need to enable testing. In normal operation this property is false.
     if (!stepTest) {
       commandExecuter.start();
-
       enqueCommand(new RailwayControllerCommand(CMD_RESTORE_FUNC));
     }
   }
@@ -175,41 +174,43 @@ public final class RailwayController {
         return true;
       } else {
         commandStationBean = JCS.getJcsCommandStation().getCommandStationBean();
-        dispatchers.clear();
-        //sensorHandlers.clear();
-
         sensorMonitor = new SensorMonitor(this);
-        sensorMonitor.start();
+        if (!stepTest) {
+          sensorMonitor.start();
 
-        //Wait for the initialization of the Sensors
-        long now = System.currentTimeMillis();
-        long start = now;
-        long timeout = now + 10000; //give it max 10 s
+          //Wait for the initialization of the Sensors
+          long now = System.currentTimeMillis();
+          long start = now;
+          long timeout = now + 10000; //give it max 10 s
 
-        boolean sensorsReady = sensorMonitor.isAllSensorsRegistered();
-        while (!sensorsReady && now < timeout) {
-          sensorsReady = sensorMonitor.isAllSensorsRegistered();
-          now = System.currentTimeMillis();
-          pause(100);
+          boolean sensorsReady = sensorMonitor.isAllSensorsRegistered();
+          while (!sensorsReady && now < timeout) {
+            sensorsReady = sensorMonitor.isAllSensorsRegistered();
+            now = System.currentTimeMillis();
+            //pause(100);
+          }
+
+          Logger.trace("Sensors prepared in " + (now - start) + " ms...");
         }
-
-        Logger.trace("Sensors prepared in " + (now - start) + " ms...");
 
         prepareAllDispatchers();
 
-        Logger.trace("RailwayController Automode initialized. There are " + dispatchers.size() + " Dispatchers...");
+        enqueCommand(new RailwayControllerCommand(CMD_FIRE_STATUS_LST, "automode.started"));
 
-        //Notify statuslisteners
-        List<RailwayControllerStatusListener> snapshot = new ArrayList<>(this.railwayStatusListeners);
-        for (RailwayControllerStatusListener rcsl : snapshot) {
-          rcsl.statusChanged("automode.started");
-        }
+        Logger.trace("RailwayController Automode initialized. There are " + dispatchers.size() + " Dispatchers...");
       }
 
       return true;
     } else {
       Logger.warn("Can't start Automode, Command Station Power is Off!");
       return false;
+    }
+  }
+
+  void fireStatusListeners(String status) {
+    List<RailwayControllerStatusListener> snapshot = new ArrayList<>(railwayStatusListeners);
+    for (RailwayControllerStatusListener rcsl : snapshot) {
+      rcsl.statusChanged(status);
     }
   }
 
@@ -235,6 +236,25 @@ public final class RailwayController {
     Logger.debug("ControllerMonitor Stopped");
     sensorMonitor = null;
 
+  }
+
+  public void prepareAllDispatchers() {
+    Logger.trace("Preparing Dispatchers for all on track locomotives...");
+    List<LocomotiveBean> locs = getOnTrackLocomotives();
+
+    Map<String, Dispatcher> snapshot = new HashMap<>(dispatchers);
+    dispatchers.clear();
+
+    for (LocomotiveBean loc : locs) {
+      Dispatcher dispatcher;
+      if (snapshot.containsKey(loc.getName())) {
+        dispatcher = snapshot.get(loc.getName());
+        dispatchers.put(loc.getName(), dispatcher);
+        Logger.trace("Re use dispatcher " + loc.getName() + "...");
+      } else {
+        addDispatcher(loc);
+      }
+    }
   }
 
   public void enableAutomode(boolean flag) {
@@ -298,7 +318,7 @@ public final class RailwayController {
     }
   }
 
-  public boolean isADispatcherRunning() {
+  public boolean isAnyDispatcherRunning() {
     boolean isRunning = false;
     Set<Dispatcher> snapshot = new HashSet<>(dispatchers.values());
     for (Dispatcher ld : snapshot) {
@@ -312,13 +332,13 @@ public final class RailwayController {
 
   public int getRunningDispatcherCount() {
     Set<Dispatcher> snapshot = new HashSet<>(dispatchers.values());
-    int runningDispatchers = 0;
+    int runningCount = 0;
     for (Dispatcher ld : snapshot) {
       if (ld.isRunning()) {
-        runningDispatchers++;
+        runningCount++;
       }
     }
-    return runningDispatchers;
+    return runningCount;
   }
 
   Dispatcher createDispatcher(LocomotiveBean locomotiveBean) {
@@ -332,7 +352,7 @@ public final class RailwayController {
         } else {
           dispatcher = new Dispatcher(autoPilotRunners, locomotiveBean);
 
-          //Also add it to the dispatchers
+          //add it to the dispatchers
           dispatchers.put(locomotiveBean.getName(), dispatcher);
           Logger.trace("Added new dispatcher for " + locomotiveBean.getName() + "...");
         }
@@ -353,42 +373,17 @@ public final class RailwayController {
 
       dispatcher.removeAllStateEventListeners();
 
-      List<RailwayControllerStatusListener> snapshot = new ArrayList<>(this.railwayStatusListeners);
-      for (RailwayControllerStatusListener rcsl : snapshot) {
-        rcsl.statusChanged("dispatcher.removed." + locomotiveBean.getName());
-      }
+      enqueCommand(new RailwayControllerCommand(CMD_FIRE_STATUS_LST, "dispatcher.removed." + locomotiveBean.getName()));
     }
   }
 
   void addDispatcher(LocomotiveBean locomotiveBean) {
     createDispatcher(locomotiveBean);
 
-    List<RailwayControllerStatusListener> snapshot = new ArrayList<>(this.railwayStatusListeners);
-    for (RailwayControllerStatusListener rcsl : snapshot) {
-      rcsl.statusChanged("dispatcher.added." + locomotiveBean.getName());
-    }
+    enqueCommand(new RailwayControllerCommand(CMD_FIRE_STATUS_LST, "dispatcher.added." + locomotiveBean.getName()));
   }
 
-  public void prepareAllDispatchers() {
-    Logger.trace("Preparing Dispatchers for all on track locomotives...");
-    List<LocomotiveBean> locs = getOnTrackLocomotives();
-
-    Map<String, Dispatcher> snapshot = new HashMap<>(dispatchers);
-    dispatchers.clear();
-
-    for (LocomotiveBean loc : locs) {
-      Dispatcher dispatcher;
-      if (snapshot.containsKey(loc.getName())) {
-        dispatcher = snapshot.get(loc.getName());
-        dispatchers.put(loc.getName(), dispatcher);
-        Logger.trace("Re use dispatcher " + loc.getName() + "...");
-      } else {
-        addDispatcher(loc);
-      }
-    }
-  }
-
-  public synchronized void clearDispatchers() {
+  public synchronized void removeDispatchers() {
     Logger.trace("Removing all Dispatchers...");
 
     for (Dispatcher dispatcher : dispatchers.values()) {
@@ -396,6 +391,8 @@ public final class RailwayController {
     }
 
     dispatchers.clear();
+
+    enqueCommand(new RailwayControllerCommand(CMD_FIRE_STATUS_LST, "all.dispatchers.removed"));
   }
 
   synchronized void startDispatcher(LocomotiveBean locomotiveBean) {
@@ -639,26 +636,32 @@ public final class RailwayController {
       case CMD_RESET -> {
         resetStates();
       }
+      case CMD_FIRE_STATUS_LST -> {
+        fireStatusListeners(event.getStatus());
+      }
     }
   }
 
-  
-  synchronized void addSensorEventHandler(SensorEventHandler handler) {
-    //sensorHandlers.put(handler.getSensorId(), handler);
+  void registerSensorEventCallback(SensorEventCallback callback) {
+    if (sensorMonitor != null) {
+      this.sensorMonitor.registerSensorEventCallback(callback);
+    } else {
+      Logger.warn("Can't register Callback for Sensor " + callback.getSensorId());
+    }
   }
 
-  boolean isSensorHandlerRegistered(Integer sensorId) {
-    return false; //sensorHandlers.containsKey(sensorId);
+  void unRegisterSensorEventCallback(SensorEventCallback callback) {
+    this.sensorMonitor.unRegisterSensorEventCallback(callback);
   }
 
-  synchronized void removeHandler(Integer sensorId) {
-    //sensorHandlers.remove(sensorId);
+  void unRegisterSensorEventCallback(Integer sensorId) {
+    this.sensorMonitor.unRegisterSensorEventCallback(sensorId);
   }
-  
-  
-  
-  
-  
+
+  boolean isSensorCallbackRegistered(Integer sensorId) {
+    return sensorMonitor.isSensorCallbackRegistered(sensorId);
+  }
+
   /**
    * An executer Thread to execute commands.
    */
