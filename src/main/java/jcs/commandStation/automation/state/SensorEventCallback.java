@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation.automation;
+package jcs.commandStation.automation.state;
 
-import jcs.commandStation.events.SensorEventListener;
+import jcs.commandStation.events.SensorEvent;
 
 /**
  * Callback for SensorEvent
  */
-interface SensorEventCallback extends SensorEventListener {
+@FunctionalInterface
+public interface SensorEventCallback {
 
-  boolean isIgnoreEvent();
+  void onEvent(SensorEvent event);
 }

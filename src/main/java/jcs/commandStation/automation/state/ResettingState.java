@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation.automation;
+package jcs.commandStation.automation.state;
 
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
@@ -22,10 +22,14 @@ import org.tinylog.Logger;
 /**
  * Reset State to rollback all dispatcher settings
  */
-class ResettingState extends DispatcherState {
+public class ResettingState extends AbstractState {
+
+  public ResettingState() {
+    super("Reset");
+  }
 
   @Override
-  DispatcherState execute(Dispatcher dispatcher) {
+  AbstractState execute() {
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
     BlockBean block = dispatcher.getDepartureBlock();
 

@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation.automation;
+package jcs.commandStation.automation.state;
 
 import java.awt.Color;
 import java.util.Date;
+import jcs.commandStation.automation.Dispatcher;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.RouteBean;
@@ -30,10 +31,14 @@ import org.tinylog.Logger;
  * State InBlock is the state when a train has arrived in the target block.<br>
  * The block status is Occupied.
  */
-class InBlockState extends DispatcherState {
+public class InBlockState extends AbstractState {
+
+  public InBlockState() {
+    super("Inblock");
+  }
 
   @Override
-  DispatcherState execute(Dispatcher dispatcher) {
+  AbstractState execute() {
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
 
     BlockBean destinationBlock = dispatcher.getDestinationBlock();
@@ -48,14 +53,16 @@ class InBlockState extends DispatcherState {
 
     Logger.trace("Locomotive " + locomotive.getName() + " has arrived in destination " + destinationBlock.getDescription() + " and must stop " + alwaysStop);
 
-    if (alwaysStop || dispatcher.getNextRouteBean() == null || !dispatcher.isLocomotiveAutomodeOn()) {
+    if (alwaysStop || dispatcher.getNextRouteBean() == null || !dispatcher.isLocomotiveStarted()) {
       //Stop the locomotive
       dispatcher.changeLocomotiveVelocity(locomotive, 0);
       Logger.trace("Locomotive " + locomotive.getName() + " is stopped....");
     }
 
     //Switch the departure block sensors on again
-    dispatcher.clearDepartureIgnoreEventHandlers();
+    //TODO!
+    //dispatcher.clearDepartureIgnoreEventHandlers();
+    //dispatcher.getSensorMonitor().unsubscribe(Integer.SIZE, eventCallback);
     dispatcher.setOccupationSensorId(null);
     dispatcher.setExitSensorId(null);
 
@@ -143,7 +150,7 @@ class InBlockState extends DispatcherState {
 
       return new StartingState();
     } else {
-      if (dispatcher.isLocomotiveAutomodeOn()) {
+      if (dispatcher.isLocomotiveStarted()) {
         if (alwaysStop) {
           return new WaitingState();
         } else {

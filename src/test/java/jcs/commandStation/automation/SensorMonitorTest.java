@@ -15,8 +15,10 @@
  */
 package jcs.commandStation.automation;
 
+import java.util.Map;
 import jcs.JCS;
 import jcs.commandStation.events.SensorEvent;
+import jcs.entities.SensorBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.persistence.PersistenceService;
 import jcs.persistence.util.PersistenceTestHelper;
@@ -59,7 +61,13 @@ public class SensorMonitorTest {
 
   @BeforeEach
   public void setUp() {
-    //JCS.getJcsCommandStation().
+    if (JCS.getJcsCommandStation().connect()) {
+
+      JCS.getJcsCommandStation().switchPower(true);
+      Logger.info("=========================== setUp done..............");
+    } else {
+      Logger.error("###### Can't connect to command station! ########");
+    }
   }
 
   @AfterEach
@@ -69,13 +77,44 @@ public class SensorMonitorTest {
   /**
    * Test of stopMonitor method, of class SensorMonitor.
    */
-  //@Test
+  @Test
   public void testStopMonitor() {
     System.out.println("stopMonitor");
-    SensorMonitor instance = null;
+    SensorMonitor instance = new SensorMonitor();
+
+    boolean result = instance.isRunning();
+    assertFalse(result);
+    instance.start();
+
+    long now = System.currentTimeMillis();
+    long start = now;
+    long timeout = now + 10000;
+
+    boolean running = instance.isRunning();
+    while (!running && now < timeout) {
+      running = instance.isRunning();
+      now = System.currentTimeMillis();
+    }
+
+    assertTrue(timeout > now);
+    assertTrue(instance.isRunning());
+    Logger.trace("Sensors prepared in " + (now - start) + " ms...");
+
     instance.stopMonitor();
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
+
+    now = System.currentTimeMillis();
+    start = now;
+    timeout = now + 10000;
+
+    boolean stopped = instance.isRunning();
+    while (stopped && now < timeout) {
+      stopped = instance.isRunning();
+      now = System.currentTimeMillis();
+    }
+
+    assertTrue(timeout > now);
+    assertFalse(instance.isRunning());
+    Logger.trace("Monitor <stopped in " + (now - start) + " ms...");
   }
 
   private void pause(long millis) {
@@ -104,9 +143,9 @@ public class SensorMonitorTest {
     long start = now;
     long timeout = now + 10000;
 
-    boolean sensorsReady = instance.isAllSensorsRegistered();
+    boolean sensorsReady = instance.isRunning();
     while (!sensorsReady && now < timeout) {
-      sensorsReady = instance.isAllSensorsRegistered();
+      sensorsReady = instance.isRunning();
       now = System.currentTimeMillis();
     }
 
@@ -114,18 +153,58 @@ public class SensorMonitorTest {
     assertTrue(instance.isRunning());
     Logger.trace("Sensors prepared in " + (now - start) + " ms...");
 
-    //assertEquals(8, instance.getSensorHandlers());
-
+    instance.stopMonitor();
   }
 
   /**
-   * Test of refreshAllSensorValues method, of class SensorMonitor.
+   * Test of isAllSensorsRegistered method, of class SensorMonitor.
+   */
+  @Test
+  public void testIsAllSensorsRegistered() {
+    System.out.println("isAllSensorsRegistered");
+
+    SensorMonitor instance = new SensorMonitor();
+    boolean result = instance.isRunning();
+    assertFalse(result);
+
+    Map<Integer, SensorBean> sensors = instance.getSensorBeans();
+
+    assertEquals(0, sensors.size());
+
+    //Start the monitor
+    instance.start();
+
+    //Wait for the initialization of the Sensors
+    long now = System.currentTimeMillis();
+    long start = now;
+    long timeout = now + 10000;
+
+    boolean sensorsReady = instance.isRunning();
+    while (!sensorsReady && now < timeout) {
+      sensorsReady = instance.isRunning();
+      now = System.currentTimeMillis();
+    }
+
+    assertTrue(timeout > now);
+    assertTrue(instance.isRunning());
+    Logger.trace("Sensors prepared in " + (now - start) + " ms...");
+
+    sensors = instance.getSensorBeans();
+
+    assertEquals(8, sensors.size());
+    
+    instance.stopMonitor();
+  }
+
+  /**
+   * Test of onSensorChange method, of class SensorMonitor.
    */
   //@Test
-  public void testRefreshAllSensorValues() {
-    System.out.println("refreshAllSensorValues");
+  public void testOnSensorChange() {
+    System.out.println("onSensorChange");
+    SensorEvent sensorEvent = null;
     SensorMonitor instance = null;
-    instance.refreshAllSensorValues();
+    instance.onSensorChange(sensorEvent);
     // TODO review the generated test code and remove the default call to fail.
     fail("The test case is a prototype.");
   }
@@ -143,57 +222,8 @@ public class SensorMonitorTest {
     fail("The test case is a prototype.");
   }
 
-  /**
-   * Test of isAllSensorsRegistered method, of class SensorMonitor.
-   */
-  //@Test
-  public void testIsAllSensorsRegistered() {
-    System.out.println("isAllSensorsRegistered");
-    SensorMonitor instance = null;
-    boolean expResult = false;
-    boolean result = instance.isAllSensorsRegistered();
-    assertEquals(expResult, result);
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
-  }
+ 
 
-  /**
-   * Test of onSensorChange method, of class SensorMonitor.
-   */
-  //@Test
-  public void testOnSensorChange() {
-    System.out.println("onSensorChange");
-    SensorEvent sensorEvent = null;
-    SensorMonitor instance = null;
-    instance.onSensorChange(sensorEvent);
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
-  }
-
-  /**
-   * Test of run method, of class SensorMonitor.
-   */
-  //@Test
-  public void testRun() {
-    System.out.println("run");
-    SensorMonitor instance = null;
-    instance.run();
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
-  }
-
-  /**
-   * Test of isStopped method, of class SensorMonitor.
-   */
-  //@Test
-  public void testIsStopped() {
-    System.out.println("isStopped");
-    SensorMonitor instance = null;
-    boolean expResult = false;
-    boolean result = instance.isStopped();
-    assertEquals(expResult, result);
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
-  }
+  
 
 }

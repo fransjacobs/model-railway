@@ -13,12 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation.automation;
+package jcs.commandStation.automation.state;
 
 import java.util.Date;
-import jcs.JCS;
 import jcs.commandStation.events.SensorEvent;
-import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.StationBean;
@@ -32,15 +30,18 @@ import org.tinylog.Logger;
  * This state will subscribe to the enter sensor.<br>
  * The state will advance to a next state when the enter sensor becomes active or a reset is requested.
  */
-class RunningState extends DispatcherState implements SensorEventListener {
+public class RunningState extends AbstractState implements SensorEventCallback {
 
   private boolean sensorsRegistered = false;
   private boolean canAdvanceToNextState = false;
   private Integer enterSensorId;
 
+  public RunningState() {
+    super("Running");
+  }
+
   @Override
-  DispatcherState execute(Dispatcher dispatcher) {
-    this.dispatcher = dispatcher;
+  AbstractState execute() {
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
 
     if (!sensorsRegistered) {
@@ -52,10 +53,13 @@ class RunningState extends DispatcherState implements SensorEventListener {
 
       //Register a callback for both sensors to ignore event for these sensors.
       //ExpectedSensorEventHandler osh = new ExpectedSensorEventHandler(occupancySensorId, dispatcher);
-      dispatcher.getRailwayController().registerSensorEventCallback(new SensorEventCallbackHandler(occupancySensorId, this, true));
-      dispatcher.getRailwayController().registerSensorEventCallback(new SensorEventCallbackHandler(exitSensorId, this, true));
-      //addSensorEventHandler(osh);
+      //dispatcher.getRailwayController().registerSensorEventCallback(new SensorEventCallbackHandler(occupancySensorId, this, true));
+      dispatcher.getSensorMonitor().subscribePassive(occupancySensorId, this);
 
+      //dispatcher.getRailwayController().registerSensorEventCallback(new SensorEventCallbackHandler(exitSensorId, this, true));
+      dispatcher.getSensorMonitor().subscribePassive(exitSensorId, this);
+
+      //addSensorEventHandler(osh);
       //ExpectedSensorEventHandler xsh = new ExpectedSensorEventHandler(exitSensorId, dispatcher);
       //dispatcher.getRailwayController().registerSensorEventCallback(new SensorEventCallbackHandler(exitSensorId,this));
       Logger.trace("Departure: " + departureBlock.getId() + " Ignoring Occupancy Sensor: " + occupancySensorId + " and Exit Sensor: " + exitSensorId);
@@ -64,12 +68,13 @@ class RunningState extends DispatcherState implements SensorEventListener {
       enterSensorId = dispatcher.getEnterSensorId();
       if (enterSensorId != null && destinationBlock != null) {
         Logger.trace("Destination: " + destinationBlock.getId() + " Enter Sensor: " + enterSensorId + "...");
-        JCS.getJcsCommandStation().addSensorEventListener(enterSensorId, this);
+        //JCS.getJcsCommandStation().addSensorEventListener(enterSensorId, this);
 
         //Register the sensor also a an expected event
         //ExpectedSensorEventHandler esh = new ExpectedSensorEventHandler(enterSensorId, dispatcher);
         //this.dispatcher.getRailwayController().addSensorEventHandler(esh);
-        dispatcher.getRailwayController().registerSensorEventCallback(new SensorEventCallbackHandler(enterSensorId, this));
+        //dispatcher.getRailwayController().registerSensorEventCallback(new SensorEventCallbackHandler(enterSensorId, this));
+        dispatcher.getSensorMonitor().subscribe(enterSensorId, this);
 
       } else {
         Logger.warn("Can't register the enterSensor. Is is null!");
@@ -98,13 +103,14 @@ class RunningState extends DispatcherState implements SensorEventListener {
     }
 
     if (canAdvanceToNextState || resetRequested) {
-      DispatcherState newState;
+      AbstractState newState;
       if (resetRequested) {
         newState = new ResettingState();
       } else {
         newState = new ApproachingState();
         //Remove handler as the state will now change
-        JCS.getJcsCommandStation().removeSensorEventListener(enterSensorId, this);
+        //JCS.getJcsCommandStation().removeSensorEventListener(enterSensorId, this);
+
       }
       return newState;
     } else {
@@ -124,20 +130,36 @@ class RunningState extends DispatcherState implements SensorEventListener {
   }
 
   @Override
-  public Integer getSensorId() {
-    return enterSensorId;
+  public void onExit() {
+    dispatcher.getSensorMonitor().unsubscribe(enterSensorId, this);
   }
 
+//  @Override
+//  public Integer getSensorId() {
+//    return enterSensorId;
+//  }
   @Override
-  public void onSensorChange(SensorEvent sensorEvent) {
-    if (enterSensorId.equals(sensorEvent.getSensorId())) {
-      if (sensorEvent.isActive()) {
+  public void onEvent(SensorEvent event) {
+    if (enterSensorId.equals(event.getSensorId())) {
+      if (event.isActive()) {
         canAdvanceToNextState = true;
-        Logger.trace("Enter Event from Sensor " + sensorEvent.getSensorId());
+        Logger.trace("Enter Event from Sensor " + event.getSensorId());
         synchronized (this) {
           this.notifyAll();
         }
       }
     }
   }
+  //@Override
+//  public void onSensorChange(SensorEvent sensorEvent) {
+//    if (enterSensorId.equals(sensorEvent.getSensorId())) {
+//      if (sensorEvent.isActive()) {
+//        canAdvanceToNextState = true;
+//        Logger.trace("Enter Event from Sensor " + sensorEvent.getSensorId());
+//        synchronized (this) {
+//          this.notifyAll();
+//        }
+//      }
+//    }
+//  }
 }

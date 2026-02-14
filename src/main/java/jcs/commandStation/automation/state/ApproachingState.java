@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation.automation;
+package jcs.commandStation.automation.state;
 
 import java.awt.Color;
 import jcs.entities.BlockBean;
@@ -31,10 +31,14 @@ import org.tinylog.Logger;
  * When the locomotive does not have to stop, the next possible route to the next block is searched.<br>
  * This is done in the PrepareNextRouteState.
  */
-class ApproachingState extends DispatcherState {
+class ApproachingState extends AbstractState {
 
+  public ApproachingState() {
+    super("Approaching");
+  }
+  
   @Override
-  DispatcherState execute(Dispatcher dispatcher) {
+  AbstractState execute() {
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
 
     BlockBean departureBlock = dispatcher.getDepartureBlock();
@@ -54,7 +58,7 @@ class ApproachingState extends DispatcherState {
     dispatcher.showRoute(route, Color.magenta);
     dispatcher.showBlockState(destinationBlock);
 
-    if (dispatcher.isLocomotiveAutomodeOn()) {
+    if (dispatcher.isLocomotiveStarted()) {
       if (startBraking) {
         return new BrakingState();
       } else {

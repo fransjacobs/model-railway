@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Frans Jacobs
+ * Copyright 2026 Frans Jacobs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation.automation;
+package jcs.commandStation.automation.state;
 
+import jcs.commandStation.automation.SensorMonitor;
 import java.util.ArrayList;
 import java.util.List;
+import jcs.commandStation.automation.Dispatcher;
 import jcs.entities.AccessoryBean;
 import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
@@ -24,26 +26,54 @@ import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
 /**
- *
+ * Base State
  */
-abstract class DispatcherState {
+abstract class AbstractState {
+
+  protected final String name;
+  protected SensorMonitor monitor;
+  protected SensorEventCallback eventCallback;
 
   protected Dispatcher dispatcher;
 
-  protected static final long DEFAULT_WAIT_INTERVAL = 1000;
+  protected final long waitInterval;
+  protected final long threadWaitMillis;
+  
+  protected boolean resetRequested;
+  
+  
 
-  protected static long threadWaitMillis;
-
-  protected boolean resetRequested = false;
-
-  static {
+  protected AbstractState(String name) {
+    this.name = name;
+    waitInterval = Long.parseUnsignedLong(System.getProperty("autopilot.thread.wait.interval", "1000"));
     threadWaitMillis = Long.parseUnsignedLong(System.getProperty("autopilot.thread.wait.millis", "10000"));
+
   }
 
-  protected DispatcherState() {
+  void onEnter(SensorMonitor monitor) {
+    this.monitor = monitor;
+    Logger.trace("Entering " + name + " state...");
   }
 
-  abstract DispatcherState execute(Dispatcher dispatcher);
+  abstract AbstractState execute();
+
+  void onExit() {
+
+  }
+
+  /**
+   * Override in states that need to subscribe to events
+   */
+  protected void subscribeToEvents() {
+    // Default: no subscription
+  }
+
+  /**
+   * Override to unsubscribe from events
+   */
+  protected void unsubscribeFromEvents() {
+    // Default: no action
+  }
 
   @Override
   public String toString() {
@@ -54,22 +84,21 @@ abstract class DispatcherState {
     return this.getClass().getSimpleName();
   }
 
-  void setResetRequested(boolean resetRequested) {
+  public void setResetRequested(boolean resetRequested) {
     this.resetRequested = resetRequested;
   }
 
-  protected void requestReset() {
-    resetRequested = true;
-    synchronized (this) {
-      this.notifyAll();
-    }
-  }
-
+//  protected void requestReset() {
+//    resetRequested = true;
+//    synchronized (this) {
+//      this.notifyAll();
+//    }
+//  }
   void pause(int millis) {
     try {
       Thread.sleep(millis);
     } catch (InterruptedException e) {
-      Logger.error(e);
+      Thread.currentThread().interrupt();
     }
   }
 

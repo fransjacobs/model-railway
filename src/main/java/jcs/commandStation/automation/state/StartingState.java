@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Frans Jacobs.
+ * Copyright 2026 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation.automation;
+package jcs.commandStation.automation.state;
 
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
@@ -25,11 +25,14 @@ import org.tinylog.Logger;
  * This state will start the locomotive by sending the direction and start velocity commands to the command station.<br>
  * Then it will automatically proceed to the running state
  */
-class StartingState extends DispatcherState {
+public class StartingState extends AbstractState {
+
+  public StartingState() {
+    super("Starting");
+  }
 
   @Override
-  DispatcherState execute(Dispatcher dispatcher) {
-    this.dispatcher = dispatcher;
+  AbstractState execute() {
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
 
     BlockBean departureBlock = dispatcher.getDepartureBlock();
@@ -61,12 +64,10 @@ class StartingState extends DispatcherState {
     double velocity = (speed3 / (double) fullscale) * 1000;
     dispatcher.changeLocomotiveVelocity(locomotive, velocity);
 
-    DispatcherState newState;
     if (resetRequested) {
-      newState = new ResettingState();
+      return new ResettingState();
     } else {
-      newState = new RunningState();
+      return new RunningState();
     }
-    return newState;
   }
 }

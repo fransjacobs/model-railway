@@ -15,6 +15,7 @@
  */
 package jcs.commandStation.automation;
 
+import jcs.commandStation.automation.state.SensorEventCallback;
 import jcs.commandStation.autopilot.state.Dispatcher;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -75,7 +76,7 @@ public final class RailwayController {
 
   private static RailwayController instance;
 
-  private final ThreadGroup controllerRunners;
+  private final ThreadGroup threadGroup;
   private CommandStationBean commandStationBean;
   private SensorMonitor sensorMonitor = null;
 
@@ -93,7 +94,7 @@ public final class RailwayController {
   private boolean stepTest = false;
 
   private RailwayController() {
-    controllerRunners = new ThreadGroup("RAILWAY-CONTROLLER");
+    threadGroup = new ThreadGroup("RAILWAY-CONTROLLER");
     dispatchers = new HashMap<>();
     railwayStatusListeners = new ArrayList<>();
     //railwayStatusListeners = Collections.synchronizedList(new ArrayList<>());
@@ -137,8 +138,8 @@ public final class RailwayController {
     }
   }
 
-  ThreadGroup getControllerRunners() {
-    return controllerRunners;
+  ThreadGroup getThreadGroup() {
+    return threadGroup;
   }
 
   /**
@@ -174,7 +175,7 @@ public final class RailwayController {
         return true;
       } else {
         commandStationBean = JCS.getJcsCommandStation().getCommandStationBean();
-        sensorMonitor = new SensorMonitor(this);
+        sensorMonitor = new SensorMonitor(threadGroup);
         if (!stepTest) {
           sensorMonitor.start();
 
@@ -183,9 +184,9 @@ public final class RailwayController {
           long start = now;
           long timeout = now + 10000; //give it max 10 s
 
-          boolean sensorsReady = sensorMonitor.isAllSensorsRegistered();
+          boolean sensorsReady = sensorMonitor.isRunning();
           while (!sensorsReady && now < timeout) {
-            sensorsReady = sensorMonitor.isAllSensorsRegistered();
+            sensorsReady = sensorMonitor.isRunning();
             now = System.currentTimeMillis();
             //pause(100);
           }
@@ -207,6 +208,12 @@ public final class RailwayController {
     }
   }
 
+  public SensorMonitor getSensorMonitor() {
+    return sensorMonitor;
+  }
+
+  
+  
   void fireStatusListeners(String status) {
     List<RailwayControllerStatusListener> snapshot = new ArrayList<>(railwayStatusListeners);
     for (RailwayControllerStatusListener rcsl : snapshot) {
@@ -225,6 +232,9 @@ public final class RailwayController {
         }
       }
 
+      
+      //TODO: Can only be stopped if las dispatcher are stopped..
+      //add check
       sensorMonitor.stopMonitor();
 
       try {
@@ -642,25 +652,25 @@ public final class RailwayController {
     }
   }
 
-  void registerSensorEventCallback(SensorEventCallback callback) {
-    if (sensorMonitor != null) {
-      this.sensorMonitor.registerSensorEventCallback(callback);
-    } else {
-      Logger.warn("Can't register Callback for Sensor " + callback.getSensorId());
-    }
-  }
+//  void registerSensorEventCallback(SensorEventCallback callback) {
+//    if (sensorMonitor != null) {
+//      this.sensorMonitor.registerSensorEventCallback(callback);
+//    } else {
+//      Logger.warn("Can't register Callback for Sensor " + callback.getSensorId());
+//    }
+//  }
 
-  void unRegisterSensorEventCallback(SensorEventCallback callback) {
-    this.sensorMonitor.unRegisterSensorEventCallback(callback);
-  }
+//  void unRegisterSensorEventCallback(SensorEventCallback callback) {
+//    this.sensorMonitor.unRegisterSensorEventCallback(callback);
+//  }
 
-  void unRegisterSensorEventCallback(Integer sensorId) {
-    this.sensorMonitor.unRegisterSensorEventCallback(sensorId);
-  }
+//  void unRegisterSensorEventCallback(Integer sensorId) {
+//    this.sensorMonitor.unRegisterSensorEventCallback(sensorId);
+//  }
 
-  boolean isSensorCallbackRegistered(Integer sensorId) {
-    return sensorMonitor.isSensorCallbackRegistered(sensorId);
-  }
+//  boolean isSensorCallbackRegistered(Integer sensorId) {
+//    return sensorMonitor.isSensorCallbackRegistered(sensorId);
+//  }
 
   /**
    * An executer Thread to execute commands.

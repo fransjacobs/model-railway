@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Frans Jacobs.
+ * Copyright 2026 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,23 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation.automation;
+package jcs.commandStation.automation.state;
 
 import jcs.entities.BlockBean;
 import org.tinylog.Logger;
 
 /**
  *
- * @author frans
  */
-class WaitingState extends DispatcherState {
+public class WaitingState extends AbstractState {
 
-  WaitingState() {
-    super();
+  public WaitingState() {
+    super("Waiting");
   }
 
   @Override
-  DispatcherState execute(Dispatcher dispatcher) {
+  AbstractState execute() {
 
     BlockBean blockBean = dispatcher.getDepartureBlock();
     int minWait = blockBean.getMinWaitTime();
@@ -64,7 +63,7 @@ class WaitingState extends DispatcherState {
     Logger.debug("Waiting for " + waitTime + " s. Block Random " + blockBean.isRandomWait() + " Block max: " + blockBean.getMaxWaitTime());
     //TODO: use the Systemtimer for this
     for (; waitTime >= 0; waitTime--) {
-      if (dispatcher.isLocomotiveAutomodeOn()) {
+      if (dispatcher.isLocomotiveStarted()) {
         String s = dispatcher.getStateName() + " (" + waitTime + ")";
         dispatcher.fireStateListeners(s);
 
@@ -72,7 +71,7 @@ class WaitingState extends DispatcherState {
         if ("false".equals(System.getProperty("dispatcher.stepTest", "false"))) {
           synchronized (this) {
             try {
-              wait(DEFAULT_WAIT_INTERVAL);
+              wait(waitInterval);
             } catch (InterruptedException ex) {
               Logger.trace("Wait loop interrupted");
             }
@@ -87,13 +86,11 @@ class WaitingState extends DispatcherState {
       }
     }
 
-    DispatcherState newState;
-    if (dispatcher.isLocomotiveAutomodeOn()) {
-      newState = new PrepareRouteState();
+    if (dispatcher.isLocomotiveStarted()) {
+      return new PrepareRouteState();
     } else {
-      newState = new IdleState();
+      return new IdleState();
     }
-    return newState;
   }
 
 }
