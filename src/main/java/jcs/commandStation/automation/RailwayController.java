@@ -15,7 +15,6 @@
  */
 package jcs.commandStation.automation;
 
-import jcs.commandStation.automation.state.SensorEventCallback;
 import jcs.commandStation.autopilot.state.Dispatcher;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -313,7 +312,7 @@ public final class RailwayController {
 
   public boolean isSensorMonitorThreadStopped() {
     if (sensorMonitor != null) {
-      return sensorMonitor.isStopped();
+      return !sensorMonitor.isRunning();
     } else {
       return true;
     }
