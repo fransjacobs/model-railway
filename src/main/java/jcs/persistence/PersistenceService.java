@@ -482,6 +482,13 @@ public interface PersistenceService {
   List<BlockBean> getBlocks();
 
   /**
+   * Count the number of Blocks with the status Ghost
+   *
+   * @return the number of blocks with status Ghost
+   */
+  Long getGhostBlockCount();
+
+  /**
    * Retrieves all BlockBeans which are not a member of a Station.
    *
    * @return A List of BlockBeans.

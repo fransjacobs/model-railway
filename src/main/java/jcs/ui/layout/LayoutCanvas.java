@@ -47,7 +47,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 import javax.swing.TransferHandler.TransferSupport;
 import jcs.commandStation.autopilot.AutoPilot;
-import static jcs.commandStation.autopilot.AutoPilot.getLocomotiveDispatcher;
 import jcs.commandStation.autopilot.state.Dispatcher;
 import jcs.entities.BlockBean;
 import jcs.entities.BlockBean.BlockState;

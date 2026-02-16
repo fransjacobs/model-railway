@@ -82,6 +82,14 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
     passiveSubscribers.computeIfAbsent(sensorId, k -> new CopyOnWriteArrayList<>()).add(callback);
   }
 
+  Map<Integer, List<SensorEventCallback>> getSubscribers() {
+    return subscribers;
+  }
+
+  Map<Integer, List<SensorEventCallback>> getPassiveSubscribers() {
+    return passiveSubscribers;
+  }
+
   /**
    * Unsubscribe from sensor events
    *
@@ -142,12 +150,17 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
     Integer sensorId = event.getSensorId();
     //this can be faster... ignore in case a block is set to not used...
     for (BlockBean block : blocks) {
-      Tile tile = TileCache.findTile(block.getTileId());
 
       if ((block.getMinSensorId().equals(sensorId) || block.getPlusSensorId().equals(sensorId)) && block.getLocomotiveId() == null) {
+        Tile tile = TileCache.findTile(block.getTileId());
         if (event.getSensorBean().isActive()) {
           block.setBlockState(BlockBean.BlockState.GHOST);
-          tile.setBlockState(BlockBean.BlockState.GHOST);
+
+          if (tile != null) {
+            tile.setBlockState(BlockBean.BlockState.GHOST);
+          } else {
+            Logger.warn("Can't find Tile " + block.getTileId());
+          }
           //Also persist
           PersistenceFactory.getService().persist(block);
           Logger.warn("Ghost Detected! @ Sensor " + sensorId + " in block " + block.getId());
@@ -164,6 +177,10 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
         break;
       }
     }
+  }
+
+  public boolean isGhostDetected() {
+    return PersistenceFactory.getService().getGhostBlockCount() > 0;
   }
 
   void handleSensorEvent(SensorEvent event) {
@@ -205,9 +222,9 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
     this.eventQueue.offer(sensorEvent);
 
     //is dit nodig?
-    synchronized (this) {
-      notifyAll();
-    }
+    //synchronized (this) {
+    // notifyAll();
+    //}
   }
 
   //The sensorMonitor thread is started with each new session of the RailWayController.
@@ -224,6 +241,8 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
     registerAllSensors();
     //Subsribe to the command station as SensorEventListener 
     JCS.getJcsCommandStation().addAllSensorEventsListener(this);
+
+    Logger.trace("SensorMonitor is watching " + sensorBeans.size());
 
     running = true;
     while (running) {

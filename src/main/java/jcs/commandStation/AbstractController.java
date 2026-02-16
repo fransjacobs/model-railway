@@ -33,7 +33,7 @@ import jcs.commandStation.events.MeasurementEventListener;
 
 /**
  *
- * 
+ *
  */
 public abstract class AbstractController implements GenericController {
 
@@ -42,6 +42,7 @@ public abstract class AbstractController implements GenericController {
 
   protected final List<PowerEventListener> powerEventListeners;
   protected final List<AccessoryEventListener> accessoryEventListeners;
+
   protected final List<AllSensorEventsListener> allSensorEventsListeners;
 
   protected final List<LocomotiveFunctionEventListener> locomotiveFunctionEventListeners;
@@ -119,7 +120,7 @@ public abstract class AbstractController implements GenericController {
   public void removeConnectionEventListener(ConnectionEventListener listener) {
     this.connectionEventListeners.remove(listener);
   }
-  
+
   @Override
   public List<ConnectionEventListener> getConnectionEventListeners() {
     return new ArrayList<>(connectionEventListeners);
