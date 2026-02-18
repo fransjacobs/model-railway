@@ -19,7 +19,6 @@ import jcs.commandStation.automation.SensorMonitor;
 import java.util.ArrayList;
 import java.util.List;
 import jcs.commandStation.automation.Dispatcher;
-import jcs.commandStation.automation.state.SensorEventCallback;
 import jcs.entities.AccessoryBean;
 import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;

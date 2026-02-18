@@ -48,7 +48,7 @@ public class PrepareRouteState extends AbstractState {
     }
 
     if (canAdvanceToNextState) {
-      return this; //new StartingState();
+      return new StartingState();
     } else {
       //Go back to waiting and try again
       return new WaitingState();

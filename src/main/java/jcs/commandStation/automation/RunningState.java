@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation.automation.state;
+package jcs.commandStation.automation;
 
-import jcs.commandStation.automation.AbstractState;
 import java.util.Date;
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.BlockBean;
@@ -120,7 +119,7 @@ public class RunningState extends AbstractState implements SensorEventCallback {
       } else {
         try {
           synchronized (this) {
-            wait(threadWaitMillis);
+            wait(1000);
           }
         } catch (InterruptedException ex) {
           Logger.trace("Interrupted: " + ex.getMessage());

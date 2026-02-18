@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation.automation.state;
+package jcs.commandStation.automation;
 
-import jcs.commandStation.automation.AbstractState;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.persistence.PersistenceFactory;
@@ -26,9 +25,9 @@ import org.tinylog.Logger;
  * This state will start the locomotive by sending the direction and start velocity commands to the command station.<br>
  * Then it will automatically proceed to the running state
  */
-public class StartingState extends AbstractState {
+class StartingState extends AbstractState {
 
-  public StartingState() {
+  StartingState() {
     super("Starting");
   }
 

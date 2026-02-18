@@ -25,7 +25,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import jcs.JCS;
-import jcs.commandStation.automation.state.SensorEventCallback;
 import jcs.commandStation.events.AllSensorEventsListener;
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.BlockBean;

@@ -18,7 +18,6 @@ package jcs.commandStation.automation;
 import java.util.List;
 import java.util.Map;
 import jcs.JCS;
-import jcs.commandStation.automation.state.SensorEventCallback;
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.SensorBean;
 import jcs.persistence.PersistenceFactory;

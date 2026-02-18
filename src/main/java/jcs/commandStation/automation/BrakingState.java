@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation.automation.state;
+package jcs.commandStation.automation;
 
-import jcs.commandStation.automation.AbstractState;
 import java.awt.Color;
+
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
@@ -25,17 +25,17 @@ import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
 /**
- * Proceeding state of the Autopilot State Machine.<br>
- * The locomotive does not have to stop in this block, therefor the speed is maintained.
+ * Braking state of the Autopilot State Machine.<br>
+ * The locomotive has to stop in this block, therefor the speed is decreased.
  */
-public class ProceedingState extends AbstractState implements SensorEventCallback {
+public class BrakingState extends AbstractState implements SensorEventCallback {
 
-  public ProceedingState() {
-    super("Proceeding");
-  }
-  
   private boolean canAdvanceToNextState = false;
   private Integer inSensorId;
+
+  public BrakingState() {
+    super("Braking");
+  }
 
   @Override
   AbstractState execute() {
@@ -43,7 +43,33 @@ public class ProceedingState extends AbstractState implements SensorEventCallbac
     BlockBean departureBlock = dispatcher.getDepartureBlock();
     BlockBean destinationBlock = dispatcher.getDestinationBlock();
     RouteBean route = dispatcher.getRouteBean();
-    Logger.trace("Locomotive " + locomotive.getName() + " has entered destination " + destinationBlock.getDescription() + " and continues...");
+    Logger.trace("Locomotive " + locomotive.getName() + " has entered destination " + destinationBlock.getDescription() + " and prepares to stop...");
+
+    inSensorId = dispatcher.getInSensorId();
+    //ExpectedSensorEventHandler ish = new ExpectedSensorEventHandler(inSensorId, dispatcher);
+    //this.dispatcher.getRailwayController().addSensorEventHandler(ish);
+    //dispatcher.getRailwayController().registerSensorEventCallback(new SensorEventCallbackHandler(inSensorId, this, true));
+    dispatcher.getSensorMonitor().subscribe(inSensorId, this);
+
+    dispatcher.setWaitForSensorid(inSensorId);
+
+    //Register this state as a SensorEventListener
+    //JCS.getJcsCommandStation().addSensorEventListener(inSensorId, this);
+    Logger.trace("Destination block " + destinationBlock.getId() + " In SensorId: " + inSensorId);
+
+    //Slowdown
+    Logger.trace("Slowdown " + locomotive.getName() + "...");
+
+    //Speed to ~10% or speed 1
+    Integer speed1 = locomotive.getSpeedOne();
+    if (speed1 == null || speed1 == 0) {
+      speed1 = 10;
+    }
+
+    int fullscale = locomotive.getTachoMax();
+    double velocity = (speed1 / (double) fullscale) * 1000;
+
+    dispatcher.changeLocomotiveVelocity(locomotive, velocity);
 
     //Change Block statuses 
     departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
@@ -56,21 +82,7 @@ public class ProceedingState extends AbstractState implements SensorEventCallbac
     dispatcher.showRoute(route, Color.magenta);
     dispatcher.showBlockState(destinationBlock);
 
-    inSensorId = dispatcher.getInSensorId();
-
-    //For the remaining states ignore events from the in sensor
-    //ExpectedSensorEventHandler ish = new ExpectedSensorEventHandler(inSensorId, dispatcher);
-    //dispatcher.getRailwayController().addSensorEventHandler(ish);
-    //dispatcher.getRailwayController().registerSensorEventCallback(new SensorEventCallbackHandler(inSensorId, this, true));
-    dispatcher.getSensorMonitor().subscribe(inSensorId, this);
-
-    dispatcher.setWaitForSensorid(inSensorId);
-
-    //Register this state as a SensorEventListener
-    //JCS.getJcsCommandStation().addSensorEventListener(inSensorId, this);
-    Logger.trace("Destination block " + destinationBlock.getId() + " In SensorId: " + inSensorId);
-
-    //Wait until the in sensor is hit by the locomotive
+    //Wait until the IN sensor is hit by the locomotive
     //TODO: Timeout detection in case the locomotive has stopped....
     if (canAdvanceToNextState || resetRequested) {
       AbstractState newState;
@@ -82,14 +94,13 @@ public class ProceedingState extends AbstractState implements SensorEventCallbac
         //JCS.getJcsCommandStation().removeSensorEventListener(inSensorId, this);
       }
       return newState;
-
     } else {
       if ("true".equals(System.getProperty("state.machine.stepTest", "false"))) {
         Logger.debug("StateMachine StepTest is enabled. Dispatcher: " + dispatcher.getName() + " State: " + dispatcher.getStateName());
       } else {
         try {
           synchronized (this) {
-            wait(threadWaitMillis);
+            wait(1000);
           }
         } catch (InterruptedException ex) {
           Logger.trace("Interrupted: " + ex.getMessage());
@@ -99,16 +110,16 @@ public class ProceedingState extends AbstractState implements SensorEventCallbac
     }
   }
 
-    @Override
+  @Override
   public void onExit() {
     dispatcher.getSensorMonitor().unsubscribe(inSensorId, this);
   }
-  
+
   public Integer getSensorId() {
     return inSensorId;
   }
 
- @Override
+  @Override
   public void onEvent(SensorEvent event) {
     if (inSensorId.equals(event.getSensorId())) {
       if (event.isActive()) {
@@ -119,10 +130,8 @@ public class ProceedingState extends AbstractState implements SensorEventCallbac
         }
       }
     }
-  }  
+  }
 
-
-//  @Override
 //  public void onSensorChange(SensorEvent sensorEvent) {
 //    if (inSensorId.equals(sensorEvent.getSensorId())) {
 //      if (sensorEvent.isActive()) {

@@ -13,10 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation.automation.state;
+package jcs.commandStation.automation;
 
-import jcs.commandStation.automation.IdleState;
-import jcs.commandStation.automation.AbstractState;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import org.tinylog.Logger;
