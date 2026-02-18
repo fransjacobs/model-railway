@@ -15,6 +15,10 @@
  */
 package jcs.commandStation.automation.state;
 
+import jcs.commandStation.automation.WaitingState;
+import jcs.commandStation.automation.PrepareRouteState;
+import jcs.commandStation.automation.IdleState;
+import jcs.commandStation.automation.AbstractState;
 import java.awt.Color;
 import java.util.Date;
 import jcs.commandStation.automation.Dispatcher;

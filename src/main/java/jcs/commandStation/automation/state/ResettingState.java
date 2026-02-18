@@ -15,6 +15,8 @@
  */
 package jcs.commandStation.automation.state;
 
+import jcs.commandStation.automation.IdleState;
+import jcs.commandStation.automation.AbstractState;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import org.tinylog.Logger;

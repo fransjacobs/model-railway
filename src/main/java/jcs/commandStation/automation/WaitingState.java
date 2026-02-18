@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation.automation.state;
+package jcs.commandStation.automation;
 
 import jcs.entities.BlockBean;
 import org.tinylog.Logger;
@@ -21,9 +21,9 @@ import org.tinylog.Logger;
 /**
  *
  */
-public class WaitingState extends AbstractState {
+class WaitingState extends AbstractState {
 
-  public WaitingState() {
+  WaitingState() {
     super("Waiting");
   }
 
@@ -61,24 +61,25 @@ public class WaitingState extends AbstractState {
     }
 
     Logger.debug("Waiting for " + waitTime + " s. Block Random " + blockBean.isRandomWait() + " Block max: " + blockBean.getMaxWaitTime());
-    //TODO: use the Systemtimer for this
+    
+//TODO: use the Systemtimer for this
     for (; waitTime >= 0; waitTime--) {
       if (dispatcher.isLocomotiveStarted()) {
         String s = dispatcher.getStateName() + " (" + waitTime + ")";
         dispatcher.fireStateListeners(s);
 
         //For manual testing the thread is not running, step mode
-        if ("false".equals(System.getProperty("dispatcher.stepTest", "false"))) {
-          synchronized (this) {
-            try {
-              wait(waitInterval);
-            } catch (InterruptedException ex) {
-              Logger.trace("Wait loop interrupted");
-            }
-          }
-        } else {
-          Logger.trace("Test mode: " + s);
-        }
+//        if ("false".equals(System.getProperty("dispatcher.stepTest", "false"))) {
+//          synchronized (this) {
+//            try {
+//              wait(waitInterval);
+//            } catch (InterruptedException ex) {
+//              Logger.trace("Wait loop interrupted");
+//            }
+//          }
+//        } else {
+//          Logger.trace("Test mode: " + s);
+//        }
       } else {
         //Locomotive automode is disabled break the loop
         Logger.debug("Automode is disabled for " + dispatcher.getName() + " Exit " + dispatcher.getStateName());

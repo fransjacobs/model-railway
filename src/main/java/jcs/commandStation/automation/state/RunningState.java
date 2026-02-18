@@ -15,6 +15,7 @@
  */
 package jcs.commandStation.automation.state;
 
+import jcs.commandStation.automation.AbstractState;
 import java.util.Date;
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.BlockBean;

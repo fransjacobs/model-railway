@@ -15,9 +15,6 @@
  */
 package jcs.commandStation.automation;
 
-import jcs.commandStation.automation.state.StateMachine;
-import jcs.commandStation.automation.state.IdleState;
-
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,7 +44,7 @@ import org.tinylog.Logger;
  */
 public class Dispatcher {
 
-  private RailwayController railwayController;
+  private final RailwayController railwayController;
   private final LocomotiveBean locomotiveBean;
 
   private StateMachine stateMachine;
@@ -73,9 +70,14 @@ public class Dispatcher {
 
   //private final List<StateEventListener> stateEventListeners;
   //private StateMachine stateMachine;
-  private final long waitInterval;
+  //private final long waitInterval;
+  private boolean locomotiveStarted = false;
 
   private boolean swapLocomotiveDirection;
+
+  //Needed for testing without running thread
+  private boolean enabled = false;
+  private boolean stepTest = false;
 
 //  static {
 //    threadWaitMillis = Long.parseUnsignedLong(System.getProperty("autopilot.thread.wait.millis", "10000"));
@@ -103,39 +105,39 @@ public class Dispatcher {
     //this.stateEventListeners = new LinkedList<>();
     //this.stateMachine = new StateMachine(this);
 
-    waitInterval = Long.parseUnsignedLong(System.getProperty("autopilot.thread.wait.interval", "1000"));
-
+    //waitInterval = Long.parseUnsignedLong(System.getProperty("autopilot.thread.wait.interval", "1000"));
+    stepTest = Boolean.parseBoolean(System.getProperty("state.machine.stepTest", "false"));
   }
 
   RailwayController getRailwayController() {
     return railwayController;
   }
 
-  public SensorMonitor getSensorMonitor() {
+  SensorMonitor getSensorMonitor() {
     return railwayController.getSensorMonitor();
   }
 
-  public Long getId() {
+  Long getId() {
     return locomotiveBean.getId();
   }
 
-  public String getName() {
+  String getName() {
     return locomotiveBean.getName();
   }
 
-  public LocomotiveBean getLocomotiveBean() {
+  LocomotiveBean getLocomotiveBean() {
     return locomotiveBean;
   }
 
-  public RouteBean getRouteBean() {
+  RouteBean getRouteBean() {
     return routeBean;
   }
 
-  public RouteBean getNextRouteBean() {
+  RouteBean getNextRouteBean() {
     return nextRouteBean;
   }
 
-  public void setRouteBean(RouteBean routeBean) {
+  void setRouteBean(RouteBean routeBean) {
     this.routeBean = routeBean;
     if (routeBean == null) {
       departureBlockId = null;
@@ -146,65 +148,78 @@ public class Dispatcher {
     }
   }
 
-  public void setNextRouteBean(RouteBean nextRouteBean) {
+  void setNextRouteBean(RouteBean nextRouteBean) {
     this.nextRouteBean = nextRouteBean;
   }
 
-  public boolean isLocomotiveStarted() {
-    //return stateMachine.isAutomodeEnabled();
-    return this.stateMachine != null && stateMachine.isRunning();
-  }
-
-  public boolean enableLocomotiveAutomode() {
-    //Only when the Autopilot is ON!
-    if (railwayController.isAutoModeActive()) {
-      if (this.stateMachine == null || (this.stateMachine != null && !this.stateMachine.isRunning())) {
-        this.stateMachine = new StateMachine(this, new IdleState());
-        //this.sensorMonitor = new SensorMonitor();
-      } else {
-        Logger.debug("There is a running dispatcherRunner");
-        //TODO: should we stop the existing?
+  void enable() {
+    if (stepTest) {
+      enabled = true;
+    } else {
+      if (railwayController.isAutoModeActive()) {
+        if (stateMachine == null || (stateMachine != null && !stateMachine.isRunning())) {
+          stateMachine = new StateMachine(this, new IdleState());
+        } else {
+          Logger.debug("There is a running dispatcherRunner");
+          //TODO: should we stop the existing?
+        }
       }
     }
-    return this.stateMachine != null;
   }
 
-  public void disableLocomotiveAutomode() {
-    if (this.stateMachine != null) {
-      this.stateMachine.shutdown();
+  boolean isEnabled() {
+    if (stepTest) {
+      return enabled;
+    } else {
+      return stateMachine != null && stateMachine.isRunning();
+    }
+  }
 
-      try {
-        stateMachine.join();
-      } catch (InterruptedException ex) {
-        Thread.currentThread().interrupt();
+  void disable() {
+    if (stepTest) {
+      enabled = false;
+    } else {
+      if (this.stateMachine != null) {
+        this.stateMachine.stopStateMachineThread();
       }
     }
+  }
+
+  void startLocomotive() {
+    if (isEnabled()) {
+      locomotiveStarted = true;
+    } else {
+      Logger.trace("Can't start Locomotive " + getName() + " dispatcher is not enabled");
+    }
+  }
+
+  boolean isLocomotiveStarted() {
+    return locomotiveStarted;
+  }
+
+  void stopLocomotive() {
+    if (stepTest) {
+      locomotiveStarted = false;
+    } else {
+      if (this.stateMachine == null) {
+        //ONLY shut down when loc is in inblock state or wait or idle
+        this.stateMachine.stopStateMachineThread();
+//      try {
+//        stateMachine.join();
+//        stateMachine = null;
+//      } catch (InterruptedException ex) {
+//        Thread.currentThread().interrupt();
+//      }
+      }
+    }
+  }
+
+  public StateMachine getStateMachine() {
+    return stateMachine;
   }
 
   public ThreadGroup getThreadGroup() {
     return railwayController.getThreadGroup();
-  }
-
-  public void startLocomotive() {
-    if (this.railwayController.isAutoModeActive()) {
-      if (this.stateMachine == null) {
-        enableLocomotiveAutomode();
-      }
-      this.stateMachine.start();
-    }
-  }
-
-  public void stopLocomotive() {
-    if (this.stateMachine == null) {
-      //ONLY shut down when loc is in inblock state or wait or idle
-      this.stateMachine.shutdown();
-      try {
-        stateMachine.join();
-        stateMachine = null;
-      } catch (InterruptedException ex) {
-        Thread.currentThread().interrupt();
-      }
-    }
   }
 
   public void reset() {

@@ -15,6 +15,7 @@
  */
 package jcs.commandStation.automation.state;
 
+import jcs.commandStation.automation.AbstractState;
 import java.awt.Color;
 
 import jcs.commandStation.events.SensorEvent;

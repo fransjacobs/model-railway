@@ -15,6 +15,7 @@
  */
 package jcs.commandStation.automation.state;
 
+import jcs.commandStation.automation.AbstractState;
 import jcs.commandStation.automation.Dispatcher;
 import jcs.commandStation.automation.RailwayController;
 import jcs.entities.BlockBean;
