@@ -18,6 +18,7 @@ package jcs.commandStation.automation;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -42,7 +43,7 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
   private final BlockingQueue<SensorEvent> eventQueue;
 
   private final Map<Integer, List<SensorEventCallback>> subscribers;
-  private final Map<Integer, List<SensorEventCallback>> passiveSubscribers;
+  private final Set<Integer> subscribersWithoutCallback;
 
   private volatile boolean running = false;
 
@@ -58,7 +59,7 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
 
     eventQueue = new LinkedBlockingQueue<>();
     subscribers = new ConcurrentHashMap<>();
-    passiveSubscribers = new ConcurrentHashMap<>();
+    subscribersWithoutCallback = ConcurrentHashMap.newKeySet();
     sensorBeans = new HashMap<>();
 
     threadWaitMillis = Long.parseUnsignedLong(System.getProperty("autopilot.thread.wait.millis", "1000"));
@@ -78,16 +79,17 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
     subscribers.computeIfAbsent(sensorId, k -> new CopyOnWriteArrayList<>()).add(callback);
   }
 
-  public void subscribePassive(Integer sensorId, SensorEventCallback callback) {
-    passiveSubscribers.computeIfAbsent(sensorId, k -> new CopyOnWriteArrayList<>()).add(callback);
+  public void subscribeWithoutCallback(Integer sensorId) {
+    subscribersWithoutCallback.add(sensorId);
   }
 
   Map<Integer, List<SensorEventCallback>> getSubscribers() {
     return subscribers;
   }
 
-  Map<Integer, List<SensorEventCallback>> getPassiveSubscribers() {
-    return passiveSubscribers;
+  @SuppressWarnings("unused")
+  Set<Integer> getSubscribersWithoutCallback() {
+    return subscribersWithoutCallback;
   }
 
   /**
@@ -100,13 +102,28 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
     List<SensorEventCallback> callbacks = subscribers.get(sensorId);
     if (callbacks != null) {
       callbacks.remove(callback);
+      if (callbacks.isEmpty()) {
+        subscribers.remove(sensorId);
+      }
+    } else {
+      //remove all
+      subscribers.remove(sensorId);
     }
 
-    passiveSubscribers.remove(sensorId);
+    subscribersWithoutCallback.remove(sensorId);
   }
 
-  public boolean isSensorCallbackRegistered(Integer sensorId) {
-    return subscribers.containsKey(sensorId);
+  public boolean isSensorRegisteredWithCallback(Integer sensorId) {
+    if (subscribers.containsKey(sensorId)) {
+      List<SensorEventCallback> callbacks = subscribers.get(sensorId);
+      return !callbacks.isEmpty();
+    } else {
+      return false;
+    }
+  }
+
+  public boolean isSensorRegisteredWithoutCallback(Integer sensorId) {
+    return this.subscribersWithoutCallback.contains(sensorId);
   }
 
   void stopMonitor() {
@@ -187,7 +204,7 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
     Logger.trace("Event for Sensor " + event.getSensorId() + " " + (event.isActive() ? "On" : "Off") + " isChanged " + event.isChanged());
 
     if (event.isChanged()) {
-      if (this.passiveSubscribers.containsKey(event.getSensorId())) {
+      if (subscribersWithoutCallback.contains(event.getSensorId())) {
         Logger.trace(event.getSensorId() + " is subscribed in ignore list...");
       } else if (subscribers.containsKey(event.getSensorId())) {
         Logger.trace(event.getSensorId() + " is subscribed in callback list...");
@@ -220,11 +237,6 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
   @Override
   public void onSensorChange(SensorEvent sensorEvent) {
     this.eventQueue.offer(sensorEvent);
-
-    //is dit nodig?
-    //synchronized (this) {
-    // notifyAll();
-    //}
   }
 
   //The sensorMonitor thread is started with each new session of the RailWayController.
@@ -261,7 +273,7 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
 
     JCS.getJcsCommandStation().removeAllSensorEventsListener(this);
     subscribers.clear();
-    passiveSubscribers.clear();
+    subscribersWithoutCallback.clear();
     sensorBeans.clear();
 
     Logger.trace("SensorMonitor Finished.");

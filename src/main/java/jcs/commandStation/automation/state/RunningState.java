@@ -54,10 +54,10 @@ public class RunningState extends AbstractState implements SensorEventCallback {
       //Register a callback for both sensors to ignore event for these sensors.
       //ExpectedSensorEventHandler osh = new ExpectedSensorEventHandler(occupancySensorId, dispatcher);
       //dispatcher.getRailwayController().registerSensorEventCallback(new SensorEventCallbackHandler(occupancySensorId, this, true));
-      dispatcher.getSensorMonitor().subscribePassive(occupancySensorId, this);
+      dispatcher.getSensorMonitor().subscribeWithoutCallback(occupancySensorId);
 
       //dispatcher.getRailwayController().registerSensorEventCallback(new SensorEventCallbackHandler(exitSensorId, this, true));
-      dispatcher.getSensorMonitor().subscribePassive(exitSensorId, this);
+      dispatcher.getSensorMonitor().subscribeWithoutCallback(exitSensorId);
 
       //addSensorEventHandler(osh);
       //ExpectedSensorEventHandler xsh = new ExpectedSensorEventHandler(exitSensorId, dispatcher);

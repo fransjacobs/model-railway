@@ -17,8 +17,6 @@ package jcs.commandStation.automation;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import jcs.JCS;
 import jcs.commandStation.automation.state.SensorEventCallback;
 import jcs.commandStation.events.SensorEvent;
@@ -29,9 +27,7 @@ import jcs.persistence.util.PersistenceTestHelper;
 import jcs.ui.layout.tiles.Tile;
 import jcs.ui.layout.tiles.TileCache;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.tinylog.Logger;
@@ -43,8 +39,9 @@ public class SensorMonitorTest {
 
   protected final PersistenceTestHelper testHelper;
   protected final PersistenceService ps;
-  private final ExecutorService executor;
+  @SuppressWarnings("unused")
   private List<Tile> tiles;
+  private int eventCallbackCount = 0;
 
   public SensorMonitorTest() {
     System.setProperty("persistenceService", "jcs.persistence.TestH2PersistenceService");
@@ -55,15 +52,6 @@ public class SensorMonitorTest {
     testHelper.runTestDataInsertScript("autopilot_queue_test.sql");
 
     ps = PersistenceFactory.getService();
-    executor = Executors.newCachedThreadPool();
-  }
-
-  @BeforeAll
-  public static void setUpClass() {
-  }
-
-  @AfterAll
-  public static void tearDownClass() {
   }
 
   @BeforeEach
@@ -90,11 +78,7 @@ public class SensorMonitorTest {
     sensorBean.setActive((sensorBean.getStatus() == 1));
     SensorEvent sensorEvent = new SensorEvent(sensorBean);
 
-    //JCS.getJcsCommandStation().getFeedbackControllers().getFirst().simulateSensor(sensorEvent);
-    //executor.execute(() -> {
     JCS.getJcsCommandStation().getFeedbackControllers().getFirst().simulateSensor(sensorEvent);
-    //});
-
   }
 
   @Test
@@ -105,9 +89,6 @@ public class SensorMonitorTest {
     assertEquals(1, JCS.getJcsCommandStation().getFeedbackControllers().size());
   }
 
-  /**
-   * Test of stopMonitor method, of class SensorMonitor.
-   */
   @Test
   public void testStopMonitor() {
     System.out.println("stopMonitor");
@@ -156,9 +137,6 @@ public class SensorMonitorTest {
     }
   }
 
-  /**
-   * Test of isRunning method, of class SensorMonitor.
-   */
   @Test
   public void testIsRunning() {
     System.out.println("isRunning");
@@ -187,9 +165,6 @@ public class SensorMonitorTest {
     instance.stopMonitor();
   }
 
-  /**
-   * Test of isAllSensorsRegistered method, of class SensorMonitor.
-   */
   @Test
   public void testIsAllSensorsRegistered() {
     System.out.println("isAllSensorsRegistered");
@@ -227,11 +202,6 @@ public class SensorMonitorTest {
     instance.stopMonitor();
   }
 
-  private int eventCallbackCount = 0;
-
-  /**
-   * Test of onSensorChange method, of class SensorMonitor.
-   */
   @Test
   public void testOnSensorChange() {
     System.out.println("onSensorChange");
@@ -263,7 +233,7 @@ public class SensorMonitorTest {
     assertEquals(1, instance.getSubscribers().size());
     eventCallbackCount = 0;
 
-    assertTrue(instance.isSensorCallbackRegistered(sensor0.getId()));
+    assertTrue(instance.isSensorRegisteredWithCallback(sensor0.getId()));
 
     toggleSensor(sensor0);
 
@@ -281,6 +251,18 @@ public class SensorMonitorTest {
     Logger.trace("Callback in " + (now - start) + " ms...");
 
     assertEquals(1, eventCallbackCount);
+
+    pause(30);
+
+    assertFalse(instance.isGhostDetected());
+
+    assertTrue(JCS.getJcsCommandStation().isPowerOn());
+
+    assertTrue(instance.isSensorRegisteredWithCallback(sensor0.getId()));
+
+    instance.unsubscribe(sensor0.getId(), callback);
+
+    assertFalse(instance.isSensorRegisteredWithCallback(sensor0.getId()));
 
     instance.stopMonitor();
   }
@@ -313,11 +295,11 @@ public class SensorMonitorTest {
     SensorBean sensor0 = sensors.get(0);
     assertEquals("M01-C01", sensor0.getName());
 
-    assertFalse(instance.isSensorCallbackRegistered(sensor0.getId()));
+    assertFalse(instance.isSensorRegisteredWithCallback(sensor0.getId()));
 
     toggleSensor(sensor0);
 
-    //Wait a litlle to give the thread the change to process
+    //Wait a little to give the thread the change to process
     pause(30);
 
     assertTrue(instance.isGhostDetected());
@@ -326,22 +308,54 @@ public class SensorMonitorTest {
     instance.stopMonitor();
   }
 
-  /**
-   * Test of handleSensorEvent method, of class SensorMonitor.
-   */
-  //@Test
-  public void testHandleSensorEvent() {
-    System.out.println("handleSensorEvent");
-    SensorEvent event = null;
-    SensorMonitor instance = null;
-    instance.handleSensorEvent(event);
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
+  public void testOnSensorChangeNoGhost() {
+    System.out.println("onSensorChangeNoGhost");
+    SensorMonitor instance = new SensorMonitor();
+    instance.start();
+    long now = System.currentTimeMillis();
+    long start = now;
+    long timeout = now + 10000;
+
+    boolean sensorsReady = instance.isRunning();
+    while (!sensorsReady && now < timeout) {
+      sensorsReady = instance.isRunning();
+      now = System.currentTimeMillis();
+    }
+
+    assertTrue(timeout > now);
+    assertTrue(instance.isRunning());
+    Logger.trace("Sensors prepared in " + (now - start) + " ms...");
+
+    assertTrue(JCS.getJcsCommandStation().isPowerOn());
+    assertFalse(instance.isGhostDetected());
+
+    Map<Integer, SensorBean> sensors = instance.getSensorBeans();
+    assertEquals(8, sensors.size());
+    //Check the sensor 1 is avalable
+    SensorBean sensor0 = sensors.get(0);
+    assertEquals("M01-C01", sensor0.getName());
+
+    assertFalse(instance.isSensorRegisteredWithCallback(sensor0.getId()));
+
+    instance.subscribeWithoutCallback(sensor0.getId());
+
+    assertTrue(instance.isSensorRegisteredWithCallback(sensor0.getId()));
+
+    toggleSensor(sensor0);
+
+    //Wait a little to give the thread the change to process
+    pause(30);
+
+    assertFalse(instance.isGhostDetected());
+
+    assertTrue(JCS.getJcsCommandStation().isPowerOn());
+
+    instance.stopMonitor();
   }
 
   class TestSensorEventCallback implements SensorEventCallback {
 
-    private SensorMonitorTest sensorMonitorTest;
+    private final SensorMonitorTest sensorMonitorTest;
 
     TestSensorEventCallback(SensorMonitorTest sensorMonitorTest) {
       this.sensorMonitorTest = sensorMonitorTest;
@@ -352,7 +366,6 @@ public class SensorMonitorTest {
       if (event.getSensorId() == 0) {
         sensorMonitorTest.eventCallbackCount++;
       }
-
     }
 
   }
