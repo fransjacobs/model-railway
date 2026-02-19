@@ -70,7 +70,7 @@ public class PrepareNextRouteState extends AbstractState {
         PersistenceFactory.getService().persist(nextRoute);
         PersistenceFactory.getService().persist(nextDestinationBlock);
         dispatcher.showBlockState(nextDestinationBlock);
-        Dispatcher.resetRoute(nextRoute);
+        dispatcher.resetRoute(nextRoute);
       }
       return new BrakingState();
     }

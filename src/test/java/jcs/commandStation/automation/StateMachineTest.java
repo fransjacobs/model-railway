@@ -27,6 +27,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.BeforeAll;
 import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Order;
 
 /**
  * Test the State machine
@@ -76,6 +77,10 @@ public class StateMachineTest {
 
   @AfterEach
   public void tearDown() {
+//    Dispatcher ns1631 = railwayController.getDispatcher((int) NS_1631);
+//    ns1631.stopLocomotive();
+//    ns1631.disable();
+//    ns1631.getRailwayController().getSensorMonitor().stopMonitor();
   }
 
   void executeState(StateMachine stateMachine) {
@@ -89,6 +94,7 @@ public class StateMachineTest {
     }
   }
 
+  @Order(1)
   @Test
   public void testIdle() {
     System.out.println("Idle");
@@ -108,6 +114,7 @@ public class StateMachineTest {
     assertFalse(ns1631.isLocomotiveStarted());
   }
 
+  @Order(2)
   @Test
   public void testIdleToWait() {
     System.out.println("IdelToWait");
@@ -127,6 +134,7 @@ public class StateMachineTest {
     ps.persist(block2);
 
     StateMachine stateMachine = new StateMachine(ns1631, new IdleState());
+
     stateMachine.getCurrentState().onEnter(ns1631);
 
     assertEquals("Idle", stateMachine.getCurrentStateName());
@@ -146,8 +154,72 @@ public class StateMachineTest {
     executeState(stateMachine);
     assertEquals("PrepareRoute", stateMachine.getCurrentStateName());
 
+    assertNull(ns1631.getDestinationBlock());
+
     executeState(stateMachine);
     assertEquals("Waiting", stateMachine.getCurrentStateName());
+
+    //Stop the dispatcher!
+    ns1631.stopLocomotive();
+    assertFalse(ns1631.isLocomotiveStarted());
+
+    ns1631.disable();
+    assertFalse(ns1631.isEnabled());
+  }
+
+  @Order(3)
+  @Test
+  public void testIdleToStarting() {
+    System.out.println("IdleToStarting");
+    Dispatcher ns1631 = railwayController.getDispatcher((int) NS_1631);
+    assertNotNull(ns1631);
+
+    //Make sure the locomotive does not have 1 destination
+    //by setting 1 of the target blocks out of order
+    BlockBean block1 = ps.getBlockByTileId("bk-1");
+    assertEquals(BlockBean.BlockState.FREE, block1.getBlockState());
+
+    BlockBean block2 = ps.getBlockByTileId("bk-2");
+    assertEquals(BlockBean.BlockState.FREE, block2.getBlockState());
+    block2.setBlockState(BlockBean.BlockState.OUT_OF_ORDER);
+    ps.persist(block2);
+
+    StateMachine stateMachine = new StateMachine(ns1631, new IdleState());
+    stateMachine.getCurrentState().onEnter(ns1631);
+
+    assertEquals("Idle", stateMachine.getCurrentStateName());
+    assertFalse(ns1631.isEnabled());
+    assertFalse(ns1631.isLocomotiveStarted());
+    ns1631.enable();
+    assertTrue(ns1631.isEnabled());
+
+    executeState(stateMachine);
+    assertEquals("Idle", stateMachine.getCurrentStateName());
+
+    ns1631.startLocomotive();
+    assertTrue(ns1631.isLocomotiveStarted());
+
+    executeState(stateMachine);
+    assertEquals("PrepareRoute", stateMachine.getCurrentStateName());
+
+    executeState(stateMachine);
+
+    //check the route
+    assertNotNull(ns1631.getDestinationBlock());
+    assertNotNull(ns1631.getRouteBean());
+    assertEquals("[bk-4+]->[bk-1-]", ns1631.getRouteBean().getId());
+
+    assertEquals("Starting", stateMachine.getCurrentStateName());
+
+    //Disabling the dispatcher and stopping the locomotive should not be possible
+    ns1631.stopLocomotive();
+    assertTrue(ns1631.isLocomotiveStarted());
+
+    ns1631.disable();
+    assertTrue(ns1631.isEnabled());
+    //To build a clean next test the state machine should be reset.
+    //Should this be a separate state or just a call to the staemachine as the outcom should be Idle and the lock shoul be in starting position
+    
 
   }
 

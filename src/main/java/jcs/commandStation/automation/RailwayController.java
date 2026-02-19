@@ -462,7 +462,7 @@ public final class RailwayController {
         PersistenceFactory.getService().persist(route);
         lockedCounter++;
       }
-      Dispatcher.resetRoute(route);
+      ///////Dispatcher.resetRoute(route);
     }
     Logger.debug("Unlocked " + lockedCounter + " routes out of " + routes.size());
 

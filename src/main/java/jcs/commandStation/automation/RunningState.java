@@ -35,6 +35,8 @@ public class RunningState extends AbstractState implements SensorEventCallback {
   private boolean sensorsRegistered = false;
   private boolean canAdvanceToNextState = false;
   private Integer enterSensorId;
+  
+  //private Integer subscribedSensorId;
 
   public RunningState() {
     super("Running");
@@ -97,7 +99,7 @@ public class RunningState extends AbstractState implements SensorEventCallback {
         PersistenceFactory.getService().persist(station);
       }
 
-      dispatcher.setWaitForSensorid(enterSensorId);
+      //dispatcher.setWaitForSensorid(enterSensorId);
       sensorsRegistered = true;
       Logger.trace("Waiting for the enter event from SensorId: " + enterSensorId + " Running loco: " + locomotive.getName() + " [" + locomotive.getDecoderType().getDecoderType() + " (" + locomotive.getAddress() + ")] Direction: " + locomotive.getDirection().getDirection() + " current velocity: " + locomotive.getVelocity());
     }

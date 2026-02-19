@@ -63,8 +63,7 @@ public class ProceedingState extends AbstractState implements SensorEventCallbac
     //dispatcher.getRailwayController().registerSensorEventCallback(new SensorEventCallbackHandler(inSensorId, this, true));
     dispatcher.getSensorMonitor().subscribe(inSensorId, this);
 
-    dispatcher.setWaitForSensorid(inSensorId);
-
+    //dispatcher.setWaitForSensorid(inSensorId);
     //Register this state as a SensorEventListener
     //JCS.getJcsCommandStation().addSensorEventListener(inSensorId, this);
     Logger.trace("Destination block " + destinationBlock.getId() + " In SensorId: " + inSensorId);

@@ -49,15 +49,13 @@ public class Dispatcher {
 
   private StateMachine stateMachine;
 
-  //private DispatcherRunner dispatcherRunner;
-  //private final ThreadGroup parent;
   private RouteBean routeBean;
   private RouteBean nextRouteBean;
 
   private String departureBlockId;
   private String destinationBlockId;
 
-  private Integer waitingForSensorId;
+  //private Integer waitingForSensorId;
   //Enter Sensor of the destination
   private Integer enterSensorId;
   //In Sensor of the destination
@@ -68,10 +66,9 @@ public class Dispatcher {
   //The exit of the departure
   private Integer exitSensorId;
 
-  //private final List<StateEventListener> stateEventListeners;
-  //private StateMachine stateMachine;
-  //private final long waitInterval;
   private boolean locomotiveStarted = false;
+  private boolean locomotiveStopRequested = false;
+  private boolean dispatcherDisableRequested = false;
 
   private boolean swapLocomotiveDirection;
 
@@ -79,9 +76,6 @@ public class Dispatcher {
   private boolean enabled = false;
   private boolean stepTest = false;
 
-//  static {
-//    threadWaitMillis = Long.parseUnsignedLong(System.getProperty("autopilot.thread.wait.millis", "10000"));
-//  }
   /**
    * Dispatcher is created when automode is enabled.<br>
    * Every Locomotive on track will create a dispatcher.<br>
@@ -155,6 +149,7 @@ public class Dispatcher {
   void enable() {
     if (stepTest) {
       enabled = true;
+      dispatcherDisableRequested = false;
     } else {
       if (railwayController.isAutoModeActive()) {
         if (stateMachine == null || (stateMachine != null && !stateMachine.isRunning())) {
@@ -176,18 +171,23 @@ public class Dispatcher {
   }
 
   void disable() {
-    if (stepTest) {
+    if (!isLocomotiveStarted()) {
+      if (!stepTest) {
+        if (stateMachine.isRunning()) {
+          stateMachine.stopStateMachineThread();
+        }
+      }
       enabled = false;
     } else {
-      if (this.stateMachine != null) {
-        this.stateMachine.stopStateMachineThread();
-      }
+      dispatcherDisableRequested = true;
+      Logger.debug("Can't disable dispatcher " + getName() + " CurrentState is " + stateMachine.getCurrentStateName());
     }
   }
 
   void startLocomotive() {
     if (isEnabled()) {
       locomotiveStarted = true;
+      locomotiveStopRequested = false;
     } else {
       Logger.trace("Can't start Locomotive " + getName() + " dispatcher is not enabled");
     }
@@ -198,27 +198,27 @@ public class Dispatcher {
   }
 
   void stopLocomotive() {
-    if (stepTest) {
+    if (stateMachine != null && (stateMachine.getCurrentState().getName().equals("Idle") || stateMachine.getCurrentState().getName().equals("Waiting"))) {
+      //The locomotive can be stopped.
+      if (!stepTest) {
+        stateMachine.stopStateMachineThread();
+      }
       locomotiveStarted = false;
     } else {
-      if (this.stateMachine == null) {
-        //ONLY shut down when loc is in inblock state or wait or idle
-        this.stateMachine.stopStateMachineThread();
-//      try {
-//        stateMachine.join();
-//        stateMachine = null;
-//      } catch (InterruptedException ex) {
-//        Thread.currentThread().interrupt();
-//      }
-      }
+      locomotiveStopRequested = true;
+      Logger.debug("Can't stop dispatcher " + getName() + " CurrentState is " + stateMachine.getCurrentStateName());
     }
   }
 
-  public StateMachine getStateMachine() {
+  StateMachine getStateMachine() {
     return stateMachine;
   }
 
-  public ThreadGroup getThreadGroup() {
+  void setStateMachine(StateMachine stateMachine) {
+    this.stateMachine = stateMachine;
+  }
+
+  ThreadGroup getThreadGroup() {
     return railwayController.getThreadGroup();
   }
 
@@ -232,28 +232,21 @@ public class Dispatcher {
 //    }
   }
 
-  public void resetAttributes() {
+  void resetAttributes() {
     routeBean = null;
     nextRouteBean = null;
     destinationBlockId = null;
-    waitingForSensorId = null;
+    //waitingForSensorId = null;
     enterSensorId = null;
     inSensorId = null;
     exitSensorId = null;
     //stateEventListeners.clear();
   }
 
-  public void resetStateMachine() {
-    //stateMachine.reset();
-  }
-
-//  public boolean isRunning() {
-//    if (stateMachine != null) {
-//      return stateMachine.isThreadRunning();
-//    } else {
-//      return false;
-//    }
+//  public void resetStateMachine() {
+//    //stateMachine.reset();
 //  }
+
   //Make sure to obtain the last status of the block is represented...
   public BlockBean getDepartureBlock() {
     if (departureBlockId != null) {
@@ -279,6 +272,10 @@ public class Dispatcher {
     }
   }
 
+  void setDestinationBlockId(String destinationBlockId) {
+    this.destinationBlockId = destinationBlockId;
+  }
+
   public BlockBean getNextDestinationBlock() {
     if (nextRouteBean != null) {
       String nextDestinationBlockId = nextRouteBean.getToTileId();
@@ -300,87 +297,46 @@ public class Dispatcher {
     }
   }
 
-  public void setWaitForSensorid(Integer waitingForSensorId) {
-    this.waitingForSensorId = waitingForSensorId;
-  }
+//  void setWaitForSensorid(Integer waitingForSensorId) {
+//    this.waitingForSensorId = waitingForSensorId;
+//  }
 
-  public Integer getWaitingForSensorId() {
-    return waitingForSensorId;
-  }
+//  Integer getWaitingForSensorId() {
+//    return waitingForSensorId;
+//  }
 
-  public Integer getEnterSensorId() {
+  Integer getEnterSensorId() {
     return enterSensorId;
   }
 
-  public void setEnterSensorId(Integer enterSensorId) {
+  void setEnterSensorId(Integer enterSensorId) {
     this.enterSensorId = enterSensorId;
   }
 
-  public Integer getInSensorId() {
+  Integer getInSensorId() {
     return inSensorId;
   }
 
-  public void setInSensorId(Integer inSensorId) {
+  void setInSensorId(Integer inSensorId) {
     this.inSensorId = inSensorId;
   }
 
-  public Integer getOccupationSensorId() {
+  Integer getOccupationSensorId() {
     return occupationSensorId;
   }
 
-  public void setOccupationSensorId(Integer occupationSensorId) {
+  void setOccupationSensorId(Integer occupationSensorId) {
     this.occupationSensorId = occupationSensorId;
   }
 
-  public Integer getExitSensorId() {
+  Integer getExitSensorId() {
     return exitSensorId;
   }
 
-  public void setExitSensorId(Integer exitSensorId) {
+  void setExitSensorId(Integer exitSensorId) {
     this.exitSensorId = exitSensorId;
   }
 
-  void clearDepartureIgnoreEventHandlers() {
-    if (departureBlockId != null) {
-      BlockBean departureBlock = getDepartureBlock();
-      Integer minSensorId = departureBlock.getMinSensorId();
-      //railwayController.removeHandler(minSensorId);
-      //railwayController.unRegisterSensorEventCallback(minSensorId);
-      Integer plusSensorId = departureBlock.getPlusSensorId();
-      //railwayController.removeHandler(plusSensorId);
-      //railwayController.unRegisterSensorEventCallback(plusSensorId);
-    }
-  }
-
-//  public void onIgnoreEvent(SensorEvent event) {
-//    //Only in Simulator mode
-//    if (JCS.getJcsCommandStation().getCommandStationBean().isVirtual()) {
-//      if (waitingForSensorId != null && waitingForSensorId.equals(event.getSensorId())) {
-//        if (event.isActive()) {
-//          waitingForSensorId = null;
-//        }
-//      }
-//
-//      if (enterSensorId != null && enterSensorId.equals(event.getSensorId())) {
-//        if (!event.isActive()) {
-//          enterSensorId = null;
-//        }
-//      }
-//
-//      if (inSensorId != null && inSensorId.equals(event.getSensorId())) {
-//        if (!event.isActive()) {
-//          inSensorId = null;
-//        }
-//      }
-//
-//      if (exitSensorId != null && exitSensorId.equals(event.getSensorId())) {
-//        if (!event.isActive()) {
-//          exitSensorId = null;
-//        }
-//      }
-//    }
-//    //Logger.trace("Event for a ignored listener: " + event.getIdString() + " Changed: " + event.isChanged() + ", active: " + event.getSensorBean().isActive());
-//  }
   void switchAccessory(AccessoryBean accessory, AccessoryValue value) {
     try {
       JCS.getJcsCommandStation().switchAccessory(accessory, value);
@@ -389,21 +345,21 @@ public class Dispatcher {
     }
   }
 
-  public void changeLocomotiveVelocity(LocomotiveBean locomotive, double velocity) {
+  void changeLocomotiveVelocity(double velocity) {
     int commandStationVelocity = (int) velocity;
     locomotiveBean.setVelocity(commandStationVelocity);
     try {
-      JCS.getJcsCommandStation().changeLocomotiveSpeed(commandStationVelocity, locomotive);
+      JCS.getJcsCommandStation().changeLocomotiveSpeed(commandStationVelocity, locomotiveBean);
     } catch (Exception e) {
-      Logger.error("Error changing velocity of locomotive " + locomotive.getId() + " to " + velocity + " Cause: " + e.getMessage());
+      Logger.error("Error changing velocity of locomotive " + locomotiveBean.getId() + " to " + velocity + " Cause: " + e.getMessage());
     }
   }
 
-  public void changeLocomotiveDirection(LocomotiveBean locomotive, Direction newDirection) {
+  void changeLocomotiveDirection(Direction newDirection) {
     try {
-      JCS.getJcsCommandStation().changeLocomotiveDirection(newDirection, locomotive);
+      JCS.getJcsCommandStation().changeLocomotiveDirection(newDirection, locomotiveBean);
     } catch (Exception e) {
-      Logger.error("Error changing direction of locomotive " + locomotive.getId() + " to " + newDirection + " Cause: " + e.getMessage());
+      Logger.error("Error changing direction of locomotive " + locomotiveBean.getId() + " to " + newDirection + " Cause: " + e.getMessage());
     }
     locomotiveBean.setDirection(newDirection);
   }
@@ -426,7 +382,7 @@ public class Dispatcher {
 //    stateEventListeners.clear();
   }
 
-  public static void resetRoute(RouteBean route) {
+  void resetRoute(RouteBean route) {
     List<RouteElementBean> routeElements = route.getRouteElements();
     for (RouteElementBean re : routeElements) {
       String tileId = re.getTileId();
@@ -774,7 +730,7 @@ public class Dispatcher {
       if (swapLocomotiveDirection) {
         Direction newDir = Direction.get(departureBlock.getLogicalDirection());
         Logger.trace("Changing Direction to " + newDir);
-        changeLocomotiveDirection(locomotive, newDir);
+        changeLocomotiveDirection(newDir);
       }
 
       showBlockState(departureBlock);

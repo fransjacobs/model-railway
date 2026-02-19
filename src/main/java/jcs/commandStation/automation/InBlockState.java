@@ -15,14 +15,8 @@
  */
 package jcs.commandStation.automation;
 
-import jcs.commandStation.automation.StartingState;
-import jcs.commandStation.automation.WaitingState;
-import jcs.commandStation.automation.PrepareRouteState;
-import jcs.commandStation.automation.IdleState;
-import jcs.commandStation.automation.AbstractState;
 import java.awt.Color;
 import java.util.Date;
-import jcs.commandStation.automation.Dispatcher;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.RouteBean;
@@ -60,7 +54,7 @@ public class InBlockState extends AbstractState {
 
     if (alwaysStop || dispatcher.getNextRouteBean() == null || !dispatcher.isLocomotiveStarted()) {
       //Stop the locomotive
-      dispatcher.changeLocomotiveVelocity(locomotive, 0);
+      dispatcher.changeLocomotiveVelocity(0);
       Logger.trace("Locomotive " + locomotive.getName() + " is stopped....");
     }
 
@@ -99,7 +93,7 @@ public class InBlockState extends AbstractState {
     dispatcher.showBlockState(departureBlock);
     dispatcher.showBlockState(destinationBlock);
 
-    Dispatcher.resetRoute(route);
+    dispatcher.resetRoute(route);
     dispatcher.setRouteBean(null);
 
     if (dispatcher.getNextRouteBean() != null) {

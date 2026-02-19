@@ -51,7 +51,7 @@ class StartingState extends AbstractState {
 
     //First time starting as current velocity is zero, ensure the direction is right
     if (locomotive.getVelocity() == 0) {
-      dispatcher.changeLocomotiveDirection(locomotive, locomotive.getDirection());
+      dispatcher.changeLocomotiveDirection(locomotive.getDirection());
     }
 
     //Speed to ~75% or speed 3
@@ -62,7 +62,7 @@ class StartingState extends AbstractState {
 
     int fullscale = locomotive.getTachoMax();
     double velocity = (speed3 / (double) fullscale) * 1000;
-    dispatcher.changeLocomotiveVelocity(locomotive, velocity);
+    dispatcher.changeLocomotiveVelocity(velocity);
 
     if (resetRequested) {
       return new ResettingState();

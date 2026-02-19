@@ -51,7 +51,7 @@ public class BrakingState extends AbstractState implements SensorEventCallback {
     //dispatcher.getRailwayController().registerSensorEventCallback(new SensorEventCallbackHandler(inSensorId, this, true));
     dispatcher.getSensorMonitor().subscribe(inSensorId, this);
 
-    dispatcher.setWaitForSensorid(inSensorId);
+    //dispatcher.setWaitForSensorid(inSensorId);
 
     //Register this state as a SensorEventListener
     //JCS.getJcsCommandStation().addSensorEventListener(inSensorId, this);
@@ -69,7 +69,7 @@ public class BrakingState extends AbstractState implements SensorEventCallback {
     int fullscale = locomotive.getTachoMax();
     double velocity = (speed1 / (double) fullscale) * 1000;
 
-    dispatcher.changeLocomotiveVelocity(locomotive, velocity);
+    dispatcher.changeLocomotiveVelocity(velocity);
 
     //Change Block statuses 
     departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);

@@ -33,7 +33,7 @@ public class ResettingState extends AbstractState {
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
     BlockBean block = dispatcher.getDepartureBlock();
 
-    dispatcher.resetStateMachine();
+    //dispatcher.resetStateMachine();
 
     //reset all settings and reservations.
     dispatcher.resetAttributes();
