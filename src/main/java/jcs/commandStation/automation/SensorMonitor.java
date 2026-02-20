@@ -213,6 +213,10 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
         handleGhost(event);
       }
     }
+    synchronized (this) {
+      notifyAll();
+    }
+
   }
 
   void notifySubscribers(SensorEvent event) {

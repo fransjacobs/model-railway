@@ -24,7 +24,8 @@ import org.tinylog.Logger;
 
 /**
  * Approaching state of the Autopilot State Machine.<br>
- * When the enter sensor is active the state machine advances to this state. In the state it is checked whether the destination block has the property alwayStop set.<br>
+ * When the enter sensor is active the state machine advances to this state.<br>
+ * In the state it is checked whether the destination block has the property alwayStop set.<br>
  * If so the locomotive has to stop when it reaches the IN sensor.<br>
  * Therefor next state will be the BrakingStage.<br>
  *
@@ -33,21 +34,24 @@ import org.tinylog.Logger;
  */
 class ApproachingState extends AbstractState {
 
+  private boolean startBraking;
+
   public ApproachingState() {
     super("Approaching");
   }
-  
+
   @Override
-  AbstractState execute() {
+  void onEnter(Dispatcher dispatcher) {
+    super.onEnter(dispatcher);
+
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
 
     BlockBean departureBlock = dispatcher.getDepartureBlock();
     BlockBean destinationBlock = dispatcher.getDestinationBlock();
     RouteBean route = dispatcher.getRouteBean();
-    boolean startBraking = destinationBlock.isAlwaysStop();
-    Logger.trace("Locomotive " + locomotive.getName() + " has entered destination " + destinationBlock.getDescription() + " Must stop: " + startBraking);
 
-    //Change Block statuses 
+    startBraking = destinationBlock.isAlwaysStop();
+
     departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
     destinationBlock.setBlockState(BlockBean.BlockState.INBOUND);
 
@@ -58,13 +62,13 @@ class ApproachingState extends AbstractState {
     dispatcher.showRoute(route, Color.magenta);
     dispatcher.showBlockState(destinationBlock);
 
-    if (dispatcher.isLocomotiveStarted()) {
-      if (startBraking) {
-        return new BrakingState();
-      } else {
-        //Lets check whether there is a next available route to continue....
-        return new PrepareNextRouteState();
-      }
+    Logger.trace("Locomotive " + locomotive.getName() + " has entered destination " + destinationBlock.getDescription() + " Must stop: " + startBraking);
+  }
+
+  @Override
+  AbstractState execute() {
+    if (dispatcher.isLocomotiveStarted() && !startBraking) {
+      return new PrepareNextRouteState();
     } else {
       return new BrakingState();
     }

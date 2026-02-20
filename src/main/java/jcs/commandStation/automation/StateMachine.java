@@ -37,21 +37,12 @@ import org.tinylog.Logger;
  */
 class StateMachine {
 
-  //extends Thread {
   private final Dispatcher dispatcher;
 
   private AbstractState currentState;
 
-  //private boolean running = false;
-  //private boolean enableAutomode = false;
-  //private final long threadSleepMillis;
   private StateMachineRunner stateMachineRunner;
 
-//  StateMachine(ThreadGroup parent, Dispatcher dispatcher) {
-//    super(parent, "STM->" + dispatcher.getLocomotiveBean().getName().toUpperCase());
-//    this.dispatcher = dispatcher;
-//    this.dispatcherState = new IdleState();
-//  }
   /**
    *
    * @param dispatcher
@@ -62,8 +53,6 @@ class StateMachine {
     this.dispatcher = dispatcher;
     currentState = initialState;
     currentState.onEnter(dispatcher);
-    //Link the stae machine back
-    dispatcher.setStateMachine(this);
     //threadSleepMillis = Long.parseUnsignedLong(System.getProperty("autopilot.thread.wait.millis", "1000"));
   }
 
@@ -102,24 +91,32 @@ class StateMachine {
 
   //Reset the statemachine
   void reset() {
-
-    Logger.trace("Reset requested in state " + currentState.getName());
+    Logger.trace("Resetting in state " + currentState.getName());
     //Make sure a locomotive is stopped.
     dispatcher.changeLocomotiveVelocity(0);
 
     //stop the runner
-    stateMachineRunner.shutdown();
-    synchronized (this) {
-      notifyAll();
+    if (stateMachineRunner != null) {
+      stateMachineRunner.shutdown();
+
+      synchronized (this) {
+        notifyAll();
+      }
     }
+    stateMachineRunner = null;
 
     //remove callbacks
     currentState.onExit();
+    currentState = new IdleState();
+    currentState.onEnter(dispatcher);
+
+    dispatcher.stopLocomotive();
+    dispatcher.disable();
 
     dispatcher.setEnterSensorId(null);
     dispatcher.setInSensorId(null);
     dispatcher.setExitSensorId(null);
-    
+
     BlockBean destination = dispatcher.getDestinationBlock();
     destination.setLocomotive(null);
     destination.setBlockState(BlockBean.BlockState.FREE);
@@ -128,34 +125,28 @@ class StateMachine {
     departure.setBlockState(BlockBean.BlockState.OCCUPIED);
 
     RouteBean route = dispatcher.getRouteBean();
-    route.setLocked(false);
-    dispatcher.resetRoute(route);
+    if (route != null) {
+      route.setLocked(false);
+      dispatcher.resetRoute(route);
+      PersistenceFactory.getService().persist(route);
+    }
+
+    RouteBean nextRoute = dispatcher.getNextRouteBean();
+    if (nextRoute != null) {
+      nextRoute.setLocked(false);
+      dispatcher.resetRoute(nextRoute);
+      PersistenceFactory.getService().persist(nextRoute);
+    }
 
     // persist
     PersistenceFactory.getService().persist(destination);
     PersistenceFactory.getService().persist(departure);
-    PersistenceFactory.getService().persist(route);
-    //
-    dispatcher.setRouteBean(null);
 
+    dispatcher.setRouteBean(null);
     dispatcher.setNextRouteBean(null);
-    
     dispatcher.setDestinationBlockId(null);
 
-    //cleare the route
-    //resetStateMachine();
-// void resetAttributes() {
-//    routeBean = null;
-//    nextRouteBean = null;
-//    destinationBlockId = null;
-//    //waitingForSensorId = null;
-//    enterSensorId = null;
-//    inSensorId = null;
-//    exitSensorId = null;
-//    //stateEventListeners.clear();
-//  }
-
-
+    Logger.trace(dispatcher.getName() + " has been Reset");
   }
 
   private class StateMachineRunner extends Thread {

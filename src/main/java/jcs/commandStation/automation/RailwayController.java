@@ -88,10 +88,8 @@ public final class RailwayController {
 
   private static final Semaphore semaphore = new Semaphore(1);
 
-  //Need a list to be able to unregister
   private final List<RailwayControllerStatusListener> railwayStatusListeners;
 
-  //private boolean stepTest = false;
   final static long THREADSTART_TIMEOUT = 2000L;
 
   private RailwayController() {
@@ -99,19 +97,8 @@ public final class RailwayController {
     dispatchers = new ConcurrentHashMap<>();
     railwayStatusListeners = new ArrayList<>();
     actionCommandQueue = new LinkedBlockingQueue();
-
-    //railwayStatusListeners = Collections.synchronizedList(new ArrayList<>());
-    //stepTest = Boolean.parseBoolean(System.getProperty("state.machine.stepTest","false"));
-    //init();
   }
 
-  //private void init() {
-  //The steptest property is needed to enable testing. In normal operation this property is false.
-  //if (!stepTest) {
-  //commandExecuter.start();
-  //enqueCommand(new RailwayControllerCommand(CMD_RESTORE_FUNC));
-  //}
-  //}
   /**
    * There can only be one Railway Controller.<br>
    *
@@ -210,7 +197,11 @@ public final class RailwayController {
     }
   }
 
-  public SensorMonitor getSensorMonitor() {
+  void setSensorMonitor(SensorMonitor sensorMonitor) {
+    this.sensorMonitor = sensorMonitor;
+  }
+
+  SensorMonitor getSensorMonitor() {
     return sensorMonitor;
   }
 
@@ -462,7 +453,8 @@ public final class RailwayController {
         PersistenceFactory.getService().persist(route);
         lockedCounter++;
       }
-      ///////Dispatcher.resetRoute(route);
+    
+    ///////Dispatcher.resetRoute(route);
     }
     Logger.debug("Unlocked " + lockedCounter + " routes out of " + routes.size());
 

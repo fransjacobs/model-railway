@@ -64,10 +64,6 @@ class StartingState extends AbstractState {
     double velocity = (speed3 / (double) fullscale) * 1000;
     dispatcher.changeLocomotiveVelocity(velocity);
 
-    if (resetRequested) {
-      return new ResettingState();
-    } else {
-      return new RunningState();
-    }
+    return new RunningState();
   }
 }

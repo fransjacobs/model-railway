@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Frans Jacobs.
+ * Copyright 2026 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,7 +67,11 @@ public class Dispatcher {
   private Integer exitSensorId;
 
   private boolean locomotiveStarted = false;
+  
+  @SuppressWarnings("unused")
   private boolean locomotiveStopRequested = false;
+  
+  @SuppressWarnings("unused")
   private boolean dispatcherDisableRequested = false;
 
   private boolean swapLocomotiveDirection;
@@ -77,13 +81,13 @@ public class Dispatcher {
   private boolean stepTest = false;
 
   /**
-   * Dispatcher is created when automode is enabled.<br>
+   * Dispatcher is created when auto mode is enabled.<br>
    * Every Locomotive on track will create a dispatcher.<br>
    * A dispatcher always has a state.<br>
    *
    * A dispatcher has a dispatcher thread which is started when the locomotive is started.<br>
    * The thread is stopped when the locomotive is stopped, or<br>
-   * when automode is disabled and the state of the dispatcher is occupied,<br>
+   * when auto mode is disabled and the state of the dispatcher is occupied,<br>
    * i.e. the locomotive has arrived in the target block and has touched the in sensor.<br>
    *
    *
@@ -96,13 +100,12 @@ public class Dispatcher {
     this.locomotiveBean = locomotiveBean;
     //Prefill with the current locomotive direction
     this.locomotiveBean.setDispatcherDirection(locomotiveBean.getDirection());
-    //this.stateEventListeners = new LinkedList<>();
-    //this.stateMachine = new StateMachine(this);
 
     //waitInterval = Long.parseUnsignedLong(System.getProperty("autopilot.thread.wait.interval", "1000"));
     stepTest = Boolean.parseBoolean(System.getProperty("state.machine.stepTest", "false"));
   }
 
+  @SuppressWarnings("unused")
   RailwayController getRailwayController() {
     return railwayController;
   }
@@ -111,6 +114,7 @@ public class Dispatcher {
     return railwayController.getSensorMonitor();
   }
 
+  @SuppressWarnings("unused")
   Long getId() {
     return locomotiveBean.getId();
   }
@@ -210,6 +214,7 @@ public class Dispatcher {
     }
   }
 
+  @SuppressWarnings("unused")
   StateMachine getStateMachine() {
     return stateMachine;
   }
@@ -242,10 +247,6 @@ public class Dispatcher {
     exitSensorId = null;
     //stateEventListeners.clear();
   }
-
-//  public void resetStateMachine() {
-//    //stateMachine.reset();
-//  }
 
   //Make sure to obtain the last status of the block is represented...
   public BlockBean getDepartureBlock() {
@@ -296,14 +297,6 @@ public class Dispatcher {
       return "#Idle";
     }
   }
-
-//  void setWaitForSensorid(Integer waitingForSensorId) {
-//    this.waitingForSensorId = waitingForSensorId;
-//  }
-
-//  Integer getWaitingForSensorId() {
-//    return waitingForSensorId;
-//  }
 
   Integer getEnterSensorId() {
     return enterSensorId;
@@ -448,12 +441,6 @@ public class Dispatcher {
     return random.ints(min, max).findFirst().getAsInt();
   }
 
-//  boolean isSwapLocomotiveDirection() {
-//    return swapLocomotiveDirection;
-//  }
-//  void setSwapLocomotiveDirection(boolean swapLocomotiveDirection) {
-//    this.swapLocomotiveDirection = swapLocomotiveDirection;
-//  }
   boolean isAllowed(boolean allowCommuter, boolean allowNonCommuter, boolean commuter) {
     //both flags are the same → all trains allowed
     if (allowCommuter == allowNonCommuter) {
@@ -511,7 +498,7 @@ public class Dispatcher {
     }
   }
 
-  public boolean searchRoute(boolean swapEnabled) {
+  boolean searchRoute(boolean swapEnabled) {
     LocomotiveBean locomotive = getLocomotiveBean();
     Logger.trace("Search a free route for " + locomotive.getName() + "...");
 
@@ -643,7 +630,7 @@ public class Dispatcher {
     return route != null;
   }
 
-  public boolean reserveRoute() {
+  boolean reserveRoute() {
     LocomotiveBean locomotive = getLocomotiveBean();
     RouteBean route = getRouteBean();
 
@@ -696,7 +683,7 @@ public class Dispatcher {
       //Now that we have reserved the route lets determine which sensors are playing a role.
       //On the departure side we have the OccupiedSensor, i.e. the IN sensor when arriving.
       //The exit sensor i.e the last sensor to leave the departure block.
-      Integer occupancySensorId, exitSensorId;
+      Integer occupancySensorId; //, exitSensorId;
       if ("+".equals(departureSuffix)) {
         occupancySensorId = departureBlock.getMinSensorId();
         exitSensorId = departureBlock.getPlusSensorId();
@@ -709,7 +696,7 @@ public class Dispatcher {
 
       //On the destination side we have the enterSensor end the IN sensor.
       //From which side on the block is the train expected to arrive?
-      Integer enterSensorId, inSensorId;
+      //Integer enterSensorId, inSensorId;
       if ("+".equals(arrivalSuffix)) {
         enterSensorId = destinationBlock.getPlusSensorId();
         inSensorId = destinationBlock.getMinSensorId();

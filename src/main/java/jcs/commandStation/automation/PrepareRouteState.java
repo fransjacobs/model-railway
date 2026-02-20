@@ -15,6 +15,7 @@
  */
 package jcs.commandStation.automation;
 
+import java.awt.Color;
 import org.tinylog.Logger;
 
 /**
@@ -48,6 +49,7 @@ public class PrepareRouteState extends AbstractState {
     }
 
     if (canAdvanceToNextState) {
+      dispatcher.showRoute(dispatcher.getRouteBean(), Color.magenta);
       return new StartingState();
     } else {
       //Go back to waiting and try again
