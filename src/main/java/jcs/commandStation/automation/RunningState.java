@@ -18,7 +18,6 @@ package jcs.commandStation.automation;
 import java.util.Date;
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.BlockBean;
-import jcs.entities.LocomotiveBean;
 import jcs.entities.StationBean;
 import jcs.entities.StationBlockBean;
 import jcs.persistence.PersistenceFactory;
@@ -32,8 +31,6 @@ import org.tinylog.Logger;
  */
 public class RunningState extends AbstractState implements SensorEventCallback {
 
-//  private boolean sensorsRegistered = false;
-//  private boolean canAdvanceToNextState = false;
   private Integer enterSensorId;
   private boolean enterSensorTriggered = false;
 
@@ -92,10 +89,10 @@ public class RunningState extends AbstractState implements SensorEventCallback {
 
   @Override
   public void onExit() {
-    //Remove the Callback
-    dispatcher.getSensorMonitor().unsubscribe(enterSensorId, this);
     //Disable the entersensor
     dispatcher.getSensorMonitor().subscribeWithoutCallback(enterSensorId);
+    //Remove the Callback
+    dispatcher.getSensorMonitor().unsubscribe(enterSensorId, this);
   }
 
   @Override

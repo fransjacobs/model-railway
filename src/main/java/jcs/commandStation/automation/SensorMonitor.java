@@ -47,7 +47,6 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
   private volatile boolean running = false;
 
   private final Map<Integer, SensorBean> sensorBeans;
-  private long threadWaitMillis;
 
   public SensorMonitor() {
     this(null);
@@ -60,8 +59,6 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
     subscribers = new ConcurrentHashMap<>();
     subscribersWithoutCallback = ConcurrentHashMap.newKeySet();
     sensorBeans = new HashMap<>();
-
-    threadWaitMillis = Long.parseUnsignedLong(System.getProperty("autopilot.thread.wait.millis", "1000"));
   }
 
   Map<Integer, SensorBean> getSensorBeans() {
@@ -246,8 +243,6 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
   //When the Sensor Monitor initialized first register all (bound) sensors on the layout.
   @Override
   public void run() {
-    Logger.trace("SensorMonitor thread wait time: " + threadWaitMillis + " ms.");
-
     //Make sure for a clean start
     subscribers.clear();
     eventQueue.clear();

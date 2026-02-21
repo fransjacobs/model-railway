@@ -38,9 +38,7 @@ import org.tinylog.Logger;
 class StateMachine {
 
   private final Dispatcher dispatcher;
-
   private AbstractState currentState;
-
   private StateMachineRunner stateMachineRunner;
 
   /**
@@ -49,13 +47,12 @@ class StateMachine {
    * @param initialState
    */
   StateMachine(Dispatcher dispatcher, AbstractState initialState) {
-    //super(dispatcher.getThreadGroup(), "STM->" + dispatcher.getLocomotiveBean().getName().toUpperCase());
     this.dispatcher = dispatcher;
     currentState = initialState;
     currentState.onEnter(dispatcher);
-    //threadSleepMillis = Long.parseUnsignedLong(System.getProperty("autopilot.thread.wait.millis", "1000"));
   }
 
+  @SuppressWarnings("unused")
   void startStateMachineThread() {
     if (stateMachineRunner == null || !stateMachineRunner.isRunning()) {
       stateMachineRunner = new StateMachineRunner(this);
@@ -118,8 +115,11 @@ class StateMachine {
     dispatcher.setExitSensorId(null);
 
     BlockBean destination = dispatcher.getDestinationBlock();
-    destination.setLocomotive(null);
-    destination.setBlockState(BlockBean.BlockState.FREE);
+    if (destination != null) {
+      destination.setLocomotive(null);
+      destination.setBlockState(BlockBean.BlockState.FREE);
+      PersistenceFactory.getService().persist(destination);
+    }
 
     BlockBean departure = dispatcher.getDepartureBlock();
     departure.setBlockState(BlockBean.BlockState.OCCUPIED);
@@ -138,8 +138,6 @@ class StateMachine {
       PersistenceFactory.getService().persist(nextRoute);
     }
 
-    // persist
-    PersistenceFactory.getService().persist(destination);
     PersistenceFactory.getService().persist(departure);
 
     dispatcher.setRouteBean(null);

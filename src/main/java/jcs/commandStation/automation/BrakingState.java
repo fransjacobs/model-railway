@@ -26,12 +26,14 @@ import org.tinylog.Logger;
 
 /**
  * Braking state of the Autopilot State Machine.<br>
- * The locomotive has to stop in this block, therefor the speed is decreased.
+ * The locomotive has to stop in this block, therefor the speed is decreased.<br>
+ * Subscribe the in sensor as callback to be able to advance to the next state.
+ *
  */
 public class BrakingState extends AbstractState implements SensorEventCallback {
 
-  private boolean inSensorTriggerred = false;
   private Integer inSensorId;
+  private boolean inSensorTriggerred = false;
 
   public BrakingState() {
     super("Braking");
@@ -62,6 +64,7 @@ public class BrakingState extends AbstractState implements SensorEventCallback {
 
     Logger.trace("Locomotive " + dispatcher.getLocomotiveBean().getName() + " has entered destination " + destinationBlock.getDescription() + " and prepares to stop...");
 
+    //Subscribe the IN sensor
     inSensorId = dispatcher.getInSensorId();
     dispatcher.getSensorMonitor().subscribe(inSensorId, this);
     Logger.trace("Destination block " + destinationBlock.getId() + " In SensorId: " + inSensorId);
@@ -75,80 +78,21 @@ public class BrakingState extends AbstractState implements SensorEventCallback {
     dispatcher.showBlockState(departureBlock);
     dispatcher.showRoute(route, Color.magenta);
     dispatcher.showBlockState(destinationBlock);
-
   }
 
   @Override
   AbstractState execute() {
-    //LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
-    BlockBean departureBlock = dispatcher.getDepartureBlock();
-    BlockBean destinationBlock = dispatcher.getDestinationBlock();
-    RouteBean route = dispatcher.getRouteBean();
-    Logger.trace("Locomotive " + dispatcher.getLocomotiveBean().getName() + " has entered destination " + destinationBlock.getDescription() + " and prepares to stop...");
-
-    
-    //Hier gebleven, moet sensor registeren en door op in sensorregister the in sensor
-    
-    
-    inSensorId = dispatcher.getInSensorId();
-    dispatcher.getSensorMonitor().subscribe(inSensorId, this);
-    Logger.trace("Destination block " + destinationBlock.getId() + " In SensorId: " + inSensorId);
-
-//    //Slowdown
-//    Logger.trace("Slowdown " + locomotive.getName() + "...");
-//
-//    //Speed to ~10% or speed 1
-//    Integer speed1 = locomotive.getSpeedOne();
-//    if (speed1 == null || speed1 == 0) {
-//      speed1 = 10;
-//    }
-//
-//    int fullscale = locomotive.getTachoMax();
-//    double velocity = (speed1 / (double) fullscale) * 1000;
-//
-//    dispatcher.changeLocomotiveVelocity(velocity);
-    //Change Block statuses 
-    departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
-    destinationBlock.setBlockState(BlockBean.BlockState.INBOUND);
-
-    PersistenceFactory.getService().persist(departureBlock);
-    PersistenceFactory.getService().persist(destinationBlock);
-
-    dispatcher.showBlockState(departureBlock);
-    dispatcher.showRoute(route, Color.magenta);
-    dispatcher.showBlockState(destinationBlock);
-
-    //Wait until the IN sensor is hit by the locomotive
-    //TODO: Timeout detection in case the locomotive has stopped....
-    if (inSensorTriggerred || resetRequested) {
-      AbstractState newState = new InBlockState();
-      //Remove handler as the state will now change
-      //JCS.getJcsCommandStation().removeSensorEventListener(inSensorId, this);
-
-      return newState;
+    if (inSensorTriggerred) {
+      return new InBlockState();
     } else {
-      if ("true".equals(System.getProperty("state.machine.stepTest", "false"))) {
-        Logger.debug("StateMachine StepTest is enabled. Dispatcher: " + dispatcher.getName() + " State: " + dispatcher.getStateName());
-      } else {
-        try {
-          synchronized (this) {
-            wait(1000);
-          }
-        } catch (InterruptedException ex) {
-          Logger.trace("Interrupted: " + ex.getMessage());
-        }
-      }
       return this;
     }
   }
 
   @Override
   public void onExit() {
-    //dispatcher.getSensorMonitor().unsubscribe(inSensorId, this);
-  }
-
-  public Integer getSensorId() {
-    return inSensorId;
+    dispatcher.getSensorMonitor().subscribeWithoutCallback(inSensorId);
+    dispatcher.getSensorMonitor().unsubscribe(inSensorId, this);
   }
 
   @Override
@@ -157,22 +101,10 @@ public class BrakingState extends AbstractState implements SensorEventCallback {
       if (event.isActive()) {
         inSensorTriggerred = true;
         Logger.trace("Enter Event from Sensor " + event.getSensorId());
-        synchronized (this) {
-          this.notifyAll();
-        }
       }
+    } else {
+      Logger.trace("Event for " + event.getSensorId() + " not for this state...");
     }
   }
 
-//  public void onSensorChange(SensorEvent sensorEvent) {
-//    if (inSensorId.equals(sensorEvent.getSensorId())) {
-//      if (sensorEvent.isActive()) {
-//        canAdvanceToNextState = true;
-//        Logger.trace("In Event from Sensor " + sensorEvent.getSensorId());
-//        synchronized (this) {
-//          notifyAll();
-//        }
-//      }
-//    }
-//  }
 }

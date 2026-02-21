@@ -15,6 +15,10 @@
  */
 package jcs.commandStation.automation;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import jcs.entities.BlockBean;
 import org.tinylog.Logger;
 
@@ -22,76 +26,203 @@ import org.tinylog.Logger;
  *
  */
 class WaitingState extends AbstractState {
+    private ScheduledExecutorService scheduler;
+    private ScheduledFuture<?> countdownTask;
+    private volatile long remainingTime;
+    private volatile boolean waitCompleted = false;
+    private volatile boolean cancelled = false;
 
-  WaitingState() {
-    super("Waiting");
-  }
-
-  @Override
-  AbstractState execute() {
-
-    BlockBean blockBean = dispatcher.getDepartureBlock();
-    int minWait = blockBean.getMinWaitTime();
-    int maxWait;
-
-    if (blockBean.getMaxWaitTime() != null) {
-      maxWait = blockBean.getMaxWaitTime();
-    } else {
-      maxWait = Integer.getInteger("default.max.waittime", 20);
+    WaitingState() {
+        super("Waiting");
     }
 
-    long waitTime;
-    if (blockBean.isRandomWait()) {
-      //Seed a bit....
-      for (int i = 0; i < 10; i++) {
-        dispatcher.getRandomNumber(minWait, maxWait);
-      }
+    @Override
+    void onEnter(Dispatcher dispatcher) {
+        super.onEnter(dispatcher);
+        
+        // Calculate wait time
+        BlockBean blockBean = dispatcher.getDepartureBlock();
+        long waitTime = calculateWaitTime(blockBean, dispatcher);
+        
+        Logger.debug("Waiting for " + waitTime + " s. Block Random " + blockBean.isRandomWait() 
+                     + " Block max: " + blockBean.getMaxWaitTime());
+        
+        // Initialize scheduler
+        scheduler = Executors.newSingleThreadScheduledExecutor();
+        remainingTime = waitTime;
+        waitCompleted = false;
+        cancelled = false;
+        
+        // Schedule countdown task - runs every second
+        countdownTask = scheduler.scheduleAtFixedRate(() -> {
+            if (!dispatcher.isLocomotiveStarted()) {
+                // Automode disabled - cancel waiting
+                Logger.debug("Automode is disabled for " + dispatcher.getName() 
+                           + " Exit " + dispatcher.getStateName());
+                cancelled = true;
+                stopScheduler();
+                return;
+            }
+            
+            // Notify listeners with remaining time
+            String stateInfo = dispatcher.getStateName() + " (" + remainingTime + ")";
+            dispatcher.fireStateListeners(stateInfo);
+            
+            // Decrement remaining time
+            remainingTime--;
+            
+            // Check if wait completed
+            if (remainingTime < 0) {
+                waitCompleted = true;
+                stopScheduler();
+            }
+        }, 0, 1, TimeUnit.SECONDS); // Initial delay 0, period 1 second
+    }
 
-      waitTime = dispatcher.getRandomNumber(minWait, maxWait);
-    } else {
-      if (blockBean.getMaxWaitTime() != null && blockBean.getMinWaitTime() == null) {
-        waitTime = blockBean.getMaxWaitTime();
-      } else {
-        if (blockBean.getMinWaitTime() != null) {
-          waitTime = minWait;
-        } else {
-          waitTime = maxWait;
+    @Override
+    AbstractState execute() {
+        // Just check the status - actual waiting happens in scheduler
+        if (waitCompleted) {
+            return new PrepareRouteState();
+        } else if (cancelled || !dispatcher.isLocomotiveStarted()) {
+            return new IdleState();
         }
-      }
+        
+        // Stay in current state while waiting
+        return this;
     }
 
-    Logger.debug("Waiting for " + waitTime + " s. Block Random " + blockBean.isRandomWait() + " Block max: " + blockBean.getMaxWaitTime());
-    
-//TODO: use the Systemtimer for this
-    for (; waitTime >= 0; waitTime--) {
-      if (dispatcher.isLocomotiveStarted()) {
-        String s = dispatcher.getStateName() + " (" + waitTime + ")";
-        dispatcher.fireStateListeners(s);
-
-        //For manual testing the thread is not running, step mode
-//        if ("false".equals(System.getProperty("dispatcher.stepTest", "false"))) {
-//          synchronized (this) {
-//            try {
-//              wait(waitInterval);
-//            } catch (InterruptedException ex) {
-//              Logger.trace("Wait loop interrupted");
-//            }
-//          }
-//        } else {
-//          Logger.trace("Test mode: " + s);
-//        }
-      } else {
-        //Locomotive automode is disabled break the loop
-        Logger.debug("Automode is disabled for " + dispatcher.getName() + " Exit " + dispatcher.getStateName());
-        break;
-      }
+    @Override
+    void onExit() {
+        stopScheduler();
     }
 
-    if (dispatcher.isLocomotiveStarted()) {
-      return new PrepareRouteState();
-    } else {
-      return new IdleState();
+    private void stopScheduler() {
+        if (countdownTask != null && !countdownTask.isCancelled()) {
+            countdownTask.cancel(false);
+        }
+        if (scheduler != null && !scheduler.isShutdown()) {
+            scheduler.shutdown();
+            try {
+                if (!scheduler.awaitTermination(1, TimeUnit.SECONDS)) {
+                    scheduler.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                scheduler.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
+        }
     }
-  }
 
+    private long calculateWaitTime(BlockBean blockBean, Dispatcher dispatcher) {
+        int minWait = blockBean.getMinWaitTime();
+        int maxWait;
+        
+        if (blockBean.getMaxWaitTime() != null) {
+            maxWait = blockBean.getMaxWaitTime();
+        } else {
+            maxWait = Integer.getInteger("default.max.waittime", 20);
+        }
+        
+        long waitTime;
+        
+        if (blockBean.isRandomWait()) {
+            // Seed a bit....
+            for (int i = 0; i < 10; i++) {
+                dispatcher.getRandomNumber(minWait, maxWait);
+            }
+            waitTime = dispatcher.getRandomNumber(minWait, maxWait);
+        } else {
+            if (blockBean.getMaxWaitTime() != null && blockBean.getMinWaitTime() == null) {
+                waitTime = blockBean.getMaxWaitTime();
+            } else {
+                if (blockBean.getMinWaitTime() != null) {
+                    waitTime = minWait;
+                } else {
+                    waitTime = maxWait;
+                }
+            }
+        }
+        
+        return waitTime;
+    }
 }
+
+
+
+
+
+
+
+//
+//class WaitingState extends AbstractState {
+//
+//  WaitingState() {
+//    super("Waiting");
+//  }
+//
+//  @Override
+//  void onEnter(Dispatcher dispatcher) {
+//    super.onEnter(dispatcher);
+//  }
+//
+//  @Override
+//  AbstractState execute() {
+//
+//    BlockBean blockBean = dispatcher.getDepartureBlock();
+//    int minWait = blockBean.getMinWaitTime();
+//    int maxWait;
+//
+//    if (blockBean.getMaxWaitTime() != null) {
+//      maxWait = blockBean.getMaxWaitTime();
+//    } else {
+//      maxWait = Integer.getInteger("default.max.waittime", 20);
+//    }
+//
+//    long waitTime;
+//    if (blockBean.isRandomWait()) {
+//      //Seed a bit....
+//      for (int i = 0; i < 10; i++) {
+//        dispatcher.getRandomNumber(minWait, maxWait);
+//      }
+//
+//      waitTime = dispatcher.getRandomNumber(minWait, maxWait);
+//    } else {
+//      if (blockBean.getMaxWaitTime() != null && blockBean.getMinWaitTime() == null) {
+//        waitTime = blockBean.getMaxWaitTime();
+//      } else {
+//        if (blockBean.getMinWaitTime() != null) {
+//          waitTime = minWait;
+//        } else {
+//          waitTime = maxWait;
+//        }
+//      }
+//    }
+//
+//    Logger.debug("Waiting for " + waitTime + " s. Block Random " + blockBean.isRandomWait() + " Block max: " + blockBean.getMaxWaitTime());
+//
+//    for (; waitTime >= 0; waitTime--) {
+//      if (dispatcher.isLocomotiveStarted()) {
+//        String s = dispatcher.getStateName() + " (" + waitTime + ")";
+//        dispatcher.fireStateListeners(s);
+//
+//      } else {
+//        //Locomotive automode is disabled break the loop
+//        Logger.debug("Automode is disabled for " + dispatcher.getName() + " Exit " + dispatcher.getStateName());
+//        break;
+//      }
+//    }
+//
+//    if (dispatcher.isLocomotiveStarted()) {
+//      return new PrepareRouteState();
+//    } else {
+//      return new IdleState();
+//    }
+//  }
+//
+//  @Override
+//  void onExit() {
+//
+//  }
+//
+//}
