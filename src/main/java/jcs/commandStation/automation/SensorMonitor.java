@@ -192,7 +192,7 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
     }
   }
 
-  public boolean isGhostDetected() {
+  boolean isGhostDetected() {
     return PersistenceFactory.getService().getGhostBlockCount() > 0;
   }
 
