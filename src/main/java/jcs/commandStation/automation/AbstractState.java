@@ -23,48 +23,53 @@ import org.tinylog.Logger;
 abstract class AbstractState {
 
   protected final String name;
-  protected SensorMonitor monitor;
-  protected SensorEventCallback eventCallback;
 
   protected Dispatcher dispatcher;
-
-  protected boolean resetRequested;
 
   protected AbstractState(String name) {
     this.name = name;
   }
 
+  /**
+   * Execute when entering the state, before the execute
+   *
+   * @param dispatcher
+   */
   void onEnter(Dispatcher dispatcher) {
     this.dispatcher = dispatcher;
-    this.monitor = dispatcher.getSensorMonitor();
     Logger.trace("Entering " + name + " state...");
   }
 
+  /**
+   * The main state execution
+   *
+   * @return the next state or self when the conditions for a transition are not met.
+   */
   abstract AbstractState execute();
 
-  void onExit() {
+  /**
+   * Executed when the State is exiting. Use for cleanup etc.
+   */
+  abstract void onExit();
 
-  }
+  /**
+   * Indicate whether is is possible to stop the thread or not.
+   *
+   * @return true when the state machine can be stopped
+   */
+  abstract boolean canStopLocomotive();
 
   @Override
   public String toString() {
     return this.getClass().getSimpleName();
   }
 
+  /**
+   *
+   * @return the name of the State
+   */
   public String getName() {
     return this.name;
   }
 
-  public void setResetRequested(boolean resetRequested) {
-    this.resetRequested = resetRequested;
-  }
-
-  @SuppressWarnings("unused")
-  void pause(int millis) {
-    try {
-      Thread.sleep(millis);
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-    }
-  }
 }

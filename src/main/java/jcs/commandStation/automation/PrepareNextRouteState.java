@@ -23,9 +23,9 @@ import org.tinylog.Logger;
 /**
  * Prepare next nextRoute state is to check for a free nextRoute when the Locomotive is entering a block.<br>
  */
-public class PrepareNextRouteState extends AbstractState {
+class PrepareNextRouteState extends AbstractState {
 
-  public PrepareNextRouteState() {
+  PrepareNextRouteState() {
     super("PrepareNextRoute");
   }
 
@@ -76,159 +76,14 @@ public class PrepareNextRouteState extends AbstractState {
     }
   }
 
-//  //TODO most of this code is also share in the PrepareRouteState. Combine this....
-//  boolean searchNextRoute(Dispatcher dispatcher) {
-//    LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
-//    Logger.trace("Search a free next route for " + locomotive.getName() + "...");
-//
-//    // In this state the we are checking whether there is a valid nextRoute from the destination to the next block.
-//    BlockBean departureBlock = dispatcher.getDestinationBlock();
-//    //Is the departure block part of a station.
-//    StationBean station = dispatcher.getStation(departureBlock);
-//    int locCount = 1;
-//    int minLocCount = 1;
-//    if (station != null) {
-//      minLocCount = station.getMinLocomotives();
-//      locCount = station.getLocomotiveCount();
-//      Logger.trace(departureBlock.getId() + " is member of Station " + station.getName() + " min Locs: " + minLocCount + " cur locs: " + locCount);
-//    }
-//
-//    //Use the current running locomotive direction
-//    Direction logicalDirection = locomotive.getDirection();
-//
-//    TileBean tileBean = PersistenceFactory.getService().getTileBean(departureBlock.getTileId());
-//    Orientation blockOrientation = tileBean.getOrientation();
-//
-//    String departureSuffix = departureBlock.getDepartureSuffix();
-//    if (departureSuffix == null) {
-//      departureSuffix = Block.getDepartureSuffix(blockOrientation, logicalDirection);
-//    }
-//
-//    Logger.trace("Loco " + locomotive.getName() + " is entering block " + departureBlock.getId() + ". Direction " + logicalDirection.getDirection() + ". DepartureSuffix " + departureSuffix + "...");
-//
-//    //Search for the possible routes
-//    List<RouteBean> routes = Collections.emptyList();
-//    //Is the departure block part of a station.
-//    if (locCount >= minLocCount) {
-//      //Search for the possible routes
-//      routes = PersistenceFactory.getService().getRoutes(departureBlock.getId(), departureSuffix);
-//      Logger.trace("There " + (routes.size() == 1 ? "is" : "are") + " " + routes.size() + " possible route(s)...");
-//    } else {
-//      String stationName;
-//      if (station != null) {
-//        stationName = station.getName();
-//      } else {
-//        stationName = "?";
-//      }
-//      Logger.trace("nr of locs (" + locCount + ") is lower than min locs (" + minLocCount + ") for station " + stationName);
-//    }
-//
-//    List<RouteBean> checkedRoutes = new ArrayList<>();
-//    boolean commuter = locomotive.isCommuter();
-//
-//    //Found possible routes check on the destination for the sensors and permissions
-//    for (RouteBean route : routes) {
-//      String nextDestinationTileId = route.getToTileId();
-//      BlockBean nextDestinationBlock = PersistenceFactory.getService().getBlockByTileId(nextDestinationTileId);
-//      //Check the sensors 
-//      boolean plusInActive = !nextDestinationBlock.getPlusSensorBean().isActive();
-//      boolean minInActive = !nextDestinationBlock.getMinSensorBean().isActive();
-//
-//      boolean allowCommuter = nextDestinationBlock.isAllowCommuterOnly();
-//      boolean allowNonCommuter = nextDestinationBlock.isAllowNonCommuterOnly();
-//
-//      boolean allowed = isAllowed(allowCommuter, allowNonCommuter, commuter);
-//
-//      Logger.trace("Next Destination " + nextDestinationBlock.getId() + " Train type commuter: " + commuter + " Permission " + allowed + " sensor: " + (plusInActive ? "Free" : "Occupied") + " - sensor: " + (minInActive ? "Free" : "Occupied"));
-//
-//      if (plusInActive && minInActive && allowed && turnoutsNotLocked(route)) {
-//        checkedRoutes.add(route);
-//      }
-//    }
-//
-//    //Randomly pick a nextRoute in case multiple routes are found...
-//    int rIdx = 0;
-//    if (checkedRoutes.size() > 1) {
-//      //Choose randomly the nextRoute
-//      for (int i = 0; i < 10; i++) {
-//        //Seed a bit....
-//        dispatcher.getRandomNumber(0, checkedRoutes.size());
-//      }
-//      rIdx = dispatcher.getRandomNumber(0, checkedRoutes.size());
-//    }
-//
-//    RouteBean nextRoute = null;
-//    if (!checkedRoutes.isEmpty()) {
-//      nextRoute = checkedRoutes.get(rIdx);
-//      Logger.trace("Choosen route " + nextRoute.toLogString());
-//      //persist the departure block
-//      //PersistenceFactory.getService().persist(departureBlock);
-//    } else {
-//      if (locCount >= minLocCount) {
-//        Logger.debug("No route available for " + locomotive.getName() + " ...");
-//      } else {
-//        Logger.debug("No route available because the Station occupation (" + locCount + ") is less then the min occupation (" + minLocCount + ")");
-//      }
-//    }
-//    dispatcher.setNextRouteBean(nextRoute);
-//    return nextRoute != null;
-//  }
-//  boolean reserveNextRoute(Dispatcher dispatcher) {
-//    LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
-//    RouteBean nextRoute = dispatcher.getNextRouteBean();
-//
-//    if (nextRoute == null) {
-//      return false;
-//    }
-//    Logger.debug("Reserving next route " + nextRoute);
-//    nextRoute.setLocked(true);
-//
-//    //Reserve the destination
-//    String nextDestinationTileId = nextRoute.getToTileId();
-//    String nextArrivalSuffix = nextRoute.getToSuffix();
-//    Logger.debug("Next Destination: " + nextDestinationTileId + " Arrival on the " + nextArrivalSuffix + " side of the block. Loco direction: " + locomotive.getDispatcherDirection());
-//
-//    BlockBean departureBlock = dispatcher.getDestinationBlock();
-//    BlockBean nextDestinationBlock = dispatcher.getNextDestinationBlock();
-//
-//    nextDestinationBlock.setBlockState(BlockBean.BlockState.LOCKED);
-//    nextDestinationBlock.setLocomotive(locomotive);
-//    nextDestinationBlock.setArrivalSuffix(nextArrivalSuffix);
-//    nextDestinationBlock.setLogicalDirection(departureBlock.getLogicalDirection());
-//
-//    // Set Turnouts in the right state
-//    List<RouteElementBean> turnouts = getTurnouts(nextRoute);
-//    Logger.trace("There are " + turnouts.size() + " turnouts in the next route");
-//
-//    //Now start to persist and perform critical thinks
-//    if (turnoutsNotLocked(nextRoute)) {
-//      PersistenceFactory.getService().persist(nextRoute);
-//
-//      for (RouteElementBean reb : turnouts) {
-//        AccessoryValue av = reb.getAccessoryValue();
-//        AccessoryBean turnout = reb.getTileBean().getAccessoryBean();
-//        Logger.debug("Setting Turnout " + turnout.getName() + " [" + turnout.getAddress() + "] to : " + av.getValue());
-//        dispatcher.switchAccessory(turnout, av);
-//        //TODO configurable wait time between switches
-//        pause(500);
-//      }
-//      Logger.trace("Turnouts set for " + nextRoute);
-//
-//      PersistenceFactory.getService().persist(nextDestinationBlock);
-//
-//      dispatcher.showRoute(nextRoute, Color.yellow);
-//      Logger.trace(nextRoute + " Locked");
-//
-//      dispatcher.showBlockState(nextDestinationBlock);
-//
-//      return true;
-//    } else {
-//      //Can't lock nextRoute
-//      nextRoute.setLocked(false);
-//      PersistenceFactory.getService().persist(nextRoute);
-//      Logger.trace(nextRoute + " NOT Locked");
-//
-//      return false;
-//    }
-//  }
+  @Override
+  void onExit() {
+
+  }
+
+  @Override
+  boolean canStopLocomotive() {
+    return false;
+  }
+
 }

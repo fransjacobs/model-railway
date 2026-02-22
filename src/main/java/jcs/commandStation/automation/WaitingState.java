@@ -98,6 +98,11 @@ class WaitingState extends AbstractState {
     stopScheduler();
   }
 
+  @Override
+  boolean canStopLocomotive() {
+    return true;
+  }
+
   private void stopScheduler() {
     if (countdownTask != null && !countdownTask.isCancelled()) {
       countdownTask.cancel(false);

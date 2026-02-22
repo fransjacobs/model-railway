@@ -73,6 +73,7 @@ public class StateMachineTest {
     }
 
     railwayController = RailwayController.getInstance();
+    railwayController.setAutomodeOn(true);
 
     sensorMonitor = new SensorMonitor();
     railwayController.setSensorMonitor(sensorMonitor);
@@ -122,17 +123,14 @@ public class StateMachineTest {
     Dispatcher ns1631 = railwayController.getDispatcher((int) NS_1631);
     assertNotNull(ns1631);
 
-    StateMachine stateMachine = new StateMachine(ns1631, new IdleState());
-    ns1631.setStateMachine(stateMachine);
+    //The enablement of the dispatcher will creat a statemachine
+    ns1631.enable();
+    StateMachine stateMachine = ns1631.getStateMachine();
 
-    stateMachine.getCurrentState().onEnter(ns1631);
     assertEquals("Idle", stateMachine.getCurrentStateName());
 
     stateMachine.executeState();
-
     assertEquals("Idle", stateMachine.getCurrentStateName());
-
-    assertFalse(ns1631.isEnabled());
     assertFalse(ns1631.isLocomotiveStarted());
   }
 
@@ -155,28 +153,21 @@ public class StateMachineTest {
     ps.persist(block1);
     ps.persist(block2);
 
-    StateMachine stateMachine = new StateMachine(ns1631, new IdleState());
-    ns1631.setStateMachine(stateMachine);
-
-    stateMachine.getCurrentState().onEnter(ns1631);
+    ns1631.enable();
+    StateMachine stateMachine = ns1631.getStateMachine();
 
     assertEquals("Idle", stateMachine.getCurrentStateName());
-
-    assertFalse(ns1631.isEnabled());
-    assertFalse(ns1631.isLocomotiveStarted());
-
-    ns1631.enable();
-    assertTrue(ns1631.isEnabled());
 
     stateMachine.executeState();
     assertEquals("Idle", stateMachine.getCurrentStateName());
 
-    ns1631.startLocomotive();
-    assertTrue(ns1631.isLocomotiveStarted());
+    //For testing
+    ns1631.setLocomotiveStarted(true);
 
     stateMachine.executeState();
     assertEquals("PrepareRoute", stateMachine.getCurrentStateName());
 
+    assertTrue(ns1631.isLocomotiveStarted());
     assertNull(ns1631.getDestinationBlock());
 
     stateMachine.executeState();
@@ -185,9 +176,6 @@ public class StateMachineTest {
     //Stop the dispatcher!
     ns1631.stopLocomotive();
     assertFalse(ns1631.isLocomotiveStarted());
-
-    ns1631.disable();
-    assertFalse(ns1631.isEnabled());
   }
 
   @Order(3)
@@ -207,21 +195,19 @@ public class StateMachineTest {
     block2.setBlockState(BlockBean.BlockState.OUT_OF_ORDER);
     ps.persist(block2);
 
-    StateMachine stateMachine = new StateMachine(ns1631, new IdleState());
-    ns1631.setStateMachine(stateMachine);
+    ns1631.enable();
+    StateMachine stateMachine = ns1631.getStateMachine();
 
     stateMachine.getCurrentState().onEnter(ns1631);
 
     assertEquals("Idle", stateMachine.getCurrentStateName());
-    assertFalse(ns1631.isEnabled());
     assertFalse(ns1631.isLocomotiveStarted());
-    ns1631.enable();
-    assertTrue(ns1631.isEnabled());
 
     stateMachine.executeState();
     assertEquals("Idle", stateMachine.getCurrentStateName());
 
-    ns1631.startLocomotive();
+    //For testing
+    ns1631.setLocomotiveStarted(true);
     assertTrue(ns1631.isLocomotiveStarted());
 
     stateMachine.executeState();
@@ -240,14 +226,10 @@ public class StateMachineTest {
     ns1631.stopLocomotive();
     assertTrue(ns1631.isLocomotiveStarted());
 
-    ns1631.disable();
-    assertTrue(ns1631.isEnabled());
-
     //To build a clean next test the state machine should be reset.
     stateMachine.reset();
     assertEquals("Idle", stateMachine.getCurrentStateName());
     assertFalse(ns1631.isLocomotiveStarted());
-    assertFalse(ns1631.isEnabled());
   }
 
   @Order(4)
@@ -269,34 +251,26 @@ public class StateMachineTest {
     //block2.setBlockState(BlockBean.BlockState.OUT_OF_ORDER);
     //ps.persist(block2);
 
-    StateMachine stateMachine = new StateMachine(ns1631, new IdleState());
-    ns1631.setStateMachine(stateMachine);
-
-    stateMachine.getCurrentState().onEnter(ns1631);
-
-    assertEquals("Idle", stateMachine.getCurrentStateName());
-    assertFalse(ns1631.isEnabled());
-    assertFalse(ns1631.isLocomotiveStarted());
     ns1631.enable();
-    assertTrue(ns1631.isEnabled());
+    StateMachine stateMachine = ns1631.getStateMachine();
 
-    stateMachine.executeState();
     assertEquals("Idle", stateMachine.getCurrentStateName());
+    stateMachine.executeState();
 
-    ns1631.startLocomotive();
+    ns1631.setLocomotiveStarted(true);
     assertTrue(ns1631.isLocomotiveStarted());
 
     stateMachine.executeState();
     assertEquals("PrepareRoute", stateMachine.getCurrentStateName());
 
     stateMachine.executeState();
+    assertEquals("Starting", stateMachine.getCurrentStateName());
 
     //check the route
     assertNotNull(ns1631.getDestinationBlock());
     assertNotNull(ns1631.getRouteBean());
     assertEquals("[bk-4+]->[bk-2-]", ns1631.getRouteBean().getId());
 
-    assertEquals("Starting", stateMachine.getCurrentStateName());
     //check route
     assertTrue(ns1631.getRouteBean().isLocked());
 
@@ -410,8 +384,8 @@ public class StateMachineTest {
     ns1631.enable();
     ns1631.startLocomotive();
 
-    StateMachine stateMachine = new StateMachine(ns1631, new WaitingState());
-    ns1631.setStateMachine(stateMachine);
+    ns1631.enable();
+    StateMachine stateMachine = ns1631.getStateMachine();
 
     stateMachine.getCurrentState().onEnter(ns1631);
 
@@ -424,8 +398,6 @@ public class StateMachineTest {
     ns1631.stopLocomotive();
     assertFalse(ns1631.isLocomotiveStarted());
 
-    ns1631.disable();
-    assertFalse(ns1631.isEnabled());
   }
 
 }

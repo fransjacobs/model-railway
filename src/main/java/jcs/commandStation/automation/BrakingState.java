@@ -30,12 +30,12 @@ import org.tinylog.Logger;
  * Subscribe the in sensor as callback to be able to advance to the next state.
  *
  */
-public class BrakingState extends AbstractState implements SensorEventCallback {
+class BrakingState extends AbstractState implements SensorEventCallback {
 
   private Integer inSensorId;
   private boolean inSensorTriggerred = false;
 
-  public BrakingState() {
+  BrakingState() {
     super("Braking");
   }
 
@@ -90,9 +90,14 @@ public class BrakingState extends AbstractState implements SensorEventCallback {
   }
 
   @Override
-  public void onExit() {
+  void onExit() {
     dispatcher.getSensorMonitor().subscribeWithoutCallback(inSensorId);
     dispatcher.getSensorMonitor().unsubscribe(inSensorId, this);
+  }
+
+  @Override
+  boolean canStopLocomotive() {
+    return false;
   }
 
   @Override

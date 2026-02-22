@@ -66,4 +66,15 @@ class StartingState extends AbstractState {
 
     return new RunningState();
   }
+
+  @Override
+  void onExit() {
+
+  }
+
+  @Override
+  boolean canStopLocomotive() {
+    return false;
+  }
+
 }

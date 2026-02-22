@@ -29,12 +29,12 @@ import org.tinylog.Logger;
  * This state will subscribe to the enter sensor.<br>
  * The state will advance to a next state when the enter sensor becomes active or a reset is requested.
  */
-public class RunningState extends AbstractState implements SensorEventCallback {
+class RunningState extends AbstractState implements SensorEventCallback {
 
   private Integer enterSensorId;
   private boolean enterSensorTriggered = false;
 
-  public RunningState() {
+  RunningState() {
     super("Running");
   }
 
@@ -88,11 +88,16 @@ public class RunningState extends AbstractState implements SensorEventCallback {
   }
 
   @Override
-  public void onExit() {
+  void onExit() {
     //Disable the entersensor
     dispatcher.getSensorMonitor().subscribeWithoutCallback(enterSensorId);
     //Remove the Callback
     dispatcher.getSensorMonitor().unsubscribe(enterSensorId, this);
+  }
+
+  @Override
+  boolean canStopLocomotive() {
+    return false;
   }
 
   @Override

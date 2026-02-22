@@ -41,4 +41,9 @@ class IdleState extends AbstractState {
     Logger.trace("Exit " + getName() + " State");
   }
 
+  @Override
+  boolean canStopLocomotive() {
+    return true;
+  }
+
 }

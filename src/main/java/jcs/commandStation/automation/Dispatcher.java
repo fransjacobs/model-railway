@@ -67,19 +67,15 @@ public class Dispatcher {
   private Integer exitSensorId;
 
   private boolean locomotiveStarted = false;
-
-  @SuppressWarnings("unused")
-  private boolean locomotiveStopRequested = false;
-
-  @SuppressWarnings("unused")
-  private boolean dispatcherDisableRequested = false;
-
+  //@SuppressWarnings("unused")
+  //private boolean locomotiveStopRequested = false;
+  //@SuppressWarnings("unused")
+  //private boolean dispatcherDisableRequested = false;
   private boolean swapLocomotiveDirection;
 
   //Needed for testing without running thread
-  private boolean enabled = false;
-  private boolean stepTest = false;
-
+  //private boolean enabled = false;
+  //private boolean stepTest = false;
   /**
    * Dispatcher is created when auto mode is enabled.<br>
    * Every Locomotive on track will create a dispatcher.<br>
@@ -103,7 +99,7 @@ public class Dispatcher {
 
     stateEventListeners = new ArrayList<>();
 
-    stepTest = Boolean.parseBoolean(System.getProperty("state.machine.stepTest", "false"));
+    //stepTest = Boolean.parseBoolean(System.getProperty("state.machine.stepTest", "false"));
   }
 
   @SuppressWarnings("unused")
@@ -152,78 +148,54 @@ public class Dispatcher {
   }
 
   void enable() {
-    if (stepTest) {
-      enabled = true;
-      dispatcherDisableRequested = false;
-    } else {
-      if (railwayController.isAutoModeActive()) {
-        if (stateMachine == null || (stateMachine != null && !stateMachine.isRunning())) {
-          stateMachine = new StateMachine(this, new IdleState());
-        } else {
-          Logger.debug("There is a running dispatcherRunner");
-          //TODO: should we stop the existing?
-        }
+    if (railwayController.isAutoModeActive()) {
+      if (stateMachine == null || (stateMachine != null && !stateMachine.isRunning())) {
+        stateMachine = new StateMachine(this, new IdleState());
+      } else {
+        Logger.debug("There is a running dispatcherRunner");
       }
-    }
-  }
-
-  boolean isEnabled() {
-    if (stepTest) {
-      return enabled;
     } else {
-      return stateMachine != null && stateMachine.isRunning();
+      Logger.trace("Can't start Locomotive " + getName() + " automode is not enabled");
     }
   }
 
-  void disable() {
-    if (!isLocomotiveStarted()) {
-      if (!stepTest) {
-        if (stateMachine.isRunning()) {
-          stateMachine.stopStateMachineThread();
-        }
+  public void startLocomotive() {
+    if (railwayController.isAutoModeActive()) {
+      if (stateMachine != null && !stateMachine.isRunning()) {
+        stateMachine.startStateMachineThread();
+        locomotiveStarted = true;
+      } else {
+        Logger.debug("There is a running dispatcherRunner");
       }
-      enabled = false;
     } else {
-      dispatcherDisableRequested = true;
-      Logger.debug("Can't disable dispatcher " + getName() + " CurrentState is " + stateMachine.getCurrentStateName());
+      Logger.trace("Can't start Locomotive " + getName() + " automode is not enabled");
     }
   }
 
-  void startLocomotive() {
-    if (isEnabled()) {
-      locomotiveStarted = true;
-      locomotiveStopRequested = false;
-    } else {
-      Logger.trace("Can't start Locomotive " + getName() + " dispatcher is not enabled");
-    }
+  void setLocomotiveStarted(boolean locomotiveStarted) {
+    this.locomotiveStarted = locomotiveStarted;
   }
 
-  boolean isLocomotiveStarted() {
+  public boolean isLocomotiveStarted() {
     return locomotiveStarted;
   }
 
-  void stopLocomotive() {
-    if (stateMachine != null && (stateMachine.getCurrentState().getName().equals("Idle") || stateMachine.getCurrentState().getName().equals("Waiting"))) {
-      //The locomotive can be stopped.
-      if (!stepTest) {
-        stateMachine.stopStateMachineThread();
-      }
+  public void stopLocomotive() {
+    if (stateMachine != null && stateMachine.getCurrentState().canStopLocomotive()) {
+      stateMachine.stopStateMachineThread();
       locomotiveStarted = false;
     } else {
-      locomotiveStopRequested = true;
       Logger.debug("Can't stop dispatcher " + getName() + " CurrentState is " + stateMachine.getCurrentStateName());
     }
   }
 
-  @SuppressWarnings("unused")
   StateMachine getStateMachine() {
     return stateMachine;
   }
 
-  void setStateMachine(StateMachine stateMachine) {
-    this.stateMachine = stateMachine;
-  }
-
+//  void setStateMachine(StateMachine stateMachine) {
+//    this.stateMachine = stateMachine;
+//  }
   ThreadGroup getThreadGroup() {
     return railwayController.getThreadGroup();
   }
@@ -358,7 +330,7 @@ public class Dispatcher {
     locomotiveBean.setDirection(newDirection);
   }
 
-  public void fireStateListeners(String oldState, String newState, String comment) {
+  void fireStateListeners(String oldState, String newState, String comment) {
     for (StateEventListener sel : stateEventListeners) {
       sel.onStateChange(oldState, newState, comment);
     }
@@ -399,14 +371,14 @@ public class Dispatcher {
     }
   }
 
-  public void showBlockState(BlockBean blockBean) {
+  void showBlockState(BlockBean blockBean) {
     Tile tile = TileCache.findTile(blockBean.getTileId());
     if (tile != null) {
       tile.setBlockBean(blockBean);
     }
   }
 
-  public void showRoute(RouteBean routeBean, Color routeColor) {
+  void showRoute(RouteBean routeBean, Color routeColor) {
     Logger.trace("Show route " + routeBean.toLogString());
     List<RouteElementBean> routeElements = routeBean.getRouteElements();
 
@@ -731,7 +703,7 @@ public class Dispatcher {
     }
   }
 
-  public boolean reserveNextRoute() {
+  boolean reserveNextRoute() {
     LocomotiveBean locomotive = getLocomotiveBean();
     RouteBean nextRoute = getNextRouteBean();
 

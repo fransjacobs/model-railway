@@ -28,7 +28,7 @@ import org.tinylog.Logger;
 /**
  * Arrive or InBlock State. The state when a train has arrived in the destination block.<br>
  */
-public class InBlockState extends AbstractState {
+class InBlockState extends AbstractState {
 
   boolean alwaysStop = true;
 
@@ -166,6 +166,16 @@ public class InBlockState extends AbstractState {
         return new PrepareRouteState();
       }
     }
+  }
+
+  @Override
+  void onExit() {
+
+  }
+
+  @Override
+  boolean canStopLocomotive() {
+    return false;
   }
 
 }

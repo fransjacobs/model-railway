@@ -61,7 +61,7 @@ class StateMachine {
   }
 
   void stopStateMachineThread() {
-    if (stateMachineRunner != null && stateMachineRunner.isRunning()) {
+    if (stateMachineRunner != null && stateMachineRunner.isRunning() && currentState.canStopLocomotive()) {
       stateMachineRunner.shutdown();
     }
   }
@@ -71,12 +71,17 @@ class StateMachine {
   }
 
   AbstractState getCurrentState() {
-    return currentState;
+    synchronized (this) {
+      return currentState;
+    }
   }
 
-  void setCurrentState(AbstractState currentState) {
-    this.currentState = currentState;
-  }
+//  @SuppressWarnings("unused")
+//  void setCurrentState(AbstractState currentState) {
+//    synchronized (this) {
+//      this.currentState = currentState;
+//    }
+//  }
 
   public boolean isRunning() {
     return stateMachineRunner != null && stateMachineRunner.isRunning();
@@ -89,26 +94,26 @@ class StateMachine {
   //Reset the statemachine
   void reset() {
     Logger.trace("Resetting in state " + currentState.getName());
-    //Make sure a locomotive is stopped.
     dispatcher.changeLocomotiveVelocity(0);
 
-    //stop the runner
-    if (stateMachineRunner != null) {
-      stateMachineRunner.shutdown();
-
-      synchronized (this) {
-        notifyAll();
+    // Stop runner FIRST and wait for it
+    StateMachineRunner runner = stateMachineRunner;
+    if (runner != null && runner.isRunning()) {
+      runner.shutdown();
+      runner.wakeUp();  // Wake it so it can exit
+      try {
+        runner.join(5000);  // Wait for thread to finish
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
       }
     }
     stateMachineRunner = null;
 
-    //remove callbacks
     currentState.onExit();
     currentState = new IdleState();
     currentState.onEnter(dispatcher);
 
     dispatcher.stopLocomotive();
-    dispatcher.disable();
 
     dispatcher.setEnterSensorId(null);
     dispatcher.setInSensorId(null);
@@ -148,21 +153,24 @@ class StateMachine {
   }
 
   void executeState() {
-    AbstractState nextState = currentState.execute();
+    synchronized (this) {
+      AbstractState nextState = currentState.execute();
 
-    String oldState = currentState.getName();
-    if (nextState != currentState) {
-      currentState.onExit();
-      String newState = nextState.getName();
-      currentState = nextState;
-      nextState.onEnter(dispatcher);
+      String oldState = currentState.getName();
+      if (nextState != currentState) {
+        currentState.onExit();
+        String newState = nextState.getName();
+        currentState = nextState;
+        nextState.onEnter(dispatcher);
 
-      dispatcher.fireStateListeners(oldState, newState, null);
+        dispatcher.fireStateListeners(oldState, newState, null);
+      }
     }
   }
 
   private class StateMachineRunner extends Thread {
 
+    private final Object lock = new Object();
     private final StateMachine stateMachine;
     private final long threadSleepMillis;
 
@@ -190,8 +198,8 @@ class StateMachine {
       while (running) {
         stateMachine.executeState();
         try {
-          synchronized (this) {
-            wait(threadSleepMillis);
+          synchronized (lock) {
+            lock.wait(threadSleepMillis);
           }
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
@@ -199,6 +207,14 @@ class StateMachine {
         }
       }
     }
+
+    @SuppressWarnings("unused")
+    void wakeUp() {
+      synchronized (lock) {
+        lock.notify();
+      }
+    }
+
   }
 
 }

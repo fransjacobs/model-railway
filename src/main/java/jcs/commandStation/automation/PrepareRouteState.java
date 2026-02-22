@@ -21,9 +21,9 @@ import org.tinylog.Logger;
 /**
  * Lock the route, set the block states and turnout directions
  */
-public class PrepareRouteState extends AbstractState {
+class PrepareRouteState extends AbstractState {
 
-  public PrepareRouteState() {
+  PrepareRouteState() {
     super("PrepareRoute");
   }
 
@@ -56,4 +56,15 @@ public class PrepareRouteState extends AbstractState {
       return new WaitingState();
     }
   }
+
+  @Override
+  void onExit() {
+
+  }
+
+  @Override
+  boolean canStopLocomotive() {
+    return false;
+  }
+
 }

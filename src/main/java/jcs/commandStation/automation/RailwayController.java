@@ -92,6 +92,8 @@ public final class RailwayController {
 
   final static long THREADSTART_TIMEOUT = 2000L;
 
+  private boolean automodeOn = false;
+
   private RailwayController() {
     threadGroup = new ThreadGroup("RAILWAY-CONTROLLER");
     dispatchers = new ConcurrentHashMap<>();
@@ -186,6 +188,8 @@ public final class RailwayController {
 
         enqueCommand(new RailwayControllerCommand(CMD_FIRE_STATUS_LST, "automode.started"));
 
+        automodeOn = true;
+
         Logger.trace("RailwayController Automode initialized. There are " + dispatchers.size() + " Dispatchers...");
       }
 
@@ -195,6 +199,14 @@ public final class RailwayController {
       enqueCommand(new RailwayControllerCommand(CMD_FIRE_STATUS_LST, "automode.stopped"));
       return false;
     }
+  }
+
+  public boolean isAutomodeOn() {
+    return automodeOn;
+  }
+
+  void setAutomodeOn(boolean automodeOn) {
+    this.automodeOn = automodeOn;
   }
 
   void setSensorMonitor(SensorMonitor sensorMonitor) {
@@ -235,7 +247,7 @@ public final class RailwayController {
     }
     Logger.debug("ControllerMonitor Stopped");
     sensorMonitor = null;
-
+    automodeOn = false;
   }
 
   Dispatcher createDispatcher(LocomotiveBean locomotiveBean) {
@@ -314,11 +326,7 @@ public final class RailwayController {
   }
 
   public boolean isAutoModeActive() {
-    if (sensorMonitor != null) {
-      return sensorMonitor.isRunning();
-    } else {
-      return false;
-    }
+    return this.automodeOn;
   }
 
   public boolean isSensorMonitorThreadStopped() {
@@ -453,6 +461,7 @@ public final class RailwayController {
         PersistenceFactory.getService().persist(route);
         lockedCounter++;
       }
+
     
     ///////Dispatcher.resetRoute(route);
     }

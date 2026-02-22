@@ -36,7 +36,7 @@ class ApproachingState extends AbstractState {
 
   private boolean startBraking;
 
-  public ApproachingState() {
+  ApproachingState() {
     super("Approaching");
   }
 
@@ -72,6 +72,16 @@ class ApproachingState extends AbstractState {
     } else {
       return new BrakingState();
     }
+  }
+  
+  @Override
+  void onExit() {
+    
+  }
+
+  @Override
+  boolean canStopLocomotive() {
+    return false;
   }
 
 }

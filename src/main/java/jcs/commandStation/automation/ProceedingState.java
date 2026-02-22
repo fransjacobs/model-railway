@@ -27,9 +27,9 @@ import org.tinylog.Logger;
  * Proceeding state of the Autopilot State Machine.<br>
  * The locomotive does not have to stop in this block, therefor the speed is maintained.
  */
-public class ProceedingState extends AbstractState implements SensorEventCallback {
+class ProceedingState extends AbstractState implements SensorEventCallback {
 
-  public ProceedingState() {
+  ProceedingState() {
     super("Proceeding");
   }
 
@@ -70,40 +70,18 @@ public class ProceedingState extends AbstractState implements SensorEventCallbac
 
     //Wait until the in sensor is hit by the locomotive
     //TODO: Timeout detection in case the locomotive has stopped....
-    if (canAdvanceToNextState || resetRequested) {
-      AbstractState newState;
-      if (resetRequested) {
-        newState = new ResettingState();
-      } else {
-        newState = new InBlockState();
-        //Remove handler as the state will now change
-        //JCS.getJcsCommandStation().removeSensorEventListener(inSensorId, this);
-      }
-      return newState;
-
+    if (canAdvanceToNextState) {
+      return new InBlockState();
+      //Remove handler as the state will now change
+      //JCS.getJcsCommandStation().removeSensorEventListener(inSensorId, this);
     } else {
-      if ("true".equals(System.getProperty("state.machine.stepTest", "false"))) {
-        Logger.debug("StateMachine StepTest is enabled. Dispatcher: " + dispatcher.getName() + " State: " + dispatcher.getStateName());
-      } else {
-        try {
-          synchronized (this) {
-            wait(1000);
-          }
-        } catch (InterruptedException ex) {
-          Logger.trace("Interrupted: " + ex.getMessage());
-        }
-      }
       return this;
     }
   }
 
   @Override
-  public void onExit() {
+  void onExit() {
     dispatcher.getSensorMonitor().unsubscribe(inSensorId, this);
-  }
-
-  public Integer getSensorId() {
-    return inSensorId;
   }
 
   @Override
@@ -119,16 +97,8 @@ public class ProceedingState extends AbstractState implements SensorEventCallbac
     }
   }
 
-//  @Override
-//  public void onSensorChange(SensorEvent sensorEvent) {
-//    if (inSensorId.equals(sensorEvent.getSensorId())) {
-//      if (sensorEvent.isActive()) {
-//        canAdvanceToNextState = true;
-//        Logger.trace("In Event from Sensor " + sensorEvent.getSensorId());
-//        synchronized (this) {
-//          notifyAll();
-//        }
-//      }
-//    }
-//  }
+  @Override
+  boolean canStopLocomotive() {
+    return false;
+  }
 }
