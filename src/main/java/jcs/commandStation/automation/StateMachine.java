@@ -147,6 +147,20 @@ class StateMachine {
     Logger.trace(dispatcher.getName() + " has been Reset");
   }
 
+  void executeState() {
+    AbstractState nextState = currentState.execute();
+
+    String oldState = currentState.getName();
+    if (nextState != currentState) {
+      currentState.onExit();
+      String newState = nextState.getName();
+      currentState = nextState;
+      nextState.onEnter(dispatcher);
+
+      dispatcher.fireStateListeners(oldState, newState, null);
+    }
+  }
+
   private class StateMachineRunner extends Thread {
 
     private final StateMachine stateMachine;
@@ -174,17 +188,8 @@ class StateMachine {
       running = true;
 
       while (running) {
-        AbstractState currentState = stateMachine.getCurrentState();
-        AbstractState nextState = currentState.execute();
-
-        if (nextState != currentState) {
-          currentState.onExit();
-          stateMachine.setCurrentState(nextState);
-          nextState.onEnter(stateMachine.getDispatcher());
-        }
-
+        stateMachine.executeState();
         try {
-          //Thread.sleep(threadSleepMillis);
           synchronized (this) {
             wait(threadSleepMillis);
           }

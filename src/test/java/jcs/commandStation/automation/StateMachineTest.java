@@ -45,6 +45,7 @@ public class StateMachineTest {
   private List<Tile> tiles;
   //private int eventCallbackCount = 0;
 
+  SensorMonitor sensorMonitor;
   private RailwayController railwayController;
 
   protected static final long BR_101_003_2 = 23;
@@ -73,9 +74,11 @@ public class StateMachineTest {
 
     railwayController = RailwayController.getInstance();
 
-    SensorMonitor sensorMonitor = new SensorMonitor();
+    sensorMonitor = new SensorMonitor();
     railwayController.setSensorMonitor(sensorMonitor);
-    sensorMonitor.start();
+    //Register the sensors
+    sensorMonitor.registerAllSensors();
+    //sensorMonitor.start();
 
     railwayController.prepareAllDispatchers();
 
@@ -102,25 +105,14 @@ public class StateMachineTest {
 //    ns1631.getRailwayController().getSensorMonitor().stopMonitor();
   }
 
-  private void executeState(StateMachine stateMachine) {
-    AbstractState currentState = stateMachine.getCurrentState();
-    AbstractState nextState = currentState.execute();
-
-    if (nextState != currentState) {
-      currentState.onExit();
-      stateMachine.setCurrentState(nextState);
-      nextState.onEnter(stateMachine.getDispatcher());
-    }
-  }
-
   private void toggleSensor(Integer sensorId) {
     SensorBean sensorBean = ps.getSensor(sensorId);
-
-    sensorBean.toggle();
-    sensorBean.setActive((sensorBean.getStatus() == 1));
+    //Create a sensorEvent with change
+    sensorBean.setActive(true);
+    sensorBean.setPreviousActive(false);
     SensorEvent sensorEvent = new SensorEvent(sensorBean);
 
-    JCS.getJcsCommandStation().getFeedbackControllers().getFirst().simulateSensor(sensorEvent);
+    sensorMonitor.handleSensorEvent(sensorEvent);
   }
 
   @Order(1)
@@ -136,7 +128,8 @@ public class StateMachineTest {
     stateMachine.getCurrentState().onEnter(ns1631);
     assertEquals("Idle", stateMachine.getCurrentStateName());
 
-    executeState(stateMachine);
+    stateMachine.executeState();
+
     assertEquals("Idle", stateMachine.getCurrentStateName());
 
     assertFalse(ns1631.isEnabled());
@@ -175,18 +168,18 @@ public class StateMachineTest {
     ns1631.enable();
     assertTrue(ns1631.isEnabled());
 
-    executeState(stateMachine);
+    stateMachine.executeState();
     assertEquals("Idle", stateMachine.getCurrentStateName());
 
     ns1631.startLocomotive();
     assertTrue(ns1631.isLocomotiveStarted());
 
-    executeState(stateMachine);
+    stateMachine.executeState();
     assertEquals("PrepareRoute", stateMachine.getCurrentStateName());
 
     assertNull(ns1631.getDestinationBlock());
 
-    executeState(stateMachine);
+    stateMachine.executeState();
     assertEquals("Waiting", stateMachine.getCurrentStateName());
 
     //Stop the dispatcher!
@@ -225,16 +218,16 @@ public class StateMachineTest {
     ns1631.enable();
     assertTrue(ns1631.isEnabled());
 
-    executeState(stateMachine);
+    stateMachine.executeState();
     assertEquals("Idle", stateMachine.getCurrentStateName());
 
     ns1631.startLocomotive();
     assertTrue(ns1631.isLocomotiveStarted());
 
-    executeState(stateMachine);
+    stateMachine.executeState();
     assertEquals("PrepareRoute", stateMachine.getCurrentStateName());
 
-    executeState(stateMachine);
+    stateMachine.executeState();
 
     //check the route
     assertNotNull(ns1631.getDestinationBlock());
@@ -287,16 +280,16 @@ public class StateMachineTest {
     ns1631.enable();
     assertTrue(ns1631.isEnabled());
 
-    executeState(stateMachine);
+    stateMachine.executeState();
     assertEquals("Idle", stateMachine.getCurrentStateName());
 
     ns1631.startLocomotive();
     assertTrue(ns1631.isLocomotiveStarted());
 
-    executeState(stateMachine);
+    stateMachine.executeState();
     assertEquals("PrepareRoute", stateMachine.getCurrentStateName());
 
-    executeState(stateMachine);
+    stateMachine.executeState();
 
     //check the route
     assertNotNull(ns1631.getDestinationBlock());
@@ -313,7 +306,7 @@ public class StateMachineTest {
     block2 = ps.getBlockByTileId("bk-2");
     assertEquals(BlockBean.BlockState.LOCKED, block2.getBlockState());
 
-    executeState(stateMachine);
+    stateMachine.executeState();
     assertEquals("Running", stateMachine.getCurrentStateName());
 
     assertEquals(NS_1631, block2.getLocomotiveId());
@@ -332,7 +325,7 @@ public class StateMachineTest {
     block2 = ps.getBlockByTileId("bk-2");
     assertEquals(BlockBean.BlockState.LOCKED, block2.getBlockState());
 
-    executeState(stateMachine);
+    stateMachine.executeState();
     assertEquals("Running", stateMachine.getCurrentStateName());
 
     //Trigger the enter sensor
@@ -340,7 +333,7 @@ public class StateMachineTest {
     //Give the background sensor monitor thread a little time to process
     ns1631.pause(50);
 
-    executeState(stateMachine);
+    stateMachine.executeState();
     assertEquals("Approaching", stateMachine.getCurrentStateName());
 
     block4 = ps.getBlockByTileId("bk-4");
@@ -349,7 +342,7 @@ public class StateMachineTest {
     block2 = ps.getBlockByTileId("bk-2");
     assertEquals(BlockBean.BlockState.INBOUND, block2.getBlockState());
 
-    executeState(stateMachine);
+    stateMachine.executeState();
     assertEquals("Braking", stateMachine.getCurrentStateName());
 
     assertEquals(NS_1631, block2.getLocomotiveId());
@@ -361,7 +354,7 @@ public class StateMachineTest {
     ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(2);
     ns1631.getSensorMonitor().isSensorRegisteredWithCallback(3);
 
-    executeState(stateMachine);
+    stateMachine.executeState();
     assertEquals("Braking", stateMachine.getCurrentStateName());
 
     //Trigger the in sensor
@@ -369,7 +362,7 @@ public class StateMachineTest {
     //Give the background sensor monitor thread a little time to process
     ns1631.pause(50);
 
-    executeState(stateMachine);
+    stateMachine.executeState();
     assertEquals("Arrived", stateMachine.getCurrentStateName());
 
     //Check sensors
@@ -383,82 +376,56 @@ public class StateMachineTest {
     assertEquals("bk-2", ns1631.getDepartureBlock().getId());
     assertTrue(ns1631.getSensorMonitor().getSubscribers().isEmpty());
     assertTrue(ns1631.getSensorMonitor().getSubscribersWithoutCallback().isEmpty());
-    
+
     assertNull(ns1631.getDestinationBlock());
-    
-    assertEquals(0,ns1631.getLocomotiveBean().getVelocity());
-    
-    executeState(stateMachine);
+
+    assertEquals(0, ns1631.getLocomotiveBean().getVelocity());
+
+    stateMachine.executeState();
     assertEquals("Waiting", stateMachine.getCurrentStateName());
-    
 
     stateMachine.reset();
   }
 
-  /**
-   * Test of isRunning method, of class StateMachine.
-   */
+  @Order(5)
   //@Test
-  public void testIsRunning() {
-    System.out.println("isRunning");
-    StateMachine instance = null;
-    boolean expResult = false;
-    boolean result = instance.isRunning();
-    assertEquals(expResult, result);
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
-  }
+  public void testWait() {
+    System.out.println("Wait");
+    Dispatcher ns1631 = railwayController.getDispatcher((int) NS_1631);
+    assertNotNull(ns1631);
 
-  /**
-   * Test of run method, of class StateMachine.
-   */
-  //@Test
-  public void testRun() {
-    System.out.println("run");
-    StateMachine instance = null;
-    //instance.run();
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
-  }
+    //Make sure the locomotive does not have a destination
+    //by setting the target blocks out of order
+    BlockBean block1 = ps.getBlockByTileId("bk-1");
+    assertEquals(BlockBean.BlockState.FREE, block1.getBlockState());
+    block1.setBlockState(BlockBean.BlockState.OUT_OF_ORDER);
 
-  /**
-   * Test of getCurrentState method, of class StateMachine.
-   */
-  //Test
-  public void testGetCurrentState() {
-    System.out.println("getCurrentState");
-    StateMachine instance = null;
-    AbstractState expResult = null;
-    AbstractState result = instance.getCurrentState();
-    assertEquals(expResult, result);
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
-  }
+    BlockBean block2 = ps.getBlockByTileId("bk-2");
+    assertEquals(BlockBean.BlockState.FREE, block2.getBlockState());
+    block2.setBlockState(BlockBean.BlockState.OUT_OF_ORDER);
+    ps.persist(block1);
+    ps.persist(block2);
 
-  /**
-   * Test of getCurrentStateName method, of class StateMachine.
-   */
-  //@Test
-  public void testGetCurrentStateName() {
-    System.out.println("getCurrentStateName");
-    StateMachine instance = null;
-    String expResult = "";
-    String result = instance.getCurrentStateName();
-    assertEquals(expResult, result);
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
-  }
+    //Must be enabled and starting    
+    ns1631.enable();
+    ns1631.startLocomotive();
 
-  /**
-   * Test of reset method, of class StateMachine.
-   */
-  //@Test
-  public void testReset() {
-    System.out.println("reset");
-    StateMachine instance = null;
-    instance.reset();
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
+    StateMachine stateMachine = new StateMachine(ns1631, new WaitingState());
+    ns1631.setStateMachine(stateMachine);
+
+    stateMachine.getCurrentState().onEnter(ns1631);
+
+    assertEquals("Waiting", stateMachine.getCurrentStateName());
+
+    stateMachine.executeState();
+    assertEquals("Waiting", stateMachine.getCurrentStateName());
+
+    //Stop the dispatcher!
+    ns1631.stopLocomotive();
+    assertFalse(ns1631.isLocomotiveStarted());
+
+    ns1631.disable();
+    assertFalse(ns1631.isEnabled());
   }
 
 }

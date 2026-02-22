@@ -34,7 +34,8 @@ import org.junit.jupiter.api.Order;
 import org.tinylog.Logger;
 
 /**
- *
+ * Check the basic functionality of the SensorMonitor.<br>
+ * Monitor Methods are called directly
  */
 public class SensorMonitorTest {
 
@@ -42,7 +43,6 @@ public class SensorMonitorTest {
   protected final PersistenceService ps;
   @SuppressWarnings("unused")
   private List<Tile> tiles;
-  private int eventCallbackCount = 0;
 
   private int testOnSensorChangeCallbackCount = 0;
 
@@ -76,14 +76,6 @@ public class SensorMonitorTest {
     block1.setBlockState(BlockBean.BlockState.FREE);
     ps.persist(block1);
     Logger.trace("Reset Block 1");
-  }
-
-  private void toggleSensor(SensorBean sensorBean) {
-    sensorBean.toggle();
-    sensorBean.setActive((sensorBean.getStatus() == 1));
-    SensorEvent sensorEvent = new SensorEvent(sensorBean);
-
-    JCS.getJcsCommandStation().getFeedbackControllers().getFirst().simulateSensor(sensorEvent);
   }
 
   @Order(1)
@@ -134,14 +126,6 @@ public class SensorMonitorTest {
     assertTrue(timeout > now);
     assertFalse(instance.isRunning());
     Logger.trace("Monitor <stopped in " + (now - start) + " ms...");
-  }
-
-  private void pause(long millis) {
-    try {
-      Thread.sleep(millis);
-    } catch (InterruptedException ex) {
-      Logger.error(ex);
-    }
   }
 
   @Order(3)
@@ -317,7 +301,6 @@ public class SensorMonitorTest {
         sensorMonitorTest.testOnSensorChangeCallbackCount++;
       }
     }
-
   }
 
 }

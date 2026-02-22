@@ -47,6 +47,8 @@ public class Dispatcher {
   private final RailwayController railwayController;
   private final LocomotiveBean locomotiveBean;
 
+  private final List<StateEventListener> stateEventListeners;
+
   private StateMachine stateMachine;
 
   private RouteBean routeBean;
@@ -55,22 +57,20 @@ public class Dispatcher {
   private String departureBlockId;
   private String destinationBlockId;
 
-  //private Integer waitingForSensorId;
   //Enter Sensor of the destination
   private Integer enterSensorId;
   //In Sensor of the destination
   private Integer inSensorId;
-
   //The Occupation sensor of the departure 
   private Integer occupationSensorId;
   //The exit of the departure
   private Integer exitSensorId;
 
   private boolean locomotiveStarted = false;
-  
+
   @SuppressWarnings("unused")
   private boolean locomotiveStopRequested = false;
-  
+
   @SuppressWarnings("unused")
   private boolean dispatcherDisableRequested = false;
 
@@ -94,14 +94,15 @@ public class Dispatcher {
    * @param railwayController
    * @param locomotiveBean
    */
-  public Dispatcher(RailwayController railwayController, LocomotiveBean locomotiveBean) {
+  Dispatcher(RailwayController railwayController, LocomotiveBean locomotiveBean) {
     this.railwayController = railwayController;
     //this.parent = railwayController.getThreadGroup();
     this.locomotiveBean = locomotiveBean;
     //Prefill with the current locomotive direction
     this.locomotiveBean.setDispatcherDirection(locomotiveBean.getDirection());
 
-    //waitInterval = Long.parseUnsignedLong(System.getProperty("autopilot.thread.wait.interval", "1000"));
+    stateEventListeners = new ArrayList<>();
+
     stepTest = Boolean.parseBoolean(System.getProperty("state.machine.stepTest", "false"));
   }
 
@@ -249,7 +250,7 @@ public class Dispatcher {
   }
 
   //Make sure to obtain the last status of the block is represented...
-  public BlockBean getDepartureBlock() {
+  BlockBean getDepartureBlock() {
     if (departureBlockId != null) {
       return PersistenceFactory.getService().getBlockByTileId(departureBlockId);
     } else if (routeBean != null) {
@@ -262,7 +263,7 @@ public class Dispatcher {
     }
   }
 
-  public BlockBean getDestinationBlock() {
+  BlockBean getDestinationBlock() {
     if (destinationBlockId != null) {
       return PersistenceFactory.getService().getBlockByTileId(destinationBlockId);
     } else if (routeBean != null) {
@@ -277,7 +278,7 @@ public class Dispatcher {
     this.destinationBlockId = destinationBlockId;
   }
 
-  public BlockBean getNextDestinationBlock() {
+  BlockBean getNextDestinationBlock() {
     if (nextRouteBean != null) {
       String nextDestinationBlockId = nextRouteBean.getToTileId();
       return PersistenceFactory.getService().getBlockByTileId(nextDestinationBlockId);
@@ -286,7 +287,7 @@ public class Dispatcher {
     }
   }
 
-  public StationBean getStation(BlockBean blockBean) {
+  StationBean getStation(BlockBean blockBean) {
     return PersistenceFactory.getService().getStation(blockBean);
   }
 
@@ -357,22 +358,22 @@ public class Dispatcher {
     locomotiveBean.setDirection(newDirection);
   }
 
-  public void fireStateListeners(String s) {
-//    for (StateEventListener sel : stateEventListeners) {
-//      sel.onStateChange(this);
-//    }
+  public void fireStateListeners(String oldState, String newState, String comment) {
+    for (StateEventListener sel : stateEventListeners) {
+      sel.onStateChange(oldState, newState, comment);
+    }
   }
 
   public void addStateEventListener(StateEventListener listener) {
-//    stateEventListeners.add(listener);
+    stateEventListeners.add(listener);
   }
 
   public void removeStateEventListener(StateEventListener listener) {
-//    stateEventListeners.remove(listener);
+    stateEventListeners.remove(listener);
   }
 
   public void removeAllStateEventListeners() {
-//    stateEventListeners.clear();
+    stateEventListeners.clear();
   }
 
   void resetRoute(RouteBean route) {
@@ -434,11 +435,6 @@ public class Dispatcher {
         Logger.warn("Tile with id " + tileId + " NOT in TileCache!");
       }
     }
-  }
-
-  public int getRandomNumber(int min, int max) {
-    Random random = new Random();
-    return random.ints(min, max).findFirst().getAsInt();
   }
 
   boolean isAllowed(boolean allowCommuter, boolean allowNonCommuter, boolean commuter) {
@@ -600,11 +596,12 @@ public class Dispatcher {
     int rIdx = 0;
     if (checkedRoutes.size() > 1) {
       //Choose randomly the route
+      Random random = new Random();
       for (int i = 0; i < 10; i++) {
         //Seed a bit....
-        getRandomNumber(0, checkedRoutes.size());
+        random.ints(0, checkedRoutes.size()).findFirst();
       }
-      rIdx = getRandomNumber(0, checkedRoutes.size());
+      rIdx = random.ints(0, checkedRoutes.size()).findFirst().getAsInt();
     }
 
     RouteBean route = null;
