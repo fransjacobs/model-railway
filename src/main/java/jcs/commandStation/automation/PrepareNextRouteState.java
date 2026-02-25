@@ -15,6 +15,7 @@
  */
 package jcs.commandStation.automation;
 
+import java.awt.Color;
 import jcs.entities.BlockBean;
 import jcs.entities.RouteBean;
 import jcs.persistence.PersistenceFactory;
@@ -25,9 +26,45 @@ import org.tinylog.Logger;
  */
 class PrepareNextRouteState extends AbstractState {
 
+    private Integer inSensorId;
+  //private boolean inSensorTriggerred = false;
+
+  
   PrepareNextRouteState() {
     super("PrepareNextRoute");
   }
+  
+ @Override
+  void onEnter(Dispatcher dispatcher) {
+    super.onEnter(dispatcher);
+    
+     BlockBean departureBlock = dispatcher.getDepartureBlock();
+    BlockBean destinationBlock = dispatcher.getDestinationBlock();
+    RouteBean route = dispatcher.getRouteBean();
+
+    Logger.trace("Locomotive " + dispatcher.getLocomotiveBean().getName() + " has entered destination " + destinationBlock.getDescription() + " and prepares to stop...");
+
+    //Subscribe the IN sensor
+    inSensorId = dispatcher.getInSensorId();
+    //dispatcher.getSensorMonitor().subscribe(inSensorId, this);
+    Logger.trace("Destination block " + destinationBlock.getId() + " In SensorId: " + inSensorId);
+
+    departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
+    destinationBlock.setBlockState(BlockBean.BlockState.INBOUND);
+
+    PersistenceFactory.getService().persist(departureBlock);
+    PersistenceFactory.getService().persist(destinationBlock);
+
+    dispatcher.showBlockState(departureBlock);
+    dispatcher.showRoute(route, Color.magenta);
+    dispatcher.showBlockState(destinationBlock);
+   
+    
+    
+    
+  }  
+  
+  
 
   @Override
   AbstractState execute() {

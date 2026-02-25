@@ -106,7 +106,7 @@ public class StateMachineTest {
 
   @AfterEach
   public void tearDown() {
-    TileCache.
+    TileCache.flush();
 //    Dispatcher ns1631 = railwayController.getDispatcher((int) NS_1631);
 //    ns1631.stopLocomotive();
 //    ns1631.disable();
@@ -385,8 +385,7 @@ public class StateMachineTest {
     BlockBean block2 = ps.getBlockByTileId("bk-2");
     assertEquals(BlockBean.BlockState.FREE, block2.getBlockState());
     block2.setAlwaysStop(false);
-    //block2.setBlockState(BlockBean.BlockState.OUT_OF_ORDER);
-    //ps.persist(block2);
+    ps.persist(block2);
 
     ns1631.enable();
     StateMachine stateMachine = ns1631.getStateMachine();
@@ -454,46 +453,47 @@ public class StateMachineTest {
     assertEquals(BlockBean.BlockState.INBOUND, block2.getBlockState());
 
     stateMachine.executeState();
-    assertEquals("Braking", stateMachine.getCurrentStateName());
+    assertEquals("PrepareNextRoute", stateMachine.getCurrentStateName());
+//Hier gebleven de prep next route maken
 
-    assertEquals(NS_1631, block2.getLocomotiveId());
-    assertEquals(83, ns1631.getLocomotiveBean().getVelocity());
-
-    ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(ns1631.getDepartureBlock().getMinSensorId());
-    ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(ns1631.getDepartureBlock().getPlusSensorId());
-
-    ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(2);
-    ns1631.getSensorMonitor().isSensorRegisteredWithCallback(3);
-
-    stateMachine.executeState();
-    assertEquals("Braking", stateMachine.getCurrentStateName());
-
-    //Trigger the in sensor
-    toggleSensor(ns1631.getInSensorId());
-    //Give the background sensor monitor thread a little time to process
-    ns1631.pause(50);
-
-    stateMachine.executeState();
-    assertEquals("Arrived", stateMachine.getCurrentStateName());
-
-    //Check sensors
-    assertNull(ns1631.getOccupationSensorId());
-    assertNull(ns1631.getExitSensorId());
-
-    block4 = ps.getBlockByTileId("bk-4");
-    assertFalse(ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(block4.getMinSensorId()));
-    assertFalse(ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(block4.getPlusSensorId()));
-
-    assertEquals("bk-2", ns1631.getDepartureBlock().getId());
-    assertTrue(ns1631.getSensorMonitor().getSubscribers().isEmpty());
-    assertTrue(ns1631.getSensorMonitor().getSubscribersWithoutCallback().isEmpty());
-
-    assertNull(ns1631.getDestinationBlock());
-
-    assertEquals(0, ns1631.getLocomotiveBean().getVelocity());
-
-    stateMachine.executeState();
-    assertEquals("Waiting", stateMachine.getCurrentStateName());
+//    assertEquals(NS_1631, block2.getLocomotiveId());
+//    assertEquals(83, ns1631.getLocomotiveBean().getVelocity());
+//
+//    ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(ns1631.getDepartureBlock().getMinSensorId());
+//    ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(ns1631.getDepartureBlock().getPlusSensorId());
+//
+//    ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(2);
+//    ns1631.getSensorMonitor().isSensorRegisteredWithCallback(3);
+//
+//    stateMachine.executeState();
+//    assertEquals("Braking", stateMachine.getCurrentStateName());
+//
+//    //Trigger the in sensor
+//    toggleSensor(ns1631.getInSensorId());
+//    //Give the background sensor monitor thread a little time to process
+//    ns1631.pause(50);
+//
+//    stateMachine.executeState();
+//    assertEquals("Arrived", stateMachine.getCurrentStateName());
+//
+//    //Check sensors
+//    assertNull(ns1631.getOccupationSensorId());
+//    assertNull(ns1631.getExitSensorId());
+//
+//    block4 = ps.getBlockByTileId("bk-4");
+//    assertFalse(ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(block4.getMinSensorId()));
+//    assertFalse(ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(block4.getPlusSensorId()));
+//
+//    assertEquals("bk-2", ns1631.getDepartureBlock().getId());
+//    assertTrue(ns1631.getSensorMonitor().getSubscribers().isEmpty());
+//    assertTrue(ns1631.getSensorMonitor().getSubscribersWithoutCallback().isEmpty());
+//
+//    assertNull(ns1631.getDestinationBlock());
+//
+//    assertEquals(0, ns1631.getLocomotiveBean().getVelocity());
+//
+//    stateMachine.executeState();
+//    assertEquals("Waiting", stateMachine.getCurrentStateName());
 
     stateMachine.reset();
   }
