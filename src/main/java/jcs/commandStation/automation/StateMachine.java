@@ -40,6 +40,7 @@ class StateMachine {
   private final Dispatcher dispatcher;
   private AbstractState currentState;
   private StateMachineRunner stateMachineRunner;
+  private boolean requestStop = false;
 
   /**
    *
@@ -52,17 +53,28 @@ class StateMachine {
     currentState.onEnter(dispatcher);
   }
 
-  @SuppressWarnings("unused")
   void startStateMachineThread() {
     if (stateMachineRunner == null || !stateMachineRunner.isRunning()) {
+      requestStop = false;
       stateMachineRunner = new StateMachineRunner(this);
       stateMachineRunner.start();
+    } else if (stateMachineRunner != null && !stateMachineRunner.isAlive()) {
+      Logger.trace("Thread for " + dispatcher.getName() + " has stopped creating new one...");
+      requestStop = false;
+      stateMachineRunner = new StateMachineRunner(this);
+      stateMachineRunner.start();
+    } else {
+      Logger.trace("Thread for " + dispatcher.getName() + " is already running...");
     }
   }
 
   void stopStateMachineThread() {
-    if (stateMachineRunner != null && stateMachineRunner.isRunning() && currentState.canStopLocomotive()) {
-      stateMachineRunner.shutdown();
+    //A stop is requested. The state machine can only stop in certain states.
+    //If  the statemachine is not in the right state regard this as a request to stop,
+    //when the state machine reaches a state where it can stop it will stop.
+    requestStop = true;
+    if (stateMachineRunner != null) {
+      stateMachineRunner.wakeUp();
     }
   }
 
@@ -76,15 +88,12 @@ class StateMachine {
     }
   }
 
-//  @SuppressWarnings("unused")
-//  void setCurrentState(AbstractState currentState) {
-//    synchronized (this) {
-//      this.currentState = currentState;
-//    }
-//  }
-
-  public boolean isRunning() {
+  boolean isRunning() {
     return stateMachineRunner != null && stateMachineRunner.isRunning();
+  }
+
+  boolean isThreadEnabled() {
+    return stateMachineRunner != null; 
   }
 
   public String getCurrentStateName() {
@@ -159,6 +168,11 @@ class StateMachine {
       String oldState = currentState.getName();
       if (nextState != currentState) {
         currentState.onExit();
+        if (requestStop && nextState.canStopLocomotive()) {
+          //A stop is requested 
+          nextState = new IdleState();
+        }
+
         String newState = nextState.getName();
         currentState = nextState;
         nextState.onEnter(dispatcher);
@@ -191,12 +205,16 @@ class StateMachine {
     }
 
     @Override
-    @SuppressWarnings("SleepWhileInLoop")
     public void run() {
       running = true;
 
       while (running) {
         stateMachine.executeState();
+
+        if (stateMachine.requestStop && stateMachine.getCurrentState().canStopLocomotive()) {
+          running = false;
+        }
+
         try {
           synchronized (lock) {
             lock.wait(threadSleepMillis);
@@ -206,6 +224,9 @@ class StateMachine {
           break;
         }
       }
+
+      stateMachine.requestStop = false;
+      Logger.debug("StateMachineTread " + stateMachine.getDispatcher().getName() + " finished...");
     }
 
     @SuppressWarnings("unused")

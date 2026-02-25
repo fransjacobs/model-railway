@@ -67,6 +67,7 @@ public class Dispatcher {
   private Integer exitSensorId;
 
   private boolean locomotiveStarted = false;
+  private boolean locomotiveStopRequest = false;
   //@SuppressWarnings("unused")
   //private boolean locomotiveStopRequested = false;
   //@SuppressWarnings("unused")
@@ -150,6 +151,7 @@ public class Dispatcher {
   void enable() {
     if (railwayController.isAutoModeActive()) {
       if (stateMachine == null || (stateMachine != null && !stateMachine.isRunning())) {
+        locomotiveStarted = false;
         stateMachine = new StateMachine(this, new IdleState());
       } else {
         Logger.debug("There is a running dispatcherRunner");
@@ -163,7 +165,7 @@ public class Dispatcher {
     if (railwayController.isAutoModeActive()) {
       if (stateMachine != null && !stateMachine.isRunning()) {
         stateMachine.startStateMachineThread();
-        locomotiveStarted = true;
+        locomotiveStarted = stateMachine.isRunning();
       } else {
         Logger.debug("There is a running dispatcherRunner");
       }
@@ -172,20 +174,26 @@ public class Dispatcher {
     }
   }
 
+  //For test mocking only!!!
   void setLocomotiveStarted(boolean locomotiveStarted) {
     this.locomotiveStarted = locomotiveStarted;
   }
 
   public boolean isLocomotiveStarted() {
-    return locomotiveStarted;
+    if (stateMachine != null && stateMachine.isThreadEnabled()) {
+      return stateMachine.isRunning();
+    } else {
+      return locomotiveStarted;
+    }
   }
 
   public void stopLocomotive() {
-    if (stateMachine != null && stateMachine.getCurrentState().canStopLocomotive()) {
+    locomotiveStopRequest = true;
+    if (stateMachine != null) {
+      locomotiveStarted = !stateMachine.getCurrentState().canStopLocomotive();
       stateMachine.stopStateMachineThread();
-      locomotiveStarted = false;
     } else {
-      Logger.debug("Can't stop dispatcher " + getName() + " CurrentState is " + stateMachine.getCurrentStateName());
+      locomotiveStarted = false;
     }
   }
 
@@ -193,9 +201,6 @@ public class Dispatcher {
     return stateMachine;
   }
 
-//  void setStateMachine(StateMachine stateMachine) {
-//    this.stateMachine = stateMachine;
-//  }
   ThreadGroup getThreadGroup() {
     return railwayController.getThreadGroup();
   }

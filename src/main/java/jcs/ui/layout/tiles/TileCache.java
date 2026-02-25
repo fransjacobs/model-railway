@@ -21,7 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 import jcs.JCS;
 import jcs.commandStation.events.AccessoryEvent;
@@ -70,7 +71,7 @@ public class TileCache {
   static final Map<Point, Tile> pointMap = new HashMap<>();
   static final Map<Point, Tile> altPointMap = new HashMap<>();
 
-  private static final ConcurrentLinkedQueue<JCSActionEvent> eventsQueue = new ConcurrentLinkedQueue();
+  private static final BlockingQueue<JCSActionEvent> eventsQueue = new LinkedBlockingQueue<>();
   private static final TileActionEventHandler actionEventQueueHandler = new TileActionEventHandler(eventsQueue);
 
   private static int maxX;
@@ -358,6 +359,28 @@ public class TileCache {
         endIdSeq--;
       }
     }
+  }
+
+  /**
+   * *
+   * Empties, flushes the whole Cache and all id's
+   */
+  public static void flush() {
+    idMap.clear();
+    pointMap.clear();
+    altPointMap.clear();
+
+    straightIdSeq = 0;
+    crossingIdSeq = 0;
+    curvedIdSeq = 0;
+    switchIdSeq = 0;
+    threeWaySwitchIdSeq = 0;
+    crossIdSeq = 0;
+    signalIdSeq = 0;
+    sensorIdSeq = 0;
+    blockIdSeq = 0;
+    straightDirectionIdSeq = 0;
+    endIdSeq = 0;
   }
 
   public static List<Tile> loadTiles() {
