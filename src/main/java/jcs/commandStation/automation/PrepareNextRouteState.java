@@ -26,57 +26,25 @@ import org.tinylog.Logger;
  */
 class PrepareNextRouteState extends AbstractState {
 
-    private Integer inSensorId;
-  //private boolean inSensorTriggerred = false;
+  private boolean nextRouteAvaliable = false;
 
-  
   PrepareNextRouteState() {
     super("PrepareNextRoute");
   }
-  
- @Override
-  void onEnter(Dispatcher dispatcher) {
-    super.onEnter(dispatcher);
-    
-     BlockBean departureBlock = dispatcher.getDepartureBlock();
-    BlockBean destinationBlock = dispatcher.getDestinationBlock();
-    RouteBean route = dispatcher.getRouteBean();
-
-    Logger.trace("Locomotive " + dispatcher.getLocomotiveBean().getName() + " has entered destination " + destinationBlock.getDescription() + " and prepares to stop...");
-
-    //Subscribe the IN sensor
-    inSensorId = dispatcher.getInSensorId();
-    //dispatcher.getSensorMonitor().subscribe(inSensorId, this);
-    Logger.trace("Destination block " + destinationBlock.getId() + " In SensorId: " + inSensorId);
-
-    departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
-    destinationBlock.setBlockState(BlockBean.BlockState.INBOUND);
-
-    PersistenceFactory.getService().persist(departureBlock);
-    PersistenceFactory.getService().persist(destinationBlock);
-
-    dispatcher.showBlockState(departureBlock);
-    dispatcher.showRoute(route, Color.magenta);
-    dispatcher.showBlockState(destinationBlock);
-   
-    
-    
-    
-  }  
-  
-  
 
   @Override
-  AbstractState execute() {
-    int permits = RailwayController.avialablePermits();
-    Logger.trace("Obtaining a lock. There is currently " + permits + " available permits...");
+  void onEnter(Dispatcher dispatcher) {
+    super.onEnter(dispatcher);
 
-    boolean foundNextRoute = false;
+    //try to find a route to the next block
+    int permits = RailwayController.avialablePermits();
+    Logger.trace("Obtaining a lock. There are currently " + permits + " available permits...");
+
     if (RailwayController.tryAquireLock()) {
       try {
         Logger.trace("##### Locked ####");
         if (dispatcher.searchRoute(false)) {
-          foundNextRoute = dispatcher.reserveNextRoute();
+          nextRouteAvaliable = dispatcher.reserveNextRoute();
         }
       } finally {
         //Make sure the lock is released
@@ -85,19 +53,15 @@ class PrepareNextRouteState extends AbstractState {
       }
     } else {
       Logger.trace("No Semaphore available");
-      foundNextRoute = false;
+      nextRouteAvaliable = false;
     }
 
-    if (dispatcher.isLocomotiveStarted()) {
-      if (foundNextRoute) {
-        return new ProceedingState();
-      } else {
-        return new BrakingState();
-      }
-    } else {
-      //Rollback changes
+    //Check for a stop request
+    if (dispatcher.getStateMachine().isRequestStop() || !dispatcher.isLocomotiveStarted()) {
+      nextRouteAvaliable = false;
       RouteBean nextRoute = dispatcher.getNextRouteBean();
       if (nextRoute != null) {
+        //Rollback changes due to stop request
         nextRoute.setLocked(false);
         String nextDestinationTileId = nextRoute.getToTileId();
         BlockBean nextDestinationBlock = PersistenceFactory.getService().getBlockByTileId(nextDestinationTileId);
@@ -109,6 +73,31 @@ class PrepareNextRouteState extends AbstractState {
         dispatcher.showBlockState(nextDestinationBlock);
         dispatcher.resetRoute(nextRoute);
       }
+    }
+  }
+
+  @Override
+  AbstractState execute() {
+
+    BlockBean departureBlock = dispatcher.getDepartureBlock();
+    BlockBean destinationBlock = dispatcher.getDestinationBlock();
+    RouteBean route = dispatcher.getRouteBean();
+
+    Logger.trace("Locomotive " + dispatcher.getName() + " has entered destination " + destinationBlock.getDescription() + " and " + (nextRouteAvaliable ? "will continue" : "starts braking") + "...");
+
+    departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
+    destinationBlock.setBlockState(BlockBean.BlockState.INBOUND);
+
+    PersistenceFactory.getService().persist(departureBlock);
+    PersistenceFactory.getService().persist(destinationBlock);
+
+    dispatcher.showBlockState(departureBlock);
+    dispatcher.showRoute(route, Color.magenta);
+    dispatcher.showBlockState(destinationBlock);
+
+    if (nextRouteAvaliable) {
+      return new ProceedingState();
+    } else {
       return new BrakingState();
     }
   }

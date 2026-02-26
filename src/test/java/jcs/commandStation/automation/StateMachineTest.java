@@ -454,17 +454,16 @@ public class StateMachineTest {
 
     stateMachine.executeState();
     assertEquals("PrepareNextRoute", stateMachine.getCurrentStateName());
-//Hier gebleven de prep next route maken
 
-//    assertEquals(NS_1631, block2.getLocomotiveId());
-//    assertEquals(83, ns1631.getLocomotiveBean().getVelocity());
-//
-//    ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(ns1631.getDepartureBlock().getMinSensorId());
-//    ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(ns1631.getDepartureBlock().getPlusSensorId());
-//
-//    ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(2);
-//    ns1631.getSensorMonitor().isSensorRegisteredWithCallback(3);
-//
+    assertEquals(NS_1631, block2.getLocomotiveId());
+    assertEquals(625, ns1631.getLocomotiveBean().getVelocity());
+
+    ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(ns1631.getDepartureBlock().getMinSensorId());
+    ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(ns1631.getDepartureBlock().getPlusSensorId());
+
+    ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(2);
+    ns1631.getSensorMonitor().isSensorRegisteredWithCallback(3);
+
 //    stateMachine.executeState();
 //    assertEquals("Braking", stateMachine.getCurrentStateName());
 //

@@ -92,8 +92,12 @@ class StateMachine {
     return stateMachineRunner != null && stateMachineRunner.isRunning();
   }
 
+  boolean isRequestStop() {
+    return requestStop;
+  }
+
   boolean isThreadEnabled() {
-    return stateMachineRunner != null; 
+    return stateMachineRunner != null;
   }
 
   public String getCurrentStateName() {

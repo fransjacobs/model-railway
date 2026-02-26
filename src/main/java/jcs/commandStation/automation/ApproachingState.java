@@ -62,7 +62,7 @@ class ApproachingState extends AbstractState {
     dispatcher.showRoute(route, Color.magenta);
     dispatcher.showBlockState(destinationBlock);
 
-    Logger.trace("Locomotive " + locomotive.getName() + " has entered destination " + destinationBlock.getDescription() + " Must stop: " + startBraking);
+    Logger.trace("Locomotive " + locomotive.getName() + " has entered destination " + destinationBlock.getDescription() + " and " + (startBraking?" will stop":" can continue")+"...");
   }
 
   @Override
