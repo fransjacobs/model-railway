@@ -52,7 +52,7 @@ class ProceedingState extends AbstractState implements SensorEventCallback {
     PersistenceFactory.getService().persist(destinationBlock);
 
     dispatcher.showBlockState(departureBlock);
-    dispatcher.showRoute(route, Color.magenta);
+    dispatcher.getRouteManager().showRoute(route, Color.magenta);
     dispatcher.showBlockState(destinationBlock);
 
     inSensorId = dispatcher.getInSensorId();

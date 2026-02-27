@@ -36,9 +36,10 @@ class PrepareRouteState extends AbstractState {
     if (RailwayController.tryAquireLock()) {
       try {
         Logger.trace("##### Locked ####");
-        if (dispatcher.searchRoute(true)) {
-          canAdvanceToNextState = dispatcher.reserveRoute();
-        }
+        canAdvanceToNextState = dispatcher.getRouteManager().searchAndReserveRoute();
+        //if (dispatcher.searchRoute(true)) {
+        //  canAdvanceToNextState = dispatcher.reserveRoute();
+        //}
       } finally {
         //Make sure the lock is released
         RailwayController.releaseLock();
@@ -49,7 +50,10 @@ class PrepareRouteState extends AbstractState {
     }
 
     if (canAdvanceToNextState) {
-      dispatcher.showRoute(dispatcher.getRouteBean(), Color.magenta);
+      //dispatcher.showRoute(dispatcher.getRouteBean(), Color.magenta);
+
+      dispatcher.getRouteManager().showRoute(dispatcher.getRouteBean(), Color.magenta);
+
       return new StartingState();
     } else {
       //Go back to waiting and try again

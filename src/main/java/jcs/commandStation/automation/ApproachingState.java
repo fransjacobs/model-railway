@@ -59,10 +59,11 @@ class ApproachingState extends AbstractState {
     PersistenceFactory.getService().persist(destinationBlock);
 
     dispatcher.showBlockState(departureBlock);
-    dispatcher.showRoute(route, Color.magenta);
+    //dispatcher.showRoute(route, Color.magenta);
+    dispatcher.getRouteManager().showRoute(route, Color.magenta);
     dispatcher.showBlockState(destinationBlock);
 
-    Logger.trace("Locomotive " + locomotive.getName() + " has entered destination " + destinationBlock.getDescription() + " and " + (startBraking?" will stop":" can continue")+"...");
+    Logger.trace("Locomotive " + locomotive.getName() + " has entered destination " + destinationBlock.getDescription() + " and " + (startBraking ? " will stop" : " can continue") + "...");
   }
 
   @Override
@@ -73,10 +74,10 @@ class ApproachingState extends AbstractState {
       return new BrakingState();
     }
   }
-  
+
   @Override
   void onExit() {
-    
+
   }
 
   @Override

@@ -153,7 +153,8 @@ class InBlockState extends AbstractState {
       PersistenceFactory.getService().persist(departureBlock);
       PersistenceFactory.getService().persist(destinationBlock);
 
-      dispatcher.showRoute(route, Color.green);
+      //dispatcher.showRoute(route, Color.green);
+      dispatcher.getRouteManager().showRoute(route, Color.green);
 
       //Clear the next routes
       dispatcher.setNextRouteBean(null);

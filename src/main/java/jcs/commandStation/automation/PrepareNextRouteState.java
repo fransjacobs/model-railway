@@ -43,9 +43,7 @@ class PrepareNextRouteState extends AbstractState {
     if (RailwayController.tryAquireLock()) {
       try {
         Logger.trace("##### Locked ####");
-        if (dispatcher.searchRoute(false)) {
-          nextRouteAvaliable = dispatcher.reserveNextRoute();
-        }
+        nextRouteAvaliable = dispatcher.getRouteManager().searchNextRoute();
       } finally {
         //Make sure the lock is released
         RailwayController.releaseLock();
@@ -92,7 +90,7 @@ class PrepareNextRouteState extends AbstractState {
     PersistenceFactory.getService().persist(destinationBlock);
 
     dispatcher.showBlockState(departureBlock);
-    dispatcher.showRoute(route, Color.magenta);
+    dispatcher.getRouteManager().showRoute(route, Color.magenta);
     dispatcher.showBlockState(destinationBlock);
 
     if (nextRouteAvaliable) {
