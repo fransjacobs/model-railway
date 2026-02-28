@@ -255,7 +255,7 @@ class RouteManager {
         dispatcher.setInSensorId(destinationBlock.getMinSensorId());
       } else {
         dispatcher.setEnterSensorId(destinationBlock.getMinSensorId());
-        dispatcher.setInSensorId(destinationBlock.getMinSensorId());
+        dispatcher.setInSensorId(destinationBlock.getPlusSensorId());
       }
 
       Logger.trace("Departure: " + departureBlock.getId() + " Occupancy Sensor: " + dispatcher.getOccupationSensorId() + " Exit Sensor: " + dispatcher.getExitSensorId());

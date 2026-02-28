@@ -27,6 +27,7 @@ import org.tinylog.Logger;
  * When the enter sensor is active the state machine advances to this state.<br>
  * In the state it is checked whether the destination block has the property alwayStop set.<br>
  * If so the locomotive has to stop when it reaches the IN sensor.<br>
+ * If not try to find the next route so that the locomotive can continue.<br>
  * Therefor next state will be the BrakingStage.<br>
  *
  * When the locomotive does not have to stop, the next possible route to the next block is searched.<br>
@@ -35,6 +36,7 @@ import org.tinylog.Logger;
 class ApproachingState extends AbstractState {
 
   private boolean startBraking;
+  private boolean nextRouteAvaliable = false;
 
   ApproachingState() {
     super("Approaching");
@@ -59,7 +61,6 @@ class ApproachingState extends AbstractState {
     PersistenceFactory.getService().persist(destinationBlock);
 
     dispatcher.showBlockState(departureBlock);
-    //dispatcher.showRoute(route, Color.magenta);
     dispatcher.getRouteManager().showRoute(route, Color.magenta);
     dispatcher.showBlockState(destinationBlock);
 
@@ -68,8 +69,50 @@ class ApproachingState extends AbstractState {
 
   @Override
   AbstractState execute() {
-    if (dispatcher.isLocomotiveStarted() && !startBraking) {
-      return new PrepareNextRouteState();
+    BlockBean destinationBlock = dispatcher.getDestinationBlock();
+    boolean alwaysStop = destinationBlock.isAlwaysStop();
+
+    if (!startBraking) {
+      //try to find a route to the next block
+      int permits = RailwayController.avialablePermits();
+      Logger.trace("Obtaining a lock. There are currently " + permits + " available permits...");
+
+      if (RailwayController.tryAquireLock()) {
+        try {
+          Logger.trace("##### Locked ####");
+          nextRouteAvaliable = dispatcher.getRouteManager().searchNextRoute();
+        } finally {
+          //Make sure the lock is released
+          RailwayController.releaseLock();
+          Logger.trace("##### Released ####");
+        }
+      } else {
+        Logger.trace("No Semaphore available");
+        nextRouteAvaliable = false;
+      }
+
+      //Check for a stop request
+      if (dispatcher.getStateMachine().isRequestStop() || !dispatcher.isLocomotiveStarted()) {
+        nextRouteAvaliable = false;
+        RouteBean nextRoute = dispatcher.getNextRouteBean();
+        if (nextRoute != null) {
+          //Rollback changes due to stop request
+          nextRoute.setLocked(false);
+          String nextDestinationTileId = nextRoute.getToTileId();
+          BlockBean nextDestinationBlock = PersistenceFactory.getService().getBlockByTileId(nextDestinationTileId);
+          nextDestinationBlock.setBlockState(BlockBean.BlockState.FREE);
+          nextDestinationBlock.setArrivalSuffix(null);
+          nextDestinationBlock.setLocomotive(null);
+          PersistenceFactory.getService().persist(nextRoute);
+          PersistenceFactory.getService().persist(nextDestinationBlock);
+          dispatcher.showBlockState(nextDestinationBlock);
+          dispatcher.resetRoute(nextRoute);
+        }
+      }
+    }
+
+    if (dispatcher.isLocomotiveStarted() && !startBraking && nextRouteAvaliable) {
+      return new ProceedingState();
     } else {
       return new BrakingState();
     }
