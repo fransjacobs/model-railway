@@ -25,9 +25,9 @@ import org.tinylog.Logger;
 
 /**
  * Running state of the Autopilot State machine.<br>
- * This state is entered when a locomotive is started.<br>
+ * This state is entered when a locomotive is departing.<br>
  * This state will subscribe to the enter sensor.<br>
- * The state will advance to a next state when the enter sensor becomes active or a reset is requested.
+ * The state will advance to the next state when the enter sensor becomes active.
  */
 class RunningState extends AbstractState implements SensorEventCallback {
 
@@ -43,8 +43,6 @@ class RunningState extends AbstractState implements SensorEventCallback {
     super.onEnter(dispatcher);
 
     BlockBean departureBlock = dispatcher.getDepartureBlock();
-    //BlockBean destinationBlock = dispatcher.getDestinationBlock();
-
     Integer occupancySensorId = dispatcher.getOccupationSensorId();
     Integer exitSensorId = dispatcher.getExitSensorId();
 
@@ -89,10 +87,11 @@ class RunningState extends AbstractState implements SensorEventCallback {
 
   @Override
   void onExit() {
-    //Disable the entersensor
-    dispatcher.getSensorMonitor().subscribeWithoutCallback(enterSensorId);
     //Remove the Callback
     dispatcher.getSensorMonitor().unsubscribe(enterSensorId, this);
+
+    //Disable the entersensor
+    dispatcher.getSensorMonitor().subscribeWithoutCallback(enterSensorId);
   }
 
   @Override

@@ -424,11 +424,13 @@ class RouteManager {
         Logger.debug("Setting Turnout " + turnout.getName() + " [" + turnout.getAddress() + "] to : " + av.getValue());
         switchAccessory(turnout, av);
         //TODO configurable wait time between switches
-        pause(500);
+        pause(250);
       }
       Logger.trace("Turnouts set for " + nextRoute);
 
       PersistenceFactory.getService().persist(nextDestinationBlock);
+      PersistenceFactory.getService().persist(nextRoute);
+      dispatcher.setNextRouteBean(nextRoute);
 
       showRoute(nextRoute, Color.yellow);
       Logger.trace(nextRoute + " Locked");

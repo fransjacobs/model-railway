@@ -54,7 +54,7 @@ class PrepareRouteState extends AbstractState {
 
       dispatcher.getRouteManager().showRoute(dispatcher.getRouteBean(), Color.magenta);
 
-      return new StartingState();
+      return new DepartingState();
     } else {
       //Go back to waiting and try again
       return new WaitingState();

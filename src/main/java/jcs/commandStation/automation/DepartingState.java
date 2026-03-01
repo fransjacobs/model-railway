@@ -21,14 +21,15 @@ import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
 /**
- * Start state of the Autopilot State machine. This state is entered when a valid route is found, or reserved.<br>
+ * Departing state of the Auto Drive State machine.<br>
+ * This state is entered when a valid route is found and reserved.<br>
  * This state will start the locomotive by sending the direction and start velocity commands to the command station.<br>
- * Then it will automatically proceed to the running state
+ * Then it will automatically transition to the running state
  */
-class StartingState extends AbstractState {
+class DepartingState extends AbstractState {
 
-  StartingState() {
-    super("Starting");
+  DepartingState() {
+    super("Departing");
   }
 
   @Override

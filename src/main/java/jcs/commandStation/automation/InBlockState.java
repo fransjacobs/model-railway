@@ -159,7 +159,7 @@ class InBlockState extends AbstractState {
       //Clear the next routes
       dispatcher.setNextRouteBean(null);
 
-      return new StartingState();
+      return new DepartingState();
     } else {
       if (dispatcher.isLocomotiveStarted() && alwaysStop) {
         return new WaitingState();

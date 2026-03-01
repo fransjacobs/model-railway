@@ -22,7 +22,7 @@ import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
 /**
- * Prepare next nextRoute state is to check for a free nextRoute when the Locomotive is entering a block.<br>
+ * Prepare next Route when possible to continue driving.<br>
  */
 class PrepareNextRouteState extends AbstractState {
 
@@ -43,7 +43,7 @@ class PrepareNextRouteState extends AbstractState {
     if (RailwayController.tryAquireLock()) {
       try {
         Logger.trace("##### Locked ####");
-        nextRouteAvaliable = dispatcher.getRouteManager().searchNextRoute();
+        nextRouteAvaliable = dispatcher.getRouteManager().searchAndReserveNextRoute();
       } finally {
         //Make sure the lock is released
         RailwayController.releaseLock();
@@ -76,7 +76,6 @@ class PrepareNextRouteState extends AbstractState {
 
   @Override
   AbstractState execute() {
-
     BlockBean departureBlock = dispatcher.getDepartureBlock();
     BlockBean destinationBlock = dispatcher.getDestinationBlock();
     RouteBean route = dispatcher.getRouteBean();
@@ -94,7 +93,7 @@ class PrepareNextRouteState extends AbstractState {
     dispatcher.showBlockState(destinationBlock);
 
     if (nextRouteAvaliable) {
-      return new ProceedingState();
+      return new PassingThroughState();
     } else {
       return new BrakingState();
     }

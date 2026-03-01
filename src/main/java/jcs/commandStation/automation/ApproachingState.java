@@ -35,9 +35,6 @@ import org.tinylog.Logger;
  */
 class ApproachingState extends AbstractState {
 
-  private boolean startBraking;
-  private boolean nextRouteAvaliable = false;
-
   ApproachingState() {
     super("Approaching");
   }
@@ -52,8 +49,6 @@ class ApproachingState extends AbstractState {
     BlockBean destinationBlock = dispatcher.getDestinationBlock();
     RouteBean route = dispatcher.getRouteBean();
 
-    startBraking = destinationBlock.isAlwaysStop();
-
     departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
     destinationBlock.setBlockState(BlockBean.BlockState.INBOUND);
 
@@ -64,7 +59,7 @@ class ApproachingState extends AbstractState {
     dispatcher.getRouteManager().showRoute(route, Color.magenta);
     dispatcher.showBlockState(destinationBlock);
 
-    Logger.trace("Locomotive " + locomotive.getName() + " has entered destination " + destinationBlock.getDescription() + " and " + (startBraking ? " will stop" : " can continue") + "...");
+    Logger.trace("Locomotive " + locomotive.getName() + " has entered destination " + destinationBlock.getDescription() + " and " + (destinationBlock.isAlwaysStop() ? " will stop" : " can continue") + "...");
   }
 
   @Override
@@ -72,49 +67,11 @@ class ApproachingState extends AbstractState {
     BlockBean destinationBlock = dispatcher.getDestinationBlock();
     boolean alwaysStop = destinationBlock.isAlwaysStop();
 
-    if (!startBraking) {
-      //try to find a route to the next block
-      int permits = RailwayController.avialablePermits();
-      Logger.trace("Obtaining a lock. There are currently " + permits + " available permits...");
-
-      if (RailwayController.tryAquireLock()) {
-        try {
-          Logger.trace("##### Locked ####");
-          nextRouteAvaliable = dispatcher.getRouteManager().searchNextRoute();
-        } finally {
-          //Make sure the lock is released
-          RailwayController.releaseLock();
-          Logger.trace("##### Released ####");
-        }
-      } else {
-        Logger.trace("No Semaphore available");
-        nextRouteAvaliable = false;
-      }
-
-      //Check for a stop request
-      if (dispatcher.getStateMachine().isRequestStop() || !dispatcher.isLocomotiveStarted()) {
-        nextRouteAvaliable = false;
-        RouteBean nextRoute = dispatcher.getNextRouteBean();
-        if (nextRoute != null) {
-          //Rollback changes due to stop request
-          nextRoute.setLocked(false);
-          String nextDestinationTileId = nextRoute.getToTileId();
-          BlockBean nextDestinationBlock = PersistenceFactory.getService().getBlockByTileId(nextDestinationTileId);
-          nextDestinationBlock.setBlockState(BlockBean.BlockState.FREE);
-          nextDestinationBlock.setArrivalSuffix(null);
-          nextDestinationBlock.setLocomotive(null);
-          PersistenceFactory.getService().persist(nextRoute);
-          PersistenceFactory.getService().persist(nextDestinationBlock);
-          dispatcher.showBlockState(nextDestinationBlock);
-          dispatcher.resetRoute(nextRoute);
-        }
-      }
-    }
-
-    if (dispatcher.isLocomotiveStarted() && !startBraking && nextRouteAvaliable) {
-      return new ProceedingState();
-    } else {
+    if (alwaysStop) {
       return new BrakingState();
+
+    } else {
+      return new PrepareNextRouteState();
     }
   }
 
