@@ -169,19 +169,18 @@ class StateMachine {
     synchronized (this) {
       AbstractState nextState = currentState.execute();
 
-      String oldState = currentState.getName();
       if (nextState != currentState) {
         currentState.onExit();
+        String oldState = currentState.getName();
+
         if (requestStop && nextState.canStopLocomotive()) {
           //A stop is requested 
           nextState = new IdleState();
         }
+        dispatcher.fireStateListeners(oldState, nextState.getName(), null);
 
-        String newState = nextState.getName();
         currentState = nextState;
         nextState.onEnter(dispatcher);
-
-        dispatcher.fireStateListeners(oldState, newState, null);
       }
     }
   }

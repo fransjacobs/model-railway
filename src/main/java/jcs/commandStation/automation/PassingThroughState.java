@@ -43,7 +43,7 @@ class PassingThroughState extends AbstractState implements SensorEventCallback {
     BlockBean destinationBlock = dispatcher.getDestinationBlock();
     RouteBean route = dispatcher.getRouteBean();
 
-    Logger.trace("Locomotive " + dispatcher.getLocomotiveBean().getName() + " has entered destination " + destinationBlock.getDescription() + " and prepares to stop...");
+    Logger.trace("Locomotive " + dispatcher.getLocomotiveBean().getName() + " has entered destination " + destinationBlock.getDescription() + " will continue at current speed...");
 
     //Subscribe the IN sensor
     inSensorId = dispatcher.getInSensorId();
