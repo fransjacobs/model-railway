@@ -64,7 +64,7 @@ class PassingThroughState extends AbstractState implements SensorEventCallback {
   @Override
   AbstractState execute() {
     if (inSensorTriggerred) {
-      return new InBlockState();
+      return new ArrivedState();
     } else {
       return this;
     }
@@ -72,8 +72,8 @@ class PassingThroughState extends AbstractState implements SensorEventCallback {
 
   @Override
   void onExit() {
-    dispatcher.getSensorMonitor().subscribeWithoutCallback(inSensorId);
     dispatcher.getSensorMonitor().unsubscribe(inSensorId, this);
+    dispatcher.getSensorMonitor().subscribeWithoutCallback(inSensorId);
   }
 
   @Override

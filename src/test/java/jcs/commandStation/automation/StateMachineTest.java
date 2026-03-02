@@ -109,10 +109,6 @@ public class StateMachineTest {
   @AfterEach
   public void tearDown() {
     TileCache.flush();
-//    Dispatcher ns1631 = railwayController.getDispatcher((int) NS_1631);
-//    ns1631.stopLocomotive();
-//    ns1631.disable();
-//    ns1631.getRailwayController().getSensorMonitor().stopMonitor();
   }
 
   void pause(int millis) {
@@ -152,7 +148,7 @@ public class StateMachineTest {
   }
 
   @Order(2)
-  //@Test
+  @Test
   public void testIdleToWait() {
     System.out.println("IdleToWait");
     Dispatcher ns1631 = railwayController.getDispatcher((int) NS_1631);
@@ -196,7 +192,7 @@ public class StateMachineTest {
   }
 
   @Order(3)
-  //@Test
+  @Test
   public void testIdleToStarting() {
     System.out.println("IdleToStarting");
     Dispatcher ns1631 = railwayController.getDispatcher((int) NS_1631);
@@ -257,7 +253,7 @@ public class StateMachineTest {
   }
 
   @Order(4)
-  //@Test
+  @Test
   public void testOneFullDrivewayStop() {
     System.out.println("OneFullDrivewayStop");
     Dispatcher ns1631 = railwayController.getDispatcher((int) NS_1631);
@@ -379,7 +375,6 @@ public class StateMachineTest {
 
     assertEquals("bk-2", ns1631.getDepartureBlock().getId());
     assertTrue(ns1631.getSensorMonitor().getSubscribers().isEmpty());
-    assertTrue(ns1631.getSensorMonitor().getSubscribersWithoutCallback().isEmpty());
 
     assertNull(ns1631.getDestinationBlock());
 
@@ -577,25 +572,91 @@ public class StateMachineTest {
     stateMachine.executeState();
     assertEquals("Arrived", stateMachine.getCurrentStateName());
 
-    //Hier gebleven
-//    //Check sensors
-//    assertNull(ns1631.getOccupationSensorId());
-//    assertNull(ns1631.getExitSensorId());
-//
-//    block4 = ps.getBlockByTileId("bk-4");
-//    assertFalse(ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(block4.getMinSensorId()));
-//    assertFalse(ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(block4.getPlusSensorId()));
-//
-//    assertEquals("bk-2", ns1631.getDepartureBlock().getId());
-//    assertTrue(ns1631.getSensorMonitor().getSubscribers().isEmpty());
-//    assertTrue(ns1631.getSensorMonitor().getSubscribersWithoutCallback().isEmpty());
-//
-//    assertNull(ns1631.getDestinationBlock());
-//
-//    assertEquals(0, ns1631.getLocomotiveBean().getVelocity());
-//
-//    stateMachine.executeState();
-//    assertEquals("Waiting", stateMachine.getCurrentStateName());
+    //Check sensors
+    assertFalse(ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(occupationSensorId));
+    assertFalse(ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(exitSensorId));
+
+    assertFalse(ns1631.getSensorMonitor().isSensorRegisteredWithCallback(enterSensorId));
+    assertFalse(ns1631.getSensorMonitor().isSensorRegisteredWithCallback(inSensorId));
+
+    assertTrue(ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(enterSensorId));
+    assertTrue(ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(inSensorId));
+
+    assertNull(ns1631.getOccupationSensorId());
+    assertNull(ns1631.getExitSensorId());
+
+    //Departure
+    block4 = ps.getBlockByTileId("bk-4");
+    assertEquals(BlockBean.BlockState.FREE, block4.getBlockState());
+    assertNull(block4.getLocomotiveId());
+
+    //Destination
+    block2 = ps.getBlockByTileId("bk-2");
+    assertEquals(BlockBean.BlockState.OCCUPIED, block2.getBlockState());
+    assertEquals(NS_1631, block2.getLocomotiveId());
+
+    assertNull(ns1631.getRouteBean());
+
+    assertNotNull(ns1631.getNextRouteBean());
+    assertEquals("[bk-2+]->[bk-3-]", ns1631.getNextRouteBean().getId());
+    assertTrue(ns1631.getNextRouteBean().isLocked());
+
+    assertEquals(NS_1631, block2.getLocomotiveId());
+    assertEquals(625, ns1631.getLocomotiveBean().getVelocity());
+
+    //Arrived -> Departing
+    stateMachine.executeState();
+    assertEquals("Departing", stateMachine.getCurrentStateName());
+
+    assertNotNull(ns1631.getRouteBean());
+    assertNull(ns1631.getNextRouteBean());
+    assertEquals("[bk-2+]->[bk-3-]", ns1631.getRouteBean().getId());
+    assertTrue(ns1631.getRouteBean().isLocked());
+
+    //The sensors shoul have shifted
+    assertEquals(enterSensorId, ns1631.getOccupationSensorId());
+    assertEquals(inSensorId, ns1631.getExitSensorId());
+    assertEquals(5, ns1631.getEnterSensorId());
+    assertEquals(4, ns1631.getInSensorId());
+
+    occupationSensorId = enterSensorId;
+    exitSensorId = enterSensorId;
+    enterSensorId = 5;
+    inSensorId = 4;
+
+    assertFalse(ns1631.getSensorMonitor().isSensorRegisteredWithCallback(enterSensorId));
+    assertFalse(ns1631.getSensorMonitor().isSensorRegisteredWithCallback(inSensorId));
+    assertFalse(ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(enterSensorId));
+    assertFalse(ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(inSensorId));
+
+    assertTrue(ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(occupationSensorId));
+    assertTrue(ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(exitSensorId));
+
+    //Departing -> Running
+    stateMachine.executeState();
+    assertEquals("Running", stateMachine.getCurrentStateName());
+
+    //Departure
+    block2 = ps.getBlockByTileId("bk-2");
+    assertEquals(BlockBean.BlockState.OUTBOUND, block2.getBlockState());
+    assertEquals(NS_1631, block2.getLocomotiveId());
+
+    assertEquals(625, ns1631.getLocomotiveBean().getVelocity());
+
+    //Destination
+    block3 = ps.getBlockByTileId("bk-3");
+    assertEquals(BlockBean.BlockState.LOCKED, block3.getBlockState());
+
+    assertTrue(ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(occupationSensorId));
+    assertTrue(ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(exitSensorId));
+
+    assertTrue(ns1631.getSensorMonitor().isSensorRegisteredWithCallback(enterSensorId));
+    assertFalse(ns1631.getSensorMonitor().isSensorRegisteredWithCallback(inSensorId));
+
+    //Running -> Running
+    stateMachine.executeState();
+    assertEquals("Running", stateMachine.getCurrentStateName());
+
     stateMachine.reset();
   }
 

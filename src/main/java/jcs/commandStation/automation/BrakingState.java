@@ -83,7 +83,7 @@ class BrakingState extends AbstractState implements SensorEventCallback {
   @Override
   AbstractState execute() {
     if (inSensorTriggerred) {
-      return new InBlockState();
+      return new ArrivedState();
     } else {
       return this;
     }

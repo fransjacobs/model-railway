@@ -28,11 +28,11 @@ import org.tinylog.Logger;
 /**
  * Arrive or InBlock State. The state when a train has arrived in the destination block.<br>
  */
-class InBlockState extends AbstractState {
+class ArrivedState extends AbstractState {
 
   boolean alwaysStop = true;
 
-  public InBlockState() {
+  public ArrivedState() {
     super("Arrived");
   }
 
