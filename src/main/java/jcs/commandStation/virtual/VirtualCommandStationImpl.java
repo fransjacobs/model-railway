@@ -24,7 +24,7 @@ import jcs.commandStation.AbstractController;
 import jcs.commandStation.AccessoryController;
 import jcs.commandStation.DecoderController;
 import jcs.commandStation.FeedbackController;
-import jcs.commandStation.autopilot.AutoPilot;
+import jcs.commandStation.automation.RailwayController;
 import jcs.commandStation.entities.Device;
 import jcs.commandStation.events.AccessoryEvent;
 import jcs.commandStation.events.AccessoryEventListener;
@@ -93,7 +93,7 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   public void disconnect() {
     this.connected = false;
     this.infoBean = null;
-    
+
   }
 
   @Override
@@ -185,7 +185,8 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
 
         //When a locomotive has a speed change (>0) check if Auto mode is on.
         //When in Auto mode try to simulate the first sensor the locomotive is suppose to hit.
-        if (AutoPilot.isAutoModeActive() && speed > 0) {
+        //if (AutoPilot.isAutoModeActive() && speed > 0) {
+        if (RailwayController.getInstance().isAutoModeActive() && speed > 0) {
           //simulateDriving(locUid, speed, direction);
           this.simulator.simulateDriving(locUid, speed, direction);
         }

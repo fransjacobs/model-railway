@@ -16,9 +16,10 @@
 package jcs.ui.table.model;
 
 import javax.swing.ImageIcon;
+import jcs.commandStation.automation.Dispatcher;
+import jcs.commandStation.automation.RailwayController;
+import jcs.commandStation.automation.StateEventListener;
 import jcs.commandStation.autopilot.AutoPilot;
-import jcs.commandStation.autopilot.state.Dispatcher;
-import jcs.commandStation.autopilot.state.StateEventListener;
 import jcs.entities.LocomotiveBean.Direction;
 import org.tinylog.Logger;
 
@@ -36,8 +37,8 @@ public class LocomotiveDispatcherTableModel extends AbstractBeanTableModel<Dispa
 
   @Override
   public void refresh() {
-    if (AutoPilot.isAutoModeActive()) {
-      setBeans(AutoPilot.getLocomotiveDispatchers());
+    if (RailwayController.getInstance().isAutoModeActive()) {
+      setBeans(RailwayController.getInstance().getDispatchers());
       Logger.trace("There are " + beans.size() + " dispatchers");
 
       for (Dispatcher ld : beans) {
@@ -51,20 +52,25 @@ public class LocomotiveDispatcherTableModel extends AbstractBeanTableModel<Dispa
           Logger.trace("Remove Listen to dispatcher " + ld.getName());
         }
       }
-      setBeans(AutoPilot.getLocomotiveDispatchers());
+      setBeans(RailwayController.getInstance().getDispatchers());
     }
   }
 
+//  @Override
+//  public void onStateChange(Dispatcher dispatcher) {
+//    if (beans.contains(dispatcher)) {
+//      //replace
+//      int idx = beans.indexOf(dispatcher);
+//      beans.set(idx, dispatcher);
+//      //Logger.trace("idx: "+idx+" "+dispatcher.getName()+" "+dispatcher.getDispatcherStateString());
+//      //table data changed is too much?
+//      fireTableDataChanged();
+//    }
+//  }
   @Override
-  public void onStateChange(Dispatcher dispatcher) {
-    if (beans.contains(dispatcher)) {
-      //replace
-      int idx = beans.indexOf(dispatcher);
-      beans.set(idx, dispatcher);
-      //Logger.trace("idx: "+idx+" "+dispatcher.getName()+" "+dispatcher.getDispatcherStateString());
-      //table data changed is too much?
-      fireTableDataChanged();
-    }
+  public void onStateChange(String oldState, String newState, String comment) {
+    //TODO!
+
   }
 
   @Override

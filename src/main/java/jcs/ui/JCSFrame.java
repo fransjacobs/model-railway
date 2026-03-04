@@ -58,7 +58,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.border.LineBorder;
 import jcs.JCS;
-import jcs.commandStation.autopilot.AutoPilot;
+import jcs.commandStation.automation.RailwayController;
 import jcs.commandStation.events.ConnectionEvent;
 import jcs.commandStation.events.PowerEvent;
 import jcs.commandStation.entities.InfoBean;
@@ -305,7 +305,8 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   }
 
   private void showEditLayoutPanel() {
-    if (!AutoPilot.isAutoModeActive()) {
+    //if (!AutoPilot.isAutoModeActive()) {
+    if (RailwayController.getInstance().isAutoModeActive()) {
       CardLayout card = (CardLayout) centerPanel.getLayout();
       card.show(centerPanel, "designPanel");
 
@@ -1175,7 +1176,8 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
       dispatcherStatusPanel.showLocomotiveTab();
     }
 
-    AutoPilot.runAutoPilot(autoPilotBtn.isSelected());
+    //AutoPilot.runAutoPilot(autoPilotBtn.isSelected());
+    RailwayController.getInstance().enableAutomode(autoPilotBtn.isSelected());
   }
 
   private void startAllLocsBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startAllLocsBtnActionPerformed
@@ -1230,7 +1232,8 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   }//GEN-LAST:event_autoPilotMIActionPerformed
 
   private void resetAutopilotMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_resetAutopilotMIActionPerformed
-    AutoPilot.reset();
+    //AutoPilot.reset();
+    RailwayController.getInstance().reset();
   }//GEN-LAST:event_resetAutopilotMIActionPerformed
 
   private void startAllLocsMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startAllLocsMIActionPerformed
@@ -1300,7 +1303,8 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   private void startAllLocomotives() {
     int result = JOptionPane.showConfirmDialog(this, "Are you sure you want to start All Locomotives?", "Start ALL Locomotives", JOptionPane.YES_NO_OPTION);
     if (result == JOptionPane.YES_OPTION) {
-      AutoPilot.startAllLocomotives();
+      //AutoPilot.startAllLocomotives();
+      RailwayController.getInstance().startAllLocomotives();
     }
   }
 

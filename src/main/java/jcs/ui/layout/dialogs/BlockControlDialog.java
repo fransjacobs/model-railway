@@ -19,7 +19,7 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-import jcs.commandStation.autopilot.AutoPilot;
+import jcs.commandStation.automation.RailwayController;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.persistence.PersistenceFactory;
@@ -31,11 +31,11 @@ import org.tinylog.Logger;
  *
  */
 public class BlockControlDialog extends javax.swing.JDialog {
-  
+
   private static final long serialVersionUID = -5384666778324369564L;
-  
+
   private final Block block;
-  
+
   private ComboBoxModel<LocomotiveBean> locomotiveComboBoxModel;
 
   /**
@@ -48,16 +48,16 @@ public class BlockControlDialog extends javax.swing.JDialog {
     super(parent, true);
     this.block = block;
     initComponents();
-    
+
     postInit();
   }
-  
+
   private void postInit() {
     setLocationRelativeTo(null);
     if (block != null) {
       String text = headingLbl.getText() + " " + block.getId();
       headingLbl.setText(text);
-      
+
       List<LocomotiveBean> locos = new LinkedList<>();
       LocomotiveBean emptyBean = new LocomotiveBean();
       locos.add(emptyBean);
@@ -66,7 +66,7 @@ public class BlockControlDialog extends javax.swing.JDialog {
       //Only Loc's which should be shown
       locomotiveComboBoxModel = new DefaultComboBoxModel(locos.toArray());
       locomotiveCB.setModel(locomotiveComboBoxModel);
-      
+
       BlockBean bb = block.getBlockBean();
       if (bb == null) {
         bb = PersistenceFactory.getService().getBlockByTileId(block.getId());
@@ -85,61 +85,61 @@ public class BlockControlDialog extends javax.swing.JDialog {
         }
         block.setBlockBean(bb);
       } else {
-        if(bb.isAllowCommuterOnly() == bb.isAllowNonCommuterOnly() && bb.isAllowCommuterOnly() == false) {
+        if (bb.isAllowCommuterOnly() == bb.isAllowNonCommuterOnly() && bb.isAllowCommuterOnly() == false) {
           //Both are false invert both for clearness as it means both are allowed
           bb.setAllowCommuterOnly(true);
           bb.setAllowNonCommuterOnly(true);
         }
       }
-      
+
       blockIdTF.setText(block.getId());
       blockNameTF.setText(bb.getDescription());
-      
+
       allowCommutersCB.setSelected(bb.isAllowCommuterOnly());
       allowNonCommutersCB.setSelected(bb.isAllowNonCommuterOnly());
       allowDirectionChangeCB.setSelected(bb.isAllowDirectionChange());
-      
+
       if (bb.getLocomotiveId() != null && bb.getLocomotive() == null) {
         bb.setLocomotive(PersistenceFactory.getService().getLocomotive(bb.getLocomotiveId()));
         startLocButton.setEnabled(true);
       }
-      
+
       if (bb.getMinWaitTime() != null) {
         minWaitSpinner.setValue(bb.getMinWaitTime());
       }
-      
+
       if (bb.getMaxWaitTime() != null) {
         maxWaitSpinner.setValue(bb.getMaxWaitTime());
       }
-      
+
       alwaysStopCB.setSelected(bb.isAlwaysStop());
       randomWaitCB.setSelected(bb.isRandomWait());
-      
+
       if (bb.getLocomotive() != null) {
         locomotiveCB.setSelectedItem(bb.getLocomotive());
         if (bb.getBlockState() == null) {
           bb.setBlockState(BlockBean.BlockState.OCCUPIED);
         }
-        
+
         if (bb.getLocomotive().getLocIcon() != null) {
           locomotiveIconLbl.setIcon(bb.getLocomotive().getLocIcon());
           locomotiveIconLbl.setText(null);
         } else {
           locomotiveIconLbl.setText(bb.getLocomotive().getName());
         }
-        
+
         if (LocomotiveBean.Direction.BACKWARDS == bb.getLocomotive().getDirection()) {
           backwardsRB.setSelected(true);
         } else {
           forwardsRB.setSelected(true);
         }
-        
-        startLocButton.setEnabled(AutoPilot.isAutoModeActive());
-        startLocButton.setSelected(AutoPilot.isRunning(bb.getLocomotive()));
+
+        startLocButton.setEnabled(RailwayController.getInstance().isAutoModeActive());
+        startLocButton.setSelected(RailwayController.getInstance().isRunning(bb.getLocomotive()));
       } else {
         locomotiveCB.setSelectedItem(emptyBean);
         startLocButton.setEnabled(false);
-        
+
         if (block.getBlockState() == null) {
           block.setBlockState(BlockBean.BlockState.FREE);
         }
@@ -512,19 +512,19 @@ public class BlockControlDialog extends javax.swing.JDialog {
           bb.setLogicalDirection(null);
         }
         bb.setArrivalSuffix(block.getArrivalSuffix());
-        
+
         PersistenceFactory.getService().persist(bb);
-        
+
         if (bb.getLocomotive() != null && bb.getLocomotive().getName() != null) {
           LocomotiveBean loc = bb.getLocomotive();
           PersistenceFactory.getService().persist(loc);
-          
-          AutoPilot.addLocomotive(loc);
+
+          RailwayController.getInstance().addLocomotive(loc);
         }
-        
+
         TileCache.findTile(bb.getTileId()).setBlockBean(bb);
       }
-      
+
       setVisible(false);
       dispose();
       Logger.trace(evt.getActionCommand() + "Block " + block.getId() + " Locomotive: " + this.block.getBlockBean().getLocomotive());
@@ -532,37 +532,37 @@ public class BlockControlDialog extends javax.swing.JDialog {
 
   private void locomotiveCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_locomotiveCBActionPerformed
     Logger.trace(evt.getActionCommand() + " -> " + locomotiveComboBoxModel.getSelectedItem());
-    
+
     LocomotiveBean selected = (LocomotiveBean) locomotiveComboBoxModel.getSelectedItem();
-    
+
     LocomotiveBean previous = block.getLocomotive();
     if (selected.getId() != null) {
       block.setLocomotive(selected);
     } else {
       block.setLocomotive(null);
     }
-    
+
     if (selected.getLocIcon() != null) {
       locomotiveIconLbl.setIcon(selected.getLocIcon());
       locomotiveIconLbl.setText(null);
     } else {
       locomotiveIconLbl.setText(selected.getName());
     }
-    
+
     if (LocomotiveBean.Direction.BACKWARDS == selected.getDirection()) {
       backwardsRB.setSelected(true);
     } else {
       forwardsRB.setSelected(true);
     }
-    
+
     if (block.getLocomotive() != null) {
       startLocButton.setEnabled(true);
     } else {
       startLocButton.setEnabled(false);
     }
-    
+
     if (previous != null && previous.getId() != null && !previous.getId().equals(selected.getId())) {
-      AutoPilot.removeLocomotive(previous);
+      RailwayController.getInstance().removeLocomotive(previous);
     }
 
   }//GEN-LAST:event_locomotiveCBActionPerformed
@@ -571,9 +571,9 @@ public class BlockControlDialog extends javax.swing.JDialog {
     LocomotiveBean loc = block.getLocomotive();
     if (loc != null) {
       if (startLocButton.isSelected()) {
-        AutoPilot.startLocomotive(loc);
+        RailwayController.getInstance().startLocomotive(loc);
       } else {
-        AutoPilot.stopLocomotive(loc);
+        RailwayController.getInstance().stopLocomotive(loc);
       }
     }
   }//GEN-LAST:event_startLocButtonActionPerformed

@@ -30,9 +30,10 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.RowSorterEvent;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableRowSorter;
+import jcs.commandStation.automation.Dispatcher;
+import jcs.commandStation.automation.RailwayController;
+import jcs.commandStation.automation.StateEventListener;
 import jcs.commandStation.autopilot.AutoPilot;
-import jcs.commandStation.autopilot.AutoPilotStatusListener;
-import jcs.commandStation.autopilot.state.Dispatcher;
 import jcs.entities.LocomotiveBean;
 import jcs.ui.DriverCabDialog;
 import jcs.ui.util.LocomotiveSelectionChangedListener;
@@ -41,7 +42,7 @@ import org.tinylog.Logger;
 /**
  *
  */
-public class DispatcherTablePanel extends JPanel implements AutoPilotStatusListener {
+public class DispatcherTablePanel extends JPanel implements StateEventListener {
 
   private static final long serialVersionUID = -7052304625809395213L;
 
@@ -61,17 +62,20 @@ public class DispatcherTablePanel extends JPanel implements AutoPilotStatusListe
   }
 
   private void initModel() {
-    AutoPilot.addAutoPilotStatusListener(this);
-    statusChanged(AutoPilot.isAutoModeActive());
+    //   RailwayController.getInstance().addStatusListener(this);
+//    statusChanged(AutoPilot.isAutoModeActive());
   }
 
   @Override
-  public void statusChanged(boolean running) {
-    List<Dispatcher> dispatchers = AutoPilot.getLocomotiveDispatchers();
-    Logger.trace("Found " + dispatchers.size() + " Dispatchers. Automode: " + (running ? "on" : "off"));
-    locomotiveDispatcherTableModel.refresh();
+  public void onStateChange(String oldState, String newState, String comment) {
   }
 
+//  @Override
+//  public void statusChanged(boolean running) {
+//    List<Dispatcher> dispatchers = AutoPilot.getLocomotiveDispatchers();
+//    Logger.trace("Found " + dispatchers.size() + " Dispatchers. Automode: " + (running ? "on" : "off"));
+//    locomotiveDispatcherTableModel.refresh();
+//  }
   private class LocIconRenderer extends DefaultTableCellRenderer {
 
     private static final long serialVersionUID = -2650118175935042594L;
@@ -167,7 +171,7 @@ public class DispatcherTablePanel extends JPanel implements AutoPilotStatusListe
     super.setVisible(aFlag);
     if (aFlag) {
       //AutoPilot.addAutoPilotStatusListener(this);
-      statusChanged(AutoPilot.isAutoModeActive());
+//      statusChanged(AutoPilot.isAutoModeActive());
     } else {
       //AutoPilot.removeAutoPilotStatusListener(this);
     }

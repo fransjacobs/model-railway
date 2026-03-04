@@ -67,7 +67,7 @@ import jcs.commandStation.marklin.cs2.LocomotiveFunctionEventParser;
 import jcs.commandStation.marklin.cs.can.parser.LocomotiveVelocityMessage;
 import jcs.commandStation.marklin.cs.can.parser.PowerEventParser;
 import jcs.commandStation.VirtualConnection;
-import jcs.commandStation.autopilot.AutoPilot;
+import jcs.commandStation.automation.RailwayController;
 import jcs.commandStation.autopilot.DriveSimulator;
 import jcs.commandStation.entities.Device;
 import jcs.commandStation.events.AllSensorEventsListener;
@@ -744,7 +744,8 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       if (isVirtual()) {
         //When a locomotive has a speed change (>0) check if Auto mode is on.
         //When in Auto mode try to simulate the first sensor the locomotive is suppose to hit.
-        if (AutoPilot.isAutoModeActive() && speed > 0) {
+        //if (AutoPilot.isAutoModeActive() && speed > 0) {
+        if (RailwayController.getInstance().isAutoModeActive() && speed > 0) {
           //simulateDriving(locUid, speed, direction);
           simulator.simulateDriving(locUid, speed, direction);
         }

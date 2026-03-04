@@ -107,11 +107,11 @@ public class Dispatcher {
     return routeManager;
   }
 
-  String getName() {
+  public String getName() {
     return locomotiveBean.getName();
   }
 
-  LocomotiveBean getLocomotiveBean() {
+  public LocomotiveBean getLocomotiveBean() {
     return locomotiveBean;
   }
 
