@@ -50,13 +50,18 @@ class WaitingState extends AbstractState {
             + " Block max: " + blockBean.getMaxWaitTime());
 
     // Initialize scheduler
-    scheduler = Executors.newSingleThreadScheduledExecutor();
+    //scheduler = Executors.newSingleThreadScheduledExecutor();
+    ThreadGroup threadGroup = dispatcher.getThreadGroup();
+    scheduler = Executors.newSingleThreadScheduledExecutor(runnable
+            -> new Thread(threadGroup, runnable, "STM-WAIT->" + dispatcher.getName().toUpperCase()));
+
     remainingTime = waitTime;
     waitCompleted = false;
     cancelled = false;
 
     // Schedule countdown task - runs every second
     countdownTask = scheduler.scheduleAtFixedRate(() -> {
+
       if (!dispatcher.isLocomotiveStarted()) {
         // Automode disabled - cancel waiting
         Logger.debug("Automode is disabled for " + dispatcher.getName()

@@ -229,8 +229,7 @@ public final class RailwayController {
       //Notify all dispachers so that the ones which waiting and Idle will stop
       Set<Dispatcher> snapshot = new HashSet<>(dispatchers.values());
       for (Dispatcher d : snapshot) {
-        d.stopLocomotive();
-        if (!d.isLocomotiveStarted()) {
+        if (d.isLocomotiveStarted()) {
           d.stopLocomotive();
         }
       }
@@ -461,9 +460,6 @@ public final class RailwayController {
         PersistenceFactory.getService().persist(route);
         lockedCounter++;
       }
-
-    
-    ///////Dispatcher.resetRoute(route);
     }
     Logger.debug("Unlocked " + lockedCounter + " routes out of " + routes.size());
 
@@ -471,38 +467,36 @@ public final class RailwayController {
     int occupiedBlockCounter = 0;
     int freeBlockCounter = 0;
     List<BlockBean> blocks = PersistenceFactory.getService().getBlocks();
+
     for (BlockBean block : blocks) {
       Tile tile = TileCache.findTile(block.getTileId());
-      if (block.getLocomotiveId() != null) {
-        if (block.getBlockState() != null) {
-          if (BlockState.OCCUPIED == block.getBlockState()) {
+      if (block.getLocomotiveId() != null && block.getBlockState() != null) {
+        if (BlockState.OCCUPIED == block.getBlockState()) {
+          occupiedBlockCounter++;
+        }
+        switch (block.getBlockState()) {
+          case LOCKED, INBOUND -> {
+            //reserved block, reset!
+            tile.setLocomotive(null);
+            tile.setBlockState(BlockState.FREE);
+            tile.setArrivalSuffix(null);
+            freeBlockCounter++;
+          }
+          case OUTBOUND -> {
+            //
+            tile.setBlockState(BlockState.OCCUPIED);
+            tile.setArrivalSuffix(null);
             occupiedBlockCounter++;
           }
-        } else {
-          switch (block.getBlockState()) {
-            case LOCKED, INBOUND -> {
-              //reserved block, reset!
-              tile.setLocomotive(null);
-              tile.setBlockState(BlockState.FREE);
+          case OUT_OF_ORDER -> {
+            //Keep as is
+          }
+          default -> {
+            if (BlockState.OCCUPIED == block.getBlockState()) {
+              //TODO...
               tile.setArrivalSuffix(null);
-              freeBlockCounter++;
-            }
-            case OUTBOUND -> {
-              //
-              tile.setBlockState(BlockState.OCCUPIED);
-              tile.setArrivalSuffix(null);
+              //arrival suffix should be set to the default also...
               occupiedBlockCounter++;
-            }
-            case OUT_OF_ORDER -> {
-              //Keep as is
-            }
-            default -> {
-              if (BlockState.OCCUPIED == block.getBlockState()) {
-                //TODO...
-                tile.setArrivalSuffix(null);
-                //arrival suffix should be set to the default also...
-                occupiedBlockCounter++;
-              }
             }
           }
         }

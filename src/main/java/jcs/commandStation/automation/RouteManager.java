@@ -229,7 +229,7 @@ class RouteManager {
         switchAccessory(turnout, av);
 
         //TODO: configurable wait time between switches
-        pause(500);
+        pause(250);
       }
       Logger.trace("Turnouts set for " + route);
 
@@ -464,14 +464,6 @@ class RouteManager {
     }
   }
 
-//  void changeLocomotiveDirection(LocomotiveBean.Direction newDirection) {
-//    try {
-//      JCS.getJcsCommandStation().changeLocomotiveDirection(newDirection, dispatcher.getLocomotiveBean());
-//    } catch (Exception e) {
-//      Logger.error("Error changing direction of locomotive " + dispatcher.getLocomotiveBean().getId() + " to " + newDirection + " Cause: " + e.getMessage());
-//    }
-//    dispatcher.getLocomotiveBean().setDirection(newDirection);
-//  }
   private boolean isAllowed(boolean allowCommuter, boolean allowNonCommuter, boolean commuter) {
     //both flags are the same → all trains allowed
     if (allowCommuter == allowNonCommuter) {

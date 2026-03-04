@@ -26,8 +26,6 @@ import org.tinylog.Logger;
  */
 class PrepareNextRouteState extends AbstractState {
 
-  private boolean nextRouteAvaliable = false;
-
   PrepareNextRouteState() {
     super("PrepareNextRoute");
   }
@@ -35,8 +33,26 @@ class PrepareNextRouteState extends AbstractState {
   @Override
   void onEnter(Dispatcher dispatcher) {
     super.onEnter(dispatcher);
+  }
+
+  @Override
+  AbstractState execute() {
+    BlockBean departureBlock = dispatcher.getDepartureBlock();
+    BlockBean destinationBlock = dispatcher.getDestinationBlock();
+    RouteBean route = dispatcher.getRouteBean();
+
+    departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
+    destinationBlock.setBlockState(BlockBean.BlockState.INBOUND);
+
+    PersistenceFactory.getService().persist(departureBlock);
+    PersistenceFactory.getService().persist(destinationBlock);
+
+    dispatcher.showBlockState(departureBlock);
+    dispatcher.getRouteManager().showRoute(route, Color.magenta);
+    dispatcher.showBlockState(destinationBlock);
 
     //try to find a route to the next block
+    boolean nextRouteAvaliable = false;
     int permits = RailwayController.avialablePermits();
     Logger.trace("Obtaining a lock. There are currently " + permits + " available permits...");
 
@@ -72,25 +88,8 @@ class PrepareNextRouteState extends AbstractState {
         dispatcher.resetRoute(nextRoute);
       }
     }
-  }
-
-  @Override
-  AbstractState execute() {
-    BlockBean departureBlock = dispatcher.getDepartureBlock();
-    BlockBean destinationBlock = dispatcher.getDestinationBlock();
-    RouteBean route = dispatcher.getRouteBean();
 
     Logger.trace("Locomotive " + dispatcher.getName() + " has entered destination " + destinationBlock.getDescription() + " and " + (nextRouteAvaliable ? "will continue" : "starts braking") + "...");
-
-    departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
-    destinationBlock.setBlockState(BlockBean.BlockState.INBOUND);
-
-    PersistenceFactory.getService().persist(departureBlock);
-    PersistenceFactory.getService().persist(destinationBlock);
-
-    dispatcher.showBlockState(departureBlock);
-    dispatcher.getRouteManager().showRoute(route, Color.magenta);
-    dispatcher.showBlockState(destinationBlock);
 
     if (nextRouteAvaliable) {
       return new PassingThroughState();

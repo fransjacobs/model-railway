@@ -161,11 +161,12 @@ class ArrivedState extends AbstractState {
 
       return new DepartingState();
     } else {
-      if (dispatcher.isLocomotiveStarted() && alwaysStop) {
+      if (alwaysStop) {
         return new WaitingState();
       } else {
         return new PrepareRouteState();
       }
+
     }
   }
 

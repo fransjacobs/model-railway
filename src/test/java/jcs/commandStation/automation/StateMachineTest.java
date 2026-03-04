@@ -546,14 +546,14 @@ public class StateMachineTest {
     assertFalse(ns1631.getSensorMonitor().isSensorRegisteredWithCallback(enterSensorId));
     assertTrue(ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(enterSensorId));
 
+    //PrepareNextRoute -> PassingThrough
+    stateMachine.executeState();
+    assertEquals("PassingThrough", stateMachine.getCurrentStateName());
+
     assertNotNull(ns1631.getNextRouteBean());
     assertEquals("[bk-2+]->[bk-3-]", ns1631.getNextRouteBean().getId());
 
     assertTrue(ns1631.getNextRouteBean().isLocked());
-
-    //PrepareNextRoute -> PassingThrough
-    stateMachine.executeState();
-    assertEquals("PassingThrough", stateMachine.getCurrentStateName());
 
     assertEquals(NS_1631, block2.getLocomotiveId());
     assertEquals(625, ns1631.getLocomotiveBean().getVelocity());
