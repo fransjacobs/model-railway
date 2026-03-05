@@ -82,7 +82,7 @@ public final class RailwayController {
 
   private final BlockingQueue<RailwayControllerCommand> actionCommandQueue;
 
-  private CommandExecuter commandExecuter;
+  private final CommandExecuter commandExecuter;
 
   private final Map<String, Dispatcher> dispatchers;
 
@@ -92,13 +92,20 @@ public final class RailwayController {
 
   final static long THREADSTART_TIMEOUT = 2000L;
 
+  final static long ALL_DISPATCHER_STOPPING_TIMEOUT = 600000L;
+
   private boolean automodeOn = false;
+
+  private String status;
 
   private RailwayController() {
     threadGroup = new ThreadGroup("RAILWAY-CONTROLLER");
     dispatchers = new ConcurrentHashMap<>();
     railwayStatusListeners = new ArrayList<>();
     actionCommandQueue = new LinkedBlockingQueue();
+    commandExecuter = new CommandExecuter(actionCommandQueue);
+
+    this.status = "automode.stopped";
   }
 
   /**
@@ -109,6 +116,11 @@ public final class RailwayController {
   public synchronized static RailwayController getInstance() {
     if (instance == null) {
       instance = new RailwayController();
+
+      //Start the command queue
+      if (!instance.commandExecuter.isRunning()) {
+        instance.commandExecuter.start();
+      }
     }
     return instance;
   }
@@ -139,7 +151,7 @@ public final class RailwayController {
     actionCommandQueue.offer(command);
   }
 
-  @SuppressWarnings("unused")
+  //@SuppressWarnings("unused")
   void pause(long millis) {
     try {
       Thread.sleep(millis);
@@ -150,31 +162,18 @@ public final class RailwayController {
 
   public boolean startAutoMode() {
     if (JCS.getJcsCommandStation().isPowerOn()) {
-      if (commandExecuter != null && commandExecuter.isRunning() && sensorMonitor != null && sensorMonitor.isRunning()) {
+      if (sensorMonitor != null && sensorMonitor.isRunning()) {
         Logger.trace("Allready running");
         return true;
       } else {
         commandStationBean = JCS.getJcsCommandStation().getCommandStationBean();
-        commandExecuter = new CommandExecuter(actionCommandQueue);
         sensorMonitor = new SensorMonitor(threadGroup);
 
-        boolean cmdStarted = commandExecuter.isRunning();
         long now = System.currentTimeMillis();
         long start = now;
         long timeout = now + THREADSTART_TIMEOUT;
 
-        while (!cmdStarted && now < timeout) {
-          cmdStarted = commandExecuter.isRunning();
-          now = System.currentTimeMillis();
-        }
-
-        Logger.trace("CommandExecuter Initialized in " + (now - start) + " ms...");
-
         sensorMonitor.start();
-
-        now = System.currentTimeMillis();
-        start = now;
-        timeout = now + THREADSTART_TIMEOUT;
 
         boolean monitorStarted = sensorMonitor.isRunning();
         while (!monitorStarted && now < timeout) {
@@ -187,9 +186,7 @@ public final class RailwayController {
         prepareAllDispatchers();
 
         enqueCommand(new RailwayControllerCommand(CMD_FIRE_STATUS_LST, "automode.started"));
-
         automodeOn = true;
-
         Logger.trace("RailwayController Automode initialized. There are " + dispatchers.size() + " Dispatchers...");
       }
 
@@ -217,7 +214,12 @@ public final class RailwayController {
     return sensorMonitor;
   }
 
+  public String getStatus() {
+    return status;
+  }
+
   void fireStatusListeners(String status) {
+    this.status = status;
     List<RailwayControllerStatusListener> snapshot = new ArrayList<>(railwayStatusListeners);
     for (RailwayControllerStatusListener rcsl : snapshot) {
       rcsl.statusChanged(status);
@@ -234,8 +236,18 @@ public final class RailwayController {
         }
       }
 
-      //TODO: Can only be stopped if las dispatcher are stopped..
-      //add check
+      long now = System.currentTimeMillis();
+      long start = now;
+      long timeout = now + ALL_DISPATCHER_STOPPING_TIMEOUT;
+      boolean dispatcherRunning = isAnyDispatcherRunning();
+
+      while (dispatcherRunning && now < timeout) {
+        dispatcherRunning = isAnyDispatcherRunning();
+        now = System.currentTimeMillis();
+        pause(100);
+      }
+
+      Logger.trace("All dispatchers are stopped in " + (now - start) + " ms...");
       sensorMonitor.stopMonitor();
 
       try {
@@ -247,6 +259,7 @@ public final class RailwayController {
     Logger.debug("ControllerMonitor Stopped");
     sensorMonitor = null;
     automodeOn = false;
+
   }
 
   Dispatcher createDispatcher(LocomotiveBean locomotiveBean) {
@@ -280,10 +293,13 @@ public final class RailwayController {
       Dispatcher dispatcher;
       if (snapshot.containsKey(loc.getName())) {
         dispatcher = snapshot.get(loc.getName());
+        dispatcher.enable();
         dispatchers.put(loc.getName(), dispatcher);
         Logger.trace("Re use dispatcher " + loc.getName() + "...");
       } else {
-        dispatchers.put(loc.getName(), createDispatcher(loc));
+        dispatcher = createDispatcher(loc);
+        dispatcher.enable();
+        dispatchers.put(loc.getName(), dispatcher);
       }
     }
   }
@@ -345,7 +361,7 @@ public final class RailwayController {
     }
   }
 
-  public boolean isAnyDispatcherRunning() {
+  boolean isAnyDispatcherRunning() {
     boolean isRunning = false;
     Set<Dispatcher> snapshot = new HashSet<>(dispatchers.values());
     for (Dispatcher ld : snapshot) {
@@ -648,32 +664,24 @@ public final class RailwayController {
    */
   private class CommandExecuter extends Thread {
 
-    private boolean stop = false;
-    private boolean quit = true;
-
+    private boolean running;
     private final BlockingQueue<RailwayControllerCommand> eventQueue;
 
     public CommandExecuter(BlockingQueue eventQueue) {
       this.eventQueue = eventQueue;
     }
 
-    @SuppressWarnings("unused")
-    void quit() {
-      this.quit = true;
-    }
-
+//    @SuppressWarnings("unused")
+//    void quit() {
+//      this.running = false;
+//    }
     boolean isRunning() {
-      return !this.quit;
-    }
-
-    @SuppressWarnings("unused")
-    boolean isFinished() {
-      return this.stop;
+      return running;
     }
 
     @Override
     public void run() {
-      quit = false;
+      running = true;
       setName("RAILWAY-CONTROLLER-EXECUTER");
       Logger.trace("RailwayController Command executer Started...");
 
@@ -688,7 +696,6 @@ public final class RailwayController {
         }
       }
 
-      stop = true;
       Logger.trace("Tile ActionEventHandler Stopped...");
     }
 

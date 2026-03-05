@@ -19,7 +19,6 @@ import javax.swing.ImageIcon;
 import jcs.commandStation.automation.Dispatcher;
 import jcs.commandStation.automation.RailwayController;
 import jcs.commandStation.automation.StateEventListener;
-import jcs.commandStation.autopilot.AutoPilot;
 import jcs.entities.LocomotiveBean.Direction;
 import org.tinylog.Logger;
 
@@ -56,21 +55,14 @@ public class LocomotiveDispatcherTableModel extends AbstractBeanTableModel<Dispa
     }
   }
 
-//  @Override
-//  public void onStateChange(Dispatcher dispatcher) {
-//    if (beans.contains(dispatcher)) {
-//      //replace
-//      int idx = beans.indexOf(dispatcher);
-//      beans.set(idx, dispatcher);
-//      //Logger.trace("idx: "+idx+" "+dispatcher.getName()+" "+dispatcher.getDispatcherStateString());
-//      //table data changed is too much?
-//      fireTableDataChanged();
-//    }
-//  }
   @Override
-  public void onStateChange(String oldState, String newState, String comment) {
-    //TODO!
-
+  public void onStateChange(Dispatcher dispatcher, String oldState, String newState, String comment) {
+    if (beans.contains(dispatcher)) {
+      int idx = beans.indexOf(dispatcher);
+      beans.set(idx, dispatcher);
+      //Logger.trace("idx: "+idx+" "+dispatcher.getName()+" "+dispatcher.getDispatcherStateString());
+      fireTableDataChanged();
+    }
   }
 
   @Override

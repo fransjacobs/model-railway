@@ -17,6 +17,6 @@ package jcs.commandStation.automation;
 
 public interface StateEventListener {
 
-  void onStateChange(String oldState, String newState, String comment);
+  void onStateChange(Dispatcher dispatcher, String oldState, String newState, String comment);
 
 }

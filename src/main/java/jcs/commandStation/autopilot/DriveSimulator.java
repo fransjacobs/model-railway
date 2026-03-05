@@ -21,8 +21,10 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import jcs.JCS;
 import jcs.commandStation.FeedbackController;
-import jcs.commandStation.autopilot.state.Dispatcher;
+import jcs.commandStation.automation.Dispatcher;
+import jcs.commandStation.automation.RailwayController;
 import jcs.commandStation.events.SensorEvent;
+import jcs.entities.CommandStationBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.SensorBean;
 import jcs.persistence.PersistenceFactory;
@@ -46,9 +48,12 @@ public class DriveSimulator {
       return;
     }
     //Check is the Dispatcher for the locomotive is running...
-    Dispatcher dispatcher = AutoPilot.getLocomotiveDispatcher(locUid);
+    CommandStationBean commandStationBean = PersistenceFactory.getService().getDefaultCommandStation();
+    PersistenceFactory.getService().getLocomotive(locUid, commandStationBean.getId());
 
-    if (dispatcher.isLocomotiveAutomodeOn()) {
+    Dispatcher dispatcher = RailwayController.getInstance().getDispatcher(locUid);
+
+    if (dispatcher.isLocomotiveStarted()) {
       Logger.trace("Try to simulate the next sensor of " + dispatcher.getName());
 
       Integer occupationSensorId = dispatcher.getOccupationSensorId();
@@ -66,7 +71,19 @@ public class DriveSimulator {
       Integer enterSensorId = dispatcher.getEnterSensorId();
       Integer inSensorId = dispatcher.getInSensorId();
 
-      Integer sensorId = dispatcher.getWaitingForSensorId();
+      //depending on the state the sensor "waiting for" is the enter- or the in-sensor
+      String state = dispatcher.getStateName();
+      Logger.trace("Dispatcher state: " + state);
+
+      Integer sensorId;
+      switch (state) {
+        case "Running" ->
+          sensorId = enterSensorId;
+        case "Braking" ->
+          sensorId = inSensorId;
+        default ->
+          sensorId = enterSensorId;
+      }
 
       int time = 5000;
       if (sensorId != null && sensorId.equals(enterSensorId)) {
@@ -90,7 +107,7 @@ public class DriveSimulator {
     SensorBean sensor = PersistenceFactory.getService().getSensor(sensorId);
     sensor.setActive(active);
     SensorEvent sensorEvent = new SensorEvent(sensor);
-    Logger.trace("Fire Sensor " + sensorId+" to "+active);
+    Logger.trace("Fire Sensor " + sensorId + " to " + active);
 
     List<FeedbackController> acl = JCS.getJcsCommandStation().getFeedbackControllers();
     for (FeedbackController fbc : acl) {

@@ -32,8 +32,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableRowSorter;
 import jcs.commandStation.automation.Dispatcher;
 import jcs.commandStation.automation.RailwayController;
-import jcs.commandStation.automation.StateEventListener;
-import jcs.commandStation.autopilot.AutoPilot;
+import jcs.commandStation.automation.RailwayControllerStatusListener;
 import jcs.entities.LocomotiveBean;
 import jcs.ui.DriverCabDialog;
 import jcs.ui.util.LocomotiveSelectionChangedListener;
@@ -42,7 +41,7 @@ import org.tinylog.Logger;
 /**
  *
  */
-public class DispatcherTablePanel extends JPanel implements StateEventListener {
+public class DispatcherTablePanel extends JPanel implements RailwayControllerStatusListener {
 
   private static final long serialVersionUID = -7052304625809395213L;
 
@@ -62,20 +61,17 @@ public class DispatcherTablePanel extends JPanel implements StateEventListener {
   }
 
   private void initModel() {
-    //   RailwayController.getInstance().addStatusListener(this);
-//    statusChanged(AutoPilot.isAutoModeActive());
+    RailwayController.getInstance().addStatusListener(this);
+    statusChanged(RailwayController.getInstance().getStatus());
   }
 
   @Override
-  public void onStateChange(String oldState, String newState, String comment) {
+  public void statusChanged(String status) {
+    List<Dispatcher> dispatchers = RailwayController.getInstance().getDispatchers();
+    Logger.trace("Found " + dispatchers.size() + " Dispatchers. Automode status: " + (status));
+    locomotiveDispatcherTableModel.refresh();
   }
 
-//  @Override
-//  public void statusChanged(boolean running) {
-//    List<Dispatcher> dispatchers = AutoPilot.getLocomotiveDispatchers();
-//    Logger.trace("Found " + dispatchers.size() + " Dispatchers. Automode: " + (running ? "on" : "off"));
-//    locomotiveDispatcherTableModel.refresh();
-//  }
   private class LocIconRenderer extends DefaultTableCellRenderer {
 
     private static final long serialVersionUID = -2650118175935042594L;

@@ -154,10 +154,11 @@ public class Dispatcher {
   public void startLocomotive() {
     if (railwayController.isAutoModeActive()) {
       if (stateMachine != null && !stateMachine.isRunning()) {
+        Logger.debug("There is a running dispatcherRunner");
+      } else {
+        stateMachine = new StateMachine(this, new IdleState());
         stateMachine.startStateMachineThread();
         locomotiveStarted = stateMachine.isRunning();
-      } else {
-        Logger.debug("There is a running dispatcherRunner");
       }
     } else {
       Logger.trace("Can't start Locomotive " + getName() + " automode is not enabled");
@@ -214,7 +215,7 @@ public class Dispatcher {
     enterSensorId = null;
     inSensorId = null;
     exitSensorId = null;
-    //stateEventListeners.clear();
+    stateEventListeners.clear();
   }
 
   //Make sure to obtain the last status of the block is represented...
@@ -267,7 +268,7 @@ public class Dispatcher {
     }
   }
 
-  Integer getEnterSensorId() {
+  public Integer getEnterSensorId() {
     return enterSensorId;
   }
 
@@ -275,7 +276,7 @@ public class Dispatcher {
     this.enterSensorId = enterSensorId;
   }
 
-  Integer getInSensorId() {
+  public Integer getInSensorId() {
     return inSensorId;
   }
 
@@ -283,7 +284,7 @@ public class Dispatcher {
     this.inSensorId = inSensorId;
   }
 
-  Integer getOccupationSensorId() {
+  public Integer getOccupationSensorId() {
     return occupationSensorId;
   }
 
@@ -291,7 +292,7 @@ public class Dispatcher {
     this.occupationSensorId = occupationSensorId;
   }
 
-  Integer getExitSensorId() {
+  public Integer getExitSensorId() {
     return exitSensorId;
   }
 
@@ -320,7 +321,7 @@ public class Dispatcher {
 
   void fireStateListeners(String oldState, String newState, String comment) {
     for (StateEventListener sel : stateEventListeners) {
-      sel.onStateChange(oldState, newState, comment);
+      sel.onStateChange(this, oldState, newState, comment);
     }
   }
 
