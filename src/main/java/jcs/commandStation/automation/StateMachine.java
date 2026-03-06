@@ -165,24 +165,24 @@ class StateMachine {
     Logger.trace(dispatcher.getName() + " has been Reset");
   }
 
-  void executeState() {
-    synchronized (this) {
-      AbstractState nextState = currentState.execute();
+  synchronized boolean executeState() {
+    AbstractState nextState = currentState.execute();
 
-      if (nextState != currentState) {
-        currentState.onExit();
-        String oldState = currentState.getName();
+    boolean stateChanged = nextState != currentState;
+    if (stateChanged) {
+      currentState.onExit();
+      String oldState = currentState.getName();
 
-        if (requestStop && nextState.canStopLocomotive()) {
-          //A stop is requested 
-          nextState = new IdleState();
-        }
-        dispatcher.fireStateListeners(oldState, nextState.getName(), null);
-
-        currentState = nextState;
-        nextState.onEnter(dispatcher);
+      if (requestStop && nextState.canStopLocomotive()) {
+        //A stop is requested 
+        nextState = new IdleState();
       }
+      dispatcher.fireStateListeners(oldState, nextState.getName(), null);
+
+      currentState = nextState;
+      nextState.onEnter(dispatcher);
     }
+    return stateChanged;
   }
 
   private class StateMachineRunner extends Thread {
@@ -196,7 +196,7 @@ class StateMachine {
     StateMachineRunner(StateMachine stateMachine) {
       super(stateMachine.getDispatcher().getThreadGroup(), "STM->" + stateMachine.getDispatcher().getLocomotiveBean().getName().toUpperCase());
       this.stateMachine = stateMachine;
-      threadSleepMillis = Long.parseUnsignedLong(System.getProperty("autopilot.thread.wait.millis", "1000"));
+      threadSleepMillis = Long.parseUnsignedLong(System.getProperty("autopilot.thread.wait.millis", "500"));
     }
 
     void shutdown() {
@@ -212,19 +212,21 @@ class StateMachine {
       running = true;
 
       while (running) {
-        stateMachine.executeState();
+        boolean stateChanged = stateMachine.executeState();
 
         if (stateMachine.requestStop && stateMachine.getCurrentState().canStopLocomotive()) {
           running = false;
         }
 
-        try {
-          synchronized (lock) {
-            lock.wait(threadSleepMillis);
+        if (!stateChanged) {
+          try {
+            synchronized (lock) {
+              lock.wait(threadSleepMillis);
+            }
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            break;
           }
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-          break;
         }
       }
 

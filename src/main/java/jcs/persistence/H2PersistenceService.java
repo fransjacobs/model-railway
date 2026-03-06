@@ -936,7 +936,7 @@ public class H2PersistenceService implements PersistenceService {
 
   @Override
   public Long getLocomotiveCount(StationBean stationBean) {
-    return database.sql("select count(*) from stations s join station_blocks sb on s.id = sb.station_id join blocks b on sb.block_id = b.id and b.locomotive_id is not null where s.id = ?", stationBean.getId()).first(Long.class);
+    return database.sql("select count(*) from stations s join station_blocks sb on s.id = sb.station_id join blocks b on sb.block_id = b.id and b.locomotive_id is not null and b.status = 'Occupied' where s.id = ?", stationBean.getId()).first(Long.class);
   }
 
   @Override

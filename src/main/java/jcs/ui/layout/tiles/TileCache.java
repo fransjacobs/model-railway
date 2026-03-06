@@ -631,6 +631,7 @@ public class TileCache {
 
   public static void enqueTileAction(SensorEvent sensorEvent) {
     eventsQueue.offer(new ActionEventWrapper(sensorEvent));
+    
     synchronized (TileCache.actionEventQueueHandler) {
       actionEventQueueHandler.notifyAll();
     }

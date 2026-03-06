@@ -153,6 +153,9 @@ class ArrivedState extends AbstractState {
       PersistenceFactory.getService().persist(departureBlock);
       PersistenceFactory.getService().persist(destinationBlock);
 
+      dispatcher.showBlockState(departureBlock);
+      dispatcher.showBlockState(destinationBlock);
+
       //dispatcher.showRoute(route, Color.green);
       dispatcher.getRouteManager().showRoute(route, Color.green);
 

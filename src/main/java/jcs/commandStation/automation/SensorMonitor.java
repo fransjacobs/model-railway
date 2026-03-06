@@ -210,10 +210,6 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
         handleGhost(event);
       }
     }
-    synchronized (this) {
-      notifyAll();
-    }
-
   }
 
   void notifySubscribers(SensorEvent event) {
@@ -262,6 +258,11 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
         if (event != null) {
           handleSensorEvent(event);
         }
+
+        synchronized (this) {
+          notifyAll();
+        }
+
       } catch (InterruptedException ex) {
         Logger.trace("Interrupted");
         Thread.currentThread().interrupt();

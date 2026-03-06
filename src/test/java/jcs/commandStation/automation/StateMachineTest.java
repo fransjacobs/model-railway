@@ -430,7 +430,8 @@ public class StateMachineTest {
     //Also make sure the staion does not require 2 trains
     StationBean station = ps.getStation(block2);
     assertEquals(2, station.getMinLocomotives());
-    station.setMinLocomotives(1);
+    //disable
+    station.setMinLocomotives(0);
     ps.persist(station);
 
     ns1631.enable();

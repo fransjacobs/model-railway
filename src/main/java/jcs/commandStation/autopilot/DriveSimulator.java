@@ -31,8 +31,7 @@ import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
 /**
- *
- * @author frans
+ * Simulate driving by triggering the enter and in sensors 
  */
 public class DriveSimulator {
 

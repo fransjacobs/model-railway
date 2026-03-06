@@ -39,10 +39,12 @@ class TileActionEventHandler extends Thread {
     this.eventQueue = eventQueue;
   }
 
+  @SuppressWarnings("unused")
   void quit() {
     this.running = false;
   }
 
+  @SuppressWarnings("unused")
   boolean isRunning() {
     return this.running;
   }

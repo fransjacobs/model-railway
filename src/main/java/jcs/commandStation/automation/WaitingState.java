@@ -71,13 +71,10 @@ class WaitingState extends AbstractState {
         return;
       }
 
-      // Notify listeners with remaining time
-      dispatcher.fireStateListeners(this.name, this.name, "(" + remainingTime + ")");
+      dispatcher.fireStateListeners(name, name, "(" + remainingTime + ")");
+      Logger.trace("Remaining time for " + dispatcher.getName() + " " + remainingTime + " s...");
 
-      // Decrement remaining time
       remainingTime--;
-
-      // Check if wait completed
       if (remainingTime < 0) {
         waitCompleted = true;
         stopScheduler();
