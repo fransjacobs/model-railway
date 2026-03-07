@@ -86,10 +86,8 @@ class PassingThroughState extends AbstractState implements SensorEventCallback {
     if (inSensorId.equals(event.getSensorId())) {
       if (event.isActive()) {
         inSensorTriggerred = true;
-        Logger.trace("Enter Event from Sensor " + event.getSensorId());
-        synchronized (this) {
-          notifyAll();
-        }
+        Logger.trace("In Event from Sensor " + event.getSensorId() + " for " + dispatcher.getName());
+        dispatcher.wakeup();
       }
     } else {
       Logger.trace("Event for " + event.getSensorId() + " not for this state...");

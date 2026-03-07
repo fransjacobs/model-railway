@@ -186,6 +186,18 @@ class RouteManager {
     return route != null;
   }
 
+  Integer getEstimatedRouteSwitchTime() {
+    RouteBean route = dispatcher.getRouteBean();
+    //Return a default switchtime 
+    return PersistenceFactory.getService().getAverageAccessorySwitchTime(route).intValue();
+  }
+
+  Integer getEstimatedNextRouteSwitchTime() {
+    RouteBean route = dispatcher.getNextRouteBean();
+    //Return a default switchtime 
+    return PersistenceFactory.getService().getAverageAccessorySwitchTime(route).intValue();
+  }
+
   boolean reserveRoute() {
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
     RouteBean route = dispatcher.getRouteBean();
@@ -418,13 +430,19 @@ class RouteManager {
     if (turnoutsNotLocked(nextRoute)) {
       PersistenceFactory.getService().persist(nextRoute);
 
+//      int turnoutCount = turnouts.size();
+//      int turnoutIdx = 0;
       for (RouteElementBean reb : turnouts) {
         AccessoryBean.AccessoryValue av = reb.getAccessoryValue();
         AccessoryBean turnout = reb.getTileBean().getAccessoryBean();
         Logger.debug("Setting Turnout " + turnout.getName() + " [" + turnout.getAddress() + "] to : " + av.getValue());
         switchAccessory(turnout, av);
-        //TODO configurable wait time between switches
-        pause(250);
+//        turnoutIdx++;
+        //No need to wait...
+//        if (turnoutCount > turnoutIdx) {
+//          //TODO configurable wait time between switches
+//          pause(250);
+//        }
       }
       Logger.trace("Turnouts set for " + nextRoute);
 

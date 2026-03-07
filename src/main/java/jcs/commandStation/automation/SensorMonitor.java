@@ -95,6 +95,7 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
    * @param callback
    */
   public void unsubscribe(Integer sensorId, SensorEventCallback callback) {
+    
     List<SensorEventCallback> callbacks = subscribers.get(sensorId);
     if (callbacks != null) {
       callbacks.remove(callback);
@@ -254,7 +255,7 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
     while (running) {
       try {
         //SensorEvent event = this.eventQueue.take();
-        SensorEvent event = eventQueue.poll(100, TimeUnit.MILLISECONDS);
+        SensorEvent event = eventQueue.poll(10, TimeUnit.MILLISECONDS);
         if (event != null) {
           handleSensorEvent(event);
         }

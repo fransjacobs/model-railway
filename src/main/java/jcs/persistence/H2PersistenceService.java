@@ -940,6 +940,21 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
+  public Double getAverageAccessorySwitchTime() {
+    //return database.sql("select ceil(avg(a.switch_time)) from accessories a where a.type like '%weiche%'").first(Long.class);
+    return database.sql("select ceil(avg(a.switch_time)) from accessories").first(Double.class);
+  }
+
+  @Override
+  public Double getAverageAccessorySwitchTime(RouteBean routeBean) {
+    if (routeBean != null) {
+      return database.sql("select ceil(avg(a.switch_time)) from routes r join route_elements re on r.id = re.route_id and re.accessory_value is not null join tiles t on re.tile_id = t.id join accessories a on t.accessory_id = a.id where r.id  = ?", routeBean.getId()).first(Double.class);
+    } else {
+      return getAverageAccessorySwitchTime();
+    }
+  }
+
+  @Override
   public Long getGhostBlockCount() {
     return database.sql("select count(*) from blocks b where b.status = 'Ghost'").first(Long.class);
   }

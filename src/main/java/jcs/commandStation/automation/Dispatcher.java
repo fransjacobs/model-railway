@@ -197,24 +197,50 @@ public class Dispatcher {
   }
 
   public void reset() {
-    //TODO!
-//    if (isRunning()) {
-//      //In which state are we?
-//      AbstractState currentState = stateMachine.getDispatcherState();
-//      currentState.requestReset();
-//    } else {
-//      stateMachine.reset();
-//    }
+    if (stateMachine != null) {
+      stateMachine.reset();
+    } else {
+      resetAttributes();
+    }
   }
 
-  void resetAttributes() {
-    routeBean = null;
-    nextRouteBean = null;
-    destinationBlockId = null;
-    //waitingForSensorId = null;
-    enterSensorId = null;
-    inSensorId = null;
-    exitSensorId = null;
+  private void resetAttributes() {
+    setEnterSensorId(null);
+    setInSensorId(null);
+    setExitSensorId(null);
+
+    BlockBean destination = getDestinationBlock();
+    if (destination != null) {
+      destination.setLocomotive(null);
+      destination.setBlockState(BlockBean.BlockState.FREE);
+      PersistenceFactory.getService().persist(destination);
+    }
+
+    BlockBean departure = getDepartureBlock();
+    departure.setBlockState(BlockBean.BlockState.OCCUPIED);
+
+    RouteBean route = getRouteBean();
+    if (route != null) {
+      route.setLocked(false);
+      resetRoute(route);
+      PersistenceFactory.getService().persist(route);
+    }
+
+    RouteBean nextRoute = getNextRouteBean();
+    if (nextRoute != null) {
+      nextRoute.setLocked(false);
+      resetRoute(nextRoute);
+      PersistenceFactory.getService().persist(nextRoute);
+    }
+
+    PersistenceFactory.getService().persist(departure);
+
+    setRouteBean(null);
+    setNextRouteBean(null);
+    setDestinationBlockId(null);
+
+    Logger.trace(getName() + " has been Reset");
+
     stateEventListeners.clear();
   }
 
@@ -364,6 +390,12 @@ public class Dispatcher {
     Tile tile = TileCache.findTile(blockBean.getTileId());
     if (tile != null) {
       tile.setBlockBean(blockBean);
+    }
+  }
+
+  void wakeup() {
+    if (stateMachine != null) {
+      stateMachine.wakeUp();
     }
   }
 

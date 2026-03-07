@@ -16,7 +16,7 @@
 package jcs.commandStation.marklin.cs.net;
 
 import java.net.InetAddress;
-import java.util.concurrent.TransferQueue;
+import java.util.concurrent.BlockingQueue;
 import jcs.commandStation.marklin.cs.can.CanMessage;
 import jcs.commandStation.events.ConnectionEventListener;
 
@@ -34,9 +34,8 @@ public interface CSConnection extends AutoCloseable {
 
   boolean isConnected();
 
-  TransferQueue<CanMessage> getEventQueue();
-  
-  void addDisconnectionEventListener(ConnectionEventListener listener);
+  BlockingQueue<CanMessage> getEventQueue();
 
+  void addDisconnectionEventListener(ConnectionEventListener listener);
 
 }

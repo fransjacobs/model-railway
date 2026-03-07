@@ -512,6 +512,19 @@ public interface PersistenceService {
   Long getLocomotiveCount(StationBean stationBean);
 
   /**
+   *
+   * @return the average accessory switch time
+   */
+  Double getAverageAccessorySwitchTime();
+
+  /**
+   *
+   * @param routeBean
+   * @return the average accessory switch time for the given routeBean
+   */
+  Double getAverageAccessorySwitchTime(RouteBean routeBean);
+
+  /**
    * Retrieves a BlockBean by ID.
    *
    * @param id The ID of the BlockBean to retrieve.

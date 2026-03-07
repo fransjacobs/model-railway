@@ -16,15 +16,24 @@
 package jcs.commandStation.automation;
 
 import java.awt.Color;
+import jcs.commandStation.events.SensorEvent;
 import jcs.entities.BlockBean;
+import jcs.entities.LocomotiveBean;
 import jcs.entities.RouteBean;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
 /**
  * Prepare next Route when possible to continue driving.<br>
+ * I could be the case the the in sensor is triggered while searching for a route.<br>
+ * To avoid a ghost subscribe to the in sensor event
  */
-class PrepareNextRouteState extends AbstractState {
+class PrepareNextRouteState extends AbstractState implements SensorEventCallback {
+
+  private Integer inSensorId;
+  private boolean nextRouteFound;
+
+  private boolean inSensorTriggered = false;
 
   PrepareNextRouteState() {
     super("PrepareNextRoute");
@@ -33,10 +42,7 @@ class PrepareNextRouteState extends AbstractState {
   @Override
   void onEnter(Dispatcher dispatcher) {
     super.onEnter(dispatcher);
-  }
 
-  @Override
-  AbstractState execute() {
     BlockBean departureBlock = dispatcher.getDepartureBlock();
     BlockBean destinationBlock = dispatcher.getDestinationBlock();
     RouteBean route = dispatcher.getRouteBean();
@@ -51,41 +57,76 @@ class PrepareNextRouteState extends AbstractState {
     dispatcher.getRouteManager().showRoute(route, Color.magenta);
     dispatcher.showBlockState(destinationBlock);
 
-    //try to find a route to the next block
-    boolean nextRouteAvaliable = false;
-    int permits = RailwayController.avialablePermits();
-    Logger.trace("Obtaining a lock. There are currently " + permits + " available permits...");
+    //To avoid a ghost when the route searching is taking more time
+    //then the time it takes for the locomotive to reach the In sensor
+    //subscribe to the In sensor so that we can stop if worse comes to worst.
+    //When a route is found and the average switch time is longer than 250 ms slow down a bit to buy some time 
+    //Subscribe the IN sensor
+    inSensorId = dispatcher.getInSensorId();
+    dispatcher.getSensorMonitor().subscribe(inSensorId, this);
+    Logger.trace("Destination block " + destinationBlock.getId() + " In SensorId: " + inSensorId);
 
-    if (RailwayController.tryAquireLock()) {
-      try {
-        Logger.trace("##### Locked ####");
-        nextRouteAvaliable = dispatcher.getRouteManager().searchAndReserveNextRoute();
-      } finally {
-        //Make sure the lock is released
-        RailwayController.releaseLock();
-        Logger.trace("##### Released ####");
+    //Search the next route...
+    nextRouteFound = dispatcher.getRouteManager().searchNextRoute();
+
+    if (nextRouteFound) {
+      // If max switch time exceeds a threshold, slow down preemptively
+      int estimatedSwitchTime = PersistenceFactory.getService().getAverageAccessorySwitchTime(dispatcher.getNextRouteBean()).intValue();
+      if (estimatedSwitchTime > 500) {
+        // Slow to speed 1 so we have more margin
+        Integer speed1 = dispatcher.getLocomotiveBean().getSpeedOne();
+        //Speed to ~10% or speed 1
+        if (speed1 == null || speed1 == 0) {
+          speed1 = 10;
+        }
+
+        dispatcher.changeLocomotiveVelocity(speed1);
+        Logger.trace("Long switch time expected (" + estimatedSwitchTime + "ms), slowing train");
       }
-    } else {
-      Logger.trace("No Semaphore available");
-      nextRouteAvaliable = false;
     }
+  }
 
-    //Check for a stop request
-    if (dispatcher.getStateMachine().isRequestStop() || !dispatcher.isLocomotiveStarted()) {
-      nextRouteAvaliable = false;
-      RouteBean nextRoute = dispatcher.getNextRouteBean();
-      if (nextRoute != null) {
-        //Rollback changes due to stop request
-        nextRoute.setLocked(false);
-        String nextDestinationTileId = nextRoute.getToTileId();
-        BlockBean nextDestinationBlock = PersistenceFactory.getService().getBlockByTileId(nextDestinationTileId);
-        nextDestinationBlock.setBlockState(BlockBean.BlockState.FREE);
-        nextDestinationBlock.setArrivalSuffix(null);
-        nextDestinationBlock.setLocomotive(null);
-        PersistenceFactory.getService().persist(nextRoute);
-        PersistenceFactory.getService().persist(nextDestinationBlock);
-        dispatcher.showBlockState(nextDestinationBlock);
-        dispatcher.resetRoute(nextRoute);
+  @Override
+  AbstractState execute() {
+    BlockBean destinationBlock = dispatcher.getDestinationBlock();
+
+    boolean nextRouteAvaliable = false;
+    if (nextRouteFound) {
+      //Try to reserve the next route
+      int permits = RailwayController.avialablePermits();
+      Logger.trace("Obtaining a lock. There are currently " + permits + " available permits...");
+
+      if (RailwayController.tryAquireLock()) {
+        try {
+          Logger.trace("##### Locked ####");
+          nextRouteAvaliable = dispatcher.getRouteManager().searchAndReserveNextRoute();
+        } finally {
+          //Make sure the lock is released
+          RailwayController.releaseLock();
+          Logger.trace("##### Released ####");
+        }
+      } else {
+        Logger.trace("No Semaphore available");
+        nextRouteAvaliable = false;
+      }
+
+      //Check for a stop request
+      if (dispatcher.getStateMachine().isRequestStop() || !dispatcher.isLocomotiveStarted() || inSensorTriggered) {
+        nextRouteAvaliable = false;
+        RouteBean nextRoute = dispatcher.getNextRouteBean();
+        if (nextRoute != null) {
+          //Rollback changes due to stop request
+          nextRoute.setLocked(false);
+          String nextDestinationTileId = nextRoute.getToTileId();
+          BlockBean nextDestinationBlock = PersistenceFactory.getService().getBlockByTileId(nextDestinationTileId);
+          nextDestinationBlock.setBlockState(BlockBean.BlockState.FREE);
+          nextDestinationBlock.setArrivalSuffix(null);
+          nextDestinationBlock.setLocomotive(null);
+          PersistenceFactory.getService().persist(nextRoute);
+          PersistenceFactory.getService().persist(nextDestinationBlock);
+          dispatcher.showBlockState(nextDestinationBlock);
+          dispatcher.resetRoute(nextRoute);
+        }
       }
     }
 
@@ -93,6 +134,8 @@ class PrepareNextRouteState extends AbstractState {
 
     if (nextRouteAvaliable) {
       return new PassingThroughState();
+    } else if (inSensorTriggered) {
+      return new ArrivedState();
     } else {
       return new BrakingState();
     }
@@ -100,7 +143,7 @@ class PrepareNextRouteState extends AbstractState {
 
   @Override
   void onExit() {
-
+    dispatcher.getSensorMonitor().unsubscribe(inSensorId, this);
   }
 
   @Override
@@ -108,4 +151,19 @@ class PrepareNextRouteState extends AbstractState {
     return false;
   }
 
+  @Override
+  public void onEvent(SensorEvent event) {
+    if (inSensorId.equals(event.getSensorId())) {
+      if (event.isActive()) {
+        inSensorTriggered = true;
+        //Stop the locomotive!
+        dispatcher.changeLocomotiveVelocity(0);
+
+        Logger.trace("In Event from Sensor " + event.getSensorId() + " for " + dispatcher.getName() + " during route preparation!");
+        dispatcher.wakeup();
+      }
+    } else {
+      Logger.trace("Event for " + event.getSensorId() + " not for this state...");
+    }
+  }
 }

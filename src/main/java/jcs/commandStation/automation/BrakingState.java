@@ -82,6 +82,7 @@ class BrakingState extends AbstractState implements SensorEventCallback {
 
   @Override
   AbstractState execute() {
+
     if (inSensorTriggerred) {
       return new ArrivedState();
     } else {
@@ -91,8 +92,8 @@ class BrakingState extends AbstractState implements SensorEventCallback {
 
   @Override
   void onExit() {
-    dispatcher.getSensorMonitor().subscribeWithoutCallback(inSensorId);
     dispatcher.getSensorMonitor().unsubscribe(inSensorId, this);
+    dispatcher.getSensorMonitor().subscribeWithoutCallback(inSensorId);
   }
 
   @Override
@@ -105,10 +106,8 @@ class BrakingState extends AbstractState implements SensorEventCallback {
     if (inSensorId.equals(event.getSensorId())) {
       if (event.isActive()) {
         inSensorTriggerred = true;
-        Logger.trace("Enter Event from Sensor " + event.getSensorId());
-        synchronized (this) {
-          notifyAll();
-        }
+        Logger.trace("In Event from Sensor " + event.getSensorId() + " for " + dispatcher.getName());
+        dispatcher.wakeup();
       }
     } else {
       Logger.trace("Event for " + event.getSensorId() + " not for this state...");

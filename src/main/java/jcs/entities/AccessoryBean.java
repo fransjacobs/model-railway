@@ -346,11 +346,7 @@ public class AccessoryBean {
 
   @Transient
   public boolean isTurnout() {
-    //if (group != null) {
-    //  return "weichen".equals(group);
-    //} else {
     return type != null && type.contains("weiche");
-    //}
   }
 
   @Transient

@@ -24,8 +24,8 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.LinkedTransferQueue;
-import java.util.concurrent.TransferQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import jcs.commandStation.events.ConnectionEvent;
 import jcs.commandStation.marklin.cs.can.CanMessage;
 import org.tinylog.Logger;
@@ -50,12 +50,15 @@ class CSTCPConnection implements CSConnection {
 
   private boolean debug = false;
 
-  private final TransferQueue<CanMessage> eventQueue;
+  //private final TransferQueue<CanMessage> eventQueue;
+  private final BlockingQueue<CanMessage> eventQueue;
 
   CSTCPConnection(InetAddress csAddress) {
     centralStationAddress = csAddress;
     debug = System.getProperty("message.debug", "false").equalsIgnoreCase("true");
-    eventQueue = new LinkedTransferQueue<>();
+    //eventQueue = new LinkedTransferQueue<>();
+    eventQueue = new LinkedBlockingQueue();
+
     disconnectionEventListeners = new ArrayList<>();
     checkConnection();
   }
@@ -80,7 +83,7 @@ class CSTCPConnection implements CSConnection {
   }
 
   @Override
-  public TransferQueue<CanMessage> getEventQueue() {
+  public BlockingQueue<CanMessage> getEventQueue() {
     return this.eventQueue;
   }
 
@@ -186,6 +189,7 @@ class CSTCPConnection implements CSConnection {
       timeout = now;
     }
 
+    //TODO: modify this using a queue......
     if (callback != null) {
       //Wait for the response
       boolean responseComplete = callback.isResponseComplete();
@@ -306,13 +310,12 @@ class CSTCPConnection implements CSConnection {
           CanMessage rx = new CanMessage(prio, cmd, hash, dlc, data);
 
           //Logger.trace("RX: "+rx +"; "+ din.available());
-          if (callBack != null && this.callBack.isSubscribedfor(cmd)) {
+          if (callBack != null && callBack.isSubscribedfor(cmd)) {
             callBack.addResponse(rx, din.available());
           } else {
             eventQueue.offer(rx);
             //Logger.trace("Enqueued: " + rx + " QueueSize: " + eventQueue.size());
           }
-
         } catch (SocketException se) {
           if (!quit) {
             String msg = "Host " + centralStationAddress.getHostName();

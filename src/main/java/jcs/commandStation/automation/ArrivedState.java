@@ -54,7 +54,7 @@ class ArrivedState extends AbstractState {
 
     Logger.trace("Locomotive " + locomotive.getName() + " has arrived in " + destinationBlock.getDescription() + " and " + (alwaysStop ? "must stop" : " may continue"));
 
-    if (alwaysStop || dispatcher.getNextRouteBean() == null || !dispatcher.isLocomotiveStarted()) {
+    if (alwaysStop || dispatcher.getNextRouteBean() == null) {
       //Stop the locomotive
       dispatcher.changeLocomotiveVelocity(0);
       Logger.trace("Locomotive " + locomotive.getName() + " is stopped...");

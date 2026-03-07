@@ -78,6 +78,12 @@ class StateMachine {
     }
   }
 
+  void wakeUp() {
+    if (stateMachineRunner != null) {
+      stateMachineRunner.wakeUp();
+    }
+  }
+
   Dispatcher getDispatcher() {
     return dispatcher;
   }
@@ -196,7 +202,7 @@ class StateMachine {
     StateMachineRunner(StateMachine stateMachine) {
       super(stateMachine.getDispatcher().getThreadGroup(), "STM->" + stateMachine.getDispatcher().getLocomotiveBean().getName().toUpperCase());
       this.stateMachine = stateMachine;
-      threadSleepMillis = Long.parseUnsignedLong(System.getProperty("autopilot.thread.wait.millis", "500"));
+      threadSleepMillis = Long.parseUnsignedLong(System.getProperty("autopilot.thread.wait.millis", "1000"));
     }
 
     void shutdown() {
@@ -234,7 +240,6 @@ class StateMachine {
       Logger.debug("StateMachineTread " + stateMachine.getDispatcher().getName() + " finished...");
     }
 
-    @SuppressWarnings("unused")
     void wakeUp() {
       synchronized (lock) {
         lock.notify();
