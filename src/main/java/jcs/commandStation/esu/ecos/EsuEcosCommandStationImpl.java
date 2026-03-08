@@ -47,7 +47,7 @@ import jcs.commandStation.events.LocomotiveFunctionEvent;
 import jcs.commandStation.events.LocomotiveFunctionEventListener;
 import jcs.commandStation.events.LocomotiveSpeedEvent;
 import jcs.commandStation.events.LocomotiveSpeedEventListener;
-import jcs.commandStation.autopilot.DriveSimulator;
+import jcs.commandStation.automation.DriveSimulator;
 import jcs.commandStation.VirtualConnection;
 import jcs.commandStation.automation.RailwayController;
 import jcs.commandStation.entities.Device;

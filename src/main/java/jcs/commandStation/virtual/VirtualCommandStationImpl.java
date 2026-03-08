@@ -15,7 +15,7 @@
  */
 package jcs.commandStation.virtual;
 
-import jcs.commandStation.autopilot.DriveSimulator;
+import jcs.commandStation.automation.DriveSimulator;
 import java.awt.Image;
 import java.util.ArrayList;
 import java.util.List;

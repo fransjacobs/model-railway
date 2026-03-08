@@ -69,7 +69,7 @@ import jcs.commandStation.marklin.cs.can.parser.LocomotiveVelocityMessage;
 import jcs.commandStation.marklin.cs.can.parser.PowerEventParser;
 import jcs.commandStation.VirtualConnection;
 import jcs.commandStation.automation.RailwayController;
-import jcs.commandStation.autopilot.DriveSimulator;
+import jcs.commandStation.automation.DriveSimulator;
 import jcs.commandStation.entities.Device;
 import jcs.commandStation.events.AllSensorEventsListener;
 import jcs.commandStation.events.ConnectionEvent;
