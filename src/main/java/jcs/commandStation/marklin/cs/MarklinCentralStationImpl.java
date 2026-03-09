@@ -107,6 +107,8 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 
   private DriveSimulator simulator;
 
+  private ThreadGroup threadGroup;
+
   private Long canBootLoaderLastCallMillis;
   private WatchdogTask watchdogTask;
   private Timer watchDogTimer;
@@ -121,9 +123,9 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   public MarklinCentralStationImpl(CommandStationBean commandStationBean, boolean autoConnect) {
     super(autoConnect, commandStationBean);
     canDevices = new HashMap<>();
-    //measuredValues = new ConcurrentSkipListMap<>();
     accessoryManager = new AccessoryManager(this);
     boosterManager = new BoosterManager(this);
+    threadGroup = new ThreadGroup("MARKLIN-CS");
 
     if (commandStationBean != null) {
       if (autoConnect) {
@@ -267,11 +269,9 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
           JCS.logProgress("Power is " + (power ? "On" : "Off"));
 
           //Prepare the Track measurements
-          MeasurementListener mel = new MeasurementListener();
-          addMeasurementEventListener(mel);
+          //MeasurementListener mel = new MeasurementListener();
+          //addMeasurementEventListener(mel);
 
-          //getMeasurementChannels();
-          //this.boosterManager.initChannels();
           Logger.trace("Connected to " + gfp.getName() + ", " + gfp.getArticleNumber() + " SerialNumber: " + gfp.getSerial());
         }
       } else {
@@ -283,6 +283,13 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     if (isVirtual()) {
       simulator = new DriveSimulator();
       Logger.info("Marklin Central Station Virtual Mode Enabled!");
+    }
+
+    if (!isVirtual()) {
+      //getMeasurementChannels();
+      //this.boosterManager.initChannels();
+      Logger.trace("Query Channel Configs...");
+      boosterManager.initChannels();
     }
 
     return connected;
@@ -692,12 +699,14 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 
   @Override
   public boolean isSupportTrackMeasurements() {
-    if (!virtual) {
-      CanDevice gfp = canDevices.get(csUid);
-      return gfp != null && gfp.getMeasureChannelCount() != null && gfp.getMeasureChannelCount() > 0;
-    } else {
-      return false;
-    }
+//    if (!virtual) {
+//      CanDevice gfp = canDevices.get(csUid);
+//      return gfp != null && gfp.getMeasureChannelCount() != null && gfp.getMeasureChannelCount() > 0;
+//      return true;
+//    } else {
+//      return false;
+//    }
+    return !virtual;
   }
 
   /**
@@ -1020,10 +1029,10 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     private boolean stop = false;
     private boolean quit = true;
 
-    //private final TransferQueue<CanMessage> eventMessageQueue;
     private final BlockingQueue<CanMessage> eventMessageQueue;
 
-    public EventMessageHandler(CSConnection csConnection) {
+    EventMessageHandler(CSConnection csConnection) {
+      super(threadGroup, "CS-EVENT-MESSAGE-HANDLER");
       eventMessageQueue = csConnection.getEventQueue();
     }
 
@@ -1043,14 +1052,12 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     @Override
     public void run() {
       quit = false;
-      Thread.currentThread().setName("CS-EVENT-MESSAGE-HANDLER");
-
       Logger.trace("Event Handler Started...");
 
       while (isRunning()) {
         try {
           try {
-            CanMessage eventMessage = eventMessageQueue.poll(10, TimeUnit.MILLISECONDS);
+            CanMessage eventMessage = eventMessageQueue.poll(1, TimeUnit.MILLISECONDS);
             //Logger.trace("# " + eventMessage);
 
             if (eventMessage != null) {
@@ -1345,8 +1352,8 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 //      
       //cs.getMembers();
       //cs.memberPing();
-      Logger.debug("Query Channel Configs...");
-      cs.boosterManager.initChannels();
+      //Logger.debug("Query Channel Configs...");
+      //cs.boosterManager.initChannels();
 
       //Logger.trace("getStatusDataConfig CS3");
       //cs.getStatusDataConfigCS3();

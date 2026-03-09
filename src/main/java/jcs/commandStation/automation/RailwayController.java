@@ -687,7 +687,7 @@ public final class RailwayController {
 
       while (isRunning()) {
         try {
-          RailwayControllerCommand event = eventQueue.poll(100, TimeUnit.MILLISECONDS);
+          RailwayControllerCommand event = eventQueue.poll(10, TimeUnit.MILLISECONDS);
           if (event != null) {
             executeCommand(event);
           }

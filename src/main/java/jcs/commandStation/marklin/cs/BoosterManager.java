@@ -64,7 +64,7 @@ class BoosterManager {
   private MeasuringChannel volt;
   private MeasuringChannel temp;
 
-  private SortedMap<Long, Map<String, MeasurementBean>> measurements;
+  private final SortedMap<Long, Map<String, MeasurementBean>> measurements;
 
   private final List<MeasurementEventListener> measurementEventListeners;
 
@@ -90,27 +90,27 @@ class BoosterManager {
       measurementTimer.cancel();
     }
     //Let all listener know the the values are 0 as we have disconnected
-    if(!measurements.isEmpty()) {
-    //get the last measurement as template
-    long lastKey = measurements.lastKey();
-    Map<String,MeasurementBean> lastMeasurement = measurements.get(lastKey);
-    //hier gebleven
-    
-    //    //Signal listeners that there are no measurements
+    if (!measurements.isEmpty()) {
+      //get the last measurement as template
+      long lastKey = measurements.lastKey();
+      Map<String, MeasurementBean> lastMeasurement = measurements.get(lastKey);
+      //hier gebleven
+
+      //    //Signal listeners that there are no measurements
 //    MeasuredChannels measuredChannels = new MeasuredChannels(System.currentTimeMillis());
 //    MeasurementEvent me = new MeasurementEvent(measuredChannels);
 //    for (MeasurementEventListener listener : measurementEventListeners) {
 //      listener.onMeasurement(me);
 //    }
-    
     }
-    
+
   }
 
   private void performMeasurements() {
     //The measurable channels are in the GFP. 
-    CanDevice gfp = this.marklinCentralStationImpl.getCanDevice(marklinCentralStationImpl.csUid);
-    if (this.marklinCentralStationImpl.isConnected()) {
+    //CanDevice gfp = this.marklinCentralStationImpl.getCanDevice(marklinCentralStationImpl.csUid);
+
+    if (marklinCentralStationImpl.isConnected()) {
       long now = System.currentTimeMillis();
       Map<String, MeasurementBean> measurementRow = new HashMap<>();
 
@@ -151,20 +151,24 @@ class BoosterManager {
     }
   }
 
-  public void addMeasurementEventListener(MeasurementEventListener listener) {
+  void addMeasurementEventListener(MeasurementEventListener listener) {
     this.measurementEventListeners.add(listener);
   }
 
-  public void removeMeasurementEventListener(MeasurementEventListener listener) {
+  void removeMeasurementEventListener(MeasurementEventListener listener) {
     this.measurementEventListeners.remove(listener);
   }
 
-  public SortedMap<Long, Map<String, MeasurementBean>> getMeasurements() {
+  SortedMap<Long, Map<String, MeasurementBean>> getMeasurements() {
     return this.measurements;
   }
 
-  public Map<String, MeasurementBean> getLastMeasurement() {
+  Map<String, MeasurementBean> getLastMeasurement() {
     return measurements.lastEntry().getValue();
+  }
+
+  boolean isInitialized() {
+    return channelConfigurationQuery != null && channelConfigurationQuery.configured;
   }
 
   private class ChannelConfigurationQueryThread extends Thread {
@@ -181,14 +185,17 @@ class BoosterManager {
       this.boosterManager = boosterManager;
     }
 
+    @SuppressWarnings("unused")
     void quit() {
       this.quit = true;
     }
 
+    @SuppressWarnings("unused")
     boolean isRunning() {
       return !this.quit;
     }
 
+    @SuppressWarnings("unused")
     boolean isFinished() {
       return this.stop;
     }

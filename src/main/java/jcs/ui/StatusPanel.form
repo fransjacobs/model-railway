@@ -164,7 +164,7 @@
         <Component class="javax.swing.JLabel" name="voltageLbl">
           <Properties>
             <Property name="text" type="java.lang.String" value="-"/>
-            <Property name="toolTipText" type="java.lang.String" value=""/>
+            <Property name="toolTipText" type="java.lang.String" value="Track Voltage"/>
             <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[55, 20]"/>
             </Property>
@@ -173,6 +173,7 @@
         <Component class="javax.swing.JLabel" name="currentLbl">
           <Properties>
             <Property name="text" type="java.lang.String" value="-"/>
+            <Property name="toolTipText" type="java.lang.String" value="Track Current"/>
             <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[55, 20]"/>
             </Property>
@@ -181,6 +182,7 @@
         <Component class="javax.swing.JLabel" name="tempLbl">
           <Properties>
             <Property name="text" type="java.lang.String" value="-"/>
+            <Property name="toolTipText" type="java.lang.String" value="Command Station Temperature"/>
             <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[55, 20]"/>
             </Property>

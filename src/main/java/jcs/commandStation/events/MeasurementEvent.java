@@ -45,4 +45,5 @@ public class MeasurementEvent {
   public MeasurementBean getTemp() {
     return measurement.get(CanMessage.TEMP);
   }
+
 }

@@ -33,6 +33,8 @@ public class StatusPanel extends javax.swing.JPanel implements MeasurementEventL
 
   private static final long serialVersionUID = 7132844382832996985L;
 
+  boolean supportMeasuments;
+
   /**
    * Creates new form StatusPanel
    */
@@ -43,22 +45,35 @@ public class StatusPanel extends javax.swing.JPanel implements MeasurementEventL
 
   private void postInit() {
     if (JCS.getJcsCommandStation() != null) {
-      boolean supportMeasuments = JCS.getJcsCommandStation().isSupportTrackMeasurements();
-      if (supportMeasuments) {
-        JCS.getJcsCommandStation().addMeasurementEventListener(this);
-      }
+      //boolean supportMeasuments = JCS.getJcsCommandStation().isSupportTrackMeasurements();
+      //if (supportMeasuments) {
+      JCS.getJcsCommandStation().addMeasurementEventListener(this);
 
-      this.connectedLbl.setVisible(supportMeasuments);
-      this.virtualConnectionLbl.setVisible(supportMeasuments);
-      this.autopilotLbl.setVisible(supportMeasuments);
-      this.currentLbl.setVisible(supportMeasuments);
-      this.voltageLbl.setVisible(supportMeasuments);
-      this.tempLbl.setVisible(supportMeasuments);
+      JCS.getJcsCommandStation().addMeasurementEventListener(new MeasurementListener());
+
+      Logger.trace("Added StatusPanel as MeasurementEventListener");
+      //}
+
+      supportMeasuments = JCS.getJcsCommandStation().isSupportTrackMeasurements();
+
+//      this.connectedLbl.setVisible(supportMeasuments);
+//      this.virtualConnectionLbl.setVisible(supportMeasuments);
+//      this.autopilotLbl.setVisible(supportMeasuments);
+//      this.currentLbl.setVisible(supportMeasuments);
+//      this.voltageLbl.setVisible(supportMeasuments);
+//      this.tempLbl.setVisible(supportMeasuments);
     }
   }
 
   @Override
   public void onMeasurement(MeasurementEvent event) {
+//    supportMeasuments = true;
+//    this.connectedLbl.setVisible(supportMeasuments);
+//    this.virtualConnectionLbl.setVisible(supportMeasuments);
+//    this.autopilotLbl.setVisible(supportMeasuments);
+//    this.currentLbl.setVisible(supportMeasuments);
+//    this.voltageLbl.setVisible(supportMeasuments);
+//    this.tempLbl.setVisible(supportMeasuments);
 
     if (event.getMain() != null) {
       this.currentLbl.setText(event.getMain().getDisplayValue() + " " + event.getMain().getUnit());
@@ -120,15 +135,17 @@ public class StatusPanel extends javax.swing.JPanel implements MeasurementEventL
     add(jPanel1);
 
     voltageLbl.setText("-");
-    voltageLbl.setToolTipText("");
+    voltageLbl.setToolTipText("Track Voltage");
     voltageLbl.setPreferredSize(new java.awt.Dimension(55, 20));
     measurePanel.add(voltageLbl);
 
     currentLbl.setText("-");
+    currentLbl.setToolTipText("Track Current");
     currentLbl.setPreferredSize(new java.awt.Dimension(55, 20));
     measurePanel.add(currentLbl);
 
     tempLbl.setText("-");
+    tempLbl.setToolTipText("Command Station Temperature");
     tempLbl.setPreferredSize(new java.awt.Dimension(55, 20));
     measurePanel.add(tempLbl);
 
@@ -159,6 +176,8 @@ public class StatusPanel extends javax.swing.JPanel implements MeasurementEventL
       Logger.error(ex);
     }
 
+    JCS.getJcsCommandStation().connect();
+
     java.awt.EventQueue.invokeLater(() -> {
       JFrame f = new JFrame("StatusPanel Tester");
       StatusPanel statusPanel = new StatusPanel();
@@ -171,6 +190,17 @@ public class StatusPanel extends javax.swing.JPanel implements MeasurementEventL
       f.setLocation(dim.width / 2 - f.getSize().width / 2, dim.height / 2 - f.getSize().height / 2);
       f.setVisible(true);
     });
+  }
+
+  private class MeasurementListener implements MeasurementEventListener {
+
+    @Override
+    public void onMeasurement(MeasurementEvent event) {
+      Logger.debug(event.getMain().getName() + ": " + event.getMain().getDisplayValue() + " " + event.getMain().getUnit());
+      Logger.debug(event.getProg().getName() + ": " + event.getProg().getDisplayValue() + " " + event.getProg().getUnit());
+      Logger.debug(event.getVolt().getName() + ": " + event.getVolt().getDisplayValue() + " " + event.getVolt().getUnit());
+      Logger.debug(event.getTemp().getName() + ": " + event.getTemp().getDisplayValue() + " " + event.getTemp().getUnit());
+    }
   }
 
 }
