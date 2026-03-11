@@ -15,7 +15,6 @@
  */
 package jcs.commandStation.marklin.cs;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -81,35 +80,39 @@ class BoosterManager {
 
   void initChannels() {
     channelConfigurationQuery = new ChannelConfigurationQueryThread(this);
-
     channelConfigurationQuery.start();
   }
 
   void notifyLastMeasurement() {
-    if (measurementTimer != null) {
-      measurementTimer.cancel();
-    }
-    //Let all listener know the the values are 0 as we have disconnected
+    //Let all listeners know the the values are 0 as we have disconnected
     if (!measurements.isEmpty()) {
-      //get the last measurement as template
-      long lastKey = measurements.lastKey();
-      Map<String, MeasurementBean> lastMeasurement = measurements.get(lastKey);
-      //hier gebleven
+      long now = System.currentTimeMillis();
+      Map<String, MeasurementBean> measurementRow = new HashMap<>();
 
-      //    //Signal listeners that there are no measurements
-//    MeasuredChannels measuredChannels = new MeasuredChannels(System.currentTimeMillis());
-//    MeasurementEvent me = new MeasurementEvent(measuredChannels);
-//    for (MeasurementEventListener listener : measurementEventListeners) {
-//      listener.onMeasurement(me);
-//    }
+      MeasurementBean mainMeasurement = new MeasurementBean(1, "MAIN", true, now, 0, "A", 0.0);
+      measurementRow.put(CanMessage.MAIN, mainMeasurement);
+      MeasurementBean progMeasurement = new MeasurementBean(1, "PROG", true, now, 0, "A", 0.0);
+      measurementRow.put(CanMessage.PROG, progMeasurement);
+      MeasurementBean voltMeasurement = new MeasurementBean(1, "VOLT", true, now, 0, "V", 0.0);
+      measurementRow.put(CanMessage.VOLT, voltMeasurement);
+      MeasurementBean tempMeasurement = new MeasurementBean(1, "TEMP", true, now, 0, "C", 0.0);
+      measurementRow.put(CanMessage.TEMP, tempMeasurement);
+
+      measurements.put(now, measurementRow);
+      MeasurementEvent me = new MeasurementEvent(measurementRow, false);
+      //Signal listeners that there are no measurements
+      for (MeasurementEventListener listener : measurementEventListeners) {
+        listener.onMeasurement(me);
+      }
+
+      if (measurementTimer != null) {
+        measurementTimer.cancel();
+      }
     }
 
   }
 
   private void performMeasurements() {
-    //The measurable channels are in the GFP. 
-    //CanDevice gfp = this.marklinCentralStationImpl.getCanDevice(marklinCentralStationImpl.csUid);
-
     if (marklinCentralStationImpl.isConnected()) {
       long now = System.currentTimeMillis();
       Map<String, MeasurementBean> measurementRow = new HashMap<>();
@@ -137,15 +140,15 @@ class BoosterManager {
       measurements.put(now, measurementRow);
 
       if (measurements.size() > maxMeasurementEntries) {
+        @SuppressWarnings("unused")
         Map.Entry<Long, Map<String, MeasurementBean>> oldestRow = measurements.pollFirstEntry();
-        Logger.trace("Removing measuement of " + new Date(oldestRow.getKey()));
+        //Logger.trace("Removing measuement of " + new Date(oldestRow.getKey()));
       }
 
-      MeasurementEvent me = new MeasurementEvent(measurementRow);
+      MeasurementEvent me = new MeasurementEvent(measurementRow, true);
       for (MeasurementEventListener listener : measurementEventListeners) {
         listener.onMeasurement(me);
       }
-
     } else {
       Logger.warn("No measurement channels available");
     }
@@ -159,14 +162,17 @@ class BoosterManager {
     this.measurementEventListeners.remove(listener);
   }
 
+  @SuppressWarnings("unused")
   SortedMap<Long, Map<String, MeasurementBean>> getMeasurements() {
     return this.measurements;
   }
 
+  @SuppressWarnings("unused")
   Map<String, MeasurementBean> getLastMeasurement() {
     return measurements.lastEntry().getValue();
   }
 
+  @SuppressWarnings("unused")
   boolean isInitialized() {
     return channelConfigurationQuery != null && channelConfigurationQuery.configured;
   }
@@ -250,7 +256,7 @@ class BoosterManager {
               boosterManager.measurementTimer = new Timer("MeasurementsTimer");
               boosterManager.measurementTimer.schedule(measurementTask, 10, measureInterval);
 
-              Logger.debug("Started Measurements Timer with an interval of " + measureInterval + "ms");
+              Logger.debug("Started Measurements Timer with an interval of " + measureInterval + " ms");
 
             }
 

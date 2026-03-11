@@ -64,6 +64,7 @@ import org.tinylog.Logger;
 import jcs.commandStation.events.ConnectionEventListener;
 import jcs.commandStation.events.AllSensorEventsListener;
 import jcs.commandStation.events.LocomotiveEvent;
+import jcs.commandStation.events.MeasurementEvent;
 import jcs.commandStation.events.PowerEvent;
 
 /**
@@ -103,6 +104,8 @@ public class JCSCommandStation {
   private SensorEventHandlerThread sensorEventHandlerThread;
   private AccessoryEventHandlerThread accessoryEventHandlerThread;
   private LocomotiveEventHandlerThread locomotiveEventHandlerThread;
+
+  private MeasurementEventHandler measurementEventHandler;
 
   private boolean powerEventRunning;
   private ThreadGroup threadGroup;
@@ -310,6 +313,9 @@ public class JCSCommandStation {
       if (!locomotiveEventHandlerThread.isRunning()) {
         locomotiveEventHandlerThread.start();
       }
+
+      measurementEventHandler = new MeasurementEventHandler(this);
+      decoderController.addMeasurementEventListener(measurementEventHandler);
     }
 
     if (accessoryCntrConnected > 0) {
@@ -396,6 +402,11 @@ public class JCSCommandStation {
     }
 
     if (decoderController != null) {
+      if (measurementEventHandler != null) {
+        decoderController.removeMeasurementEventListener(measurementEventHandler);
+      }
+      measurementEventHandler = null;
+
       decoderController.disconnect();
     }
 
@@ -816,15 +827,11 @@ public class JCSCommandStation {
   }
 
   public void addMeasurementEventListener(MeasurementEventListener listener) {
-    if (decoderController != null) {
-      decoderController.addMeasurementEventListener(listener);
-    }
+    this.measurementEventListeners.add(listener);
   }
 
   public void removeMeasurementListener(MeasurementEventListener listener) {
-    if (decoderController != null) {
-      decoderController.removeMeasurementEventListener(listener);
-    }
+    this.measurementEventListeners.remove(listener);
   }
 
   public DecoderController getDecoderController() {
@@ -849,6 +856,22 @@ public class JCSCommandStation {
       }
     }
     return sensorBean;
+  }
+
+  private class MeasurementEventHandler implements MeasurementEventListener {
+
+    private final JCSCommandStation commandStation;
+
+    MeasurementEventHandler(JCSCommandStation commandStation) {
+      this.commandStation = commandStation;
+    }
+
+    @Override
+    public void onMeasurement(final MeasurementEvent event) {
+      for (MeasurementEventListener mel : commandStation.measurementEventListeners) {
+        mel.onMeasurement(event);
+      }
+    }
   }
 
   private class AllSensorEventsHandler implements AllSensorEventsListener {

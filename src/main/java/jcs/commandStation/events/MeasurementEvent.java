@@ -25,8 +25,10 @@ import jcs.commandStation.marklin.cs.can.CanMessage;
 public class MeasurementEvent {
 
   private final Map<String, MeasurementBean> measurement;
+  private final boolean measurementEnabled;
 
-  public MeasurementEvent(Map<String, MeasurementBean> measurement) {
+  public MeasurementEvent(Map<String, MeasurementBean> measurement, boolean measurementEnabled) {
+    this.measurementEnabled = measurementEnabled;
     this.measurement = measurement;
   }
 
@@ -44,6 +46,10 @@ public class MeasurementEvent {
 
   public MeasurementBean getTemp() {
     return measurement.get(CanMessage.TEMP);
+  }
+
+  public boolean isMeasurementsEnabled() {
+    return measurementEnabled;
   }
 
 }
