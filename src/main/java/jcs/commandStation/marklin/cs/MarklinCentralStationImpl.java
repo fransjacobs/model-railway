@@ -271,7 +271,6 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
           //Prepare the Track measurements
           //MeasurementListener mel = new MeasurementListener();
           //addMeasurementEventListener(mel);
-
           Logger.trace("Connected to " + gfp.getName() + ", " + gfp.getArticleNumber() + " SerialNumber: " + gfp.getSerial());
         }
       } else {
@@ -641,9 +640,6 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       Logger.trace("Start disconnecting...");
       //Stop all schedules
       this.boosterManager.notifyLastMeasurement();
-//    if (measurementTimer != null) {
-//      measurementTimer.cancel();
-//    }
     } catch (Exception ex) {
       Logger.error(ex);
     }
@@ -656,12 +652,6 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       executor.shutdown();
     }
 
-//    //Signal listeners that there are no measurements
-//    MeasuredChannels measuredChannels = new MeasuredChannels(System.currentTimeMillis());
-//    MeasurementEvent me = new MeasurementEvent(measuredChannels);
-//    for (MeasurementEventListener listener : measurementEventListeners) {
-//      listener.onMeasurement(me);
-//    }
     try {
       if (connection != null) {
         if (eventMessageHandler != null) {
@@ -699,13 +689,6 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 
   @Override
   public boolean isSupportTrackMeasurements() {
-//    if (!virtual) {
-//      CanDevice gfp = canDevices.get(csUid);
-//      return gfp != null && gfp.getMeasureChannelCount() != null && gfp.getMeasureChannelCount() > 0;
-//      return true;
-//    } else {
-//      return false;
-//    }
     return !virtual;
   }
 
@@ -1254,6 +1237,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     }
   }
 
+  @SuppressWarnings("unused")
   private class MeasurementListener implements MeasurementEventListener {
 
     @Override
@@ -1354,7 +1338,6 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       //cs.memberPing();
       //Logger.debug("Query Channel Configs...");
       //cs.boosterManager.initChannels();
-
       //Logger.trace("getStatusDataConfig CS3");
       //cs.getStatusDataConfigCS3();
       //cs.pause(2000);

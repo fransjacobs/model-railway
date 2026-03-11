@@ -257,16 +257,16 @@ class BoosterManager {
               boosterManager.measurementTimer.schedule(measurementTask, 10, measureInterval);
 
               Logger.debug("Started Measurements Timer with an interval of " + measureInterval + " ms");
-
             }
-
           } else {
             Logger.debug("Re-query the Measurement Channels...");
             synchronized (this) {
               try {
-                this.wait(1000);
+                wait(5000);
               } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
                 Logger.debug("Interupted");
+                break;
               }
             }
           }

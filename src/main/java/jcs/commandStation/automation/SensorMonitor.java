@@ -254,8 +254,7 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
     running = true;
     while (running) {
       try {
-        //SensorEvent event = this.eventQueue.take();
-        SensorEvent event = eventQueue.poll(10, TimeUnit.MILLISECONDS);
+        SensorEvent event = eventQueue.poll(100, TimeUnit.MILLISECONDS);
         if (event != null) {
           handleSensorEvent(event);
         }

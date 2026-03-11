@@ -34,8 +34,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import javax.imageio.ImageIO;
+import javax.swing.SwingUtilities;
 import jcs.commandStation.events.AccessoryEvent;
 import jcs.commandStation.events.AccessoryEventListener;
 import jcs.commandStation.events.ConnectionEvent;
@@ -95,20 +97,21 @@ public class JCSCommandStation {
 
   private final ExecutorService executor;
 
-  private static final String AWT_THREAD = "AWT-EventQueue-0";
-
   private final BlockingQueue<SensorEvent> sensorEventQueue;
   private final BlockingQueue<AccessoryEvent> accessoryEventQueue;
   private final BlockingQueue<LocomotiveEvent> locomotiveEventQueue;
 
-  private SensorEventHandlerThread sensorEventHandlerThread;
-  private AccessoryEventHandlerThread accessoryEventHandlerThread;
-  private LocomotiveEventHandlerThread locomotiveEventHandlerThread;
+  private EventHandlerThread<SensorEvent> sensorEventHandlerThread;
+  private EventHandlerThread<AccessoryEvent> accessoryEventHandlerThread;
+  private EventHandlerThread<LocomotiveEvent> locomotiveEventHandlerThread;
 
   private MeasurementEventHandler measurementEventHandler;
 
-  private boolean powerEventRunning;
+  private final AtomicBoolean powerEventRunning = new AtomicBoolean(false);
+
   private ThreadGroup threadGroup;
+
+  private final Object lock = new Object();
 
   /**
    * Wrapper around the "real" CommandStation implementation.<br>
@@ -121,8 +124,8 @@ public class JCSCommandStation {
 
   private JCSCommandStation(boolean autoConnectController) {
     threadGroup = new ThreadGroup("JCS-CS");
+    executor = Executors.newCachedThreadPool(runnable -> new Thread(threadGroup, runnable, "JCS-WORKER"));
 
-    executor = Executors.newCachedThreadPool();
     accessoryControllers = new HashMap<>();
     feedbackControllers = new HashMap<>();
     connectionEventListeners = new LinkedList<>();
@@ -141,9 +144,10 @@ public class JCSCommandStation {
     accessoryEventQueue = new LinkedBlockingQueue<>();
 
     sensorEventQueue = new LinkedBlockingQueue<>();
-    sensorEventHandlerThread = new SensorEventHandlerThread(this);
-    accessoryEventHandlerThread = new AccessoryEventHandlerThread(this);
-    locomotiveEventHandlerThread = new LocomotiveEventHandlerThread(this);
+
+    sensorEventHandlerThread = new EventHandlerThread<>(threadGroup, "SENSOR-EVENT-HANDLER", sensorEventQueue, this::handleSensorEvent);
+    accessoryEventHandlerThread = new EventHandlerThread<>(threadGroup, "ACCESSORY-EVENT-HANDLER", accessoryEventQueue, this::handleAccessoryEvent);
+    locomotiveEventHandlerThread = new EventHandlerThread<>(threadGroup, "LOCOMOTIVE-EVENT-HANDLER", locomotiveEventQueue, this::handleLocomotiveEvent);
 
     try {
       if (decoderController != null && (decoderController.getCommandStationBean() != null || !accessoryControllers.isEmpty() || !feedbackControllers.isEmpty()) && autoConnectController) {
@@ -157,22 +161,36 @@ public class JCSCommandStation {
     }
   }
 
-  public synchronized final boolean connectInBackground() {
+  void wakeUp() {
+    synchronized (lock) {
+      lock.notify();
+    }
+  }
+
+  public final boolean connectInBackground() {
     long now = System.currentTimeMillis();
     long start = now;
     long timemax = now + 3000;
 
-    executor.execute(() -> connect());
+    executor.execute(() -> {
+      connect();
+      wakeUp();
+    });
 
     boolean con = false;
+
     while (!con && now < timemax) {
       try {
-        wait(500);
+        synchronized (lock) {
+          lock.wait(500);
+        }
       } catch (InterruptedException ex) {
+        Thread.currentThread().interrupt();
         Logger.trace(ex);
+        break;
       }
-      now = System.currentTimeMillis();
 
+      now = System.currentTimeMillis();
       if (decoderController != null) {
         con = decoderController.isConnected();
       } else {
@@ -210,13 +228,13 @@ public class JCSCommandStation {
 
   public final boolean connect() {
     boolean decoderControllerConnected = false;
-    boolean allreadyConnected = false;
+    boolean alreadyConnected = false;
 
     //Check if already connected to avoid duplication....
     if (commandStation != null && decoderController != null) {
       decoderControllerConnected = decoderController.isConnected();
-      allreadyConnected = true;
-      Logger.trace(decoderController.getClass().getName() + " allready connected...");
+      alreadyConnected = true;
+      Logger.trace(decoderController.getClass().getName() + " already connected...");
     } else {
       commandStation = PersistenceFactory.getService().getDefaultCommandStation();
     }
@@ -272,7 +290,7 @@ public class JCSCommandStation {
     }
 
     //Connect the Accessories controllers if needed
-    if (!accessoryControllers.isEmpty() && !allreadyConnected) {
+    if (!accessoryControllers.isEmpty() && !alreadyConnected) {
       for (AccessoryController ac : accessoryControllers.values()) {
         if (ac.isConnected()) {
           accessoryCntrConnected++;
@@ -289,7 +307,7 @@ public class JCSCommandStation {
     }
 
     //Connect the Feedback Controllers controllers if needed
-    if (!feedbackControllers.isEmpty() && !allreadyConnected) {
+    if (!feedbackControllers.isEmpty() && !alreadyConnected) {
       for (FeedbackController fc : feedbackControllers.values()) {
         if (fc.isConnected()) {
           feedbackCntrConnected++;
@@ -332,13 +350,13 @@ public class JCSCommandStation {
 
     Logger.debug("Connected Controllers:  Decoder: " + (decoderControllerConnected ? "Yes" : "No") + " Accessory: " + accessoryCntrConnected + " Feedback: " + feedbackCntrConnected);
 
-    if (decoderControllerConnected && !allreadyConnected && decoderController != null) {
+    if (decoderControllerConnected && !alreadyConnected && decoderController != null) {
       decoderController.addLocomotiveFunctionEventListener(new LocomotiveFunctionChangeEventListener(this));
       decoderController.addLocomotiveDirectionEventListener(new LocomotiveDirectionChangeEventListener(this));
       decoderController.addLocomotiveSpeedEventListener(new LocomotiveSpeedChangeEventListener(this));
     }
 
-    if (accessoryCntrConnected > 0 && !allreadyConnected) {
+    if (accessoryCntrConnected > 0 && !alreadyConnected) {
       for (AccessoryController ac : accessoryControllers.values()) {
         if (ac.isConnected()) {
           ac.addAccessoryEventListener(new AccessoryChangeEventListener(this));
@@ -350,10 +368,9 @@ public class JCSCommandStation {
       }
     }
 
-    if (feedbackCntrConnected > 0 && !allreadyConnected) {
+    if (feedbackCntrConnected > 0 && !alreadyConnected) {
       for (FeedbackController fc : feedbackControllers.values()) {
         if (fc.isConnected()) {
-          //fc.ge
           fc.addAllSensorEventsListener(new AllSensorEventsHandler(this));
 
           if (fc.getConnectionEventListeners().isEmpty()) {
@@ -431,19 +448,17 @@ public class JCSCommandStation {
   }
 
   private void notifyPowerListeners(final PowerEvent powerEvent) {
-    if (!powerEventRunning) {
+    if (powerEventRunning.compareAndSet(false, true)) {
       try {
-        powerEventRunning = true;
         if (!powerEventListeners.isEmpty()) {
           executor.execute(() -> {
-            Logger.trace("Signalling " + powerEventListeners.size() + " listeners; Power " + (powerEvent.isPower() ? "On" : "Off"));
             for (PowerEventListener pel : powerEventListeners) {
               pel.onPowerChange(powerEvent);
             }
           });
         }
       } finally {
-        powerEventRunning = false;
+        powerEventRunning.set(false);
       }
     }
   }
@@ -563,8 +578,7 @@ public class JCSCommandStation {
   }
 
   public void switchPower(boolean on) {
-    //Logger.trace("Switch Power " + (on ? "On" : "Off"));
-    if (decoderController != null && !AWT_THREAD.equals(Thread.currentThread().getName())) {
+    if (decoderController != null && !SwingUtilities.isEventDispatchThread()) {
       decoderController.power(on);
     } else {
       executor.execute(() -> {
@@ -583,10 +597,9 @@ public class JCSCommandStation {
     return power;
   }
 
-  public void changeLocomotiveDirection(Direction newDirection, LocomotiveBean locomotive) {
-    Logger.debug("Changing direction to " + newDirection + " for: " + locomotive.getName() + " id: " + locomotive.getId() + " velocity: " + locomotive.getVelocity());
-
+  private int resolveAddress(LocomotiveBean locomotive) {
     int address;
+
     if ("marklin.cs".equals(locomotive.getCommandStationId()) || "esu-ecos".equals(locomotive.getCommandStationId())) {
       address = locomotive.getId().intValue();
     } else {
@@ -601,74 +614,40 @@ public class JCSCommandStation {
         }
       }
     }
+    return address;
+  }
 
-    if (decoderController != null && !AWT_THREAD.equals(Thread.currentThread().getName())) {
+  public void changeLocomotiveDirection(Direction newDirection, LocomotiveBean locomotive) {
+    Logger.debug("Changing direction to " + newDirection + " for: " + locomotive.getName() + " id: " + locomotive.getId() + " velocity: " + locomotive.getVelocity());
+    int address = resolveAddress(locomotive);
+
+    if (decoderController != null && !SwingUtilities.isEventDispatchThread()) {
       decoderController.changeVelocity(address, 0, locomotive.getDirection());
       decoderController.changeDirection(address, newDirection);
     } else {
-      if ("true".equals(System.getProperty("state.machine.stepTest", "false"))) {
-        Logger.warn("Handle sensorevent inline...");
+      executor.execute(() -> {
         decoderController.changeVelocity(address, 0, locomotive.getDirection());
         decoderController.changeDirection(address, newDirection);
-
-      } else {
-        executor.execute(() -> {
-          decoderController.changeVelocity(address, 0, locomotive.getDirection());
-          decoderController.changeDirection(address, newDirection);
-        });
-      }
+      });
     }
   }
 
   public void changeLocomotiveSpeed(Integer newVelocity, LocomotiveBean locomotive) {
     Logger.trace("Changing velocity to " + newVelocity + " for " + locomotive.getName());
+    int address = resolveAddress(locomotive);
 
-    int address;
-    if ("marklin.cs".equals(locomotive.getCommandStationId()) || "esu-ecos".equals(locomotive.getCommandStationId())) {
-      address = locomotive.getId().intValue();
-    } else {
-      //TODO: check this probably not needed anymore
-      if (supportedProtocols.size() == 1) {
-        address = locomotive.getAddress();
-      } else {
-        if (locomotive.getUid() != null) {
-          address = locomotive.getUid().intValue();
-        } else {
-          address = locomotive.getId().intValue();
-        }
-      }
-    }
-
-    if (decoderController != null && !AWT_THREAD.equals(Thread.currentThread().getName())) {
+    if (decoderController != null && !SwingUtilities.isEventDispatchThread()) {
       decoderController.changeVelocity(address, newVelocity, locomotive.getDirection());
     } else {
-      if ("true".equals(System.getProperty("state.machine.stepTest", "false"))) {
-        Logger.warn("Handle sensorevent inline...");
-        decoderController.changeVelocity(address, newVelocity, locomotive.getDirection());
-      } else {
-        executor.execute(() -> decoderController.changeVelocity(address, newVelocity, locomotive.getDirection()));
-      }
+      executor.execute(() -> decoderController.changeVelocity(address, newVelocity, locomotive.getDirection()));
     }
   }
 
   public void changeLocomotiveFunction(Boolean newValue, Integer functionNumber, LocomotiveBean locomotive) {
     Logger.trace("Changing Function " + functionNumber + " to " + (newValue ? "on" : "off") + " on " + locomotive.getName());
-    int address;
-    if ("marklin.cs".equals(locomotive.getCommandStationId()) || "esu-ecos".equals(locomotive.getCommandStationId())) {
-      address = locomotive.getId().intValue();
-    } else {
-      //TODO: check this probably not needed anymore
-      if (supportedProtocols.size() == 1) {
-        address = locomotive.getAddress();
-      } else {
-        if (locomotive.getUid() != null) {
-          address = locomotive.getUid().intValue();
-        } else {
-          address = locomotive.getId().intValue();
-        }
-      }
-    }
-    if (decoderController != null && !AWT_THREAD.equals(Thread.currentThread().getName())) {
+    int address = resolveAddress(locomotive);
+
+    if (decoderController != null && !SwingUtilities.isEventDispatchThread()) {
       decoderController.changeFunctionValue(address, functionNumber, newValue);
     } else if (decoderController != null) {
       executor.execute(() -> decoderController.changeFunctionValue(address, functionNumber, newValue));
@@ -678,7 +657,6 @@ public class JCSCommandStation {
   }
 
   public void switchAccessory(AccessoryBean accessory, AccessoryValue value) {
-    //String id = accessory.getId();
     Integer address = accessory.getAddress();
     Integer switchTime = accessory.getSwitchTime();
     AccessoryBean.Protocol protocol = accessory.getProtocol();
@@ -691,7 +669,7 @@ public class JCSCommandStation {
   }
 
   private void changeAccessory(final Integer address, final String protocol, final AccessoryValue value, final Integer switchTime) {
-    if (!AWT_THREAD.equals(Thread.currentThread().getName())) {
+    if (!SwingUtilities.isEventDispatchThread()) {
       for (AccessoryController ac : accessoryControllers.values()) {
         ac.switchAccessory(address, protocol, value, switchTime);
       }
@@ -839,11 +817,11 @@ public class JCSCommandStation {
   }
 
   public List<AccessoryController> getAccessoryControllers() {
-    return accessoryControllers.values().stream().collect(Collectors.toList());
+    return new ArrayList<>(accessoryControllers.values());
   }
 
   public List<FeedbackController> getFeedbackControllers() {
-    return feedbackControllers.values().stream().collect(Collectors.toList());
+    return new ArrayList<>(feedbackControllers.values());
   }
 
   public SensorBean getSensorStatus(SensorBean sensorBean) {
@@ -890,10 +868,6 @@ public class JCSCommandStation {
       } else {
         Logger.trace("Enqueued SensorEvent ID: " + sensorEvent.getSensorId() + " Active: " + sensorEvent.isActive());
         commandStation.sensorEventQueue.offer(sensorEvent);
-
-        synchronized (this) {
-          notifyAll();
-        }
       }
     }
   }
@@ -914,16 +888,17 @@ public class JCSCommandStation {
       }
 
       sb.setName(dbsb.getName());
+      //make sure the previous vale is set by settinge the curren and the new one
       sb.setActive(dbsb.isActive());
+      //Sensor bean will set the prev value to indicate a (real) sensor change
       sb.setActive(newValue);
 
       PersistenceFactory.getService().persist(sb);
     }
 
-    if (sensorListeners.containsKey(sb.getId())) {
+    if (sb.getId() != null && sensorListeners.containsKey(sb.getId())) {
       //Avoid concurrent modification exceptions
       List<SensorEventListener> snapshot = new ArrayList<>(sensorListeners.get(sb.getId()));
-      //Logger.trace("SensorEvent from Sensor " + event.getSensorId() + ": " + event.isActive() + " Firing " + snapshot.size() + " SensorListeners...");
 
       for (SensorEventListener sl : snapshot) {
         if (sl != null) {
@@ -1088,7 +1063,7 @@ public class JCSCommandStation {
         }
       }
       default -> {
-        Logger.warn("Unkown Event: " + event.getClass().getName());
+        Logger.warn("Unknown Event: " + event.getClass().getName());
       }
     }
   }
@@ -1104,10 +1079,6 @@ public class JCSCommandStation {
     @Override
     public void onAccessoryChange(AccessoryEvent event) {
       jcsCommandStation.accessoryEventQueue.offer(event);
-
-      synchronized (this) {
-        notifyAll();
-      }
     }
   }
 
@@ -1188,175 +1159,56 @@ public class JCSCommandStation {
   }
 
   /**
-   * Handle Sensor Events, which are unsolicited messages from the CS.
+   * Universal handler Thread<br>
+   * Handles events via a Queue of:<br>
+   * - Sensors<br>
+   * - Accessories<br>
+   * - Locomotives<br>
+   *
+   * @param <T> the Class which contains the handler method
    */
-  private class SensorEventHandlerThread extends Thread {
+  class EventHandlerThread<T> extends Thread {
 
-    @SuppressWarnings("FieldMayBeFinal")
-    private boolean stop = false;
-    private boolean quit = true;
+    private final BlockingQueue<T> queue;
+    private final Consumer<T> handler;
+    private volatile boolean running = false;
 
-    private final JCSCommandStation jcsCommandStation;
+    EventHandlerThread(ThreadGroup group, String name, BlockingQueue<T> queue, Consumer<T> handler) {
+      super(group, name);
+      this.queue = queue;
+      this.handler = handler;
+    }
 
-    SensorEventHandlerThread(JCSCommandStation jcsCommandStation) {
-      super(threadGroup, "SENSOR-EVENT-HANDLER");
-      this.jcsCommandStation = jcsCommandStation;
+    boolean isRunning() {
+      return running;
     }
 
     @SuppressWarnings("unused")
     void quit() {
-      this.quit = true;
-    }
-
-    boolean isRunning() {
-      return !this.quit;
-    }
-
-    @SuppressWarnings("unused")
-    boolean isFinished() {
-      return this.stop;
+      running = false;
     }
 
     @Override
     public void run() {
-      quit = false;
-      Logger.trace("Event Handler Started...");
+      running = true;
+      Logger.trace(getName() + " Started...");
 
       while (isRunning()) {
         try {
-          try {
-            SensorEvent event = jcsCommandStation.sensorEventQueue.poll(1, TimeUnit.MILLISECONDS);
-
-            if (event != null) {
-              jcsCommandStation.handleSensorEvent(event);
-            }
-
-          } catch (InterruptedException ex) {
-            Logger.error(ex);
-            Thread.currentThread().interrupt();
-            break;
+          T event = queue.poll(100, TimeUnit.MILLISECONDS);
+          if (event != null) {
+            handler.accept(event);
           }
+        } catch (InterruptedException ex) {
+          Thread.currentThread().interrupt();
+          Logger.error(ex);
+          break;
         } catch (Exception e) {
-          Logger.error("Error in Handling Thread. Cause: " + e.getMessage());
+          Logger.error("Error in " + getName() + ". Cause: " + e.getMessage());
         }
       }
 
-      Logger.debug("Stop Event handling");
-    }
-  }
-
-  /**
-   * Handle Accessory Events, which could be unsolicited,<br>
-   * but mostly the event will come after an accessory command.<br>
-   * Handle in separate thread as most listeners has to do with the UI.
-   */
-  private class AccessoryEventHandlerThread extends Thread {
-
-    @SuppressWarnings("FieldMayBeFinal")
-    private boolean stop = false;
-    private boolean quit = true;
-
-    private final JCSCommandStation jcsCommandStation;
-
-    AccessoryEventHandlerThread(JCSCommandStation jcsCommandStation) {
-      super(threadGroup, "ACCESSORY-EVENT-HANDLER");
-      this.jcsCommandStation = jcsCommandStation;
-    }
-
-    @SuppressWarnings("unused")
-    void quit() {
-      this.quit = true;
-    }
-
-    boolean isRunning() {
-      return !this.quit;
-    }
-
-    @SuppressWarnings("unused")
-    boolean isFinished() {
-      return this.stop;
-    }
-
-    @Override
-    public void run() {
-      quit = false;
-      Logger.trace("Event Handler Started...");
-
-      while (isRunning()) {
-        try {
-          try {
-            AccessoryEvent event = jcsCommandStation.accessoryEventQueue.poll(10, TimeUnit.MILLISECONDS);
-
-            if (event != null) {
-              jcsCommandStation.handleAccessoryEvent(event);
-            }
-          } catch (InterruptedException ex) {
-            Logger.error(ex);
-          }
-        } catch (Exception e) {
-          Logger.error("Error in Handling Thread. Cause: " + e.getMessage());
-        }
-      }
-
-      Logger.debug("Stop Event handling");
-    }
-  }
-
-  /**
-   * Handle Locomotive Events, which could be unsolicited,<br>
-   * but mostly the event will come after a used change something on the locomotive Cap or the auatoPilot.<br>
-   * Handle in separate thread as most listeners has to do something with the UI.
-   */
-  private class LocomotiveEventHandlerThread extends Thread {
-
-    @SuppressWarnings("FieldMayBeFinal")
-    private boolean stop = false;
-    private boolean quit = true;
-
-    private final JCSCommandStation jcsCommandStation;
-
-    LocomotiveEventHandlerThread(JCSCommandStation jcsCommandStation) {
-      super(threadGroup, "LOCOMOTIVE-EVENT-HANDLER");
-      this.jcsCommandStation = jcsCommandStation;
-    }
-
-    @SuppressWarnings("unused")
-    void quit() {
-      this.quit = true;
-    }
-
-    boolean isRunning() {
-      return !this.quit;
-    }
-
-    @SuppressWarnings("unused")
-    boolean isFinished() {
-      return this.stop;
-    }
-
-    @Override
-    public void run() {
-      quit = false;
-      Logger.trace("Event Handler Started...");
-
-      while (isRunning()) {
-        try {
-          try {
-            LocomotiveEvent event = jcsCommandStation.locomotiveEventQueue.poll(10, TimeUnit.MILLISECONDS);
-
-            if (event != null) {
-              jcsCommandStation.handleLocomotiveEvent(event);
-            }
-
-          } catch (InterruptedException ex) {
-            Logger.error(ex);
-          }
-        } catch (Exception e) {
-          Logger.error("Error in Handling Thread. Cause: " + e.getMessage());
-        }
-      }
-
-      Logger.debug("Stop Event handling");
+      Logger.trace(getName() + " stopped.");
     }
   }
 

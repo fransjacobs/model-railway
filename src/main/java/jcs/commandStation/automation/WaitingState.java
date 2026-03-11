@@ -50,7 +50,6 @@ class WaitingState extends AbstractState {
             + " Block max: " + blockBean.getMaxWaitTime());
 
     // Initialize scheduler
-    //scheduler = Executors.newSingleThreadScheduledExecutor();
     ThreadGroup threadGroup = dispatcher.getThreadGroup();
     scheduler = Executors.newSingleThreadScheduledExecutor(runnable
             -> new Thread(threadGroup, runnable, "STM-WAIT->" + dispatcher.getName().toUpperCase()));
