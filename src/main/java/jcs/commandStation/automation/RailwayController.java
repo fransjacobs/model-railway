@@ -151,7 +151,6 @@ public final class RailwayController {
     actionCommandQueue.offer(command);
   }
 
-  //@SuppressWarnings("unused")
   void pause(long millis) {
     try {
       Thread.sleep(millis);
@@ -163,7 +162,7 @@ public final class RailwayController {
   public boolean startAutoMode() {
     if (JCS.getJcsCommandStation().isPowerOn()) {
       if (sensorMonitor != null && sensorMonitor.isRunning()) {
-        Logger.trace("Allready running");
+        Logger.trace("Already running");
         return true;
       } else {
         commandStationBean = JCS.getJcsCommandStation().getCommandStationBean();
@@ -182,15 +181,15 @@ public final class RailwayController {
         }
 
         Logger.trace("SensorMonitor Initialized in " + (now - start) + " ms...");
+        automodeOn = true;
 
         prepareAllDispatchers();
 
         enqueCommand(new RailwayControllerCommand(CMD_FIRE_STATUS_LST, "automode.started"));
-        automodeOn = true;
         Logger.trace("RailwayController Automode initialized. There are " + dispatchers.size() + " Dispatchers...");
       }
 
-      return true;
+      return automodeOn;
     } else {
       Logger.warn("Can't start Automode, Command Station Power is Off!");
       enqueCommand(new RailwayControllerCommand(CMD_FIRE_STATUS_LST, "automode.stopped"));
@@ -198,8 +197,8 @@ public final class RailwayController {
     }
   }
 
-  public boolean isAutomodeOn() {
-    return automodeOn;
+  public boolean isAutoModeActive() {
+    return this.automodeOn;
   }
 
   void setAutomodeOn(boolean automodeOn) {
@@ -241,6 +240,8 @@ public final class RailwayController {
       long timeout = now + ALL_DISPATCHER_STOPPING_TIMEOUT;
       boolean dispatcherRunning = isAnyDispatcherRunning();
 
+      automodeOn = false;
+
       while (dispatcherRunning && now < timeout) {
         dispatcherRunning = isAnyDispatcherRunning();
         now = System.currentTimeMillis();
@@ -258,8 +259,6 @@ public final class RailwayController {
     }
     Logger.debug("ControllerMonitor Stopped");
     sensorMonitor = null;
-    automodeOn = false;
-
   }
 
   Dispatcher createDispatcher(LocomotiveBean locomotiveBean) {
@@ -338,10 +337,6 @@ public final class RailwayController {
 
   public void reset() {
     enqueCommand(new RailwayControllerCommand("reset"));
-  }
-
-  public boolean isAutoModeActive() {
-    return this.automodeOn;
   }
 
   public boolean isSensorMonitorThreadStopped() {

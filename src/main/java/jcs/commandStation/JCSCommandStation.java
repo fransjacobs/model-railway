@@ -393,7 +393,6 @@ public class JCSCommandStation {
     if (decoderController != null) {
       return decoderController.getCommandStationBean();
     } else {
-      Logger.trace("Using the default CommandStationBean...");
       return PersistenceFactory.getService().getDefaultCommandStation();
     }
   }

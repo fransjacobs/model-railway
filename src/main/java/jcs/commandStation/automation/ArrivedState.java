@@ -107,6 +107,7 @@ class ArrivedState extends AbstractState {
 
   @Override
   AbstractState execute() {
+
     if (dispatcher.getNextRouteBean() != null) {
       //Now setup the next route
       RouteBean route = dispatcher.getNextRouteBean();
@@ -164,7 +165,9 @@ class ArrivedState extends AbstractState {
 
       return new DepartingState();
     } else {
-      if (alwaysStop) {
+      boolean automodeInActive = !dispatcher.getRailwayController().isAutoModeActive();
+
+      if (alwaysStop || automodeInActive) {
         return new WaitingState();
       } else {
         return new PrepareRouteState();

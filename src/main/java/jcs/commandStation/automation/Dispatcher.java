@@ -62,8 +62,7 @@ public class Dispatcher {
   //The exit of the departure
   private Integer exitSensorId;
 
-  private boolean locomotiveStarted = false;
-  //private boolean locomotiveStopRequest = false;
+  volatile boolean locomotiveStarted = false;
 
   /**
    * Dispatcher is created when auto mode is enabled.<br>
@@ -140,25 +139,26 @@ public class Dispatcher {
 
   void enable() {
     if (railwayController.isAutoModeActive()) {
-      if (stateMachine == null || (stateMachine != null && !stateMachine.isRunning())) {
+      if (stateMachine == null || !stateMachine.isRunning()) {
+        // Explicitly clean up old state machine if present
+        if (stateMachine != null) {
+          stateMachine.getCurrentState().onExit();
+        }
         locomotiveStarted = false;
         stateMachine = new StateMachine(this, new IdleState());
       } else {
-        Logger.debug("There is a running dispatcherRunner");
+        Logger.debug("There is a running dispatcherRunner for " + getName());
       }
-    } else {
-      Logger.trace("Can't start Locomotive " + getName() + " automode is not enabled");
     }
   }
 
   public void startLocomotive() {
     if (railwayController.isAutoModeActive()) {
       if (stateMachine != null && !stateMachine.isRunning()) {
-        Logger.debug("There is a running dispatcherRunner");
-      } else {
-        stateMachine = new StateMachine(this, new IdleState());
         stateMachine.startStateMachineThread();
         locomotiveStarted = stateMachine.isRunning();
+      } else {
+        Logger.debug("There is a running dispatcherRunner");
       }
     } else {
       Logger.trace("Can't start Locomotive " + getName() + " automode is not enabled");
@@ -166,7 +166,8 @@ public class Dispatcher {
   }
 
   //For test mocking only!!!
-  void setLocomotiveStarted(boolean locomotiveStarted) {
+  void setLocomotiveStarted(boolean locomotiveStarted
+  ) {
     this.locomotiveStarted = locomotiveStarted;
   }
 
@@ -179,7 +180,6 @@ public class Dispatcher {
   }
 
   public void stopLocomotive() {
-    //   locomotiveStopRequest = true;
     if (stateMachine != null) {
       locomotiveStarted = !stateMachine.getCurrentState().canStopLocomotive();
       stateMachine.stopStateMachineThread();

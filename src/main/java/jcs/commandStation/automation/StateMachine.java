@@ -197,7 +197,7 @@ class StateMachine {
     private final StateMachine stateMachine;
     private final long threadSleepMillis;
 
-    private boolean running = false;
+    private volatile boolean running = false;
 
     StateMachineRunner(StateMachine stateMachine) {
       super(stateMachine.getDispatcher().getThreadGroup(), "STM->" + stateMachine.getDispatcher().getLocomotiveBean().getName().toUpperCase());
@@ -237,6 +237,8 @@ class StateMachine {
       }
 
       stateMachine.requestStop = false;
+
+      dispatcher.locomotiveStarted = false;
       Logger.debug("StateMachineTread " + stateMachine.getDispatcher().getName() + " finished...");
     }
 
