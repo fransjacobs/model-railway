@@ -60,8 +60,7 @@ public class FeedbackEventMessage {
         busNumber = 3;
       }
 
-      //SensorBean sensorBean = new SensorBean(contactId, null, null, null, identifier, status, previousStatus, millis, System.currentTimeMillis(), MARKLIN_CS, busNumber);
-      SensorBean sensorBean = new SensorBean(contactId, null, null, null, identifier, status, previousStatus, millis, System.currentTimeMillis(), MARKLIN_CS, busNumber);
+      SensorBean sensorBean = new SensorBean(contactId, null, identifier, contactId, identifier, status, previousStatus, millis, System.currentTimeMillis(), MARKLIN_CS, busNumber);
       return sensorBean;
     } else {
       Logger.warn("Can't parse message, not a Sensor Response! " + resp);

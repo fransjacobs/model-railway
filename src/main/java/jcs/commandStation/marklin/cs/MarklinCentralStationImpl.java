@@ -267,10 +267,6 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 
           power = isPower();
           JCS.logProgress("Power is " + (power ? "On" : "Off"));
-
-          //Prepare the Track measurements
-          //MeasurementListener mel = new MeasurementListener();
-          //addMeasurementEventListener(mel);
           Logger.trace("Connected to " + gfp.getName() + ", " + gfp.getArticleNumber() + " SerialNumber: " + gfp.getSerial());
         }
       } else {
@@ -284,9 +280,9 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       Logger.info("Marklin Central Station Virtual Mode Enabled!");
     }
 
-    if (!isVirtual()) {
-      //getMeasurementChannels();
-      //this.boosterManager.initChannels();
+     boolean disableMeasurements = Boolean.getBoolean("marklin.cs.disable.measurements");
+    
+    if (!isVirtual() && !disableMeasurements) {
       Logger.trace("Query Channel Configs...");
       boosterManager.initChannels();
     }
@@ -1258,6 +1254,9 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
  
 
   public static void main(String[] a) {
+    System.setProperty("tinylog.writer.level", "trace");
+    System.setProperty("marklin.cs.disable.measurements", "true");
+
     RunUtil.loadExternalProperties();
 
     CommandStationBean csb = new CommandStationBean();
@@ -1282,8 +1281,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     MarklinCentralStationImpl cs = new MarklinCentralStationImpl(csb, false);
     cs.debug = true;
 
-    System.setProperty("tinylog.writer.level", "trace");
-
+ 
     Logger.debug((cs.connect() ? "Connected" : "NOT Connected"));
 
     //MeasurementListener mel = new MeasurementListener();
@@ -1303,13 +1301,13 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 //
 //      Logger.debug("Switch Accessory 2 to Green");
       //cs.switchAccessory(2, AccessoryValue.GREEN, 250);
-//      List<FeedbackModule> feedbackModules = cs.getFeedbackModules();
-//      Logger.trace("There are " + feedbackModules + " Feedback Modules");
-//      for (FeedbackModule fm : feedbackModules) {
-//        Logger.trace("Module id: " + fm.getId() + " Module nr: " + fm.getModuleNumber() + " ports: " + fm.getPortCount() + " NodeId: " + fm.getIdentifier() + " BusNr: " + fm.getBusNumber());
-//        Logger.trace("FBModule id: " + fm.getId() + " S 1 id:" + fm.getSensor(0).getId() + " contactId: " + fm.getSensor(0).getContactId() + " ModuleNr: " + fm.getSensor(0).getDeviceId() + " Name " + fm.getSensor(0).getName());
-//        Logger.trace("FBModule id: " + fm.getId() + " S 15 id:" + fm.getSensor(15).getId() + " contactId: " + fm.getSensor(15).getContactId() + " ModuleNr: " + fm.getSensor(15).getDeviceId() + " Name " + fm.getSensor(15).getName());
-//      }
+      List<FeedbackModule> feedbackModules = cs.getFeedbackModules();
+      Logger.trace("There are " + feedbackModules + " Feedback Modules");
+      for (FeedbackModule fm : feedbackModules) {
+        Logger.trace("Module id: " + fm.getId() + " Module nr: " + fm.getModuleNumber() + " ports: " + fm.getPortCount() + " NodeId: " + fm.getIdentifier() + " BusNr: " + fm.getBusNumber());
+        Logger.trace("FBModule id: " + fm.getId() + " S 1 id:" + fm.getSensor(0).getId() + " contactId: " + fm.getSensor(0).getContactId() + " ModuleNr: " + fm.getSensor(0).getDeviceId() + " Name " + fm.getSensor(0).getName());
+        Logger.trace("FBModule id: " + fm.getId() + " S 15 id:" + fm.getSensor(15).getId() + " contactId: " + fm.getSensor(15).getContactId() + " ModuleNr: " + fm.getSensor(15).getDeviceId() + " Name " + fm.getSensor(15).getName());
+      }
       //cs.getLocomotivesViaCAN();
       //cs.getAccessoriesViaCan();
 //      Logger.debug("Getting all accessories...");

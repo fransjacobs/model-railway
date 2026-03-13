@@ -44,6 +44,8 @@ public class FeedbackSensorDialog extends javax.swing.JDialog {
 
   /**
    * Creates new form FeedbackSensorDialog
+   * @param parent
+   * @param modal
    */
   public FeedbackSensorDialog(java.awt.Frame parent, boolean modal) {
     super(parent, modal);
@@ -186,6 +188,10 @@ public class FeedbackSensorDialog extends javax.swing.JDialog {
     } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
       Logger.error(ex);
     }
+    
+    
+    //Start the CS
+    JCS.getJcsCommandStation().connect();
 
     if (RunUtil.isMacOSX()) {
       System.setProperty("apple.awt.application.name", "JCS Feedback Sensor Monitor");
