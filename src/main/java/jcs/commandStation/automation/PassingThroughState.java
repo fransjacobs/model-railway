@@ -29,7 +29,7 @@ import org.tinylog.Logger;
 class PassingThroughState extends AbstractState implements SensorEventCallback {
 
   private Integer inSensorId;
-  private boolean inSensorTriggerred = false;
+  private boolean inSensorTriggered = false;
 
   PassingThroughState() {
     super("PassingThrough");
@@ -38,6 +38,8 @@ class PassingThroughState extends AbstractState implements SensorEventCallback {
   @Override
   void onEnter(Dispatcher dispatcher) {
     super.onEnter(dispatcher);
+    inSensorId = dispatcher.getInSensorId();
+    dispatcher.getSensorMonitor().subscribe(inSensorId, this);
 
     BlockBean departureBlock = dispatcher.getDepartureBlock();
     BlockBean destinationBlock = dispatcher.getDestinationBlock();
@@ -45,9 +47,6 @@ class PassingThroughState extends AbstractState implements SensorEventCallback {
 
     Logger.trace("Locomotive " + dispatcher.getLocomotiveBean().getName() + " has entered destination " + destinationBlock.getDescription() + " will continue at current speed...");
 
-    //Subscribe the IN sensor
-    inSensorId = dispatcher.getInSensorId();
-    dispatcher.getSensorMonitor().subscribe(inSensorId, this);
     Logger.trace("Destination block " + destinationBlock.getId() + " In SensorId: " + inSensorId);
 
     departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
@@ -63,7 +62,7 @@ class PassingThroughState extends AbstractState implements SensorEventCallback {
 
   @Override
   AbstractState execute() {
-    if (inSensorTriggerred) {
+    if (inSensorTriggered) {
       return new ArrivedState();
     } else {
       return this;
@@ -85,7 +84,7 @@ class PassingThroughState extends AbstractState implements SensorEventCallback {
   public void onEvent(SensorEvent event) {
     if (inSensorId.equals(event.getSensorId())) {
       if (event.isActive()) {
-        inSensorTriggerred = true;
+        inSensorTriggered = true;
         Logger.trace("In Event from Sensor " + event.getSensorId() + " for " + dispatcher.getName());
         dispatcher.wakeup();
       }

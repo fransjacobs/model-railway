@@ -38,7 +38,7 @@ import org.tinylog.Logger;
 class StateMachine {
 
   private final Dispatcher dispatcher;
-  private AbstractState currentState;
+  private volatile AbstractState currentState;
   private StateMachineRunner stateMachineRunner;
   private boolean requestStop = false;
 
@@ -89,9 +89,7 @@ class StateMachine {
   }
 
   AbstractState getCurrentState() {
-    synchronized (this) {
-      return currentState;
-    }
+    return currentState;
   }
 
   boolean isRunning() {
@@ -171,7 +169,7 @@ class StateMachine {
     Logger.trace(dispatcher.getName() + " has been Reset");
   }
 
-  synchronized boolean executeState() {
+  boolean executeState() {
     AbstractState nextState = currentState.execute();
 
     boolean stateChanged = nextState != currentState;
@@ -202,7 +200,7 @@ class StateMachine {
     StateMachineRunner(StateMachine stateMachine) {
       super(stateMachine.getDispatcher().getThreadGroup(), "STM->" + stateMachine.getDispatcher().getLocomotiveBean().getName().toUpperCase());
       this.stateMachine = stateMachine;
-      threadSleepMillis = Long.parseUnsignedLong(System.getProperty("autopilot.thread.wait.millis", "1000"));
+      threadSleepMillis = Long.parseUnsignedLong(System.getProperty("autopilot.thread.wait.millis", "10000"));
     }
 
     void shutdown() {
@@ -218,6 +216,38 @@ class StateMachine {
       running = true;
 
       while (running) {
+
+        BlockBean departureBlock = dispatcher.getDepartureBlock();
+        BlockBean destinationBlock = dispatcher.getDestinationBlock();
+        BlockBean nextDestinationBlock = dispatcher.getNextDestinationBlock();
+        RouteBean route = dispatcher.getRouteBean();
+        RouteBean nextRoute = dispatcher.getNextRouteBean();
+
+        StringBuilder sb = new StringBuilder();
+
+        if (departureBlock != null) {
+          sb.append("Departure: ");
+          sb.append(departureBlock.getId());
+        }
+        if (destinationBlock != null) {
+          sb.append("-> Destination: ");
+          sb.append(destinationBlock.getId());
+        }
+        if (nextDestinationBlock != null) {
+          sb.append("--> NextDestination: ");
+          sb.append(nextDestinationBlock.getId());
+        }
+        if (route != null) {
+          sb.append(" -Route: ");
+          sb.append(route.getId());
+        }
+        if (nextRoute != null) {
+          sb.append(" ->NextRoute: ");
+          sb.append(nextRoute.getId());
+        }
+
+        Logger.trace(":" + sb.toString());
+
         boolean stateChanged = stateMachine.executeState();
 
         if (stateMachine.requestStop && stateMachine.getCurrentState().canStopLocomotive()) {
@@ -233,11 +263,14 @@ class StateMachine {
             Thread.currentThread().interrupt();
             break;
           }
+
         }
       }
 
-      stateMachine.requestStop = false;
+      //Make sure the locomotive is stopped
+      dispatcher.changeLocomotiveVelocity(0);
 
+      stateMachine.requestStop = false;
       dispatcher.locomotiveStarted = false;
       Logger.debug("StateMachineTread " + stateMachine.getDispatcher().getName() + " finished...");
     }

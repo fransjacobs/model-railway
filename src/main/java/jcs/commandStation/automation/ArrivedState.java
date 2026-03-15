@@ -48,73 +48,91 @@ class ArrivedState extends AbstractState {
 
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
     BlockBean departureBlock = dispatcher.getDepartureBlock();
-
     BlockBean destinationBlock = dispatcher.getDestinationBlock();
     alwaysStop = destinationBlock.isAlwaysStop();
 
-    Logger.trace("Locomotive " + locomotive.getName() + " has arrived in " + destinationBlock.getDescription() + " and " + (alwaysStop ? "must stop" : " may continue"));
+    Logger.trace("Locomotive " + locomotive.getName() + " has arrived in " + destinationBlock.getDescription() + " and " + (alwaysStop ? "must stop" : "may continue"));
 
     if (alwaysStop || dispatcher.getNextRouteBean() == null) {
       //Stop the locomotive
       dispatcher.changeLocomotiveVelocity(0);
-      Logger.trace("Locomotive " + locomotive.getName() + " is stopped...");
+      Logger.trace((dispatcher.getNextRouteBean() == null ? "Next route not yet available " : "") + "Locomotive " + locomotive.getName() + " is stopped...");
     }
 
-    //Enable the sensors of the departure block
+    //Unsubscribe departure sensors
     dispatcher.getSensorMonitor().unsubscribe(dispatcher.getOccupationSensorId(), null);
     dispatcher.getSensorMonitor().unsubscribe(dispatcher.getExitSensorId(), null);
-
     dispatcher.setOccupationSensorId(null);
     dispatcher.setExitSensorId(null);
 
+    Logger.trace("Clearing departureBlock " + departureBlock.getId());
     departureBlock.setBlockState(BlockBean.BlockState.FREE);
     departureBlock.setLocomotive(null);
     departureBlock.setArrivalSuffix(null);
     departureBlock.setLogicalDirection(null);
-
     PersistenceFactory.getService().persist(departureBlock);
 
     destinationBlock.setBlockState(BlockBean.BlockState.OCCUPIED);
     destinationBlock.setLocomotive(locomotive);
     destinationBlock.setLogicalDirection(locomotive.getDirection().getDirection());
     destinationBlock.setArrivalSuffix(dispatcher.getRouteBean().getToSuffix());
-
     PersistenceFactory.getService().persist(destinationBlock);
-
-    RouteBean route = dispatcher.getRouteBean();
-    route.setLocked(false);
-    PersistenceFactory.getService().persist(route);
 
     dispatcher.showBlockState(departureBlock);
     dispatcher.showBlockState(destinationBlock);
 
-    dispatcher.resetRoute(route);
-    dispatcher.setRouteBean(null);
-
-    //Is the destinationBlock block part of a station.
+//    RouteBean route = dispatcher.getRouteBean();
+//    route.setLocked(false);
+//    PersistenceFactory.getService().persist(route);
+//    
+//    dispatcher.resetRoute(route);
+//    dispatcher.setRouteBean(null);
+    //Is the block where we just arrived part of a station?
     StationBean station = dispatcher.getStation(destinationBlock);
     if (station != null) {
       //Set the arrival time
       StationBlockBean sbb = station.getStationBlockBean(destinationBlock);
       sbb.setLastUpdated(new Date());
-
-      int locCount = station.getLocomotiveCount();
-      locCount = locCount + 1;
-      station.setLocomotiveCount(locCount);
       PersistenceFactory.getService().persist(station);
     }
   }
 
   @Override
   AbstractState execute() {
+    boolean nextRoutePrepared = false;
 
-    if (dispatcher.getNextRouteBean() != null) {
+    //Obtain the current block which is the destination block
+    BlockBean destinationBlock = dispatcher.getDestinationBlock();
+    Logger.trace("Arrived in: " + destinationBlock.getId());
+
+    //Is the block where we just arrived part of a station?
+    StationBean station = dispatcher.getStation(destinationBlock);
+    if (station != null) {
+      //Set the arrival time
+      StationBlockBean sbb = station.getStationBlockBean(destinationBlock);
+      sbb.setLastUpdated(new Date());
+      PersistenceFactory.getService().persist(station);
+    }
+
+    //Now Clear the route as we have arrived
+    RouteBean route = dispatcher.getRouteBean();
+    Logger.trace("resetting old route " + route.getId());
+    route.setLocked(false);
+    PersistenceFactory.getService().persist(route);
+    dispatcher.resetRoute(route);
+    dispatcher.setRouteBean(null);
+
+    if (dispatcher.getNextRouteBean() != null && dispatcher.getNextRouteBean().isLocked()) {
+      Logger.trace("Setting the next found route: " + dispatcher.getNextRouteBean().getId());
+
       //Now setup the next route
-      RouteBean route = dispatcher.getNextRouteBean();
+      route = dispatcher.getNextRouteBean();
       dispatcher.setRouteBean(route);
       // New Departure and destination block should be set...
       BlockBean departureBlock = dispatcher.getDepartureBlock();
-      BlockBean destinationBlock = dispatcher.getDestinationBlock();
+      destinationBlock = dispatcher.getDestinationBlock();
+
+      Logger.trace("New departure: " + departureBlock.getId() + " new destination: " + destinationBlock.getId());
 
       //String destinationTileId = route.getToTileId();
       String arrivalSuffix = route.getToSuffix();
@@ -157,23 +175,23 @@ class ArrivedState extends AbstractState {
       dispatcher.showBlockState(departureBlock);
       dispatcher.showBlockState(destinationBlock);
 
-      //dispatcher.showRoute(route, Color.green);
       dispatcher.getRouteManager().showRoute(route, Color.green);
 
       //Clear the next routes
       dispatcher.setNextRouteBean(null);
-
-      return new DepartingState();
-    } else {
-      boolean automodeInActive = !dispatcher.getRailwayController().isAutoModeActive();
-
-      if (alwaysStop || automodeInActive) {
-        return new WaitingState();
-      } else {
-        return new PrepareRouteState();
-      }
-
+      nextRoutePrepared = true;
     }
+
+    //Check to which next state we can switch
+    boolean automodeInActive = !dispatcher.getRailwayController().isAutoModeActive();
+    automodeInActive = automodeInActive && !dispatcher.isLocomotiveStarted();
+
+    if (alwaysStop || automodeInActive || !nextRoutePrepared) {
+      return new WaitingState();
+    } else {
+      return new DepartingState();
+    }
+
   }
 
   @Override

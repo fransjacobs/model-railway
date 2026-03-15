@@ -35,7 +35,6 @@ public class StationBean {
 
   private String id;
   private String name;
-  private Integer locomotiveCount;
   private Integer minLocomotives;
   private boolean fifo;
 
@@ -64,15 +63,6 @@ public class StationBean {
 
   public void setName(String name) {
     this.name = name;
-  }
-
-  @Column(name = "loc_count", columnDefinition = "integer default 0")
-  public Integer getLocomotiveCount() {
-    return locomotiveCount;
-  }
-
-  public void setLocomotiveCount(Integer locomotiveCount) {
-    this.locomotiveCount = locomotiveCount;
   }
 
   @Column(name = "min_locs", columnDefinition = "integer default 0")
@@ -144,7 +134,6 @@ public class StationBean {
     int hash = 5;
     hash = 59 * hash + Objects.hashCode(this.id);
     hash = 59 * hash + Objects.hashCode(this.name);
-    hash = 59 * hash + Objects.hashCode(this.locomotiveCount);
     hash = 59 * hash + Objects.hashCode(this.minLocomotives);
     hash = 59 * hash + (this.fifo ? 1 : 0);
     return hash;
@@ -169,9 +158,6 @@ public class StationBean {
       return false;
     }
     if (!Objects.equals(this.name, other.name)) {
-      return false;
-    }
-    if (!Objects.equals(this.locomotiveCount, other.locomotiveCount)) {
       return false;
     }
     return Objects.equals(this.minLocomotives, other.minLocomotives);

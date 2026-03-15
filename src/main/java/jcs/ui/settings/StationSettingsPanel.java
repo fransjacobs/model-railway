@@ -390,7 +390,6 @@ public class StationSettingsPanel extends JPanel {
     String newId = "station-" + (stations.size() + 1);
 
     selectedStation.setId(newId);
-    selectedStation.setLocomotiveCount(0);
     selectedStation.setMinLocomotives(1);
     selectedStation.setFifo(true);
 

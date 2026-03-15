@@ -73,6 +73,14 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
    */
   public void subscribe(Integer sensorId, SensorEventCallback callback) {
     subscribers.computeIfAbsent(sensorId, k -> new CopyOnWriteArrayList<>()).add(callback);
+
+    //Check if the sensor is triggered before subscription
+    SensorBean sb = PersistenceFactory.getService().getSensor(sensorId);
+    if (sb.isActive()) {
+      SensorEvent se = new SensorEvent(sb);
+      Logger.warn("Sensor {} already active at subscription time, firing callback", sensorId);
+      callback.onEvent(se);
+    }
   }
 
   public void subscribeWithoutCallback(Integer sensorId) {
@@ -95,7 +103,7 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
    * @param callback
    */
   public void unsubscribe(Integer sensorId, SensorEventCallback callback) {
-    
+
     List<SensorEventCallback> callbacks = subscribers.get(sensorId);
     if (callbacks != null) {
       callbacks.remove(callback);
@@ -158,7 +166,7 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
   }
 
   void handleGhost(SensorEvent event) {
-    Logger.trace("Check for possible Ghost! @ Sensor: " + event.getSensorId() + " Active: " + event.isActive());
+    //Logger.trace("Check for possible Ghost! @ Sensor: " + event.getSensorId() + " Active: " + event.isActive());
 
     List<BlockBean> blocks = PersistenceFactory.getService().getBlocks();
     Integer sensorId = event.getSensorId();
@@ -177,7 +185,7 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
           }
           //Also persist
           PersistenceFactory.getService().persist(block);
-          Logger.warn("Ghost Detected! @ Sensor " + sensorId + " in block " + block.getId());
+          Logger.warn("##### Ghost Detected! @ Sensor " + sensorId + " in block " + block.getId() + " #####");
           //Switch power OFF!
           JCS.getJcsCommandStation().switchPower(false);
         } else {
@@ -202,12 +210,12 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
 
     if (event.isChanged()) {
       if (subscribersWithoutCallback.contains(event.getSensorId())) {
-        Logger.trace(event.getSensorId() + " is subscribed in ignore list...");
+        //Logger.trace(event.getSensorId() + " is subscribed in ignore list...");
       } else if (subscribers.containsKey(event.getSensorId())) {
-        Logger.trace(event.getSensorId() + " is subscribed in callback list...");
+        //Logger.trace(event.getSensorId() + " is subscribed in callback list...");
         notifySubscribers(event);
       } else {
-        Logger.trace(event.getSensorId() + " is NOT subscribed...");
+        //Logger.trace(event.getSensorId() + " is NOT subscribed...");
         handleGhost(event);
       }
     }
@@ -258,11 +266,6 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
         if (event != null) {
           handleSensorEvent(event);
         }
-
-        synchronized (this) {
-          notifyAll();
-        }
-
       } catch (InterruptedException ex) {
         Logger.trace("Interrupted");
         Thread.currentThread().interrupt();
@@ -270,11 +273,10 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
       }
     }
 
-    JCS.getJcsCommandStation().removeAllSensorEventsListener(this);
     subscribers.clear();
     subscribersWithoutCallback.clear();
     sensorBeans.clear();
-
+    JCS.getJcsCommandStation().removeAllSensorEventsListener(this);
     Logger.trace("SensorMonitor Finished.");
   }
 

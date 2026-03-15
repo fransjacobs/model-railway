@@ -56,20 +56,11 @@ class RunningState extends AbstractState implements SensorEventCallback {
     enterSensorId = dispatcher.getEnterSensorId();
     dispatcher.getSensorMonitor().subscribe(enterSensorId, this);
 
-    //If the departure is from a station, lower the locCount
-    //TODO: is this really necessary as the locCount can also be determined dynamically.....
     StationBean station = dispatcher.getStation(departureBlock);
     if (station != null) {
       StationBlockBean sbb = station.getStationBlockBean(departureBlock);
       //reset arrival time
       sbb.setLastUpdated(new Date());
-
-      int locCount = station.getLocomotiveCount();
-      locCount = locCount + 1;
-      if (locCount < 0) {
-        locCount = 0;
-      }
-      station.setLocomotiveCount(locCount);
       PersistenceFactory.getService().persist(station);
     }
 
@@ -89,7 +80,6 @@ class RunningState extends AbstractState implements SensorEventCallback {
   void onExit() {
     //Remove the Callback
     dispatcher.getSensorMonitor().unsubscribe(enterSensorId, this);
-
     //Disable the entersensor
     dispatcher.getSensorMonitor().subscribeWithoutCallback(enterSensorId);
   }

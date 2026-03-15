@@ -68,6 +68,7 @@ class ApproachingState extends AbstractState {
     boolean alwaysStop = destinationBlock.isAlwaysStop();
 
     boolean automodeInActive = !dispatcher.getRailwayController().isAutoModeActive();
+    automodeInActive = automodeInActive && !dispatcher.isLocomotiveStarted();
 
     if (alwaysStop || automodeInActive) {
       return new BrakingState();

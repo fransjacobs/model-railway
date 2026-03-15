@@ -305,15 +305,14 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   }
 
   private void showEditLayoutPanel() {
-    //if (!AutoPilot.isAutoModeActive()) {
-    if (RailwayController.getInstance().isAutoModeActive()) {
+    //if (RailwayController.getInstance().isAutoModeActive()) {
       CardLayout card = (CardLayout) centerPanel.getLayout();
       card.show(centerPanel, "designPanel");
 
       dispatcherStatusPanel.showComponentsTab();
       layoutPanel.loadLayoutInBackground();
       editMode = true;
-    }
+    //}
   }
 
   private void setControllerProperties() {

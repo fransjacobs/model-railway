@@ -49,42 +49,51 @@ class WaitingState extends AbstractState {
     Logger.debug("Waiting for " + waitTime + " s. Block Random " + blockBean.isRandomWait()
             + " Block max: " + blockBean.getMaxWaitTime());
 
-    // Initialize scheduler
-    ThreadGroup threadGroup = dispatcher.getThreadGroup();
-    scheduler = Executors.newSingleThreadScheduledExecutor(runnable
-            -> new Thread(threadGroup, runnable, "STM-WAIT->" + dispatcher.getName().toUpperCase()));
+    if (waitTime > 0) {
+      // Initialize scheduler
+      ThreadGroup threadGroup = dispatcher.getThreadGroup();
+      scheduler = Executors.newSingleThreadScheduledExecutor(runnable
+              -> new Thread(threadGroup, runnable, "STM-WAIT->" + dispatcher.getName().toUpperCase()));
 
-    remainingTime = waitTime;
-    waitCompleted = false;
-    cancelled = false;
+      remainingTime = waitTime;
+      waitCompleted = false;
+      cancelled = false;
 
-    // Schedule countdown task - runs every second
-    countdownTask = scheduler.scheduleAtFixedRate(() -> {
+      // Schedule countdown task - runs every second
+      countdownTask = scheduler.scheduleAtFixedRate(() -> {
 
-      if (!dispatcher.isLocomotiveStarted()) {
-        // Automode disabled - cancel waiting
-        Logger.debug("Automode is disabled for " + dispatcher.getName()
-                + " Exit " + dispatcher.getStateName());
-        cancelled = true;
-        stopScheduler();
-        return;
-      }
+        if (!dispatcher.isLocomotiveStarted()) {
+          // Automode disabled - cancel waiting
+          Logger.debug("Automode is disabled for " + dispatcher.getName() + " Exit " + dispatcher.getStateName());
+          cancelled = true;
+          stopScheduler();
+          return;
+        }
 
-      dispatcher.fireStateListeners(name, name, "(" + remainingTime + ")");
-      Logger.trace("Remaining time for " + dispatcher.getName() + " " + remainingTime + " s...");
+        dispatcher.fireStateListeners(name, name, "(" + remainingTime + ")");
+        //Logger.trace("Remaining time for " + dispatcher.getName() + " " + remainingTime + " s...");
 
-      remainingTime--;
-      if (remainingTime < 0) {
-        waitCompleted = true;
-        stopScheduler();
-      }
-    }, 0, 1, TimeUnit.SECONDS); // Initial delay 0, period 1 second
+        remainingTime--;
+        if (remainingTime < 0) {
+          waitCompleted = true;
+          stopScheduler();
+        }
+      }, 0, 1, TimeUnit.SECONDS); // Initial delay 0, period 1 second
+      
+      dispatcher.wakeup();
+
+    } else {
+      waitCompleted = true;
+      dispatcher.wakeup();
+    }
   }
 
   @Override
   AbstractState execute() {
     // Just check the status - actual waiting happens in scheduler
     if (waitCompleted) {
+      Logger.trace("Wait completed for " + dispatcher.getName() + "...");
+
       return new PrepareRouteState();
     } else if (cancelled || !dispatcher.isLocomotiveStarted()) {
       return new IdleState();
@@ -151,6 +160,14 @@ class WaitingState extends AbstractState {
           waitTime = maxWait;
         }
       }
+    }
+
+    //In case the train had to stop because the next route could not yet be found wait shorter
+    //then the block waittime
+    boolean alwayStop = blockBean.isAlwaysStop();
+    if (!alwayStop) {
+      Logger.trace("Overriding waiting time of " + waitTime + "+s as block: " + blockBean.getId() + " does not have to stop...");
+      waitTime = 0;
     }
 
     return waitTime;

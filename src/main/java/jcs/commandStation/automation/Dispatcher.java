@@ -43,24 +43,24 @@ public class Dispatcher {
 
   private final List<StateEventListener> stateEventListeners;
 
-  private StateMachine stateMachine;
+  private volatile StateMachine stateMachine;
 
   private final RouteManager routeManager;
 
-  private RouteBean routeBean;
-  private RouteBean nextRouteBean;
+  private volatile RouteBean routeBean;
+  private volatile RouteBean nextRouteBean;
 
-  private String departureBlockId;
-  private String destinationBlockId;
+  private volatile String departureBlockId;
+  private volatile String destinationBlockId;
 
   //Enter Sensor of the destination
-  private Integer enterSensorId;
+  private volatile Integer enterSensorId;
   //In Sensor of the destination
-  private Integer inSensorId;
+  private volatile Integer inSensorId;
   //The Occupation sensor of the departure 
-  private Integer occupationSensorId;
+  private volatile Integer occupationSensorId;
   //The exit of the departure
-  private Integer exitSensorId;
+  private volatile Integer exitSensorId;
 
   volatile boolean locomotiveStarted = false;
 

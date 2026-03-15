@@ -15,8 +15,6 @@
  */
 package jcs.commandStation.automation;
 
-import org.tinylog.Logger;
-
 /**
  * Base State
  */
@@ -24,7 +22,7 @@ abstract class AbstractState {
 
   protected final String name;
 
-  protected Dispatcher dispatcher;
+  protected volatile Dispatcher dispatcher;
 
   protected AbstractState(String name) {
     this.name = name;
@@ -37,7 +35,7 @@ abstract class AbstractState {
    */
   void onEnter(Dispatcher dispatcher) {
     this.dispatcher = dispatcher;
-    Logger.trace("Entering " + name + " state...");
+    //Logger.trace("Entering " + name + " state...");
   }
 
   /**

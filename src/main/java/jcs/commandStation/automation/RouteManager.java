@@ -66,11 +66,6 @@ class RouteManager {
     if (station != null) {
       minLocCount = station.getMinLocomotives();
       locCount = PersistenceFactory.getService().getLocomotiveCount(station).intValue();
-      if (station.getLocomotiveCount() != locCount) {
-        Logger.warn("Adjusting number of locomotives in station " + station.getName() + " to " + locCount);
-        station.setLocomotiveCount(locCount);
-        PersistenceFactory.getService().persist(station);
-      }
       Logger.trace(departureBlock.getId() + " is member of Station " + station.getName() + " min Locs: " + minLocCount + " cur locs: " + locCount);
     }
 
@@ -186,16 +181,13 @@ class RouteManager {
     return route != null;
   }
 
-  Integer getEstimatedRouteSwitchTime() {
-    RouteBean route = dispatcher.getRouteBean();
-    //Return a default switchtime 
-    return PersistenceFactory.getService().getAverageAccessorySwitchTime(route).intValue();
-  }
-
   Integer getEstimatedNextRouteSwitchTime() {
     RouteBean route = dispatcher.getNextRouteBean();
     //Return a default switchtime 
-    return PersistenceFactory.getService().getAverageAccessorySwitchTime(route).intValue();
+    int avgSwitchTime = PersistenceFactory.getService().getAverageAccessorySwitchTime(route).intValue();
+    avgSwitchTime = avgSwitchTime + 250;
+
+    return avgSwitchTime;
   }
 
   boolean reserveRoute() {
@@ -430,19 +422,19 @@ class RouteManager {
     if (turnoutsNotLocked(nextRoute)) {
       PersistenceFactory.getService().persist(nextRoute);
 
-//      int turnoutCount = turnouts.size();
-//      int turnoutIdx = 0;
+      int turnoutCount = turnouts.size();
+      int turnoutIdx = 0;
       for (RouteElementBean reb : turnouts) {
         AccessoryBean.AccessoryValue av = reb.getAccessoryValue();
         AccessoryBean turnout = reb.getTileBean().getAccessoryBean();
         Logger.debug("Setting Turnout " + turnout.getName() + " [" + turnout.getAddress() + "] to : " + av.getValue());
         switchAccessory(turnout, av);
-//        turnoutIdx++;
+        turnoutIdx++;
         //No need to wait...
-//        if (turnoutCount > turnoutIdx) {
-//          //TODO configurable wait time between switches
-//          pause(250);
-//        }
+        if (turnoutCount > turnoutIdx) {
+          //TODO configurable wait time between switches
+          pause(100);
+        }
       }
       Logger.trace("Turnouts set for " + nextRoute);
 

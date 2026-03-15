@@ -24,6 +24,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentSkipListMap;
 import jcs.commandStation.entities.MeasurementBean;
+import jcs.commandStation.events.ConnectionEvent;
+import jcs.commandStation.events.ConnectionEventListener;
 import jcs.commandStation.events.MeasurementEvent;
 import jcs.commandStation.events.MeasurementEventListener;
 import jcs.commandStation.marklin.cs.can.CanMessage;
@@ -48,7 +50,7 @@ import org.tinylog.Logger;
  *
  * Once the channel configuration is known a thread is started to query the measured values at regular intervals.
  */
-class BoosterManager {
+class BoosterManager implements ConnectionEventListener {
 
   private final MarklinCentralStationImpl marklinCentralStationImpl;
 
@@ -177,45 +179,46 @@ class BoosterManager {
     return channelConfigurationQuery != null && channelConfigurationQuery.configured;
   }
 
+  @Override
+  public void onConnectionChange(ConnectionEvent event) {
+    if (!event.isConnected()) {
+      if (channelConfigurationQuery != null && channelConfigurationQuery.isRunning()) {
+        channelConfigurationQuery.quit();
+      }
+
+      if (measurementTimer != null) {
+        measurementTimer.cancel();
+      }
+
+    }
+  }
+
   private class ChannelConfigurationQueryThread extends Thread {
 
     private final BoosterManager boosterManager;
 
-    @SuppressWarnings("FieldMayBeFinal")
-    private boolean stop = false;
-    private boolean quit = true;
-
-    private boolean configured = false;
+    private volatile boolean running = false;
+    private volatile boolean configured = false;
 
     public ChannelConfigurationQueryThread(BoosterManager boosterManager) {
+      super("BM-CHANNEL-CONFIG-QUERY-THREAD");
       this.boosterManager = boosterManager;
     }
 
-    @SuppressWarnings("unused")
     void quit() {
-      this.quit = true;
+      this.running = false;
     }
 
-    @SuppressWarnings("unused")
     boolean isRunning() {
-      return !this.quit;
-    }
-
-    @SuppressWarnings("unused")
-    boolean isFinished() {
-      return this.stop;
+      return running;
     }
 
     @Override
     public void run() {
-      quit = false;
-
-      Thread.currentThread().setName("BM-CHANNEL-CONFIG-QUERY-THREAD");
+      running = true;
       Logger.debug("Obtaining channel configuration...");
-
-      while (!configured) {
-
-        CanDevice gfp = this.boosterManager.marklinCentralStationImpl.getCanDevice(this.boosterManager.marklinCentralStationImpl.getCsUid());
+      while (!configured && running) {
+        CanDevice gfp = boosterManager.marklinCentralStationImpl.getCanDevice(this.boosterManager.marklinCentralStationImpl.getCsUid());
         if (gfp != null) {
           List<MeasuringChannel> measuringChannels = gfp.getMeasuringChannels();
 
@@ -247,7 +250,7 @@ class BoosterManager {
           if (configured) {
             Logger.trace("Start measurements...");
 
-            long measureInterval = Long.parseLong(System.getProperty("measurement.interval", "1"));
+            long measureInterval = Long.parseLong(System.getProperty("measurement.interval", "5"));
             measureInterval = measureInterval * 1000;
 
             if (measureInterval > 0 && !boosterManager.marklinCentralStationImpl.isVirtual()) {
@@ -262,7 +265,7 @@ class BoosterManager {
             Logger.debug("Re-query the Measurement Channels...");
             synchronized (this) {
               try {
-                wait(5000);
+                wait(10000);
               } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
                 Logger.debug("Interupted");

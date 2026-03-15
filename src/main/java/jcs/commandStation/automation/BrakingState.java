@@ -66,6 +66,13 @@ class BrakingState extends AbstractState implements SensorEventCallback {
 
     //Subscribe the IN sensor
     inSensorId = dispatcher.getInSensorId();
+
+    //check the inSensorStatus
+    inSensorTriggerred = PersistenceFactory.getService().getSensor(inSensorId).isActive();
+    if (inSensorTriggerred) {
+      Logger.warn("Insensor " + inSensorId + " has been triggered!");
+    }
+
     dispatcher.getSensorMonitor().subscribe(inSensorId, this);
     Logger.trace("Destination block " + destinationBlock.getId() + " In SensorId: " + inSensorId);
 
@@ -82,7 +89,6 @@ class BrakingState extends AbstractState implements SensorEventCallback {
 
   @Override
   AbstractState execute() {
-
     if (inSensorTriggerred) {
       return new ArrivedState();
     } else {

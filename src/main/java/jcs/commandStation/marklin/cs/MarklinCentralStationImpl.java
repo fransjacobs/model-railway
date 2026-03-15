@@ -125,6 +125,8 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     canDevices = new HashMap<>();
     accessoryManager = new AccessoryManager(this);
     boosterManager = new BoosterManager(this);
+    addConnectionEventListener(boosterManager);
+
     threadGroup = new ThreadGroup("MARKLIN-CS");
 
     if (commandStationBean != null) {
@@ -280,9 +282,9 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       Logger.info("Marklin Central Station Virtual Mode Enabled!");
     }
 
-     boolean disableMeasurements = Boolean.getBoolean("marklin.cs.disable.measurements");
-    
-    if (!isVirtual() && !disableMeasurements) {
+    boolean disableMeasurements = Boolean.getBoolean("marklin.cs.disable.measurements");
+
+    if (!disableMeasurements && !virtual && connected) {
       Logger.trace("Query Channel Configs...");
       boosterManager.initChannels();
     }
@@ -1078,7 +1080,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
                 }
                 case CanMessage.S88_EVENT_RESPONSE -> {
                   if (CanMessage.DLC_8 == dlc) {
-                    Logger.trace("FeedbackSensorEvent RX: " + eventMessage);
+                    //Logger.trace("FeedbackSensorEvent RX: " + eventMessage);
 
                     SensorBean sb = FeedbackEventMessage.parse(eventMessage, new Date());
                     Logger.trace("Sensor " + sb.getId() + " value " + sb.getStatus());
@@ -1281,7 +1283,6 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     MarklinCentralStationImpl cs = new MarklinCentralStationImpl(csb, false);
     cs.debug = true;
 
- 
     Logger.debug((cs.connect() ? "Connected" : "NOT Connected"));
 
     //MeasurementListener mel = new MeasurementListener();
