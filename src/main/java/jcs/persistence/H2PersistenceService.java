@@ -936,7 +936,36 @@ public class H2PersistenceService implements PersistenceService {
 
   @Override
   public Long getLocomotiveCount(StationBean stationBean) {
-    return database.sql("select count(*) from stations s join station_blocks sb on s.id = sb.station_id join blocks b on sb.block_id = b.id and b.locomotive_id is not null and b.status = 'Occupied' where s.id = ?", stationBean.getId()).first(Long.class);
+
+    String sql = "select count(*) "
+            + "from stations s "
+            + "join station_blocks sb on s.id = sb.station_id "
+            + "join blocks b on sb.block_id = b.id and b.locomotive_id is not null and b.status = 'Occupied' "
+            + "where s.id = ?";
+
+    return database.sql(sql, stationBean.getId()).first(Long.class);
+  }
+
+  @Override
+  public LocomotiveBean getFirstLocomotive(StationBean stationBean) {
+    String sql = "with stations_locomotives as ("
+            + "select sb.station_id, sb.block_id, b.locomotive_id, s.min_locs , sb.last_updated"
+            + ", count(distinct b.locomotive_id) over (partition by sb.station_id) as loc_count"
+            + ",row_number() over (partition by sb.station_id order by sb.last_updated asc) as rn"
+            + "from station_blocks sb "
+            + "join stations s on sb.station_id = s.id "
+            + "join blocks b on sb.block_id = b.id and b.locomotive_id is not null and b.status = 'Occupied' "
+            + "where s.id = ? "
+            + "group by sb.station_id, sb.block_id, b.locomotive_id, s.min_locs) "
+            + "select * from stations_locomotives where rn =1 ";
+
+    Long locomotiveId = database.sql(sql, stationBean.getId()).first(Long.class);
+
+    if (locomotiveId != null) {
+      return this.getLocomotive(locomotiveId);
+    } else {
+      return null;
+    }
   }
 
   @Override
