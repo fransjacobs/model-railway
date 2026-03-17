@@ -46,8 +46,12 @@ class PrepareRouteState extends AbstractState {
       int locCount = PersistenceFactory.getService().getLocomotiveCount(station).intValue();
       if (minLocCount <= locCount) {
         //The station has enough locomotives check whether this dispatcher is for the first locomotive to leave
-        LocomotiveBean locomotive = PersistenceFactory.getService().getFirstLocomotive(station);
-        canDepart = locomotive.getId().equals(dispatcher.getLocomotiveBean().getId());
+        if (station.isFifo()) {
+          LocomotiveBean locomotive = PersistenceFactory.getService().getFirstLocomotive(station);
+          canDepart = locomotive.getId().equals(dispatcher.getLocomotiveBean().getId());
+        } else {
+          canDepart = true;
+        }
       }
     } else {
       canDepart = true;
@@ -56,21 +60,23 @@ class PrepareRouteState extends AbstractState {
 
   @Override
   AbstractState execute() {
-    int permits = RailwayController.avialablePermits();
     boolean canAdvanceToNextState = false;
-    Logger.trace("Obtaining a lock. There is currently " + permits + " available permits...");
+    if (canDepart) {
+      int permits = RailwayController.avialablePermits();
+      Logger.trace("Obtaining a lock. There is currently " + permits + " available permits...");
 
-    if (RailwayController.tryAquireLock()) {
-      try {
-        Logger.trace("##### Locked ####");
-        canAdvanceToNextState = dispatcher.getRouteManager().searchAndReserveRoute();
-      } finally {
-        //Make sure the lock is released
-        RailwayController.releaseLock();
-        Logger.trace("##### Released ####");
+      if (RailwayController.tryAquireLock()) {
+        try {
+          Logger.trace("##### Locked ####");
+          canAdvanceToNextState = dispatcher.getRouteManager().searchAndReserveRoute();
+        } finally {
+          //Make sure the lock is released
+          RailwayController.releaseLock();
+          Logger.trace("##### Released ####");
+        }
+      } else {
+        Logger.trace("No Semaphore available");
       }
-    } else {
-      Logger.trace("No Semaphore available");
     }
 
     if (canAdvanceToNextState) {
