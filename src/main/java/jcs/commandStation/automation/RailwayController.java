@@ -98,14 +98,18 @@ public final class RailwayController {
 
   private String status;
 
+  private static final String PENDING = "automode.pending";
+  private static final String STOPPING = "automode.stopping";
+  private static final String STOPPED = "automode.stopped";
+  private static final String STARTED = "automode.started";
+
   private RailwayController() {
     threadGroup = new ThreadGroup("RAILWAY-CONTROLLER");
     dispatchers = new ConcurrentHashMap<>();
     railwayStatusListeners = new ArrayList<>();
     actionCommandQueue = new LinkedBlockingQueue();
     commandExecuter = new CommandExecuter(actionCommandQueue);
-
-    this.status = "automode.stopped";
+    status = PENDING;
   }
 
   /**
@@ -159,7 +163,7 @@ public final class RailwayController {
     }
   }
 
-  public boolean startAutoMode() {
+  boolean startAutoMode() {
     if (JCS.getJcsCommandStation().isPowerOn()) {
       if (sensorMonitor != null && sensorMonitor.isRunning()) {
         Logger.trace("Already running");
@@ -183,16 +187,21 @@ public final class RailwayController {
         Logger.trace("SensorMonitor Initialized in " + (now - start) + " ms...");
         automodeOn = true;
 
+        //TODO: Do this every time the Automode is started or just once?
+        restoreLocomotiveFunctions();
+
         prepareAllDispatchers();
 
-        enqueCommand(new RailwayControllerCommand(CMD_FIRE_STATUS_LST, "automode.started"));
         Logger.trace("RailwayController Automode initialized. There are " + dispatchers.size() + " Dispatchers...");
+        //enqueCommand(new RailwayControllerCommand(CMD_FIRE_STATUS_LST, "automode.started"));
+        fireStatusListeners(STARTED);
       }
 
       return automodeOn;
     } else {
       Logger.warn("Can't start Automode, Command Station Power is Off!");
-      enqueCommand(new RailwayControllerCommand(CMD_FIRE_STATUS_LST, "automode.stopped"));
+      //enqueCommand(new RailwayControllerCommand(CMD_FIRE_STATUS_LST, "automode.stopped"));
+      fireStatusListeners(STOPPED);
       return false;
     }
   }
@@ -221,11 +230,11 @@ public final class RailwayController {
     this.status = status;
     List<RailwayControllerStatusListener> snapshot = new ArrayList<>(railwayStatusListeners);
     for (RailwayControllerStatusListener rcsl : snapshot) {
-      rcsl.statusChanged(status);
+      rcsl.onControllerStatusChange(status);
     }
   }
 
-  public void stopAutoMode() {
+  void stopAutoMode() {
     if (sensorMonitor != null) {
       //Notify all dispachers so that the ones which waiting and Idle will stop
       Set<Dispatcher> snapshot = new HashSet<>(dispatchers.values());
@@ -234,6 +243,9 @@ public final class RailwayController {
           d.stopLocomotive();
         }
       }
+
+      //enqueCommand(new RailwayControllerCommand(CMD_FIRE_STATUS_LST, STOPPING));
+      fireStatusListeners(STOPPING);
 
       long now = System.currentTimeMillis();
       long start = now;
@@ -259,6 +271,14 @@ public final class RailwayController {
     }
     Logger.debug("ControllerMonitor Stopped");
     sensorMonitor = null;
+
+    fireStatusListeners(STOPPED);
+  }
+
+  void addDispatcher(LocomotiveBean locomotiveBean) {
+    Dispatcher dispatcher = createDispatcher(locomotiveBean);
+    dispatcher.enable();
+    dispatchers.put(locomotiveBean.getName(), dispatcher);
   }
 
   Dispatcher createDispatcher(LocomotiveBean locomotiveBean) {
@@ -390,8 +410,7 @@ public final class RailwayController {
       }
 
       dispatcher.removeAllStateEventListeners();
-
-      enqueCommand(new RailwayControllerCommand(CMD_FIRE_STATUS_LST, "dispatcher.removed." + locomotiveBean.getName()));
+      //enqueCommand(new RailwayControllerCommand(CMD_FIRE_STATUS_LST, "dispatcher.removed." + locomotiveBean.getName()));
     }
   }
 
@@ -639,9 +658,9 @@ public final class RailwayController {
       case CMD_REMOVE_LOC -> {
         removeDispatcher(event.getLocomotiveBean());
       }
-//      case CMD_ADD_LOC -> {
-//        addDispatcher(event.getLocomotiveBean());
-//      }
+      case CMD_ADD_LOC -> {
+        addDispatcher(event.getLocomotiveBean());
+      }
       case CMD_RESET -> {
         resetStates();
       }
@@ -659,17 +678,14 @@ public final class RailwayController {
    */
   private class CommandExecuter extends Thread {
 
-    private boolean running;
+    private volatile boolean running;
     private final BlockingQueue<RailwayControllerCommand> eventQueue;
 
     public CommandExecuter(BlockingQueue eventQueue) {
+      super(threadGroup, "RAILWAY-CONTROLLER-EXECUTER");
       this.eventQueue = eventQueue;
     }
 
-//    @SuppressWarnings("unused")
-//    void quit() {
-//      this.running = false;
-//    }
     boolean isRunning() {
       return running;
     }
@@ -677,12 +693,11 @@ public final class RailwayController {
     @Override
     public void run() {
       running = true;
-      setName("RAILWAY-CONTROLLER-EXECUTER");
       Logger.trace("RailwayController Command executer Started...");
 
       while (isRunning()) {
         try {
-          RailwayControllerCommand event = eventQueue.poll(10, TimeUnit.MILLISECONDS);
+          RailwayControllerCommand event = eventQueue.poll(100, TimeUnit.MILLISECONDS);
           if (event != null) {
             executeCommand(event);
           }
@@ -691,7 +706,7 @@ public final class RailwayController {
         }
       }
 
-      Logger.trace("Tile ActionEventHandler Stopped...");
+      Logger.trace("CommandExecuter Stopped...");
     }
 
   }

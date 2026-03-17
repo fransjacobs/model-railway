@@ -62,11 +62,11 @@ public class DispatcherTablePanel extends JPanel implements RailwayControllerSta
 
   private void initModel() {
     RailwayController.getInstance().addStatusListener(this);
-    statusChanged(RailwayController.getInstance().getStatus());
+    onControllerStatusChange(RailwayController.getInstance().getStatus());
   }
 
   @Override
-  public void statusChanged(String status) {
+  public void onControllerStatusChange(String status) {
     List<Dispatcher> dispatchers = RailwayController.getInstance().getDispatchers();
     Logger.trace("Found " + dispatchers.size() + " Dispatchers. Automode status: " + (status));
     locomotiveDispatcherTableModel.refresh();

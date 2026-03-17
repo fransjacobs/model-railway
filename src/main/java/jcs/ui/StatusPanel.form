@@ -37,19 +37,25 @@
       <SubComponents>
         <Component class="javax.swing.JLabel" name="connectedLbl">
           <Properties>
-            <Property name="text" type="java.lang.String" value="con"/>
+            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+              <Image iconType="3" name="/media/connection-green-24.png"/>
+            </Property>
             <Property name="toolTipText" type="java.lang.String" value="Connected"/>
           </Properties>
         </Component>
         <Component class="javax.swing.JLabel" name="virtualConnectionLbl">
           <Properties>
-            <Property name="text" type="java.lang.String" value="virt"/>
+            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+              <Image iconType="3" name="/media/virtual-24.png"/>
+            </Property>
             <Property name="toolTipText" type="java.lang.String" value="Virtual Connection"/>
           </Properties>
         </Component>
         <Component class="javax.swing.JLabel" name="autopilotLbl">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Auto"/>
+            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+              <Image iconType="3" name="/media/cruise-control-on-green.png"/>
+            </Property>
             <Property name="toolTipText" type="java.lang.String" value="Autopilot running"/>
           </Properties>
         </Component>

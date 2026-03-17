@@ -335,11 +335,14 @@ public class LayoutPanel extends JPanel {
       //}
       startAllLocomotivesBtn.setEnabled(false);
     }
-    if (autoPilotBtn.isSelected()) {
-      RailwayController.getInstance().startAutoMode();
-    } else {
-      RailwayController.getInstance().stopAutoMode();
-    }
+
+    RailwayController.getInstance().enableAutomode(autoPilotBtn.isSelected());
+
+//    if (autoPilotBtn.isSelected()) {
+//      RailwayController.getInstance().startAutoMode();
+//    } else {
+//      RailwayController.getInstance().stopAutoMode();
+//    }
   }//GEN-LAST:event_autoPilotBtnActionPerformed
 
   private void startAllLocomotivesBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startAllLocomotivesBtnActionPerformed
