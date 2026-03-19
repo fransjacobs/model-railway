@@ -36,14 +36,6 @@ public abstract class LocomotiveEvent {
     locomotiveBean.setCommandStationId(commandStationId);
   }
 
-//  protected LocomotiveEvent(int address, LocomotiveBean.DecoderType decoderType, String commandStationId, int a) {
-//    locomotiveBean = new LocomotiveBean();
-//    locomotiveBean.setAddress(address);
-//    if (decoderType != null) {
-//      locomotiveBean.setDecoderTypeString(decoderType.getDecoderType());
-//    }
-//    locomotiveBean.setCommandStationId(commandStationId);
-//  }
   public LocomotiveBean getLocomotiveBean() {
     return locomotiveBean;
   }
@@ -79,5 +71,9 @@ public abstract class LocomotiveEvent {
 
   public Long getId() {
     return this.locomotiveBean.getId();
+  }
+
+  public String getName() {
+    return this.locomotiveBean.getName();
   }
 }

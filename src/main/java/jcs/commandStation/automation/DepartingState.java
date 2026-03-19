@@ -34,9 +34,14 @@ class DepartingState extends AbstractState {
 
   @Override
   AbstractState execute() {
-    LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
+    //Refresh the settings
+    LocomotiveBean locomotive = PersistenceFactory.getService().getLocomotive(dispatcher.getLocomotiveId());
+    dispatcher.setLocomotiveBean(locomotive);
 
     BlockBean departureBlock = dispatcher.getDepartureBlock();
+    departureBlock.setLocomotive(locomotive);
+    departureBlock.setLogicalDirection(locomotive.getDirection().getDirection());
+
     BlockBean destinationBlock = dispatcher.getDestinationBlock();
 
     departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
@@ -51,10 +56,9 @@ class DepartingState extends AbstractState {
     Logger.trace("Starting " + locomotive.getName() + " Direction " + locomotive.getDirection());
 
     //First time starting as current velocity is zero, ensure the direction is right
-    if (locomotive.getVelocity() == 0) {
-      dispatcher.changeLocomotiveDirection(locomotive.getDirection());
-    }
-
+//    if (locomotive.getVelocity() == 0) {
+//      dispatcher.changeLocomotiveDirection(locomotive.getDirection());
+//    }
     //Speed to ~75% or speed 3
     Integer speed3 = locomotive.getSpeedThree();
     if (speed3 == null || speed3 == 0) {

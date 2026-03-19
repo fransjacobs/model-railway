@@ -63,6 +63,16 @@ public class CSHTTPConnectionImpl implements CSHTTPConnection {
   //  http://cs3host/app/api/loks
   //  http://cs3host/app/api/mags
   //  http://cs3host/app/api/info
+  
+  // after software 2.6.0 
+  //http://192.168.1.180/app/api/info
+  //http://192.168.1.180/app/api/locos
+  ///http://192.168.1.180/app/api/mags
+  ///http://192.168.1.180/app/api/system
+  ///http://192.168.1.180/app/api/gbs (plattegrond)
+  ///http://192.168.1.180/app/api/locos/functionIconGroups
+  ///function icosn are in the root?
+  
   //
   CSHTTPConnectionImpl(InetAddress csAddress) {
     this.csAddress = csAddress;

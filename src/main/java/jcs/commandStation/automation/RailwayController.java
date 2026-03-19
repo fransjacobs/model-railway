@@ -188,12 +188,10 @@ public final class RailwayController {
         automodeOn = true;
 
         //TODO: Do this every time the Automode is started or just once?
-        restoreLocomotiveFunctions();
-
+        //restoreLocomotiveFunctions();
         prepareAllDispatchers();
 
         Logger.trace("RailwayController Automode initialized. There are " + dispatchers.size() + " Dispatchers...");
-        //enqueCommand(new RailwayControllerCommand(CMD_FIRE_STATUS_LST, "automode.started"));
         fireStatusListeners(STARTED);
       }
 
@@ -244,7 +242,6 @@ public final class RailwayController {
         }
       }
 
-      //enqueCommand(new RailwayControllerCommand(CMD_FIRE_STATUS_LST, STOPPING));
       fireStatusListeners(STOPPING);
 
       long now = System.currentTimeMillis();
@@ -271,6 +268,7 @@ public final class RailwayController {
     }
     Logger.debug("ControllerMonitor Stopped");
     sensorMonitor = null;
+    dispatchers.clear();
 
     fireStatusListeners(STOPPED);
   }
@@ -694,6 +692,9 @@ public final class RailwayController {
     public void run() {
       running = true;
       Logger.trace("RailwayController Command executer Started...");
+      fireStatusListeners(PENDING);
+
+      restoreLocomotiveFunctions();
 
       while (isRunning()) {
         try {

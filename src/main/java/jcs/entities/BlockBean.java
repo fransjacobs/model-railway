@@ -226,6 +226,13 @@ public class BlockBean implements Comparable<BlockBean> {
       } else {
         this.arrivalSuffix = "-";
       }
+    } else {
+      String depSuffix = getDepartureSuffix();
+      if ("-".equals(depSuffix)) {
+        this.arrivalSuffix = "+";
+      } else {
+        this.arrivalSuffix = "-";
+      }
     }
   }
 

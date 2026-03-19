@@ -713,6 +713,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     if (power && connected) {
       Logger.trace("Change direction to " + direction + " CS val " + direction.getMarklinValue());
       CanMessage message = sendMessage(CanMessageFactory.setDirection(locUid, direction.getMarklinValue(), this.csUid));
+
       //query velocity of give a not halt
       LocomotiveDirectionEvent dme = LocomotiveDirectionEventParser.parse(message);
       notifyLocomotiveDirectionEventListeners(dme);
@@ -872,16 +873,16 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   @Override
   public List<LocomotiveBean> getLocomotives() {
     List<LocomotiveBean> locomotives;
-    if (this.isCS3()) {
-      //For the CS-3 use the JSON for everything as otherwise some function icons are missed
-      locomotives = getLocomotivesViaJSON();
+    //if (this.isCS3()) {
+    //  //For the CS-3 use the JSON for everything as otherwise some function icons are missed
+    //  locomotives = getLocomotivesViaJSON();
+    //} else {
+    if (System.getProperty("locomotive.list.via", "can").equalsIgnoreCase("http")) {
+      locomotives = getLocomotivesViaHttp();
     } else {
-      if (System.getProperty("locomotive.list.via", "can").equalsIgnoreCase("http")) {
-        locomotives = getLocomotivesViaHttp();
-      } else {
-        locomotives = getLocomotivesViaCAN();
-      }
+      locomotives = getLocomotivesViaCAN();
     }
+    //}
 
     String csId = commandStationBean.getId();
     for (LocomotiveBean loc : locomotives) {

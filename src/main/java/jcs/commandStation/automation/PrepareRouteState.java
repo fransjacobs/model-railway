@@ -49,6 +49,9 @@ class PrepareRouteState extends AbstractState {
         if (station.isFifo()) {
           LocomotiveBean locomotive = PersistenceFactory.getService().getFirstLocomotive(station);
           canDepart = locomotive.getId().equals(dispatcher.getLocomotiveBean().getId());
+          if (!canDepart) {
+            Logger.trace("Locomotive " + locomotive.getName() + " is not the first to leave Station " + station.getName() + "...");
+          }
         } else {
           canDepart = true;
         }
@@ -62,6 +65,11 @@ class PrepareRouteState extends AbstractState {
   AbstractState execute() {
     boolean canAdvanceToNextState = false;
     if (canDepart) {
+
+      BlockBean blockBean = dispatcher.getDepartureBlock();
+      LocomotiveBean locomotiveBean = dispatcher.getLocomotiveBean();
+      Logger.debug("Locomotive " + locomotiveBean.getName() + " Direction: " + locomotiveBean.getDirection().getDirection() + " search for route from block " + blockBean.getId() + " logicalDir: " + blockBean.getLogicalDirection() + " Arrived at " + blockBean.getArrivalSuffix());
+
       int permits = RailwayController.avialablePermits();
       Logger.trace("Obtaining a lock. There is currently " + permits + " available permits...");
 

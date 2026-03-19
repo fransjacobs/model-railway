@@ -223,30 +223,36 @@ class StateMachine {
         RouteBean route = dispatcher.getRouteBean();
         RouteBean nextRoute = dispatcher.getNextRouteBean();
 
-        StringBuilder sb = new StringBuilder();
+        if (Logger.isTraceEnabled()) {
+          StringBuilder sb = new StringBuilder();
 
-        if (departureBlock != null) {
-          sb.append("Departure: ");
-          sb.append(departureBlock.getId());
-        }
-        if (destinationBlock != null) {
-          sb.append("-> Destination: ");
-          sb.append(destinationBlock.getId());
-        }
-        if (nextDestinationBlock != null) {
-          sb.append("--> NextDestination: ");
-          sb.append(nextDestinationBlock.getId());
-        }
-        if (route != null) {
-          sb.append(" -Route: ");
-          sb.append(route.getId());
-        }
-        if (nextRoute != null) {
-          sb.append(" ->NextRoute: ");
-          sb.append(nextRoute.getId());
-        }
+          if (departureBlock != null) {
+            sb.append("Departure: ");
+            sb.append(departureBlock.getId());
+          }
+          if (destinationBlock != null) {
+            sb.append("-> Destination: ");
+            sb.append(destinationBlock.getId());
+          }
+          if (nextDestinationBlock != null) {
+            sb.append("--> NextDestination: ");
+            sb.append(nextDestinationBlock.getId());
+          }
+          if (route != null) {
+            sb.append(" -Route: ");
+            sb.append(route.getId());
+          }
+          if (nextRoute != null) {
+            sb.append(" ->NextRoute: ");
+            sb.append(nextRoute.getId());
+          }
+          if (departureBlock != null && departureBlock.getLocomotive() != null) {
+            sb.append(" Loc Dir: ");
+            sb.append(departureBlock.getLocomotive().getDirection().toString());
+          }
 
-        Logger.trace(":" + sb.toString());
+          Logger.trace(">>" + sb.toString());
+        }
 
         boolean stateChanged = stateMachine.executeState();
 

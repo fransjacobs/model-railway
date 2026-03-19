@@ -195,8 +195,8 @@ public class CanMessageFactory implements MarklinCan {
 
   /**
    *
+   * @param uid
    * @param channel the number of the channel to get the measurement value for
-   * @param gfpUid the GFP UID
    * @return
    */
   public static CanMessage systemStatus(int uid, int channel) {
@@ -405,7 +405,12 @@ public class CanMessageFactory implements MarklinCan {
   /**
    * Create a CanMessage for an (virtual) event. Used for the Virtual drive simulator
    *
-   * @param sensorbean
+   * @param nodeId
+   * @param contactId
+   * @param value
+   * @param previousValue
+   * @param millis
+   * @param uid
    * @return
    */
   public static CanMessage sensorEventMessage(int nodeId, int contactId, int value, int previousValue, int millis, int uid) {

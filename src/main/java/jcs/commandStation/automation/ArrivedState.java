@@ -47,7 +47,7 @@ class ArrivedState extends AbstractState {
     super.onEnter(dispatcher);
 
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
-    BlockBean departureBlock = dispatcher.getDepartureBlock();
+    //BlockBean departureBlock = dispatcher.getDepartureBlock();
     BlockBean destinationBlock = dispatcher.getDestinationBlock();
     alwaysStop = destinationBlock.isAlwaysStop();
 
@@ -58,6 +58,15 @@ class ArrivedState extends AbstractState {
       dispatcher.changeLocomotiveVelocity(0);
       Logger.trace((dispatcher.getNextRouteBean() == null ? "Next route not yet available " : "") + "Locomotive " + locomotive.getName() + " is stopped...");
     }
+  }
+
+  @Override
+  AbstractState execute() {
+    boolean nextRoutePrepared = false;
+
+    LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
+    BlockBean departureBlock = dispatcher.getDepartureBlock();
+    BlockBean destinationBlock = dispatcher.getDestinationBlock();
 
     //Unsubscribe departure sensors
     dispatcher.getSensorMonitor().unsubscribe(dispatcher.getOccupationSensorId(), null);
@@ -81,28 +90,6 @@ class ArrivedState extends AbstractState {
     dispatcher.showBlockState(departureBlock);
     dispatcher.showBlockState(destinationBlock);
 
-//    RouteBean route = dispatcher.getRouteBean();
-//    route.setLocked(false);
-//    PersistenceFactory.getService().persist(route);
-//    
-//    dispatcher.resetRoute(route);
-//    dispatcher.setRouteBean(null);
-    //Is the block where we just arrived part of a station?
-    StationBean station = dispatcher.getStation(destinationBlock);
-    if (station != null) {
-      //Set the arrival time
-      StationBlockBean sbb = station.getStationBlockBean(destinationBlock);
-      sbb.setLastUpdated(new Date());
-      PersistenceFactory.getService().persist(station);
-    }
-  }
-
-  @Override
-  AbstractState execute() {
-    boolean nextRoutePrepared = false;
-
-    //Obtain the current block which is the destination block
-    BlockBean destinationBlock = dispatcher.getDestinationBlock();
     Logger.trace("Arrived in: " + destinationBlock.getId());
 
     //Is the block where we just arrived part of a station?
@@ -129,12 +116,15 @@ class ArrivedState extends AbstractState {
       route = dispatcher.getNextRouteBean();
       dispatcher.setRouteBean(route);
       // New Departure and destination block should be set...
-      BlockBean departureBlock = dispatcher.getDepartureBlock();
+      BlockBean altDepartureBlock = destinationBlock;
+
+      departureBlock = dispatcher.getDepartureBlock();
       destinationBlock = dispatcher.getDestinationBlock();
 
       Logger.trace("New departure: " + departureBlock.getId() + " new destination: " + destinationBlock.getId());
 
-      //String destinationTileId = route.getToTileId();
+      Logger.trace("####Check-> " + departureBlock.equals(altDepartureBlock));
+
       String arrivalSuffix = route.getToSuffix();
       String departureSuffix = route.getFromSuffix();
 

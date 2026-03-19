@@ -39,7 +39,8 @@ import org.tinylog.Logger;
 public class Dispatcher {
 
   private final RailwayController railwayController;
-  private final LocomotiveBean locomotiveBean;
+  private final Long locomotiveId;
+  private volatile LocomotiveBean locomotiveBean;
 
   private final List<StateEventListener> stateEventListeners;
 
@@ -80,6 +81,7 @@ public class Dispatcher {
    */
   Dispatcher(RailwayController railwayController, LocomotiveBean locomotiveBean) {
     this.railwayController = railwayController;
+    locomotiveId = locomotiveBean.getId();
     this.locomotiveBean = locomotiveBean;
     //Prefill with the current locomotive direction
     this.locomotiveBean.setDispatcherDirection(locomotiveBean.getDirection());
@@ -108,6 +110,14 @@ public class Dispatcher {
 
   public String getName() {
     return locomotiveBean.getName();
+  }
+
+  Long getLocomotiveId() {
+    return locomotiveId;
+  }
+
+  void setLocomotiveBean(LocomotiveBean locomotiveBean) {
+    this.locomotiveBean = locomotiveBean;
   }
 
   public LocomotiveBean getLocomotiveBean() {
@@ -246,16 +256,35 @@ public class Dispatcher {
 
   //Make sure to obtain the last status of the block is represented...
   BlockBean getDepartureBlock() {
+    BlockBean departureBlock;
     if (departureBlockId != null) {
-      return PersistenceFactory.getService().getBlockByTileId(departureBlockId);
+      departureBlock = PersistenceFactory.getService().getBlockByTileId(departureBlockId);
     } else if (routeBean != null) {
       departureBlockId = routeBean.getFromTileId();
-      return PersistenceFactory.getService().getBlockByTileId(departureBlockId);
+      departureBlock = PersistenceFactory.getService().getBlockByTileId(departureBlockId);
     } else {
-      BlockBean departureBlock = PersistenceFactory.getService().getBlockByLocomotiveId(locomotiveBean.getId());
+      departureBlock = PersistenceFactory.getService().getBlockByLocomotiveId(locomotiveBean.getId());
       departureBlockId = departureBlock.getTileId();
-      return departureBlock;
+      //return departureBlock;
     }
+
+    //Check suffixes
+    if (routeBean != null) {
+      String fromSuffix = routeBean.getFromSuffix();
+      if (departureBlock.getArrivalSuffix() == null) {
+        String newArrivalSuffix;
+        if ("-".equals(fromSuffix)) {
+          newArrivalSuffix = "+";
+        } else {
+          newArrivalSuffix = "-";
+        }
+        Logger.trace("Arrival Suffix is not set! Setting it to: " + newArrivalSuffix);
+        departureBlock.setArrivalSuffix(newArrivalSuffix);
+        PersistenceFactory.getService().persist(departureBlock);
+      }
+    }
+
+    return departureBlock;
   }
 
   BlockBean getDestinationBlock() {

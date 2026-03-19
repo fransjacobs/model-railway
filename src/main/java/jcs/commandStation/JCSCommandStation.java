@@ -914,7 +914,7 @@ public class JCSCommandStation {
           sl.onSensorChange(event);
         }
       }
-    } 
+    }
 //    else {
 //      Logger.trace("There is Not an AllSensorsListener registered!");
 //    }
@@ -1106,7 +1106,7 @@ public class JCSCommandStation {
 
     @Override
     public void onDirectionChange(LocomotiveDirectionEvent directionEvent) {
-      Logger.trace(directionEvent);
+      Logger.trace(directionEvent.getId() + ": " + directionEvent.getNewDirection().getDirection());
       jcsCommandStation.locomotiveEventQueue.offer(directionEvent);
     }
   }

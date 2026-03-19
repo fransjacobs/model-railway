@@ -21,6 +21,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import jcs.entities.BlockBean;
+import jcs.entities.LocomotiveBean;
 import org.tinylog.Logger;
 
 /**
@@ -44,6 +45,9 @@ class WaitingState extends AbstractState {
 
     // Calculate wait time
     BlockBean blockBean = dispatcher.getDepartureBlock();
+    LocomotiveBean locomotiveBean = dispatcher.getLocomotiveBean();
+    Logger.debug("Locomotive " + locomotiveBean.getName() + " Direction: " + locomotiveBean.getDirection().getDirection() + " start waiting in block " + blockBean.getId() + " logicalDir: " + blockBean.getLogicalDirection() + " Arrived at " + blockBean.getArrivalSuffix());
+
     long waitTime = calculateWaitTime(blockBean);
 
     Logger.debug("Waiting for " + waitTime + " s. Block Random " + blockBean.isRandomWait()
@@ -79,7 +83,7 @@ class WaitingState extends AbstractState {
           stopScheduler();
         }
       }, 0, 1, TimeUnit.SECONDS); // Initial delay 0, period 1 second
-      
+
       dispatcher.wakeup();
 
     } else {
