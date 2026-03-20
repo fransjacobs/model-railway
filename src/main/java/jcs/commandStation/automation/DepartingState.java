@@ -34,31 +34,20 @@ class DepartingState extends AbstractState {
 
   @Override
   AbstractState execute() {
-    //Refresh the settings
     LocomotiveBean locomotive = PersistenceFactory.getService().getLocomotive(dispatcher.getLocomotiveId());
-    dispatcher.setLocomotiveBean(locomotive);
-
     BlockBean departureBlock = dispatcher.getDepartureBlock();
-    departureBlock.setLocomotive(locomotive);
-    departureBlock.setLogicalDirection(locomotive.getDirection().getDirection());
-
     BlockBean destinationBlock = dispatcher.getDestinationBlock();
-
     departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
-    PersistenceFactory.getService().persist(departureBlock);
-
     destinationBlock.setBlockState(BlockBean.BlockState.LOCKED);
-    PersistenceFactory.getService().persist(destinationBlock);
-
-    dispatcher.showBlockState(departureBlock);
-    dispatcher.showBlockState(destinationBlock);
 
     Logger.trace("Starting " + locomotive.getName() + " Direction " + locomotive.getDirection());
 
+    //TODO: Is it always neccessary to set the locomotive direction?
     //First time starting as current velocity is zero, ensure the direction is right
-//    if (locomotive.getVelocity() == 0) {
-//      dispatcher.changeLocomotiveDirection(locomotive.getDirection());
-//    }
+    if (locomotive.getVelocity() == 0) {
+      dispatcher.changeLocomotiveDirection(locomotive.getDirection());
+    }
+
     //Speed to ~75% or speed 3
     Integer speed3 = locomotive.getSpeedThree();
     if (speed3 == null || speed3 == 0) {
@@ -69,6 +58,22 @@ class DepartingState extends AbstractState {
     double velocity = (speed3 / (double) fullscale) * 1000;
     dispatcher.changeLocomotiveVelocity(velocity);
 
+    locomotive.setVelocity((int) velocity);
+    departureBlock.setLocomotive(locomotive);
+    //departureBlock.setLogicalDirection(locomotive.getDirection().getDirection());
+    PersistenceFactory.getService().persist(departureBlock);
+    PersistenceFactory.getService().persist(destinationBlock);
+
+    dispatcher.showBlockState(departureBlock);
+    dispatcher.showBlockState(destinationBlock);
+
+//    StationBean station = dispatcher.getStation(departureBlock);
+//    if (station != null) {
+//      StationBlockBean sbb = station.getStationBlockBean(departureBlock);
+//      //Set the depareset arrival time
+//      sbb.setLastUpdated(new Date());
+//      PersistenceFactory.getService().persist(station);
+//    }
     return new RunningState();
   }
 

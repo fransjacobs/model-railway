@@ -27,7 +27,7 @@ import org.tinylog.Logger;
  */
 class PrepareRouteState extends AbstractState {
 
-  boolean canDepart;
+  private volatile boolean canDepart;
 
   PrepareRouteState() {
     super("PrepareRoute");
@@ -37,24 +37,28 @@ class PrepareRouteState extends AbstractState {
   void onEnter(Dispatcher dispatcher) {
     super.onEnter(dispatcher);
 
+    //Check if we can reallt depart. Departure could be determined when the departure block is part of a Station.
+    //If the is the case, should the Station act as a FIFO, or can we just leave based on the numbers?    
     BlockBean departureBlock = dispatcher.getDepartureBlock();
-    //Is the departure block part of a station?
     StationBean station = dispatcher.getStation(departureBlock);
-
     if (station != null) {
       int minLocCount = station.getMinLocomotives();
-      int locCount = PersistenceFactory.getService().getLocomotiveCount(station).intValue();
-      if (minLocCount <= locCount) {
-        //The station has enough locomotives check whether this dispatcher is for the first locomotive to leave
-        if (station.isFifo()) {
-          LocomotiveBean locomotive = PersistenceFactory.getService().getFirstLocomotive(station);
-          canDepart = locomotive.getId().equals(dispatcher.getLocomotiveBean().getId());
-          if (!canDepart) {
-            Logger.trace("Locomotive " + locomotive.getName() + " is not the first to leave Station " + station.getName() + "...");
+      if (minLocCount > 0) {
+        int locCount = PersistenceFactory.getService().getLocomotiveCount(station).intValue();
+        if (minLocCount <= locCount) {
+          //The station has enough locomotives check whether this dispatcher is for the first locomotive to leave
+          if (station.isFifo()) {
+            Long firstToLeaveLocomotiveId = PersistenceFactory.getService().getFirstLocomotiveId(station);
+            canDepart = dispatcher.getLocomotiveId().equals(firstToLeaveLocomotiveId);
+            if (!canDepart) {
+              Logger.trace("Locomotive " + dispatcher.getName() + " is not the first to leave Station " + station.getName() + "...");
+            }
+          } else {
+            canDepart = true;
           }
-        } else {
-          canDepart = true;
         }
+      } else {
+        canDepart = true;
       }
     } else {
       canDepart = true;
@@ -65,7 +69,6 @@ class PrepareRouteState extends AbstractState {
   AbstractState execute() {
     boolean canAdvanceToNextState = false;
     if (canDepart) {
-
       BlockBean blockBean = dispatcher.getDepartureBlock();
       LocomotiveBean locomotiveBean = dispatcher.getLocomotiveBean();
       Logger.debug("Locomotive " + locomotiveBean.getName() + " Direction: " + locomotiveBean.getDirection().getDirection() + " search for route from block " + blockBean.getId() + " logicalDir: " + blockBean.getLogicalDirection() + " Arrived at " + blockBean.getArrivalSuffix());

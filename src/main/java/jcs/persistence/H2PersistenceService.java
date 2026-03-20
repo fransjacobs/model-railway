@@ -947,7 +947,7 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public LocomotiveBean getFirstLocomotive(StationBean stationBean) {
+  public Long getFirstLocomotiveId(StationBean stationBean) {
     String sql = "with stations_locomotives as ("
             + "select sb.station_id, sb.block_id, b.locomotive_id, s.min_locs , sb.last_updated"
             + ", count(distinct b.locomotive_id) over (partition by sb.station_id) as loc_count"
@@ -960,12 +960,7 @@ public class H2PersistenceService implements PersistenceService {
             + "select locomotive_id from stations_locomotives where rn =1 ";
 
     Long locomotiveId = database.sql(sql, stationBean.getId()).first(Long.class);
-
-    if (locomotiveId != null) {
-      return this.getLocomotive(locomotiveId);
-    } else {
-      return null;
-    }
+    return locomotiveId;
   }
 
   @Override

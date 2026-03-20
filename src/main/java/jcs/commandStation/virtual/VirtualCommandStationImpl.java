@@ -180,6 +180,7 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
       Logger.debug("locUid " + locUid + " speed " + speed);
 
       LocomotiveSpeedEvent lse = new LocomotiveSpeedEvent(locUid, commandStationBean.getId(), speed);
+
       executor.execute(() -> {
         fireAllLocomotiveSpeedEventListeners(lse);
 

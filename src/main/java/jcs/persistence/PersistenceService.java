@@ -514,9 +514,9 @@ public interface PersistenceService {
   /**
    *
    * @param stationBean the StationBean to check
-   * @return the locomotive which entered the station first
+   * @return the locomotiveId which entered the station first
    */
-  LocomotiveBean getFirstLocomotive(StationBean stationBean);
+  Long getFirstLocomotiveId(StationBean stationBean);
 
   /**
    *

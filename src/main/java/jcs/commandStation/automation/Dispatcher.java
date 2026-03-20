@@ -40,12 +40,10 @@ public class Dispatcher {
 
   private final RailwayController railwayController;
   private final Long locomotiveId;
-  private volatile LocomotiveBean locomotiveBean;
-
-  private final List<StateEventListener> stateEventListeners;
+  private final String name;
+  //private volatile LocomotiveBean locomotiveBean;
 
   private volatile StateMachine stateMachine;
-
   private final RouteManager routeManager;
 
   private volatile RouteBean routeBean;
@@ -64,6 +62,7 @@ public class Dispatcher {
   private volatile Integer exitSensorId;
 
   volatile boolean locomotiveStarted = false;
+  private final List<StateEventListener> stateEventListeners;
 
   /**
    * Dispatcher is created when auto mode is enabled.<br>
@@ -82,12 +81,9 @@ public class Dispatcher {
   Dispatcher(RailwayController railwayController, LocomotiveBean locomotiveBean) {
     this.railwayController = railwayController;
     locomotiveId = locomotiveBean.getId();
-    this.locomotiveBean = locomotiveBean;
-    //Prefill with the current locomotive direction
-    this.locomotiveBean.setDispatcherDirection(locomotiveBean.getDirection());
-
-    this.routeManager = new RouteManager(this);
-    this.stateEventListeners = new ArrayList<>();
+    name = locomotiveBean.getName();
+    routeManager = new RouteManager(this);
+    stateEventListeners = new ArrayList<>();
   }
 
   @SuppressWarnings("unused")
@@ -99,29 +95,24 @@ public class Dispatcher {
     return railwayController.getSensorMonitor();
   }
 
-  @SuppressWarnings("unused")
-  Long getId() {
-    return locomotiveBean.getId();
-  }
-
   RouteManager getRouteManager() {
     return routeManager;
   }
 
   public String getName() {
-    return locomotiveBean.getName();
+    return this.name;
   }
 
   Long getLocomotiveId() {
     return locomotiveId;
   }
 
-  void setLocomotiveBean(LocomotiveBean locomotiveBean) {
-    this.locomotiveBean = locomotiveBean;
-  }
-
+//  void setLocomotiveBean(LocomotiveBean locomotiveBean) {
+//    this.locomotiveBean = locomotiveBean;
+//  }
+  //Convenience; Pass through a "fresh" locomotive
   public LocomotiveBean getLocomotiveBean() {
-    return locomotiveBean;
+    return PersistenceFactory.getService().getLocomotive(locomotiveId);
   }
 
   RouteBean getRouteBean() {
@@ -254,18 +245,21 @@ public class Dispatcher {
     stateEventListeners.clear();
   }
 
+  String getDepartureBlockId() {
+    return departureBlockId;
+  }
+
   //Make sure to obtain the last status of the block is represented...
   BlockBean getDepartureBlock() {
     BlockBean departureBlock;
     if (departureBlockId != null) {
-      departureBlock = PersistenceFactory.getService().getBlockByTileId(departureBlockId);
+      departureBlock = PersistenceFactory.getService().getBlock(departureBlockId);
     } else if (routeBean != null) {
-      departureBlockId = routeBean.getFromTileId();
-      departureBlock = PersistenceFactory.getService().getBlockByTileId(departureBlockId);
+      departureBlock = PersistenceFactory.getService().getBlockByTileId(routeBean.getFromTileId());
+      departureBlockId = departureBlock.getId();
     } else {
-      departureBlock = PersistenceFactory.getService().getBlockByLocomotiveId(locomotiveBean.getId());
-      departureBlockId = departureBlock.getTileId();
-      //return departureBlock;
+      departureBlock = PersistenceFactory.getService().getBlockByLocomotiveId(locomotiveId);
+      departureBlockId = departureBlock.getId();
     }
 
     //Check suffixes
@@ -288,14 +282,14 @@ public class Dispatcher {
   }
 
   BlockBean getDestinationBlock() {
+    BlockBean destinationBlock = null;
     if (destinationBlockId != null) {
-      return PersistenceFactory.getService().getBlockByTileId(destinationBlockId);
+      destinationBlock = PersistenceFactory.getService().getBlock(destinationBlockId);
     } else if (routeBean != null) {
-      destinationBlockId = routeBean.getToTileId();
-      return PersistenceFactory.getService().getBlockByTileId(destinationBlockId);
-    } else {
-      return null;
+      destinationBlock = PersistenceFactory.getService().getBlockByTileId(routeBean.getToTileId());
+      destinationBlockId = destinationBlock.getId();
     }
+    return destinationBlock;
   }
 
   void setDestinationBlockId(String destinationBlockId) {
@@ -356,22 +350,26 @@ public class Dispatcher {
   }
 
   void changeLocomotiveVelocity(double velocity) {
-    int commandStationVelocity = (int) velocity;
-    locomotiveBean.setVelocity(commandStationVelocity);
     try {
-      JCS.getJcsCommandStation().changeLocomotiveSpeed(commandStationVelocity, locomotiveBean);
+      int newVelocity = (int) velocity;
+      LocomotiveBean locomotive = getLocomotiveBean();
+      locomotive.setVelocity(newVelocity);
+
+      JCS.getJcsCommandStation().changeLocomotiveSpeed(newVelocity, locomotive);
     } catch (Exception e) {
-      Logger.error("Error changing velocity of locomotive " + locomotiveBean.getId() + " to " + velocity + " Cause: " + e.getMessage());
+      Logger.error("Error changing velocity of locomotive " + locomotiveId + " to " + velocity + " Cause: " + e.getMessage());
     }
   }
 
   void changeLocomotiveDirection(Direction newDirection) {
     try {
-      JCS.getJcsCommandStation().changeLocomotiveDirection(newDirection, locomotiveBean);
+      LocomotiveBean locomotive = getLocomotiveBean();
+      locomotive.setDirection(newDirection);
+
+      JCS.getJcsCommandStation().changeLocomotiveDirection(newDirection, locomotive);
     } catch (Exception e) {
-      Logger.error("Error changing direction of locomotive " + locomotiveBean.getId() + " to " + newDirection + " Cause: " + e.getMessage());
+      Logger.error("Error changing direction of locomotive " + locomotiveId + " to " + newDirection + " Cause: " + e.getMessage());
     }
-    locomotiveBean.setDirection(newDirection);
   }
 
   void fireStateListeners(String oldState, String newState, String comment) {
@@ -431,7 +429,7 @@ public class Dispatcher {
   @Override
   public int hashCode() {
     int hash = 7;
-    hash = 37 * hash + Objects.hashCode(locomotiveBean.getId());
+    hash = 37 * hash + Objects.hashCode(locomotiveId);
     return hash;
   }
 
@@ -447,7 +445,7 @@ public class Dispatcher {
       return false;
     }
     final Dispatcher other = (Dispatcher) obj;
-    return Objects.equals(locomotiveBean.getId(), other.locomotiveBean.getId());
+    return Objects.equals(locomotiveId, other.locomotiveId);
   }
 
 }

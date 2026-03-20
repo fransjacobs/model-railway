@@ -15,12 +15,8 @@
  */
 package jcs.commandStation.automation;
 
-import java.util.Date;
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.BlockBean;
-import jcs.entities.StationBean;
-import jcs.entities.StationBlockBean;
-import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
 /**
@@ -55,14 +51,6 @@ class RunningState extends AbstractState implements SensorEventCallback {
     //Register the enter Sensor, which will trigger switch to the arrival state.
     enterSensorId = dispatcher.getEnterSensorId();
     dispatcher.getSensorMonitor().subscribe(enterSensorId, this);
-
-    StationBean station = dispatcher.getStation(departureBlock);
-    if (station != null) {
-      StationBlockBean sbb = station.getStationBlockBean(departureBlock);
-      //reset arrival time
-      sbb.setLastUpdated(new Date());
-      PersistenceFactory.getService().persist(station);
-    }
 
     Logger.trace("Waiting for the enter event from SensorId: " + enterSensorId + " Running loco: " + dispatcher.getLocomotiveBean().getName() + " Direction: " + dispatcher.getLocomotiveBean().getDirection().getDirection() + " current velocity: " + dispatcher.getLocomotiveBean().getVelocity());
   }
