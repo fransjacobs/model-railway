@@ -129,7 +129,6 @@ class StateMachine {
     currentState.onExit();
     currentState = new IdleState();
     currentState.onEnter(dispatcher);
-
     dispatcher.stopLocomotive();
 
     dispatcher.setEnterSensorId(null);
@@ -140,7 +139,10 @@ class StateMachine {
     if (destination != null) {
       destination.setLocomotive(null);
       destination.setBlockState(BlockBean.BlockState.FREE);
+      destination.setArrivalSuffix(null);
       PersistenceFactory.getService().persist(destination);
+
+      dispatcher.showBlockState(destination);
     }
 
     BlockBean departure = dispatcher.getDepartureBlock();
@@ -149,18 +151,20 @@ class StateMachine {
     RouteBean route = dispatcher.getRouteBean();
     if (route != null) {
       route.setLocked(false);
-      dispatcher.resetRoute(route);
+      departure.setDepartureSuffix(route.getFromSuffix());
       PersistenceFactory.getService().persist(route);
+      dispatcher.resetRoute(route);
     }
 
     RouteBean nextRoute = dispatcher.getNextRouteBean();
     if (nextRoute != null) {
       nextRoute.setLocked(false);
-      dispatcher.resetRoute(nextRoute);
       PersistenceFactory.getService().persist(nextRoute);
+      dispatcher.resetRoute(nextRoute);
     }
 
     PersistenceFactory.getService().persist(departure);
+    dispatcher.showBlockState(departure);
 
     dispatcher.setRouteBean(null);
     dispatcher.setNextRouteBean(null);
@@ -200,7 +204,7 @@ class StateMachine {
     StateMachineRunner(StateMachine stateMachine) {
       super(stateMachine.getDispatcher().getThreadGroup(), "STM->" + stateMachine.getDispatcher().getLocomotiveBean().getName().toUpperCase());
       this.stateMachine = stateMachine;
-      threadSleepMillis = Long.parseUnsignedLong(System.getProperty("autopilot.thread.wait.millis", "10000"));
+      threadSleepMillis = Long.parseUnsignedLong(System.getProperty("autopilot.thread.wait.millis", "2000"));
     }
 
     void shutdown() {
@@ -223,7 +227,7 @@ class StateMachine {
         RouteBean route = dispatcher.getRouteBean();
         RouteBean nextRoute = dispatcher.getNextRouteBean();
 
-        if (Logger.isTraceEnabled()) {
+        if (Logger.isTraceEnabled() && 1==2) {
           StringBuilder sb = new StringBuilder();
 
           if (departureBlock != null) {

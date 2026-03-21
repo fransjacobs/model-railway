@@ -44,9 +44,9 @@ class DepartingState extends AbstractState {
 
     //TODO: Is it always neccessary to set the locomotive direction?
     //First time starting as current velocity is zero, ensure the direction is right
-    if (locomotive.getVelocity() == 0) {
-      dispatcher.changeLocomotiveDirection(locomotive.getDirection());
-    }
+    //if (locomotive.getVelocity() == 0) {
+    //  dispatcher.changeLocomotiveDirection(locomotive.getDirection());
+    //}
 
     //Speed to ~75% or speed 3
     Integer speed3 = locomotive.getSpeedThree();

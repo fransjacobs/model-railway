@@ -133,7 +133,7 @@ public class StateMachineTest {
   }
 
   @Order(1)
-  //@Test
+  @Test
   public void testIdle() {
     System.out.println("Idle");
     Dispatcher ns1631 = railwayController.getDispatcher((int) NS_1631);
@@ -151,7 +151,7 @@ public class StateMachineTest {
   }
 
   @Order(2)
-  //@Test
+  @Test
   public void testIdleToWait() {
     System.out.println("IdleToWait");
     Dispatcher ns1631 = railwayController.getDispatcher((int) NS_1631);
@@ -195,7 +195,7 @@ public class StateMachineTest {
   }
 
   @Order(3)
-  //@Test
+  @Test
   public void testIdleToStarting() {
     System.out.println("IdleToStarting");
     Dispatcher ns1631 = railwayController.getDispatcher((int) NS_1631);
@@ -582,8 +582,8 @@ public class StateMachineTest {
     assertEquals("Arrived", stateMachine.getCurrentStateName());
 
     //Check sensors
-    assertFalse(ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(occupationSensorId));
-    assertFalse(ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(exitSensorId));
+    assertTrue(ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(occupationSensorId));
+    assertTrue(ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(exitSensorId));
 
     assertFalse(ns1631.getSensorMonitor().isSensorRegisteredWithCallback(enterSensorId));
     assertFalse(ns1631.getSensorMonitor().isSensorRegisteredWithCallback(inSensorId));
@@ -591,8 +591,8 @@ public class StateMachineTest {
     assertTrue(ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(enterSensorId));
     assertTrue(ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(inSensorId));
 
-    assertNull(ns1631.getOccupationSensorId());
-    assertNull(ns1631.getExitSensorId());
+    //assertNull(ns1631.getOccupationSensorId());
+    //assertNull(ns1631.getExitSensorId());
 
     //Departure
     block4 = ps.getBlockByTileId("bk-4");

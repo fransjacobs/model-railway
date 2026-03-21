@@ -522,7 +522,7 @@ public final class RailwayController {
           default -> {
             if (BlockState.OCCUPIED == block.getBlockState()) {
               //TODO...
-              tile.setArrivalSuffix(null);
+              //tile.setArrivalSuffix(null);
               //arrival suffix should be set to the default also...
               occupiedBlockCounter++;
             }

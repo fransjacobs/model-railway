@@ -40,6 +40,7 @@ class RouteManager {
 
   private final Dispatcher dispatcher;
   private volatile boolean swapLocomotiveDirection;
+  private volatile Direction logicalDirection;
   private volatile RouteBean route;
 
   RouteManager(Dispatcher dispatcher) {
@@ -57,15 +58,20 @@ class RouteManager {
   boolean searchRoute() {
     Logger.trace("Search a free route for " + dispatcher.getName() + "...");
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
+    Direction locomotiveDirection = locomotive.getDirection();
     BlockBean departureBlock = PersistenceFactory.getService().getBlock(dispatcher.getDepartureBlockId());
 
     if (departureBlock.getLogicalDirection() == null) {
       departureBlock.setLogicalDirection(locomotive.getDirection().getDirection());
-      Logger.trace("Set departure Block logicalDirection to: " + departureBlock.getLogicalDirection());
+      Logger.trace("Setting departure Block logicalDirection to: " + departureBlock.getLogicalDirection());
       PersistenceFactory.getService().persist(departureBlock);
     }
 
-    Direction logicalDirection = LocomotiveBean.Direction.get(departureBlock.getLogicalDirection());
+    logicalDirection = LocomotiveBean.Direction.get(departureBlock.getLogicalDirection());
+
+    if (locomotiveDirection != logicalDirection) {
+      Logger.warn(dispatcher.getName() + " Locomotive Direction " + locomotiveDirection + " differs with the logica lDirection " + logicalDirection + "!");
+    }
 
     TileBean tileBean = PersistenceFactory.getService().getTileBean(departureBlock.getTileId());
     TileBean.Orientation blockOrientation = tileBean.getOrientation();
@@ -87,7 +93,6 @@ class RouteManager {
     //When the Locomotive is a commuter train and the departure block allows a direction change, may be a route is available.
     //Reverse the direction and try again...
     Direction oldDirection = logicalDirection;
-
     if (routes.isEmpty() && commuter && departureBlock.isAllowDirectionChange()) {
       Direction newDirection = LocomotiveBean.toggle(oldDirection);
       Logger.trace("Reversing " + dispatcher.getName() + " from " + oldDirection + " to " + newDirection + " re-try to find a route...");
@@ -159,15 +164,6 @@ class RouteManager {
 
 //    dispatcher.setRouteBean(route);
     return route != null;
-  }
-
-  Integer getEstimatedNextRouteSwitchTime() {
-    RouteBean route = dispatcher.getNextRouteBean();
-    //Return a default switchtime 
-    int avgSwitchTime = PersistenceFactory.getService().getAverageAccessorySwitchTime(route).intValue();
-    avgSwitchTime = avgSwitchTime + 250;
-
-    return avgSwitchTime;
   }
 
   boolean reserveRoute() {
@@ -243,18 +239,13 @@ class RouteManager {
       Logger.trace(route + " Locked");
 
       if (swapLocomotiveDirection) {
-        LocomotiveBean.Direction curDir = locomotive.getDirection();
-        Direction newDir = LocomotiveBean.toggle(curDir);
-        Logger.trace("Swapping direction of " + dispatcher.getName() + " from: " + curDir + " Swap to " + newDir);
-
-        if (departureBlock.getLogicalDirection().equals(curDir.getDirection())) {         
-          Logger.warn("###LogicalDirection of departure block is unexpected: " + departureBlock.getLogicalDirection() + " Loc: " + curDir.getDirection());
-        }
-
+        //LocomotiveBean.Direction curDir = locomotive.getDirection();
+        Direction newDir = LocomotiveBean.toggle(logicalDirection);
+        Logger.trace("Swapping direction of " + dispatcher.getName() + " from: " + logicalDirection + " Swap to " + newDir);
         Logger.trace("Changing Direction to " + newDir);
         dispatcher.changeLocomotiveDirection(newDir);
-        dispatcher.getLocomotiveBean().setDirection(newDir);
-        dispatcher.getDepartureBlock().getLocomotive().setDirection(newDir);
+        //Wait a while to let the command station executing the command
+        pause(500);
         swapLocomotiveDirection = false;
       }
 
@@ -275,6 +266,15 @@ class RouteManager {
       swapLocomotiveDirection = false;
       return false;
     }
+  }
+
+  Integer getEstimatedNextRouteSwitchTime() {
+    RouteBean route = dispatcher.getNextRouteBean();
+    //Return a default switchtime 
+    int avgSwitchTime = PersistenceFactory.getService().getAverageAccessorySwitchTime(route).intValue();
+    avgSwitchTime = avgSwitchTime + 250;
+
+    return avgSwitchTime;
   }
 
   boolean searchAndReserveNextRoute() {

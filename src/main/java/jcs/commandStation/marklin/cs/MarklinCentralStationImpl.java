@@ -711,11 +711,17 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   @Override
   public void changeDirection(int locUid, Direction direction) {
     if (power && connected) {
+      //Query
+//      CanMessage queryMessage = sendMessage(CanMessageFactory.queryDirection(locUid, this.csUid));
+//      LocomotiveDirectionEvent qdme = LocomotiveDirectionEventParser.parse(queryMessage);
+//      Logger.trace("Query Direction for loc " + locUid + " : " + qdme.getNewDirection());
+      
       Logger.trace("Change direction to " + direction + " CS val " + direction.getMarklinValue());
       CanMessage message = sendMessage(CanMessageFactory.setDirection(locUid, direction.getMarklinValue(), this.csUid));
 
-      //query velocity of give a not halt
       LocomotiveDirectionEvent dme = LocomotiveDirectionEventParser.parse(message);
+      Logger.trace("New Direction for loc " + locUid + " : " + dme.getNewDirection());
+
       notifyLocomotiveDirectionEventListeners(dme);
     }
   }

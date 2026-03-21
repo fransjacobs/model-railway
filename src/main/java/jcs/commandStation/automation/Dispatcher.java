@@ -214,7 +214,9 @@ public class Dispatcher {
     if (destination != null) {
       destination.setLocomotive(null);
       destination.setBlockState(BlockBean.BlockState.FREE);
+      destination.setArrivalSuffix(null);
       PersistenceFactory.getService().persist(destination);
+      showBlockState(destination);
     }
 
     BlockBean departure = getDepartureBlock();
@@ -223,9 +225,12 @@ public class Dispatcher {
     RouteBean route = getRouteBean();
     if (route != null) {
       route.setLocked(false);
-      resetRoute(route);
+      departure.setDepartureSuffix(route.getFromSuffix());
       PersistenceFactory.getService().persist(route);
+      resetRoute(route);
     }
+    PersistenceFactory.getService().persist(departure);
+    showBlockState(departure);
 
     RouteBean nextRoute = getNextRouteBean();
     if (nextRoute != null) {
@@ -233,8 +238,6 @@ public class Dispatcher {
       resetRoute(nextRoute);
       PersistenceFactory.getService().persist(nextRoute);
     }
-
-    PersistenceFactory.getService().persist(departure);
 
     setRouteBean(null);
     setNextRouteBean(null);
@@ -364,8 +367,6 @@ public class Dispatcher {
   void changeLocomotiveDirection(Direction newDirection) {
     try {
       LocomotiveBean locomotive = getLocomotiveBean();
-      locomotive.setDirection(newDirection);
-
       JCS.getJcsCommandStation().changeLocomotiveDirection(newDirection, locomotive);
     } catch (Exception e) {
       Logger.error("Error changing direction of locomotive " + locomotiveId + " to " + newDirection + " Cause: " + e.getMessage());
