@@ -188,7 +188,7 @@ public class Switch extends Tile implements AccessoryEventListener {
 
   @Override
   public void onAccessoryChange(AccessoryEvent event) {
-    Logger.info("Event "+event.getId()+" Value "+event.getValue());
+    Logger.trace("Event "+event.getId()+" Value "+event.getValue());
     if (getAccessoryBean() != null && event.isEventFor(accessoryBean)) {
       setAccessoryValue(event.getValue());
     }

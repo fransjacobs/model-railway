@@ -366,6 +366,7 @@ public class TileCache {
    * Empties, flushes the whole Cache and all id's
    */
   public static void flush() {
+    deRegisterListeners();
     idMap.clear();
     pointMap.clear();
     altPointMap.clear();
@@ -387,7 +388,20 @@ public class TileCache {
     return loadTiles(false);
   }
 
+  static void deRegisterListeners() {
+    for (Tile tile : idMap.values()) {
+      if (tile instanceof AccessoryEventListener && tile.getTileBean() != null && tile.getTileBean().getAccessoryId() != null) {
+        JCS.getJcsCommandStation().removeAccessoryEventListener(tile.getTileBean().getAccessoryId(), (AccessoryEventListener) tile);
+      }
+
+      if (tile instanceof SensorEventListener && tile.getTileBean() != null && tile.getTileBean().getSensorId() != null) {
+        JCS.getJcsCommandStation().removeSensorEventListener(tile.getTileBean().getSensorId(), (SensorEventListener) tile);
+      }
+    }
+  }
+
   public static List<Tile> loadTiles(boolean showvalues) {
+    deRegisterListeners();
     altPointMap.clear();
     pointMap.clear();
     idMap.clear();
@@ -631,7 +645,7 @@ public class TileCache {
 
   public static void enqueTileAction(SensorEvent sensorEvent) {
     eventsQueue.offer(new ActionEventWrapper(sensorEvent));
-    
+
     synchronized (TileCache.actionEventQueueHandler) {
       actionEventQueueHandler.notifyAll();
     }

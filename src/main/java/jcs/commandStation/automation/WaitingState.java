@@ -170,8 +170,7 @@ class WaitingState extends AbstractState {
     //then the block waittime
     boolean alwayStop = blockBean.isAlwaysStop();
     if (!alwayStop) {
-      Logger.trace("Overriding waiting time of " + waitTime + "+s as block: " + blockBean.getId() + " does not have to stop...");
-      waitTime = 0;
+      waitTime = Integer.getInteger("default.no.stop.waittime", 1);
     }
 
     return waitTime;

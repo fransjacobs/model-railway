@@ -136,7 +136,7 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
       boolean automodeInActive = !dispatcher.getRailwayController().isAutoModeActive();
 
       //Check for a stop request
-      if (dispatcher.getStateMachine().isRequestStop() || !dispatcher.isLocomotiveStarted() || automodeInActive || inSensorTriggered) {
+      if (dispatcher.getStateMachine().isRequestStop() || !dispatcher.isLocomotiveStarted() || automodeInActive) {
         nextRouteAvaliable = false;
         rollbackNextRoute();
       }

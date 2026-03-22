@@ -206,7 +206,7 @@ public class JCSCommandStation {
       Logger.trace("Power is " + (power ? "On" : "Off"));
 
       if (!isVirtual()) {
-        ConnectionEvent ce = new ConnectionEvent(commandStation.getDescription(), true);
+        ConnectionEvent ce = new ConnectionEvent(commandStation.getDescription(), true, isVirtual());
         for (ConnectionEventListener cel : connectionEventListeners) {
           cel.onConnectionChange(ce);
         }
@@ -216,7 +216,7 @@ public class JCSCommandStation {
       Logger.trace("Timeout connecting...");
 
       if (!isVirtual()) {
-        ConnectionEvent ce = new ConnectionEvent(commandStation.getDescription(), false);
+        ConnectionEvent ce = new ConnectionEvent(commandStation.getDescription(), false, isVirtual());
         for (ConnectionEventListener cel : connectionEventListeners) {
           cel.onConnectionChange(ce);
         }

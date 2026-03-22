@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import jcs.JCS;
+import jcs.commandStation.events.AccessoryEvent;
+import jcs.commandStation.events.AccessoryEventListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
@@ -113,8 +115,8 @@ class RouteManager {
     }
 
     //Check the possible routes, check on the destination for active sensors and permissions
-    for (RouteBean route : routes) {
-      String destinationTileId = route.getToTileId();
+    for (RouteBean possibleRoute : routes) {
+      String destinationTileId = possibleRoute.getToTileId();
       BlockBean destinationBlock = PersistenceFactory.getService().getBlockByTileId(destinationTileId);
       //Check the sensors 
       boolean plusInActive = !destinationBlock.getPlusSensorBean().isActive();
@@ -127,8 +129,8 @@ class RouteManager {
 
       Logger.trace("Destination " + destinationBlock.getId() + " Train type commuter: " + commuter + " Permission " + allowed + " sensor: " + (plusInActive ? "Free" : "Occupied") + " - sensor: " + (minInActive ? "Free" : "Occupied"));
 
-      if (plusInActive && minInActive && allowed && turnoutsNotLocked(route)) {
-        checkedRoutes.add(route);
+      if (plusInActive && minInActive && allowed && turnoutsNotLocked(possibleRoute)) {
+        checkedRoutes.add(possibleRoute);
       }
     }
 
@@ -148,21 +150,7 @@ class RouteManager {
     if (!checkedRoutes.isEmpty()) {
       route = checkedRoutes.get(rIdx);
       Logger.trace("Choosen route " + route.toLogString());
-
-      //persist the departure block
-      //PersistenceFactory.getService().persist(departureBlock);
     }
-//    else {
-//      if (swapLocomotiveDirection) {
-//        //Reverse the direction change
-//        //LocomotiveBean.Direction oldDirection = LocomotiveBean.toggle(LocomotiveBean.Direction.get(departureBlock.getLogicalDirection()));
-//        Logger.trace("Rollback Locomotive reverse to " + oldDirection.getDirection() + "...");
-//        departureBlock.setLogicalDirection(oldDirection.getDirection());
-//      }
-//      swapLocomotiveDirection = false;
-//    }
-
-//    dispatcher.setRouteBean(route);
     return route != null;
   }
 
@@ -269,9 +257,9 @@ class RouteManager {
   }
 
   Integer getEstimatedNextRouteSwitchTime() {
-    RouteBean route = dispatcher.getNextRouteBean();
+    RouteBean nextRoute = dispatcher.getNextRouteBean();
     //Return a default switchtime 
-    int avgSwitchTime = PersistenceFactory.getService().getAverageAccessorySwitchTime(route).intValue();
+    int avgSwitchTime = PersistenceFactory.getService().getAverageAccessorySwitchTime(nextRoute).intValue();
     avgSwitchTime = avgSwitchTime + 250;
 
     return avgSwitchTime;
@@ -292,17 +280,17 @@ class RouteManager {
     BlockBean departureBlock = dispatcher.getDestinationBlock();
 
     //Use the current running locomotive direction
-    LocomotiveBean.Direction logicalDirection = dispatcher.getLocomotiveBean().getDirection();
+    LocomotiveBean.Direction nextLogicalDirection = dispatcher.getLocomotiveBean().getDirection();
 
     TileBean tileBean = PersistenceFactory.getService().getTileBean(departureBlock.getTileId());
     TileBean.Orientation blockOrientation = tileBean.getOrientation();
 
     String departureSuffix = departureBlock.getDepartureSuffix();
     if (departureSuffix == null) {
-      departureSuffix = Block.getDepartureSuffix(blockOrientation, logicalDirection);
+      departureSuffix = Block.getDepartureSuffix(blockOrientation, nextLogicalDirection);
     }
 
-    Logger.trace("Loco " + dispatcher.getLocomotiveBean().getName() + " is entering block " + departureBlock.getId() + ". Direction " + logicalDirection.getDirection() + ". DepartureSuffix " + departureSuffix + "...");
+    Logger.trace("Loco " + dispatcher.getLocomotiveBean().getName() + " is entering block " + departureBlock.getId() + ". Direction " + nextLogicalDirection.getDirection() + ". DepartureSuffix " + departureSuffix + "...");
 
     //Search for the possible routes
     //List<RouteBean> routes = Collections.emptyList();
@@ -313,8 +301,8 @@ class RouteManager {
 
     List<RouteBean> checkedRoutes = new ArrayList<>();
     //Found possible routes check on the destination for the sensors and permissions
-    for (RouteBean route : routes) {
-      String nextDestinationTileId = route.getToTileId();
+    for (RouteBean nextRoute : routes) {
+      String nextDestinationTileId = nextRoute.getToTileId();
       BlockBean nextDestinationBlock = PersistenceFactory.getService().getBlockByTileId(nextDestinationTileId);
       //Check the sensors 
       boolean plusInActive = !nextDestinationBlock.getPlusSensorBean().isActive();
@@ -327,8 +315,8 @@ class RouteManager {
 
       Logger.trace("Next Destination " + nextDestinationBlock.getId() + " Train type commuter: " + dispatcher.getLocomotiveBean().isCommuter() + " Permission " + allowed + " sensor: " + (plusInActive ? "Free" : "Occupied") + " - sensor: " + (minInActive ? "Free" : "Occupied"));
 
-      if (plusInActive && minInActive && allowed && turnoutsNotLocked(route)) {
-        checkedRoutes.add(route);
+      if (plusInActive && minInActive && allowed && turnoutsNotLocked(nextRoute)) {
+        checkedRoutes.add(nextRoute);
       }
     }
 
@@ -428,12 +416,34 @@ class RouteManager {
     }
   }
 
+  private volatile boolean switched;
+
   void switchAccessory(AccessoryBean accessory, AccessoryBean.AccessoryValue value) {
+//    AccessoryListener al = new AccessoryListener(accessory, value, this);
     try {
+//      switched = false;
+//      JCS.getJcsCommandStation().addAccessoryEventListener(accessory.getId(), al);
+//      long now = System.currentTimeMillis();
+//      long timemax = now + 5000;
+//      long started = now;
+
       JCS.getJcsCommandStation().switchAccessory(accessory, value);
+//      Logger.trace("Switched Accessory " + accessory.getId() + " to " + value + " Waiting for confirmation...");
+
+//      while (!switched && now < timemax) {
+//        now = System.currentTimeMillis();
+//        pause(10);
+//      }
+//      Logger.trace("Accessory " + accessory.getId() + " has switched to " + value + " in " + (now - started) + " ms.");
     } catch (Exception e) {
       Logger.error("Error switching accessory " + accessory.getId() + " to " + value + " Cause: " + e.getMessage());
+    } finally {
+      //     JCS.getJcsCommandStation().removeAccessoryEventListener(accessory.getId(), al);
     }
+  }
+
+  void waitForAccessory(boolean switched) {
+    this.switched = switched;
   }
 
   private boolean isAllowed(boolean allowCommuter, boolean allowNonCommuter, boolean commuter) {
@@ -514,6 +524,27 @@ class RouteManager {
         Logger.warn("Tile with id " + tileId + " NOT in TileCache!");
       }
     }
+  }
+
+  private class AccessoryListener implements AccessoryEventListener {
+
+    private final AccessoryBean accessoryBean;
+    private final RouteManager routeManager;
+    private final AccessoryBean.AccessoryValue value;
+
+    AccessoryListener(AccessoryBean accessoryBean, AccessoryBean.AccessoryValue value, RouteManager callback) {
+      this.accessoryBean = accessoryBean;
+      this.routeManager = callback;
+      this.value = value;
+    }
+
+    @Override
+    public void onAccessoryChange(AccessoryEvent accessoryEvent) {
+      if (accessoryEvent.isEventFor(accessoryBean)) {
+        routeManager.waitForAccessory(value == accessoryEvent.getValue());
+      }
+    }
+
   }
 
 }

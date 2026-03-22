@@ -327,9 +327,10 @@ class CSTCPConnection implements CSConnection {
             //Logger.trace("Enqueued: " + rx + " QueueSize: " + eventQueue.size());
           }
         } catch (SocketException se) {
+          //java.io.EOFException
           if (!quit) {
             String msg = "Host " + centralStationAddress.getHostName();
-            ConnectionEvent de = new ConnectionEvent(msg, false);
+            ConnectionEvent de = new ConnectionEvent(msg, false, false);
             for (ConnectionEventListener listener : disconnectionEventListeners) {
               listener.onConnectionChange(de);
             }

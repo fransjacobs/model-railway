@@ -18,6 +18,7 @@ package jcs.commandStation.automation;
 import java.awt.Color;
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.BlockBean;
+import jcs.entities.LocomotiveBean;
 import jcs.entities.RouteBean;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
@@ -62,6 +63,21 @@ class PassingThroughState extends AbstractState implements SensorEventCallback {
 
   @Override
   AbstractState execute() {
+    //Check if we had to brake?
+    LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
+    if (locomotive.getVelocity() == 0) {
+      //We had to stop...., but let continue slowly...
+      //Speed to ~10% or speed 1
+      Integer speed1 = locomotive.getSpeedOne();
+      if (speed1 == null || speed1 == 0) {
+        speed1 = 10;
+      }
+
+      int fullscale = locomotive.getTachoMax();
+      double velocity = (speed1 / (double) fullscale) * 1000;
+      dispatcher.changeLocomotiveVelocity(velocity);
+    }
+
     if (inSensorTriggered) {
       return new ArrivedState();
     } else {
