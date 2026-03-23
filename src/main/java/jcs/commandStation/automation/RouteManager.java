@@ -419,26 +419,26 @@ class RouteManager {
   private volatile boolean switched;
 
   void switchAccessory(AccessoryBean accessory, AccessoryBean.AccessoryValue value) {
-//    AccessoryListener al = new AccessoryListener(accessory, value, this);
+    AccessoryListener al = new AccessoryListener(accessory, value, this);
     try {
-//      switched = false;
-//      JCS.getJcsCommandStation().addAccessoryEventListener(accessory.getId(), al);
-//      long now = System.currentTimeMillis();
-//      long timemax = now + 5000;
-//      long started = now;
+      switched = false;
+      JCS.getJcsCommandStation().addAccessoryEventListener(accessory.getId(), al);
+      long now = System.currentTimeMillis();
+      long timemax = now + 5000;
+      long started = now;
 
       JCS.getJcsCommandStation().switchAccessory(accessory, value);
-//      Logger.trace("Switched Accessory " + accessory.getId() + " to " + value + " Waiting for confirmation...");
+      Logger.trace("Switched Accessory " + accessory.getId() + " to " + value + " Waiting for confirmation...");
 
-//      while (!switched && now < timemax) {
-//        now = System.currentTimeMillis();
-//        pause(10);
-//      }
-//      Logger.trace("Accessory " + accessory.getId() + " has switched to " + value + " in " + (now - started) + " ms.");
+      while (!switched && now < timemax) {
+        now = System.currentTimeMillis();
+        pause(10);
+      }
+      Logger.trace("Accessory " + accessory.getId() + " has switched to " + value + " in " + (now - started) + " ms.");
     } catch (Exception e) {
       Logger.error("Error switching accessory " + accessory.getId() + " to " + value + " Cause: " + e.getMessage());
     } finally {
-      //     JCS.getJcsCommandStation().removeAccessoryEventListener(accessory.getId(), al);
+      JCS.getJcsCommandStation().removeAccessoryEventListener(accessory.getId(), al);
     }
   }
 

@@ -29,8 +29,7 @@ import jcs.util.ByteUtil;
 import org.tinylog.Logger;
 
 /**
- *
- * @author frans
+ * Inflate a CAN ConfigDataMessage which is in zlib format
  */
 public class MessageInflator {
 

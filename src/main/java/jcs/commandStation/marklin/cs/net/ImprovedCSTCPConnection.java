@@ -39,7 +39,11 @@ import org.tinylog.Logger;
 /**
  * Improved TCP Connection with the Central Station
  *
- * Key improvements: - Proper multi-packet response handling - Multiple concurrent requests support - Better timeout handling with CountDownLatch - Cleaner separation of concerns
+ * Key improvements:<br>
+ * - Proper multi-packet response handling<br>
+ * - Multiple concurrent requests support<br>
+ * - Better timeout handling with CountDownLatch<br>
+ * - Cleaner separation of concerns
  */
 class ImprovedCSTCPConnection implements CSConnection {
 

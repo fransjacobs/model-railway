@@ -953,10 +953,9 @@ public class JCSCommandStation {
       }
     }
 
-    boolean changed = false;
     if (dbab != null) {
       AccessoryValue previous = dbab.getAccessoryValue();
-      changed = newValue != previous;
+      boolean changed = newValue != previous;
       if (changed) {
         //set all current properties
         ab.copyInto(dbab);
@@ -968,15 +967,13 @@ public class JCSCommandStation {
       }
     }
 
-    if (changed) {
-      if (accessoryEventListeners.containsKey(ab.getId())) {
-        List<AccessoryEventListener> snapshot = new ArrayList<>(accessoryEventListeners.get(ab.getId()));
-        Logger.trace("Obtaining listener for accessory " + ab.getId() + " which has " + snapshot.size() + " listeners to set to value " + event.getValue());
+    if (accessoryEventListeners.containsKey(ab.getId())) {
+      List<AccessoryEventListener> snapshot = new ArrayList<>(accessoryEventListeners.get(ab.getId()));
+      Logger.trace("Obtaining listener for accessory " + ab.getId() + " which has " + snapshot.size() + " listeners to set to value " + event.getValue());
 
-        for (AccessoryEventListener al : snapshot) {
-          Logger.trace("Listener source " + al.getClass().getName());
-          al.onAccessoryChange(event);
-        }
+      for (AccessoryEventListener al : snapshot) {
+        Logger.trace("Listener source " + al.getClass().getName());
+        al.onAccessoryChange(event);
       }
     }
   }

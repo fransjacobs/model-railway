@@ -145,7 +145,7 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
     Logger.trace("Locomotive " + dispatcher.getName() + " has entered destination " + destinationBlock.getDescription() + " and " + (nextRouteAvaliable ? "will continue" : "starts braking") + "...");
 
     if (nextRouteAvaliable) {
-      return new PassingThroughState();
+      return new PassingThroughState(inSensorTriggered);
     } else if (inSensorTriggered) {
       return new ArrivedState();
     } else {

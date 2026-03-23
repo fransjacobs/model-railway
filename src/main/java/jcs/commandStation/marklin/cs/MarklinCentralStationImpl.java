@@ -784,6 +784,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       //Need to check whether the value is for the main or the secondary address
       AccessoryBean ac = accessoryManager.getAccessory(address);
       if (ac.isBiAddress()) {
+        //TODO TEST!
         //need to send 2 messages for both addresses       
         int adr = getCSAddress(address, protocol);
         int adr2 = adr + 1;
@@ -805,13 +806,13 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
             switchMessage = CanMessageFactory.switchAccessory(adr, value, true, st, csUid);
             switchMessage2 = CanMessageFactory.switchAccessory(adr2, value, true, st, csUid);
             
-            CanMessage message = sendMessage(switchMessage);
-            CanMessage message2 = sendMessage(switchMessage2);
-            
-            AccessoryEvent ae = AccessoryMessage.parse(message);
-            AccessoryEvent ae2 = AccessoryMessage.parse(message2);
-            accessoryManager.notifyAccessoryEventListeners(ae);
-            accessoryManager.notifyAccessoryEventListeners(ae2);
+//            CanMessage message = sendMessage(switchMessage);
+//            CanMessage message2 = sendMessage(switchMessage2);
+//            
+//            AccessoryEvent ae = AccessoryMessage.parse(message);
+//            AccessoryEvent ae2 = AccessoryMessage.parse(message2);
+//            accessoryManager.notifyAccessoryEventListeners(ae, true);
+//            accessoryManager.notifyAccessoryEventListeners(ae2, true);
           }
         }
         
@@ -820,8 +821,8 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
         
         AccessoryEvent ae = AccessoryMessage.parse(message);
         AccessoryEvent ae2 = AccessoryMessage.parse(message2);
-        accessoryManager.notifyAccessoryEventListeners(ae);
-        accessoryManager.notifyAccessoryEventListeners(ae2);
+        accessoryManager.notifyAccessoryEventListeners(ae, true);
+        accessoryManager.notifyAccessoryEventListeners(ae2, true);
         
         Logger.trace("Switching biAddress Accessory with main " + adr + " to: " + value);
         
@@ -834,7 +835,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
         
         //Notify listeners
         AccessoryEvent ae = AccessoryMessage.parse(message);
-        accessoryManager.notifyAccessoryEventListeners(ae);
+        accessoryManager.notifyAccessoryEventListeners(ae, true);
       }
     } else {
       Logger.trace("Trackpower is OFF! Can't switch Accessory: " + address + " to: " + value + "!");
@@ -980,12 +981,6 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   List<AccessoryEventListener> getAccessoryEventListeners() {
     return this.accessoryEventListeners;
   }
-  
-//  void notifyAccessoryEventListeners(final AccessoryEvent accessoryEvent) {
-//    for (AccessoryEventListener listener : this.accessoryEventListeners) {
-//      listener.onAccessoryChange(accessoryEvent);
-//    }
-//  }
   
   private void notifyLocomotiveFunctionEventListeners(final LocomotiveFunctionEvent functionEvent) {
     for (LocomotiveFunctionEventListener listener : this.locomotiveFunctionEventListeners) {
@@ -1150,8 +1145,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
                     Logger.trace("AccessorySwitching RX: " + eventMessage);
                     //Only notify when the power of the accessory is turned off, so the action should have been done.
                     //notifyAccessoryEventListeners(ae);
-
-                    accessoryManager.notifyAccessoryEventListeners(ae);
+                    accessoryManager.notifyAccessoryEventListeners(ae, false);
                   }
                 }
                 case CanMessage.LOC_VELOCITY -> {
@@ -1307,22 +1301,22 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 //      cs.power(false);
 //      Logger.debug("Power is " + (cs.isPower() ? "ON" : "Off"));
       cs.power(true);
-      //cs.pause(1000);
+      cs.pause(1000);
 //      Logger.debug("Switch Accessory 2 to Red");
-      //cs.switchAccessory(1, "MM", AccessoryValue.RED, 200);
-      //cs.pause(1000);
-      //cs.switchAccessory(1, "MM", AccessoryValue.GREEN, 200);
+      cs.switchAccessory(1, "MM", AccessoryValue.RED, 200);
+      cs.pause(1000);
+      cs.switchAccessory(1, "MM", AccessoryValue.GREEN, 200);
 
 //
 //      Logger.debug("Switch Accessory 2 to Green");
       //cs.switchAccessory(2, AccessoryValue.GREEN, 250);
-      List<FeedbackModule> feedbackModules = cs.getFeedbackModules();
-      Logger.trace("There are " + feedbackModules + " Feedback Modules");
-      for (FeedbackModule fm : feedbackModules) {
-        Logger.trace("Module id: " + fm.getId() + " Module nr: " + fm.getModuleNumber() + " ports: " + fm.getPortCount() + " NodeId: " + fm.getIdentifier() + " BusNr: " + fm.getBusNumber());
-        Logger.trace("FBModule id: " + fm.getId() + " S 1 id:" + fm.getSensor(0).getId() + " contactId: " + fm.getSensor(0).getContactId() + " ModuleNr: " + fm.getSensor(0).getDeviceId() + " Name " + fm.getSensor(0).getName());
-        Logger.trace("FBModule id: " + fm.getId() + " S 15 id:" + fm.getSensor(15).getId() + " contactId: " + fm.getSensor(15).getContactId() + " ModuleNr: " + fm.getSensor(15).getDeviceId() + " Name " + fm.getSensor(15).getName());
-      }
+//      List<FeedbackModule> feedbackModules = cs.getFeedbackModules();
+//      Logger.trace("There are " + feedbackModules + " Feedback Modules");
+//      for (FeedbackModule fm : feedbackModules) {
+//        Logger.trace("Module id: " + fm.getId() + " Module nr: " + fm.getModuleNumber() + " ports: " + fm.getPortCount() + " NodeId: " + fm.getIdentifier() + " BusNr: " + fm.getBusNumber());
+//        Logger.trace("FBModule id: " + fm.getId() + " S 1 id:" + fm.getSensor(0).getId() + " contactId: " + fm.getSensor(0).getContactId() + " ModuleNr: " + fm.getSensor(0).getDeviceId() + " Name " + fm.getSensor(0).getName());
+//        Logger.trace("FBModule id: " + fm.getId() + " S 15 id:" + fm.getSensor(15).getId() + " contactId: " + fm.getSensor(15).getContactId() + " ModuleNr: " + fm.getSensor(15).getDeviceId() + " Name " + fm.getSensor(15).getName());
+//      }
       //cs.getLocomotivesViaCAN();
       //cs.getAccessoriesViaCan();
 //      Logger.debug("Getting all accessories...");

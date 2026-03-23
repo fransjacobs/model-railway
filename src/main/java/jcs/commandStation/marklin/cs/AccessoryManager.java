@@ -61,7 +61,7 @@ class AccessoryManager {
     return this.accessories.get(address);
   }
 
-  void notifyAccessoryEventListeners(final AccessoryEvent accessoryEvent) {
+  void notifyAccessoryEventListeners(final AccessoryEvent accessoryEvent, boolean command) {
     AccessoryBean ab = accessoryEvent.getAccessoryBean();
     //Check is this event is for a biAddress accessory
     AccessoryBean storedAccessory = accessories.get(ab.getAddress());
@@ -98,7 +98,7 @@ class AccessoryManager {
       }
     } else {
       //Check the status 
-      if (storedAccessory.getAccessoryValue() != accessoryEvent.getValue()) {
+      if (command || (storedAccessory.getAccessoryValue() != accessoryEvent.getValue())) {
         storedAccessory.setAccessoryValue(accessoryEvent.getValue());
         fireAccessoryEventListeners(accessoryEvent);
       }
@@ -106,7 +106,7 @@ class AccessoryManager {
   }
 
   void fireAccessoryEventListeners(final AccessoryEvent accessoryEvent) {
-    List<AccessoryEventListener> snapshot = new ArrayList<>(this.marklinCentralStationImpl.getAccessoryEventListeners());
+    List<AccessoryEventListener> snapshot = new ArrayList<>(marklinCentralStationImpl.getAccessoryEventListeners());
 
     for (AccessoryEventListener listener : snapshot) {
       listener.onAccessoryChange(accessoryEvent);
