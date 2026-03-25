@@ -41,7 +41,6 @@ public class Dispatcher {
   private final RailwayController railwayController;
   private final Long locomotiveId;
   private final String name;
-  //private volatile LocomotiveBean locomotiveBean;
 
   private volatile StateMachine stateMachine;
   private final RouteManager routeManager;
@@ -107,9 +106,6 @@ public class Dispatcher {
     return locomotiveId;
   }
 
-//  void setLocomotiveBean(LocomotiveBean locomotiveBean) {
-//    this.locomotiveBean = locomotiveBean;
-//  }
   //Convenience; Pass through a "fresh" locomotive
   public LocomotiveBean getLocomotiveBean() {
     return PersistenceFactory.getService().getLocomotive(locomotiveId);

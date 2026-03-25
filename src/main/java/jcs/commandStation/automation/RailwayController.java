@@ -98,6 +98,8 @@ public final class RailwayController {
 
   private String status;
 
+  private boolean functionsRestored;
+
   private static final String PENDING = "automode.pending";
   private static final String STOPPING = "automode.stopping";
   private static final String STOPPED = "automode.stopped";
@@ -177,6 +179,13 @@ public final class RailwayController {
         long timeout = now + THREADSTART_TIMEOUT;
 
         sensorMonitor.start();
+
+        //On the first session restore the save locomotive functions
+        boolean restoreFunctionsEverySession = Boolean.parseBoolean("restore.functions.every.session");
+        if (!functionsRestored || restoreFunctionsEverySession) {
+          restoreLocomotiveFunctions();
+          functionsRestored = true;
+        }
 
         boolean monitorStarted = sensorMonitor.isRunning();
         while (!monitorStarted && now < timeout) {
@@ -693,8 +702,6 @@ public final class RailwayController {
       running = true;
       Logger.trace("RailwayController Command executer Started...");
       fireStatusListeners(PENDING);
-
-      restoreLocomotiveFunctions();
 
       while (isRunning()) {
         try {

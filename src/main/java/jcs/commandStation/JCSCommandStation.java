@@ -161,6 +161,14 @@ public class JCSCommandStation {
     }
   }
 
+  public void pause(int millis) {
+    try {
+      Thread.sleep(millis);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+    }
+  }
+
   void wakeUp() {
     synchronized (lock) {
       lock.notify();

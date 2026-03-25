@@ -93,6 +93,10 @@ interface MarklinCan {
   public static final int FUNCTION_OFF = 0x00;
   public static final int FUNCTION_ON = 0x01;
 
+  public static final int S88_POLLING = 0x20;
+  public static final int READ_CONFIG = 0x0E;
+  public static final int LOK_DISCOVERY = 0x02;
+
   //Switching Messages
   public final static int ACCESSORY_SWITCHING = 0x16;
   public final static int ACCESSORY_SWITCHING_RESP = 0x17;

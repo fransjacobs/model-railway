@@ -306,12 +306,12 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
 
   private void showEditLayoutPanel() {
     //if (RailwayController.getInstance().isAutoModeActive()) {
-      CardLayout card = (CardLayout) centerPanel.getLayout();
-      card.show(centerPanel, "designPanel");
+    CardLayout card = (CardLayout) centerPanel.getLayout();
+    card.show(centerPanel, "designPanel");
 
-      dispatcherStatusPanel.showComponentsTab();
-      layoutPanel.loadLayoutInBackground();
-      editMode = true;
+    dispatcherStatusPanel.showComponentsTab();
+    layoutPanel.loadLayoutInBackground();
+    editMode = true;
     //}
   }
 
@@ -1057,8 +1057,13 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     if (result == JOptionPane.YES_OPTION) {
       setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-      //Disconnect Command stations
-      JCS.getJcsCommandStation().switchPower(false);
+      boolean powerOnWhenQuit = Boolean.parseBoolean("keep.power.on.when.quit");
+
+      if (!powerOnWhenQuit) {
+        JCS.getJcsCommandStation().switchPower(false);
+        //Give the communication time to switchoff
+        JCS.getJcsCommandStation().pause(5);
+      }
       JCS.getJcsCommandStation().disconnect();
 
       setVisible(false);

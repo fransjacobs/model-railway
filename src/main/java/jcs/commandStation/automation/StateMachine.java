@@ -290,7 +290,6 @@ class StateMachine {
         lock.notify();
       }
     }
-
   }
 
 }
