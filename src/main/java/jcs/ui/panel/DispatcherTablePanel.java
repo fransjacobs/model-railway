@@ -31,17 +31,17 @@ import javax.swing.event.RowSorterEvent;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableRowSorter;
 import jcs.commandStation.automation.Dispatcher;
-import jcs.commandStation.automation.RailwayController;
-import jcs.commandStation.automation.RailwayControllerStatusListener;
+import jcs.commandStation.automation.RailController;
 import jcs.entities.LocomotiveBean;
 import jcs.ui.DriverCabDialog;
 import jcs.ui.util.LocomotiveSelectionChangedListener;
 import org.tinylog.Logger;
+import jcs.commandStation.automation.RailControllerStatusListener;
 
 /**
  *
  */
-public class DispatcherTablePanel extends JPanel implements RailwayControllerStatusListener {
+public class DispatcherTablePanel extends JPanel implements RailControllerStatusListener {
 
   private static final long serialVersionUID = -7052304625809395213L;
 
@@ -61,13 +61,13 @@ public class DispatcherTablePanel extends JPanel implements RailwayControllerSta
   }
 
   private void initModel() {
-    RailwayController.getInstance().addStatusListener(this);
-    onControllerStatusChange(RailwayController.getInstance().getStatus());
+    RailController.getInstance().addStatusListener(this);
+    onControllerStatusChange(RailController.getInstance().getStatus());
   }
 
   @Override
   public void onControllerStatusChange(String status) {
-    List<Dispatcher> dispatchers = RailwayController.getInstance().getDispatchers();
+    List<Dispatcher> dispatchers = RailController.getInstance().getDispatchers();
     Logger.trace("Found " + dispatchers.size() + " Dispatchers. Automode status: " + (status));
     locomotiveDispatcherTableModel.refresh();
   }

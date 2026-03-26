@@ -111,16 +111,16 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
 
     if (nextRouteFound) {
       //Try to reserve the next route
-      int permits = RailwayController.avialablePermits();
+      int permits = RailController.avialablePermits();
       Logger.trace("Obtaining a lock. There are currently " + permits + " available permits...");
       if (permits > 0) {
-        if (RailwayController.tryAquireLock()) {
+        if (RailController.tryAquireLock()) {
           try {
             Logger.trace("##### Locked ####");
             nextRouteAvaliable = dispatcher.getRouteManager().searchAndReserveNextRoute();
           } finally {
             //Make sure the lock is released
-            RailwayController.releaseLock();
+            RailController.releaseLock();
             Logger.trace("##### Released ####");
           }
         } else {

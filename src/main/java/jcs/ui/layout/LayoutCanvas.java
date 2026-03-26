@@ -47,7 +47,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 import javax.swing.TransferHandler.TransferSupport;
 import jcs.commandStation.automation.Dispatcher;
-import jcs.commandStation.automation.RailwayController;
+import jcs.commandStation.automation.RailController;
 import jcs.entities.BlockBean;
 import jcs.entities.BlockBean.BlockState;
 import jcs.entities.LocomotiveBean;
@@ -656,7 +656,7 @@ public class LayoutCanvas extends JPanel {
     }
     //Check if automode is on etc
     //boolean autoPilotEnabled = AutoPilot.isAutoModeActive();
-    boolean autoPilotEnabled = RailwayController.getInstance().isAutoModeActive();
+    boolean autoPilotEnabled = RailController.getInstance().isAutoModeActive();
     boolean hasLoco = ((Block) tile).getBlockBean().getLocomotive() != null;
     boolean isGhost = ((Block) tile).getBlockBean().getBlockState() == BlockState.GHOST;
     this.startLocomotiveMI.setEnabled(autoPilotEnabled && hasLoco);
@@ -679,7 +679,7 @@ public class LayoutCanvas extends JPanel {
       //Dispatcher might still be active
       LocomotiveBean locomotiveBean = ((Block) tile).getBlockBean().getLocomotive();
 
-      Dispatcher d = RailwayController.getInstance().getDispatcher(locomotiveBean);
+      Dispatcher d = RailController.getInstance().getDispatcher(locomotiveBean);
       resetDispatcherMI.setEnabled(d != null && d.isLocomotiveStarted());
     }
 
@@ -1231,7 +1231,7 @@ public class LayoutCanvas extends JPanel {
     if (selectedTile != null && selectedTile.isBlock() && selectedTile.getLocomotive() != null) {
       LocomotiveBean locomotive = selectedTile.getLocomotive();
       //executor.execute(() -> AutoPilot.startStopLocomotive(locomotive, true));
-      RailwayController.getInstance().startLocomotive(locomotive);
+      RailController.getInstance().startLocomotive(locomotive);
     }
   }//GEN-LAST:event_startLocomotiveMIActionPerformed
 
@@ -1239,7 +1239,7 @@ public class LayoutCanvas extends JPanel {
     if (selectedTile != null && selectedTile.isBlock() && selectedTile.getLocomotive() != null) {
       LocomotiveBean locomotive = selectedTile.getLocomotive();
       //executor.execute(() -> AutoPilot.startStopLocomotive(locomotive, false));
-      RailwayController.getInstance().stopLocomotive(locomotive);
+      RailController.getInstance().stopLocomotive(locomotive);
     }
   }//GEN-LAST:event_stopLocomotiveMIActionPerformed
 
@@ -1249,7 +1249,7 @@ public class LayoutCanvas extends JPanel {
       LocomotiveBean locomotive = block.getBlockBean().getLocomotive();
 
       executor.execute(() -> {
-        RailwayController.getInstance().resetDispatcher(locomotive);
+        RailController.getInstance().resetDispatcher(locomotive);
 
         //repaint();
       });
@@ -1271,7 +1271,7 @@ public class LayoutCanvas extends JPanel {
         PersistenceFactory.getService().persist(selectedTile.getBlockBean());
         PersistenceFactory.getService().persist(locomotive);
 
-        RailwayController.getInstance().removeLocomotive(locomotive);
+        RailController.getInstance().removeLocomotive(locomotive);
       });
     }
   }//GEN-LAST:event_removeLocMIActionPerformed

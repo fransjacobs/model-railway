@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 import jcs.JCS;
 import jcs.commandStation.FeedbackController;
 import jcs.commandStation.automation.Dispatcher;
-import jcs.commandStation.automation.RailwayController;
+import jcs.commandStation.automation.RailController;
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.CommandStationBean;
 import jcs.entities.LocomotiveBean;
@@ -50,7 +50,7 @@ public class DriveSimulator {
     CommandStationBean commandStationBean = PersistenceFactory.getService().getDefaultCommandStation();
     PersistenceFactory.getService().getLocomotive(locUid, commandStationBean.getId());
 
-    Dispatcher dispatcher = RailwayController.getInstance().getDispatcher(locUid);
+    Dispatcher dispatcher = RailController.getInstance().getDispatcher(locUid);
 
     if (dispatcher.isLocomotiveStarted()) {
       Logger.trace("Try to simulate the next sensor of " + dispatcher.getName());

@@ -49,7 +49,7 @@ public class StateMachineTest {
   //private int eventCallbackCount = 0;
 
   SensorMonitor sensorMonitor;
-  private final RailwayController railwayController;
+  private final RailController railwayController;
 
   protected static final long BR_101_003_2 = 23;
   protected static final long NS_1631 = 39;
@@ -75,7 +75,7 @@ public class StateMachineTest {
       Logger.error("###### Can't connect to command station! ########");
     }
 
-    railwayController = RailwayController.getInstance();
+    railwayController = RailController.getInstance();
     railwayController.setAutomodeOn(true);
 
     sensorMonitor = new SensorMonitor();

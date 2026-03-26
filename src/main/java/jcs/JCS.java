@@ -38,6 +38,7 @@ import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import jcs.commandStation.JCSCommandStation;
+import jcs.commandStation.automation.RailController;
 import jcs.commandStation.events.PowerEvent;
 import jcs.commandStation.events.PowerEventListener;
 import jcs.persistence.PersistenceFactory;
@@ -102,6 +103,11 @@ public class JCS extends Thread {
     return jcsCommandStation;
   }
 
+  public static RailController getRailController() {
+    return RailController.getInstance();
+  }
+  
+  
   /**
    * Executed at shutdown in response to a Ctrl-C etc.
    */

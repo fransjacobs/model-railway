@@ -18,7 +18,7 @@ package jcs.commandStation.automation;
 /**
  * Listener for Controller status events
  */
-public interface RailwayControllerStatusListener {
+public interface RailControllerStatusListener {
 
   void onControllerStatusChange(String status);
 }

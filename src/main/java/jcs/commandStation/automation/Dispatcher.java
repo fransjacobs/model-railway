@@ -38,7 +38,7 @@ import org.tinylog.Logger;
  */
 public class Dispatcher {
 
-  private final RailwayController railwayController;
+  private final RailController railwayController;
   private final Long locomotiveId;
   private final String name;
 
@@ -77,7 +77,7 @@ public class Dispatcher {
    * @param railwayController
    * @param locomotiveBean
    */
-  Dispatcher(RailwayController railwayController, LocomotiveBean locomotiveBean) {
+  Dispatcher(RailController railwayController, LocomotiveBean locomotiveBean) {
     this.railwayController = railwayController;
     locomotiveId = locomotiveBean.getId();
     name = locomotiveBean.getName();
@@ -86,7 +86,7 @@ public class Dispatcher {
   }
 
   @SuppressWarnings("unused")
-  RailwayController getRailwayController() {
+  RailController getRailwayController() {
     return railwayController;
   }
 

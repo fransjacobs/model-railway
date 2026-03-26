@@ -20,7 +20,7 @@ import jcs.entities.LocomotiveBean;
 /**
  * Commands for the RailwayController
  */
-class RailwayControllerCommand {
+class RailControllerCommand {
 
   private final String command;
   private final LocomotiveBean locomotiveBean;
@@ -38,19 +38,19 @@ class RailwayControllerCommand {
   final static String CMD_PREP_DISP = "prepareDispatchers";
   final static String CMD_FIRE_STATUS_LST = "fireStatusListeners";
 
-  RailwayControllerCommand(String command) {
+  RailControllerCommand(String command) {
     this(command, null, null);
   }
 
-  RailwayControllerCommand(String command, String status) {
+  RailControllerCommand(String command, String status) {
     this(command, null, status);
   }
 
-  RailwayControllerCommand(String command, LocomotiveBean locomotiveBean) {
+  RailControllerCommand(String command, LocomotiveBean locomotiveBean) {
     this(command, locomotiveBean, null);
   }
 
-  RailwayControllerCommand(String command, LocomotiveBean locomotiveBean, String status) {
+  RailControllerCommand(String command, LocomotiveBean locomotiveBean, String status) {
     this.command = command;
     this.locomotiveBean = locomotiveBean;
     this.status = status;

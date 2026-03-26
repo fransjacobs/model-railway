@@ -73,16 +73,16 @@ class PrepareRouteState extends AbstractState {
       LocomotiveBean locomotiveBean = dispatcher.getLocomotiveBean();
       Logger.debug("Locomotive " + locomotiveBean.getName() + " Direction: " + locomotiveBean.getDirection().getDirection() + " search for route from block " + blockBean.getId() + " logicalDir: " + blockBean.getLogicalDirection() + " Arrived at " + blockBean.getArrivalSuffix());
 
-      int permits = RailwayController.avialablePermits();
+      int permits = RailController.avialablePermits();
       Logger.trace("Obtaining a lock. There is currently " + permits + " available permits...");
 
-      if (RailwayController.tryAquireLock()) {
+      if (RailController.tryAquireLock()) {
         try {
           Logger.trace("##### Locked ####");
           canAdvanceToNextState = dispatcher.getRouteManager().searchAndReserveRoute();
         } finally {
           //Make sure the lock is released
-          RailwayController.releaseLock();
+          RailController.releaseLock();
           Logger.trace("##### Released ####");
         }
       } else {

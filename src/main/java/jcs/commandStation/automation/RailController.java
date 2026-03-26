@@ -29,16 +29,16 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import jcs.JCS;
-import static jcs.commandStation.automation.RailwayControllerCommand.CMD_ADD_LOC;
-import static jcs.commandStation.automation.RailwayControllerCommand.CMD_FIRE_STATUS_LST;
-import static jcs.commandStation.automation.RailwayControllerCommand.CMD_REMOVE_LOC;
-import static jcs.commandStation.automation.RailwayControllerCommand.CMD_RESET;
-import static jcs.commandStation.automation.RailwayControllerCommand.CMD_RESTORE_FUNC;
-import static jcs.commandStation.automation.RailwayControllerCommand.CMD_START;
-import static jcs.commandStation.automation.RailwayControllerCommand.CMD_START_ALL_LOC;
-import static jcs.commandStation.automation.RailwayControllerCommand.CMD_START_LOC;
-import static jcs.commandStation.automation.RailwayControllerCommand.CMD_STOP;
-import static jcs.commandStation.automation.RailwayControllerCommand.CMD_STOP_LOC;
+import static jcs.commandStation.automation.RailControllerCommand.CMD_ADD_LOC;
+import static jcs.commandStation.automation.RailControllerCommand.CMD_FIRE_STATUS_LST;
+import static jcs.commandStation.automation.RailControllerCommand.CMD_REMOVE_LOC;
+import static jcs.commandStation.automation.RailControllerCommand.CMD_RESET;
+import static jcs.commandStation.automation.RailControllerCommand.CMD_RESTORE_FUNC;
+import static jcs.commandStation.automation.RailControllerCommand.CMD_START;
+import static jcs.commandStation.automation.RailControllerCommand.CMD_START_ALL_LOC;
+import static jcs.commandStation.automation.RailControllerCommand.CMD_START_LOC;
+import static jcs.commandStation.automation.RailControllerCommand.CMD_STOP;
+import static jcs.commandStation.automation.RailControllerCommand.CMD_STOP_LOC;
 import jcs.entities.BlockBean;
 import jcs.entities.BlockBean.BlockState;
 import static jcs.entities.BlockBean.BlockState.LOCKED;
@@ -52,7 +52,7 @@ import jcs.ui.layout.tiles.TileCache;
 import org.tinylog.Logger;
 
 /**
- * The RailwayController is the core engine for automatic driving.<br>
+ * The RailController is the core engine for automatic driving.<br>
  * Before the first locomotive can run automatically a few preconditions are necessary.<br>
  * The Layout need to be drawn, all blocks should be defined, all sensors are linked with blocks and the layout is routed.<br>
  *
@@ -68,19 +68,19 @@ import org.tinylog.Logger;
  * When a/all Locomotives is/are started the following events should happen: - The dispatcher for the Locomotive of choice should be started.<br>
  *
  * The Dispatcher is run in this Thread.<br>
- * The RailwayController has it own Monitor Thread: RailwayControllerMonitorThread.<br>
+The RailController has it own Monitor Thread: RailwayControllerMonitorThread.<br>
  * This moditorThread takes car of watching for ghost during automatic driving.
  *
  */
-public final class RailwayController {
+public final class RailController {
 
-  private static RailwayController instance;
+  private static RailController instance;
 
   private final ThreadGroup threadGroup;
   private CommandStationBean commandStationBean;
   private SensorMonitor sensorMonitor = null;
 
-  private final BlockingQueue<RailwayControllerCommand> actionCommandQueue;
+  private final BlockingQueue<RailControllerCommand> actionCommandQueue;
 
   private final CommandExecuter commandExecuter;
 
@@ -88,7 +88,7 @@ public final class RailwayController {
 
   private static final Semaphore semaphore = new Semaphore(1);
 
-  private final List<RailwayControllerStatusListener> railwayStatusListeners;
+  private final List<RailControllerStatusListener> railwayStatusListeners;
 
   final static long THREADSTART_TIMEOUT = 2000L;
 
@@ -100,12 +100,12 @@ public final class RailwayController {
 
   private boolean functionsRestored;
 
-  private static final String PENDING = "automode.pending";
-  private static final String STOPPING = "automode.stopping";
-  private static final String STOPPED = "automode.stopped";
-  private static final String STARTED = "automode.started";
+  public static final String PENDING = "automode.pending";
+  public static final String STOPPING = "automode.stopping";
+  public static final String STOPPED = "automode.stopped";
+  public static final String STARTED = "automode.started";
 
-  private RailwayController() {
+  private RailController() {
     threadGroup = new ThreadGroup("RAILWAY-CONTROLLER");
     dispatchers = new ConcurrentHashMap<>();
     railwayStatusListeners = new ArrayList<>();
@@ -117,11 +117,11 @@ public final class RailwayController {
   /**
    * There can only be one Railway Controller.<br>
    *
-   * @return the instance of the RailwayController
+   * @return the instance of the RailController
    */
-  public synchronized static RailwayController getInstance() {
+  public synchronized static RailController getInstance() {
     if (instance == null) {
-      instance = new RailwayController();
+      instance = new RailController();
 
       //Start the command queue
       if (!instance.commandExecuter.isRunning()) {
@@ -153,7 +153,7 @@ public final class RailwayController {
    *
    * @param command the command to execute
    */
-  private void enqueCommand(RailwayControllerCommand command) {
+  private void enqueCommand(RailControllerCommand command) {
     actionCommandQueue.offer(command);
   }
 
@@ -207,7 +207,7 @@ public final class RailwayController {
       return automodeOn;
     } else {
       Logger.warn("Can't start Automode, Command Station Power is Off!");
-      //enqueCommand(new RailwayControllerCommand(CMD_FIRE_STATUS_LST, "automode.stopped"));
+      //enqueCommand(new RailControllerCommand(CMD_FIRE_STATUS_LST, "automode.stopped"));
       fireStatusListeners(STOPPED);
       return false;
     }
@@ -235,8 +235,8 @@ public final class RailwayController {
 
   void fireStatusListeners(String status) {
     this.status = status;
-    List<RailwayControllerStatusListener> snapshot = new ArrayList<>(railwayStatusListeners);
-    for (RailwayControllerStatusListener rcsl : snapshot) {
+    List<RailControllerStatusListener> snapshot = new ArrayList<>(railwayStatusListeners);
+    for (RailControllerStatusListener rcsl : snapshot) {
       rcsl.onControllerStatusChange(status);
     }
   }
@@ -332,38 +332,38 @@ public final class RailwayController {
 
   public void enableAutomode(boolean flag) {
     if (flag) {
-      enqueCommand(new RailwayControllerCommand(CMD_START));
+      enqueCommand(new RailControllerCommand(CMD_START));
     } else {
-      enqueCommand(new RailwayControllerCommand(CMD_STOP));
+      enqueCommand(new RailControllerCommand(CMD_STOP));
     }
   }
 
   public void startLocomotive(LocomotiveBean locomotiveBean) {
-    enqueCommand(new RailwayControllerCommand(CMD_START_LOC, locomotiveBean));
+    enqueCommand(new RailControllerCommand(CMD_START_LOC, locomotiveBean));
   }
 
   public void stopLocomotive(LocomotiveBean locomotiveBean) {
-    enqueCommand(new RailwayControllerCommand(CMD_STOP_LOC, locomotiveBean));
+    enqueCommand(new RailControllerCommand(CMD_STOP_LOC, locomotiveBean));
   }
 
   public void removeLocomotive(LocomotiveBean locomotiveBean) {
-    enqueCommand(new RailwayControllerCommand(CMD_REMOVE_LOC, locomotiveBean));
+    enqueCommand(new RailControllerCommand(CMD_REMOVE_LOC, locomotiveBean));
   }
 
   public void addLocomotive(LocomotiveBean locomotiveBean) {
-    enqueCommand(new RailwayControllerCommand(CMD_ADD_LOC, locomotiveBean));
+    enqueCommand(new RailControllerCommand(CMD_ADD_LOC, locomotiveBean));
   }
 
   public void restoreFunctions() {
-    enqueCommand(new RailwayControllerCommand(CMD_RESTORE_FUNC));
+    enqueCommand(new RailControllerCommand(CMD_RESTORE_FUNC));
   }
 
   public synchronized void startAllLocomotives() {
-    enqueCommand(new RailwayControllerCommand(CMD_START_ALL_LOC));
+    enqueCommand(new RailControllerCommand(CMD_START_ALL_LOC));
   }
 
   public void reset() {
-    enqueCommand(new RailwayControllerCommand("reset"));
+    enqueCommand(new RailControllerCommand("reset"));
   }
 
   public boolean isSensorMonitorThreadStopped() {
@@ -417,7 +417,7 @@ public final class RailwayController {
       }
 
       dispatcher.removeAllStateEventListeners();
-      //enqueCommand(new RailwayControllerCommand(CMD_FIRE_STATUS_LST, "dispatcher.removed." + locomotiveBean.getName()));
+      //enqueCommand(new RailControllerCommand(CMD_FIRE_STATUS_LST, "dispatcher.removed." + locomotiveBean.getName()));
     }
   }
 
@@ -430,7 +430,7 @@ public final class RailwayController {
 
     dispatchers.clear();
 
-    enqueCommand(new RailwayControllerCommand(CMD_FIRE_STATUS_LST, "all.dispatchers.removed"));
+    enqueCommand(new RailControllerCommand(CMD_FIRE_STATUS_LST, "all.dispatchers.removed"));
   }
 
   synchronized void startDispatcher(LocomotiveBean locomotiveBean) {
@@ -619,12 +619,12 @@ public final class RailwayController {
     return false;
   }
 
-  public synchronized void addStatusListener(RailwayControllerStatusListener listener) {
+  public synchronized void addStatusListener(RailControllerStatusListener listener) {
     railwayStatusListeners.add(listener);
     Logger.trace("Status listeners: " + railwayStatusListeners.size());
   }
 
-  public synchronized void removeStatusListener(RailwayControllerStatusListener listener) {
+  public synchronized void removeStatusListener(RailControllerStatusListener listener) {
     railwayStatusListeners.remove(listener);
     Logger.trace("Status listeners: " + railwayStatusListeners.size());
   }
@@ -641,7 +641,7 @@ public final class RailwayController {
     return semaphore.availablePermits();
   }
 
-  private void executeCommand(RailwayControllerCommand event) {
+  private void executeCommand(RailControllerCommand event) {
     String command = event.getCommand();
     switch (command) {
       case CMD_RESTORE_FUNC -> {
@@ -686,7 +686,7 @@ public final class RailwayController {
   private class CommandExecuter extends Thread {
 
     private volatile boolean running;
-    private final BlockingQueue<RailwayControllerCommand> eventQueue;
+    private final BlockingQueue<RailControllerCommand> eventQueue;
 
     public CommandExecuter(BlockingQueue eventQueue) {
       super(threadGroup, "RAILWAY-CONTROLLER-EXECUTER");
@@ -705,7 +705,7 @@ public final class RailwayController {
 
       while (isRunning()) {
         try {
-          RailwayControllerCommand event = eventQueue.poll(100, TimeUnit.MILLISECONDS);
+          RailControllerCommand event = eventQueue.poll(100, TimeUnit.MILLISECONDS);
           if (event != null) {
             executeCommand(event);
           }

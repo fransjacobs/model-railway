@@ -19,7 +19,7 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-import jcs.commandStation.automation.RailwayController;
+import jcs.commandStation.automation.RailController;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.persistence.PersistenceFactory;
@@ -134,8 +134,8 @@ public class BlockControlDialog extends javax.swing.JDialog {
           forwardsRB.setSelected(true);
         }
 
-        startLocButton.setEnabled(RailwayController.getInstance().isAutoModeActive());
-        startLocButton.setSelected(RailwayController.getInstance().isRunning(bb.getLocomotive()));
+        startLocButton.setEnabled(RailController.getInstance().isAutoModeActive());
+        startLocButton.setSelected(RailController.getInstance().isRunning(bb.getLocomotive()));
       } else {
         locomotiveCB.setSelectedItem(emptyBean);
         startLocButton.setEnabled(false);
@@ -519,7 +519,7 @@ public class BlockControlDialog extends javax.swing.JDialog {
           LocomotiveBean loc = bb.getLocomotive();
           PersistenceFactory.getService().persist(loc);
 
-          RailwayController.getInstance().addLocomotive(loc);
+          RailController.getInstance().addLocomotive(loc);
         }
 
         TileCache.findTile(bb.getTileId()).setBlockBean(bb);
@@ -562,7 +562,7 @@ public class BlockControlDialog extends javax.swing.JDialog {
     }
 
     if (previous != null && previous.getId() != null && !previous.getId().equals(selected.getId())) {
-      RailwayController.getInstance().removeLocomotive(previous);
+      RailController.getInstance().removeLocomotive(previous);
     }
 
   }//GEN-LAST:event_locomotiveCBActionPerformed
@@ -571,9 +571,9 @@ public class BlockControlDialog extends javax.swing.JDialog {
     LocomotiveBean loc = block.getLocomotive();
     if (loc != null) {
       if (startLocButton.isSelected()) {
-        RailwayController.getInstance().startLocomotive(loc);
+        RailController.getInstance().startLocomotive(loc);
       } else {
-        RailwayController.getInstance().stopLocomotive(loc);
+        RailController.getInstance().stopLocomotive(loc);
       }
     }
   }//GEN-LAST:event_startLocButtonActionPerformed

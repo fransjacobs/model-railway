@@ -21,18 +21,19 @@ import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import jcs.JCS;
-import jcs.commandStation.automation.RailwayControllerStatusListener;
+import jcs.commandStation.automation.RailController;
 import jcs.commandStation.events.ConnectionEvent;
 import jcs.commandStation.events.ConnectionEventListener;
 import jcs.commandStation.events.MeasurementEvent;
 import jcs.commandStation.events.MeasurementEventListener;
 import org.tinylog.Logger;
+import jcs.commandStation.automation.RailControllerStatusListener;
 
 /**
  *
  * @author frans
  */
-public class StatusPanel extends javax.swing.JPanel implements MeasurementEventListener, RailwayControllerStatusListener, ConnectionEventListener {
+public class StatusPanel extends javax.swing.JPanel implements MeasurementEventListener, RailControllerStatusListener, ConnectionEventListener {
 
   private static final long serialVersionUID = 7132844382832996985L;
 
@@ -61,6 +62,8 @@ public class StatusPanel extends javax.swing.JPanel implements MeasurementEventL
 
       JCS.getJcsCommandStation().addMeasurementEventListener(this);
       Logger.trace("Added StatusPanel as MeasurementEventListener");
+
+      JCS.getRailController().addStatusListener(this);
 
       this.connectedLbl.setVisible(false);
       this.virtualConnectionLbl.setVisible(false);
@@ -115,6 +118,30 @@ public class StatusPanel extends javax.swing.JPanel implements MeasurementEventL
   @Override
   public void onControllerStatusChange(String status) {
     Logger.trace(status);
+    
+    if(status == null) {
+      return;
+    }
+
+    switch (status) {
+      case RailController.PENDING -> {
+        this.autopilotLbl.setIcon(new javax.swing.ImageIcon(getClass().getResource(CRUISE_CONTROL_B)));
+      }
+      case RailController.STARTED -> {
+        this.autopilotLbl.setIcon(new javax.swing.ImageIcon(getClass().getResource(CRUISE_CONTROL_G)));
+
+      }
+      case RailController.STOPPING -> {
+        this.autopilotLbl.setIcon(new javax.swing.ImageIcon(getClass().getResource(CRUISE_CONTROL_Y)));
+
+      }
+      case RailController.STOPPED -> {
+        this.autopilotLbl.setIcon(new javax.swing.ImageIcon(getClass().getResource(CRUISE_CONTROL_R)));
+
+      }
+    }
+
+    this.autopilotLbl.setVisible(true);
   }
 
   /**
@@ -124,7 +151,7 @@ public class StatusPanel extends javax.swing.JPanel implements MeasurementEventL
   // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
   private void initComponents() {
 
-    jPanel1 = new javax.swing.JPanel();
+    statusPanel = new javax.swing.JPanel();
     connectedLbl = new javax.swing.JLabel();
     virtualConnectionLbl = new javax.swing.JLabel();
     autopilotLbl = new javax.swing.JLabel();
@@ -132,30 +159,37 @@ public class StatusPanel extends javax.swing.JPanel implements MeasurementEventL
     voltageLbl = new javax.swing.JLabel();
     currentLbl = new javax.swing.JLabel();
     tempLbl = new javax.swing.JLabel();
-    jPanel2 = new javax.swing.JPanel();
+    miscPanel = new javax.swing.JPanel();
 
-    setMinimumSize(new java.awt.Dimension(600, 45));
+    setMinimumSize(new java.awt.Dimension(1200, 45));
     setPreferredSize(new java.awt.Dimension(1200, 45));
-    setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 0, 0));
+    java.awt.FlowLayout flowLayout2 = new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 0, 0);
+    flowLayout2.setAlignOnBaseline(true);
+    setLayout(flowLayout2);
 
-    jPanel1.setPreferredSize(new java.awt.Dimension(300, 27));
-    java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
+    statusPanel.setPreferredSize(new java.awt.Dimension(600, 45));
+    java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 5, 10);
     flowLayout1.setAlignOnBaseline(true);
-    jPanel1.setLayout(flowLayout1);
+    statusPanel.setLayout(flowLayout1);
 
     connectedLbl.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/connection-green-24.png"))); // NOI18N
     connectedLbl.setToolTipText("Connected");
-    jPanel1.add(connectedLbl);
+    statusPanel.add(connectedLbl);
 
     virtualConnectionLbl.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/virtual-24.png"))); // NOI18N
     virtualConnectionLbl.setToolTipText("Virtual Connection");
-    jPanel1.add(virtualConnectionLbl);
+    statusPanel.add(virtualConnectionLbl);
 
     autopilotLbl.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/cruise-control-on-green.png"))); // NOI18N
     autopilotLbl.setToolTipText("Autopilot running");
-    jPanel1.add(autopilotLbl);
+    statusPanel.add(autopilotLbl);
 
-    add(jPanel1);
+    add(statusPanel);
+
+    measurePanel.setPreferredSize(new java.awt.Dimension(600, 45));
+    java.awt.FlowLayout flowLayout3 = new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 5, 10);
+    flowLayout3.setAlignOnBaseline(true);
+    measurePanel.setLayout(flowLayout3);
 
     voltageLbl.setText("-");
     voltageLbl.setToolTipText("Track Voltage");
@@ -174,8 +208,11 @@ public class StatusPanel extends javax.swing.JPanel implements MeasurementEventL
 
     add(measurePanel);
 
-    jPanel2.setPreferredSize(new java.awt.Dimension(100, 45));
-    add(jPanel2);
+    miscPanel.setPreferredSize(new java.awt.Dimension(100, 45));
+    java.awt.FlowLayout flowLayout4 = new java.awt.FlowLayout();
+    flowLayout4.setAlignOnBaseline(true);
+    miscPanel.setLayout(flowLayout4);
+    add(miscPanel);
   }// </editor-fold>//GEN-END:initComponents
 
 
@@ -183,9 +220,9 @@ public class StatusPanel extends javax.swing.JPanel implements MeasurementEventL
   private javax.swing.JLabel autopilotLbl;
   private javax.swing.JLabel connectedLbl;
   private javax.swing.JLabel currentLbl;
-  private javax.swing.JPanel jPanel1;
-  private javax.swing.JPanel jPanel2;
   private javax.swing.JPanel measurePanel;
+  private javax.swing.JPanel miscPanel;
+  private javax.swing.JPanel statusPanel;
   private javax.swing.JLabel tempLbl;
   private javax.swing.JLabel virtualConnectionLbl;
   private javax.swing.JLabel voltageLbl;

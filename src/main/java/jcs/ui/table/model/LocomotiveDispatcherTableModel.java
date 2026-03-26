@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.ImageIcon;
 import jcs.commandStation.automation.Dispatcher;
-import jcs.commandStation.automation.RailwayController;
+import jcs.commandStation.automation.RailController;
 import jcs.commandStation.automation.StateEventListener;
 import jcs.entities.LocomotiveBean.Direction;
 import org.tinylog.Logger;
@@ -42,8 +42,8 @@ public class LocomotiveDispatcherTableModel extends AbstractBeanTableModel<Dispa
 
   @Override
   public void refresh() {
-    if (RailwayController.getInstance().isAutoModeActive()) {
-      setBeans(RailwayController.getInstance().getDispatchers());
+    if (RailController.getInstance().isAutoModeActive()) {
+      setBeans(RailController.getInstance().getDispatchers());
       Logger.trace("There are " + beans.size() + " dispatchers");
 
       for (Dispatcher ld : beans) {
@@ -59,7 +59,7 @@ public class LocomotiveDispatcherTableModel extends AbstractBeanTableModel<Dispa
           extraStateInfo.remove(ld);
         }
       }
-      setBeans(RailwayController.getInstance().getDispatchers());
+      setBeans(RailController.getInstance().getDispatchers());
     }
   }
 
