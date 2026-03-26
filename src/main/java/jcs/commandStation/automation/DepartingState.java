@@ -42,12 +42,6 @@ class DepartingState extends AbstractState {
 
     Logger.trace("Starting " + locomotive.getName() + " Direction " + locomotive.getDirection());
 
-    //TODO: Is it always neccessary to set the locomotive direction?
-    //First time starting as current velocity is zero, ensure the direction is right
-    //if (locomotive.getVelocity() == 0) {
-    //  dispatcher.changeLocomotiveDirection(locomotive.getDirection());
-    //}
-
     //Speed to ~75% or speed 3
     Integer speed3 = locomotive.getSpeedThree();
     if (speed3 == null || speed3 == 0) {
@@ -67,13 +61,6 @@ class DepartingState extends AbstractState {
     dispatcher.showBlockState(departureBlock);
     dispatcher.showBlockState(destinationBlock);
 
-//    StationBean station = dispatcher.getStation(departureBlock);
-//    if (station != null) {
-//      StationBlockBean sbb = station.getStationBlockBean(departureBlock);
-//      //Set the depareset arrival time
-//      sbb.setLastUpdated(new Date());
-//      PersistenceFactory.getService().persist(station);
-//    }
     return new RunningState();
   }
 

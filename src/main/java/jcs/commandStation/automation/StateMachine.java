@@ -221,13 +221,13 @@ class StateMachine {
 
       while (running) {
 
-        BlockBean departureBlock = dispatcher.getDepartureBlock();
-        BlockBean destinationBlock = dispatcher.getDestinationBlock();
-        BlockBean nextDestinationBlock = dispatcher.getNextDestinationBlock();
-        RouteBean route = dispatcher.getRouteBean();
-        RouteBean nextRoute = dispatcher.getNextRouteBean();
+        if (Logger.isTraceEnabled() && 1 == 2) {
+          BlockBean departureBlock = dispatcher.getDepartureBlock();
+          BlockBean destinationBlock = dispatcher.getDestinationBlock();
+          BlockBean nextDestinationBlock = dispatcher.getNextDestinationBlock();
+          RouteBean route = dispatcher.getRouteBean();
+          RouteBean nextRoute = dispatcher.getNextRouteBean();
 
-        if (Logger.isTraceEnabled() && 1==2) {
           StringBuilder sb = new StringBuilder();
 
           if (departureBlock != null) {

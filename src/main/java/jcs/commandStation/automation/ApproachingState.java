@@ -71,7 +71,7 @@ class ApproachingState extends AbstractState {
     automodeInActive = automodeInActive && !dispatcher.isLocomotiveStarted();
 
     if (alwaysStop || automodeInActive) {
-      return new BrakingState();
+      return new BrakingState(false);
     } else {
       return new PrepareNextRouteState();
     }

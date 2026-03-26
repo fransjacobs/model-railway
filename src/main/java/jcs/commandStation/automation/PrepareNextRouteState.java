@@ -149,18 +149,13 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
     } else if (inSensorTriggered) {
       return new ArrivedState();
     } else {
-      return new BrakingState();
+      return new BrakingState(inSensorTriggered);
     }
   }
 
   @Override
   void onExit() {
     dispatcher.getSensorMonitor().unsubscribe(inSensorId, this);
-
-    //Make sure the next route is not there in case the inSensorTriggered
-    if (inSensorTriggered) {
-      rollbackNextRoute();
-    }
   }
 
   @Override

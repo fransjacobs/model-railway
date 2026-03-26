@@ -35,13 +35,20 @@ class BrakingState extends AbstractState implements SensorEventCallback {
   private Integer inSensorId;
   private boolean inSensorTriggerred = false;
 
-  BrakingState() {
+  BrakingState(boolean inSensorTriggerred) {
     super("Braking");
+    this.inSensorTriggerred = inSensorTriggerred;
   }
 
   @Override
   void onEnter(Dispatcher dispatcher) {
     super.onEnter(dispatcher);
+
+    BlockBean destinationBlock = dispatcher.getDestinationBlock();
+    //Subscribe the IN sensor
+    inSensorId = dispatcher.getInSensorId();
+    dispatcher.getSensorMonitor().subscribe(inSensorId, this);
+    Logger.trace("Destination block " + destinationBlock.getId() + " In SensorId: " + inSensorId);
 
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
     //Slowdown
@@ -55,26 +62,12 @@ class BrakingState extends AbstractState implements SensorEventCallback {
 
     int fullscale = locomotive.getTachoMax();
     double velocity = (speed1 / (double) fullscale) * 1000;
-
     dispatcher.changeLocomotiveVelocity(velocity);
 
     BlockBean departureBlock = dispatcher.getDepartureBlock();
-    BlockBean destinationBlock = dispatcher.getDestinationBlock();
     RouteBean route = dispatcher.getRouteBean();
 
     Logger.trace("Locomotive " + dispatcher.getLocomotiveBean().getName() + " has entered destination " + destinationBlock.getDescription() + " and prepares to stop...");
-
-    //Subscribe the IN sensor
-    inSensorId = dispatcher.getInSensorId();
-
-    //check the inSensorStatus
-    inSensorTriggerred = PersistenceFactory.getService().getSensor(inSensorId).isActive();
-    if (inSensorTriggerred) {
-      Logger.warn("Insensor " + inSensorId + " has been triggered!");
-    }
-
-    dispatcher.getSensorMonitor().subscribe(inSensorId, this);
-    Logger.trace("Destination block " + destinationBlock.getId() + " In SensorId: " + inSensorId);
 
     departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
     destinationBlock.setBlockState(BlockBean.BlockState.INBOUND);

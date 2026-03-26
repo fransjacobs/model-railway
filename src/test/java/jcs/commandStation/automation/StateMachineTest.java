@@ -357,11 +357,11 @@ public class StateMachineTest {
     stateMachine.executeState();
     assertEquals("Braking", stateMachine.getCurrentStateName());
 
-    assertEquals(NS_1631, block2.getLocomotiveId());
-    assertEquals(83, ns1631.getLocomotiveBean().getVelocity());
-
     stateMachine.executeState();
     assertEquals("Braking", stateMachine.getCurrentStateName());
+
+    assertEquals(NS_1631, block2.getLocomotiveId());
+    assertEquals(83, ns1631.getLocomotiveBean().getVelocity());
 
     //Trigger the in sensor
     toggleSensor(ns1631.getInSensorId());
@@ -593,7 +593,6 @@ public class StateMachineTest {
 
     //assertNull(ns1631.getOccupationSensorId());
     //assertNull(ns1631.getExitSensorId());
-
     //Departure
     block4 = ps.getBlockByTileId("bk-4");
     assertEquals(BlockBean.BlockState.FREE, block4.getBlockState());
