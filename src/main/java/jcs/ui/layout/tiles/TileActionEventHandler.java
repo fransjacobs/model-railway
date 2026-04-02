@@ -36,13 +36,14 @@ class TileActionEventHandler extends Thread {
   private final BlockingQueue<JCSActionEvent> eventQueue;
 
   TileActionEventHandler(BlockingQueue<JCSActionEvent> eventQueue) {
+    super("TILE-ACTION-EVENT-HANDLER");
     this.eventQueue = eventQueue;
   }
 
-  @SuppressWarnings("unused")
-  void quit() {
-    this.running = false;
-  }
+//  @SuppressWarnings("unused")
+//  void quit() {
+//    this.running = false;
+//  }
 
   @SuppressWarnings("unused")
   boolean isRunning() {
@@ -52,7 +53,6 @@ class TileActionEventHandler extends Thread {
   @Override
   public void run() {
     running = true;
-    this.setName("TILE-ACTION-EVENT-HANDLER");
 
     Logger.trace("Tile ActionEventHandler Started...");
 

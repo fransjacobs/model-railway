@@ -17,12 +17,14 @@ package jcs.ui.layout.tiles;
 
 import java.awt.Dimension;
 import java.awt.Point;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import jcs.JCS;
 import jcs.commandStation.events.AccessoryEvent;
@@ -50,32 +52,31 @@ import static jcs.ui.layout.tiles.Tile.GRID;
 /**
  * Factory object to create Tiles and cache pointMap
  *
- * @author frans
  */
 public class TileCache {
 
   // Keep the records of the used id sequence number
-  private static int straightIdSeq;
-  private static int crossingIdSeq;
-  private static int curvedIdSeq;
-  private static int switchIdSeq;
-  private static int threeWaySwitchIdSeq;
-  private static int crossIdSeq;
-  private static int signalIdSeq;
-  private static int sensorIdSeq;
-  private static int blockIdSeq;
-  private static int straightDirectionIdSeq;
-  private static int endIdSeq;
+  private static final AtomicInteger straightIdSeq = new AtomicInteger(0);
+  private static final AtomicInteger crossingIdSeq = new AtomicInteger(0);
+  private static final AtomicInteger curvedIdSeq = new AtomicInteger(0);
+  private static final AtomicInteger switchIdSeq = new AtomicInteger(0);
+  private static final AtomicInteger threeWaySwitchIdSeq = new AtomicInteger(0);
+  private static final AtomicInteger crossIdSeq = new AtomicInteger(0);
+  private static final AtomicInteger signalIdSeq = new AtomicInteger(0);
+  private static final AtomicInteger sensorIdSeq = new AtomicInteger(0);
+  private static final AtomicInteger blockIdSeq = new AtomicInteger(0);
+  private static final AtomicInteger straightDirectionIdSeq = new AtomicInteger(0);
+  private static final AtomicInteger endIdSeq = new AtomicInteger(0);
 
-  static final Map<String, Tile> idMap = new HashMap<>();
-  static final Map<Point, Tile> pointMap = new HashMap<>();
-  static final Map<Point, Tile> altPointMap = new HashMap<>();
+  static final Map<String, Tile> idMap = new ConcurrentHashMap<>();
+  static final Map<Point, Tile> pointMap = new ConcurrentHashMap<>();
+  static final Map<Point, Tile> altPointMap = new ConcurrentHashMap<>();
 
   private static final BlockingQueue<JCSActionEvent> eventsQueue = new LinkedBlockingQueue<>();
   private static final TileActionEventHandler actionEventQueueHandler = new TileActionEventHandler(eventsQueue);
 
-  private static int maxX;
-  private static int maxY;
+  private static final AtomicInteger maxX = new AtomicInteger(0);
+  private static final AtomicInteger maxY = new AtomicInteger(0);
 
   static {
     actionEventQueueHandler.start();
@@ -85,56 +86,61 @@ public class TileCache {
   }
 
   public static int getIdSeq(String id) {
-    String idnr = id.substring(3);
-    int idSeq = Integer.parseInt(idnr);
-    return idSeq;
+    if (id == null || id.length() < 4 || id.charAt(2) != '-') {
+      throw new IllegalArgumentException("Invalid tile ID format: " + id);
+    }
+    try {
+      return Integer.parseInt(id.substring(3));
+    } catch (NumberFormatException e) {
+      throw new IllegalArgumentException("Invalid tile ID format: " + id, e);
+    }
   }
 
   private static String nextTileId(TileBean.TileType tileType) {
     switch (tileType) {
       case STRAIGHT -> {
-        straightIdSeq++;
-        return "st-" + straightIdSeq;
+        straightIdSeq.incrementAndGet();
+        return "st-" + straightIdSeq.get();
       }
       case CROSSING -> {
-        crossingIdSeq++;
-        return "cr-" + crossingIdSeq;
+        crossingIdSeq.incrementAndGet();
+        return "cr-" + crossingIdSeq.get();
       }
       case CURVED -> {
-        curvedIdSeq++;
-        return "ct-" + curvedIdSeq;
+        curvedIdSeq.incrementAndGet();
+        return "ct-" + curvedIdSeq.get();
       }
       case SWITCH -> {
-        switchIdSeq++;
-        return "sw-" + switchIdSeq;
+        switchIdSeq.incrementAndGet();
+        return "sw-" + switchIdSeq.get();
       }
       case THREEWAY -> {
-        threeWaySwitchIdSeq++;
-        return "tw-" + threeWaySwitchIdSeq;
+        threeWaySwitchIdSeq.incrementAndGet();
+        return "tw-" + threeWaySwitchIdSeq.get();
       }
       case CROSS -> {
-        crossIdSeq++;
-        return "cs-" + crossIdSeq;
+        crossIdSeq.incrementAndGet();
+        return "cs-" + crossIdSeq.get();
       }
       case SIGNAL -> {
-        signalIdSeq++;
-        return "si-" + signalIdSeq;
+        signalIdSeq.incrementAndGet();
+        return "si-" + signalIdSeq.get();
       }
       case SENSOR -> {
-        sensorIdSeq++;
-        return "se-" + sensorIdSeq;
+        sensorIdSeq.incrementAndGet();
+        return "se-" + sensorIdSeq.get();
       }
       case BLOCK -> {
-        blockIdSeq++;
-        return "bk-" + blockIdSeq;
+        blockIdSeq.incrementAndGet();
+        return "bk-" + blockIdSeq.get();
       }
       case STRAIGHT_DIR -> {
-        straightDirectionIdSeq++;
-        return "sd-" + straightDirectionIdSeq;
+        straightDirectionIdSeq.incrementAndGet();
+        return "sd-" + straightDirectionIdSeq.get();
       }
       case END -> {
-        endIdSeq++;
-        return "et-" + endIdSeq;
+        endIdSeq.incrementAndGet();
+        return "et-" + endIdSeq.get();
       }
       default -> {
         Logger.warn("Unknown Tile Type " + tileType);
@@ -153,29 +159,31 @@ public class TileCache {
 
   public static Tile createTile(TileBean tileBean, boolean showValues) {
     if (tileBean == null) {
-      return null;
+      throw new IllegalArgumentException("TileBean cannot be null");
     }
 
     TileBean.TileType tileType = tileBean.getTileType();
     Tile tile = null;
+
     switch (tileType) {
       case STRAIGHT -> {
         tile = new Straight(tileBean);
-        straightIdSeq = maxIdSeq(straightIdSeq, getIdSeq(tileBean.getId()));
+        straightIdSeq.set(maxIdSeq(straightIdSeq.get(), getIdSeq(tileBean.getId())));
       }
       case CROSSING -> {
         tile = new Crossing(tileBean);
-        crossingIdSeq = maxIdSeq(crossingIdSeq, getIdSeq(tileBean.getId()));
+        crossingIdSeq.set(maxIdSeq(crossingIdSeq.get(), getIdSeq(tileBean.getId())));
+
       }
       case CURVED -> {
         tile = new Curved(tileBean);
-        curvedIdSeq = maxIdSeq(curvedIdSeq, getIdSeq(tileBean.getId()));
+        curvedIdSeq.set(maxIdSeq(curvedIdSeq.get(), getIdSeq(tileBean.getId())));
       }
       case SWITCH -> {
         tile = new Switch(tileBean);
         tile.setAccessoryBean(tileBean.getAccessoryBean());
 
-        switchIdSeq = maxIdSeq(switchIdSeq, getIdSeq(tileBean.getId()));
+        switchIdSeq.set(maxIdSeq(switchIdSeq.get(), getIdSeq(tileBean.getId())));
         if (showValues && tileBean.getAccessoryBean() != null) {
           tile.setAccessoryValue((tileBean.getAccessoryBean()).getAccessoryValue());
         }
@@ -189,7 +197,7 @@ public class TileCache {
         tile = new ThreeWaySwitch(tileBean);
         tile.setAccessoryBean(tileBean.getAccessoryBean());
 
-        threeWaySwitchIdSeq = maxIdSeq(threeWaySwitchIdSeq, getIdSeq(tileBean.getId()));
+        threeWaySwitchIdSeq.set(maxIdSeq(threeWaySwitchIdSeq.get(), getIdSeq(tileBean.getId())));
         if (showValues && tileBean.getAccessoryBean() != null) {
           tile.setAccessoryValue((tileBean.getAccessoryBean()).getAccessoryValue());
         }
@@ -203,7 +211,7 @@ public class TileCache {
         tile = new Cross(tileBean);
         tile.setAccessoryBean(tileBean.getAccessoryBean());
 
-        crossIdSeq = maxIdSeq(crossIdSeq, getIdSeq(tileBean.getId()));
+        crossIdSeq.set(maxIdSeq(crossIdSeq.get(), getIdSeq(tileBean.getId())));
         if (showValues && tileBean.getAccessoryBean() != null) {
           tile.setAccessoryValue((tileBean.getAccessoryBean()).getAccessoryValue());
         }
@@ -218,7 +226,7 @@ public class TileCache {
         tile = new Signal(tileBean);
         tile.setAccessoryBean(tileBean.getAccessoryBean());
 
-        signalIdSeq = maxIdSeq(signalIdSeq, getIdSeq(tileBean.getId()));
+        signalIdSeq.set(maxIdSeq(signalIdSeq.get(), getIdSeq(tileBean.getId())));
         if (showValues && tileBean.getAccessoryBean() != null) {
           ((Signal) tile).setSignalValue(((AccessoryBean) tileBean.getAccessoryBean()).getSignalValue());
         }
@@ -231,7 +239,7 @@ public class TileCache {
       case SENSOR -> {
         tile = new Sensor(tileBean);
         tile.setSensorBean(tileBean.getSensorBean());
-        sensorIdSeq = maxIdSeq(sensorIdSeq, getIdSeq(tileBean.getId()));
+        sensorIdSeq.set(maxIdSeq(sensorIdSeq.get(), getIdSeq(tileBean.getId())));
 
         if (showValues && tileBean.getSensorBean() != null) {
           ((Sensor) tile).setActive(((SensorBean) tileBean.getSensorBean()).isActive());
@@ -245,15 +253,15 @@ public class TileCache {
       case BLOCK -> {
         tile = new Block(tileBean);
         tile.setBlockBean(tileBean.getBlockBean());
-        blockIdSeq = maxIdSeq(blockIdSeq, getIdSeq(tileBean.getId()));
+        blockIdSeq.set(maxIdSeq(blockIdSeq.get(), getIdSeq(tileBean.getId())));
       }
       case STRAIGHT_DIR -> {
         tile = new StraightDirection(tileBean);
-        straightDirectionIdSeq = maxIdSeq(straightDirectionIdSeq, getIdSeq(tileBean.getId()));
+        straightDirectionIdSeq.set(maxIdSeq(straightDirectionIdSeq.get(), getIdSeq(tileBean.getId())));
       }
       case END -> {
         tile = new End(tileBean);
-        endIdSeq = maxIdSeq(endIdSeq, getIdSeq(tileBean.getId()));
+        endIdSeq.set(maxIdSeq(endIdSeq.get(), getIdSeq(tileBean.getId())));
       }
       default ->
         Logger.warn("Unknown Tile Type " + tileType);
@@ -288,12 +296,10 @@ public class TileCache {
   public static Tile createTile(TileBean.TileType tileType, TileBean.Orientation orientation, TileBean.Direction direction, Point center) {
     Tile tile = null;
     switch (tileType) {
-      case STRAIGHT -> {
+      case STRAIGHT ->
         tile = new Straight(orientation, center);
-      }
-      case CROSSING -> {
+      case CROSSING ->
         tile = new Crossing(orientation, center);
-      }
       case CURVED ->
         tile = new Curved(orientation, center);
       case SWITCH ->
@@ -326,37 +332,37 @@ public class TileCache {
   public static void rollback(Tile tile) {
     switch (tile.tileType) {
       case STRAIGHT -> {
-        straightIdSeq--;
+        straightIdSeq.decrementAndGet();
       }
       case CROSSING -> {
-        crossingIdSeq--;
+        crossingIdSeq.decrementAndGet();
       }
       case CURVED -> {
-        curvedIdSeq--;
+        curvedIdSeq.decrementAndGet();
       }
       case SWITCH -> {
-        switchIdSeq--;
+        switchIdSeq.decrementAndGet();
       }
       case THREEWAY -> {
-        threeWaySwitchIdSeq--;
+        threeWaySwitchIdSeq.decrementAndGet();
       }
       case CROSS -> {
-        crossIdSeq--;
+        crossIdSeq.decrementAndGet();
       }
       case SIGNAL -> {
-        signalIdSeq--;
+        signalIdSeq.decrementAndGet();
       }
       case SENSOR -> {
-        sensorIdSeq--;
+        sensorIdSeq.decrementAndGet();
       }
       case BLOCK -> {
-        blockIdSeq--;
+        blockIdSeq.decrementAndGet();
       }
       case STRAIGHT_DIR -> {
-        straightDirectionIdSeq--;
+        straightDirectionIdSeq.decrementAndGet();
       }
       case END -> {
-        endIdSeq--;
+        endIdSeq.decrementAndGet();
       }
     }
   }
@@ -371,17 +377,17 @@ public class TileCache {
     pointMap.clear();
     altPointMap.clear();
 
-    straightIdSeq = 0;
-    crossingIdSeq = 0;
-    curvedIdSeq = 0;
-    switchIdSeq = 0;
-    threeWaySwitchIdSeq = 0;
-    crossIdSeq = 0;
-    signalIdSeq = 0;
-    sensorIdSeq = 0;
-    blockIdSeq = 0;
-    straightDirectionIdSeq = 0;
-    endIdSeq = 0;
+    straightIdSeq.set(0);
+    crossingIdSeq.set(0);
+    curvedIdSeq.set(0);
+    switchIdSeq.set(0);
+    threeWaySwitchIdSeq.set(0);
+    crossIdSeq.set(0);
+    signalIdSeq.set(0);
+    sensorIdSeq.set(0);
+    blockIdSeq.set(0);
+    straightDirectionIdSeq.set(0);
+    endIdSeq.set(0);
   }
 
   public static List<Tile> loadTiles() {
@@ -405,8 +411,8 @@ public class TileCache {
     altPointMap.clear();
     pointMap.clear();
     idMap.clear();
-    maxX = 0;
-    maxY = 0;
+    maxX.set(0);
+    maxY.set(0);
 
     List<TileBean> tileBeans = PersistenceFactory.getService().getTileBeans();
 
@@ -429,21 +435,21 @@ public class TileCache {
   }
 
   public static List<Tile> getTiles() {
-    return idMap.values().stream().collect(Collectors.toList());
+    return new ArrayList<>(idMap.values());
   }
 
   static void calculateMaxCoordinates(int tileX, int tileY) {
-    if (maxX < tileX) {
-      maxX = tileX;
+    if (maxX.get() < tileX) {
+      maxX.set(tileX);
     }
-    if (maxY < tileY) {
-      maxY = tileY;
+    if (maxY.get() < tileY) {
+      maxY.set(tileY);
     }
   }
 
   public static Dimension getMinCanvasSize() {
-    int w = maxX + GRID;
-    int h = maxY + GRID;
+    int w = maxX.get() + GRID;
+    int h = maxY.get() + GRID;
     return new Dimension(w, h);
   }
 
@@ -495,6 +501,15 @@ public class TileCache {
     if (tile == null) {
       throw new IllegalArgumentException("Tile cannot be null");
     }
+
+    if (tile instanceof AccessoryEventListener && tile.getTileBean() != null && tile.getTileBean().getAccessoryId() != null) {
+      JCS.getJcsCommandStation().removeAccessoryEventListener(tile.getTileBean().getAccessoryId(), (AccessoryEventListener) tile);
+    }
+
+    if (tile instanceof SensorEventListener && tile.getTileBean() != null && tile.getTileBean().getSensorId() != null) {
+      JCS.getJcsCommandStation().removeSensorEventListener(tile.getTileBean().getSensorId(), (SensorEventListener) tile);
+    }
+
     if (idMap.containsKey(tile.id)) {
       Set<Point> rps = tile.getAltPoints();
       //Also remove alt pointIds
@@ -637,18 +652,10 @@ public class TileCache {
 
   public static void enqueTileAction(AccessoryEvent accessoryEvent) {
     eventsQueue.offer(new ActionEventWrapper(accessoryEvent));
-
-    synchronized (TileCache.actionEventQueueHandler) {
-      actionEventQueueHandler.notifyAll();
-    }
   }
 
   public static void enqueTileAction(SensorEvent sensorEvent) {
     eventsQueue.offer(new ActionEventWrapper(sensorEvent));
-
-    synchronized (TileCache.actionEventQueueHandler) {
-      actionEventQueueHandler.notifyAll();
-    }
   }
 
   public static void repaintTile(Tile tile) {
