@@ -59,6 +59,7 @@ import javax.swing.WindowConstants;
 import javax.swing.border.LineBorder;
 import jcs.JCS;
 import jcs.commandStation.automation.RailController;
+import jcs.commandStation.automation.RailControllerStatusListener;
 import jcs.commandStation.events.ConnectionEvent;
 import jcs.commandStation.events.PowerEvent;
 import jcs.commandStation.entities.InfoBean;
@@ -87,7 +88,7 @@ import jcs.util.Ping;
 /**
  * JCS Main Frame
  */
-public class JCSFrame extends JFrame implements UICallback, ConnectionEventListener, PowerEventListener {
+public class JCSFrame extends JFrame implements UICallback, ConnectionEventListener, PowerEventListener, RailControllerStatusListener {
 
   private static final long serialVersionUID = -5800900684173242844L;
 
@@ -151,6 +152,9 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
       //Show the default panel
       showOverviewPanel();
       editMode = false;
+
+      //Register the main fram as listener for RailwayController statusses
+      RailController.getInstance().addStatusListener(this);
     }
   }
 
@@ -601,7 +605,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     filler4.setName("filler4"); // NOI18N
     jcsToolBar.add(filler4);
 
-    autoPilotBtn.setIcon(new ImageIcon(getClass().getResource("/media/pilot.png"))); // NOI18N
+    autoPilotBtn.setIcon(new ImageIcon(getClass().getResource("/media/cruise-control-on-black.png"))); // NOI18N
     autoPilotBtn.setToolTipText("En- or Disable automatic driving");
     autoPilotBtn.setBorder(BorderFactory.createLineBorder(new Color(204, 204, 204)));
     autoPilotBtn.setDoubleBuffered(true);
@@ -612,7 +616,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     autoPilotBtn.setMinimumSize(new Dimension(40, 40));
     autoPilotBtn.setName("autoPilotBtn"); // NOI18N
     autoPilotBtn.setPreferredSize(new Dimension(40, 40));
-    autoPilotBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/pilot-green.png"))); // NOI18N
+    autoPilotBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/cruise-control-on-yellow.png"))); // NOI18N
     autoPilotBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
     autoPilotBtn.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
@@ -1172,17 +1176,51 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
 
   private void startAutopilot() {
     if (autoPilotBtn.isSelected()) {
-      startAllLocsBtn.setEnabled(true);
-      dispatcherStatusPanel.showDispatcherTab();
+      //startAllLocsBtn.setEnabled(true);
+      //dispatcherStatusPanel.showDispatcherTab();
       // startAllLocsBtn.setIcon(new ImageIcon(getClass().getResource("/media/arrowhead-right-gn.png")));
     } else {
-      startAllLocsBtn.setEnabled(false);
-      dispatcherStatusPanel.showLocomotiveTab();
+      //startAllLocsBtn.setEnabled(false);
+      //dispatcherStatusPanel.showLocomotiveTab();
     }
 
     //AutoPilot.runAutoPilot(autoPilotBtn.isSelected());
     RailController.getInstance().enableAutomode(autoPilotBtn.isSelected());
   }
+
+  @Override
+  public void onControllerStatusChange(String status) {
+    Logger.trace(status);
+
+    if (status == null) {
+      return;
+    }
+
+    switch (status) {
+      case RailController.PENDING -> {
+        autoPilotBtn.setEnabled(false);
+      }
+      case RailController.STARTED -> {
+        autoPilotBtn.setEnabled(true);
+        startAllLocsBtn.setEnabled(true);
+        dispatcherStatusPanel.showDispatcherTab();
+        autoPilotBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/cruise-control-on-green.png")));
+        autoPilotBtn.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/media/cruise-control-on-green.png")));
+      }
+      case RailController.STOPPING -> {
+        autoPilotBtn.setEnabled(false);
+        startAllLocsBtn.setEnabled(false);
+        autoPilotBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/cruise-control-on-red.png")));
+      }
+      case RailController.STOPPED -> {
+        autoPilotBtn.setEnabled(true);
+        dispatcherStatusPanel.showLocomotiveTab();
+        autoPilotBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/cruise-control-on-black.png")));
+        autoPilotBtn.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/media/cruise-control-on-yellow.png")));
+      }
+    }
+  }
+
 
   private void startAllLocsBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startAllLocsBtnActionPerformed
     startAllLocomotives();

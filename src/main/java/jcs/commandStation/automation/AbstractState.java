@@ -35,7 +35,6 @@ abstract class AbstractState {
    */
   void onEnter(Dispatcher dispatcher) {
     this.dispatcher = dispatcher;
-    //Logger.trace("Entering " + name + " state...");
   }
 
   /**

@@ -874,13 +874,13 @@ public class JCSCommandStation {
 
     @Override
     public void onSensorChange(SensorEvent sensorEvent) {
-      if ("true".equals(System.getProperty("state.machine.stepTest", "false"))) {
-        Logger.warn("Handle sensorevent inline...");
-        handleSensorEvent(sensorEvent);
-      } else {
-        Logger.trace("Enqueued SensorEvent ID: " + sensorEvent.getSensorId() + " Active: " + sensorEvent.isActive());
-        commandStation.sensorEventQueue.offer(sensorEvent);
-      }
+      //if ("true".equals(System.getProperty("state.machine.stepTest", "false"))) {
+      //  Logger.warn("Handle sensorevent inline...");
+      //  handleSensorEvent(sensorEvent);
+      //} else {
+      Logger.trace("Enqueued SensorEvent ID: " + sensorEvent.getSensorId() + " Active: " + sensorEvent.isActive());
+      commandStation.sensorEventQueue.offer(sensorEvent);
+      //}
     }
   }
 
@@ -900,7 +900,7 @@ public class JCSCommandStation {
       }
 
       sb.setName(dbsb.getName());
-      //make sure the previous vale is set by settinge the curren and the new one
+      //make sure the previous vale is set by setting the current and the new one
       sb.setActive(dbsb.isActive());
       //Sensor bean will set the prev value to indicate a (real) sensor change
       sb.setActive(newValue);

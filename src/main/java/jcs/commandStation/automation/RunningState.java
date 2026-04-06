@@ -51,8 +51,7 @@ class RunningState extends AbstractState implements SensorEventCallback {
     //Register the enter Sensor, which will trigger switch to the arrival state.
     enterSensorId = dispatcher.getEnterSensorId();
     dispatcher.getSensorMonitor().subscribe(enterSensorId, this);
-
-    Logger.trace("Waiting for the enter event from SensorId: " + enterSensorId + " Running loco: " + dispatcher.getLocomotiveBean().getName() + " Direction: " + dispatcher.getLocomotiveBean().getDirection().getDirection() + " current velocity: " + dispatcher.getLocomotiveBean().getVelocity());
+    Logger.debug("Waiting for Enter event from SensorId: " + enterSensorId + " Running: " + dispatcher.getName() + " Direction: " + dispatcher.getLocomotiveBean().getDirection().getDirection() + " Route: " + dispatcher.getRouteBean().getId() + " Speed: " + dispatcher.getLocomotiveBean().getVelocity());
   }
 
   @Override
@@ -85,8 +84,6 @@ class RunningState extends AbstractState implements SensorEventCallback {
         Logger.trace("Enter Event from Sensor " + event.getSensorId() + " for " + dispatcher.getName());
         dispatcher.wakeup();
       }
-    } else {
-      Logger.trace("Event for " + event.getSensorId() + " not for this state...");
     }
   }
 }

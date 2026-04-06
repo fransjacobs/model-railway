@@ -48,13 +48,9 @@ class BrakingState extends AbstractState implements SensorEventCallback {
     //Subscribe the IN sensor
     inSensorId = dispatcher.getInSensorId();
     dispatcher.getSensorMonitor().subscribe(inSensorId, this);
-    Logger.trace("Destination block " + destinationBlock.getId() + " In SensorId: " + inSensorId);
 
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
-    //Slowdown
-    Logger.trace("Slowdown " + locomotive.getName() + "...");
-
-    //Speed to ~10% or speed 1
+    //Slowdown Speed to ~10% or speed 1
     Integer speed1 = locomotive.getSpeedOne();
     if (speed1 == null || speed1 == 0) {
       speed1 = 10;
@@ -67,8 +63,6 @@ class BrakingState extends AbstractState implements SensorEventCallback {
     BlockBean departureBlock = dispatcher.getDepartureBlock();
     RouteBean route = dispatcher.getRouteBean();
 
-    Logger.trace("Locomotive " + dispatcher.getLocomotiveBean().getName() + " has entered destination " + destinationBlock.getDescription() + " and prepares to stop...");
-
     departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
     destinationBlock.setBlockState(BlockBean.BlockState.INBOUND);
 
@@ -78,6 +72,8 @@ class BrakingState extends AbstractState implements SensorEventCallback {
     dispatcher.showBlockState(departureBlock);
     dispatcher.getRouteManager().showRoute(route, Color.magenta);
     dispatcher.showBlockState(destinationBlock);
+
+    Logger.debug("Slowdown: " + dispatcher.getName() + " in " + destinationBlock.getDescription() + " Direction: " + dispatcher.getLocomotiveBean().getDirection().getDirection() + " Route: " + dispatcher.getRouteBean().getId() + " Speed: " + dispatcher.getLocomotiveBean().getVelocity() + " Now waiting for In sensorId: " + inSensorId + "...");
   }
 
   @Override
@@ -108,9 +104,7 @@ class BrakingState extends AbstractState implements SensorEventCallback {
         Logger.trace("In Event from Sensor " + event.getSensorId() + " for " + dispatcher.getName());
         dispatcher.wakeup();
       }
-    } else {
-      Logger.trace("Event for " + event.getSensorId() + " not for this state...");
-    }
+    } 
   }
 
 }

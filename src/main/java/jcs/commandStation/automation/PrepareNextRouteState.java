@@ -109,6 +109,8 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
   AbstractState execute() {
     BlockBean destinationBlock = dispatcher.getDestinationBlock();
 
+    Logger.debug((nextRouteFound ? "Next" : "No") + " Route found for: " + dispatcher.getName() + " in " + destinationBlock.getDescription() + " Direction: " + dispatcher.getLocomotiveBean().getDirection().getDirection() + " Route: " + dispatcher.getRouteBean().getId() + " Speed: " + dispatcher.getLocomotiveBean().getVelocity() + " Listening for In sensorId: " + inSensorId + "...");
+
     if (nextRouteFound) {
       //Try to reserve the next route
       int permits = RailController.avialablePermits();
@@ -142,12 +144,12 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
       }
     }
 
-    Logger.trace("Locomotive " + dispatcher.getName() + " has entered destination " + destinationBlock.getDescription() + " and " + (nextRouteAvaliable ? "will continue" : "starts braking") + "...");
+    Logger.debug("Locomotive: " + dispatcher.getName() + " in " + destinationBlock.getDescription() + " and " + (nextRouteAvaliable ? "will continue" : "starts braking") + " Current Route: " + dispatcher.getRouteBean().getId() + " Speed: " + dispatcher.getLocomotiveBean().getVelocity() + "...");
 
-    if (nextRouteAvaliable) {
-      return new PassingThroughState(inSensorTriggered);
-    } else if (inSensorTriggered) {
+    if (inSensorTriggered) {
       return new ArrivedState();
+    } else if (nextRouteAvaliable) {
+      return new PassingThroughState(inSensorTriggered);
     } else {
       return new BrakingState(inSensorTriggered);
     }
@@ -171,7 +173,7 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
         //Stop the locomotive!
         dispatcher.changeLocomotiveVelocity(0);
 
-        Logger.trace("In Event from Sensor " + event.getSensorId() + " for " + dispatcher.getName() + " during route preparation!");
+        Logger.debug("In Event from Sensor " + event.getSensorId() + " for " + dispatcher.getName() + " during route preparation!");
         nextRouteFound = false;
         dispatcher.wakeup();
       }

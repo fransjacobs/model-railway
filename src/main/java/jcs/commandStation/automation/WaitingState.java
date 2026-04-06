@@ -46,12 +46,11 @@ class WaitingState extends AbstractState {
     // Calculate wait time
     BlockBean blockBean = dispatcher.getDepartureBlock();
     LocomotiveBean locomotiveBean = dispatcher.getLocomotiveBean();
-    Logger.debug("Locomotive " + locomotiveBean.getName() + " Direction: " + locomotiveBean.getDirection().getDirection() + " start waiting in block " + blockBean.getId() + " logicalDir: " + blockBean.getLogicalDirection() + " Arrived at " + blockBean.getArrivalSuffix());
+    Logger.debug("Locomotive " + locomotiveBean.getName() + " Direction: " + locomotiveBean.getDirection().getDirection() + " start waiting in block " + blockBean.getId() + " logicalDir: " + blockBean.getLogicalDirection() + " Arrived at " + blockBean.getArrivalSuffix() + " side.");
 
     long waitTime = calculateWaitTime(blockBean);
 
-    Logger.debug("Waiting for " + waitTime + " s. Block Random " + blockBean.isRandomWait()
-            + " Block max: " + blockBean.getMaxWaitTime());
+    Logger.trace("Waiting for " + waitTime + " s. Block Random " + blockBean.isRandomWait() + " Block max: " + blockBean.getMaxWaitTime());
 
     if (waitTime > 0) {
       // Initialize scheduler
@@ -81,13 +80,17 @@ class WaitingState extends AbstractState {
         if (remainingTime < 0) {
           waitCompleted = true;
           stopScheduler();
+          Logger.trace(dispatcher.getName() + " waittime of " + waitTime + " completed...");
+          dispatcher.wakeup();
         }
       }, 0, 1, TimeUnit.SECONDS); // Initial delay 0, period 1 second
 
+      Logger.trace(dispatcher.getName() + " wakeup (1)...");
       dispatcher.wakeup();
 
     } else {
       waitCompleted = true;
+      Logger.trace(dispatcher.getName() + " wakeup (2)...");
       dispatcher.wakeup();
     }
   }
@@ -170,7 +173,9 @@ class WaitingState extends AbstractState {
     //then the block waittime
     boolean alwayStop = blockBean.isAlwaysStop();
     if (!alwayStop) {
-      waitTime = Integer.getInteger("default.no.stop.waittime", 1);
+      //waitTime = Integer.getInteger("default.no.stop.waittime", 1);
+      // Use a shorter time
+      waitTime = waitTime /2;
     }
 
     return waitTime;

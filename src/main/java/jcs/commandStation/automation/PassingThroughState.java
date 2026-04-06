@@ -52,10 +52,6 @@ class PassingThroughState extends AbstractState implements SensorEventCallback {
     BlockBean destinationBlock = dispatcher.getDestinationBlock();
     RouteBean route = dispatcher.getRouteBean();
 
-    Logger.trace("Locomotive " + dispatcher.getLocomotiveBean().getName() + " has entered destination " + destinationBlock.getDescription() + " will continue at current speed...");
-
-    Logger.trace("Destination block " + destinationBlock.getId() + " In SensorId: " + inSensorId);
-
     departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
     destinationBlock.setBlockState(BlockBean.BlockState.INBOUND);
 
@@ -65,6 +61,9 @@ class PassingThroughState extends AbstractState implements SensorEventCallback {
     dispatcher.showBlockState(departureBlock);
     dispatcher.getRouteManager().showRoute(route, Color.magenta);
     dispatcher.showBlockState(destinationBlock);
+
+    Logger.debug("Locomotive: " + dispatcher.getName() + " in " + destinationBlock.getDescription() + " Current Route: " + dispatcher.getRouteBean().getId() + " Next Route: " + dispatcher.getNextRouteBean().getId() + " Speed: " + dispatcher.getLocomotiveBean().getVelocity() + "waiting for n SensorId: " + inSensorId + "...");
+
   }
 
   @Override
@@ -95,8 +94,6 @@ class PassingThroughState extends AbstractState implements SensorEventCallback {
         Logger.trace("In Event from Sensor " + event.getSensorId() + " for " + dispatcher.getName());
         dispatcher.wakeup();
       }
-    } else {
-      Logger.trace("Event for " + event.getSensorId() + " not for this state...");
     }
   }
 

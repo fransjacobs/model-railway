@@ -46,17 +46,15 @@ class ArrivedState extends AbstractState {
   void onEnter(Dispatcher dispatcher) {
     super.onEnter(dispatcher);
 
-    LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
-    //BlockBean departureBlock = dispatcher.getDepartureBlock();
     BlockBean destinationBlock = dispatcher.getDestinationBlock();
     alwaysStop = destinationBlock.isAlwaysStop();
 
-    Logger.trace("Locomotive " + locomotive.getName() + " has arrived in " + destinationBlock.getDescription() + " and " + (alwaysStop ? "must stop" : "may continue"));
+    Logger.trace("Locomotive " + dispatcher.getName() + " has arrived in " + destinationBlock.getDescription() + " and " + (alwaysStop ? "must stop" : "may continue"));
 
     if (alwaysStop || dispatcher.getNextRouteBean() == null) {
       //Stop the locomotive
       dispatcher.changeLocomotiveVelocity(0);
-      Logger.trace((dispatcher.getNextRouteBean() == null ? "Next route not yet available " : "") + "Locomotive " + locomotive.getName() + " is stopped...");
+      Logger.trace((dispatcher.getNextRouteBean() == null ? "Next route not yet available " : "") + "Locomotive " + dispatcher.getName() + " is stopped...");
     }
   }
 
@@ -116,14 +114,10 @@ class ArrivedState extends AbstractState {
       route = dispatcher.getNextRouteBean();
       dispatcher.setRouteBean(route);
       // New Departure and destination block should be set...
-      BlockBean altDepartureBlock = destinationBlock;
-
       departureBlock = dispatcher.getDepartureBlock();
       destinationBlock = dispatcher.getDestinationBlock();
 
       Logger.trace("New departure: " + departureBlock.getId() + " new destination: " + destinationBlock.getId());
-
-      Logger.trace("####Check-> " + departureBlock.equals(altDepartureBlock));
 
       String arrivalSuffix = route.getToSuffix();
       String departureSuffix = route.getFromSuffix();
@@ -175,6 +169,8 @@ class ArrivedState extends AbstractState {
     //Check to which next state we can switch
     boolean automodeInActive = !dispatcher.getRailwayController().isAutoModeActive();
     automodeInActive = automodeInActive && !dispatcher.isLocomotiveStarted();
+
+    Logger.debug("Locomotive: " + locomotive.getName() + " Arrived in " + destinationBlock.getDescription() + " next Route " + (nextRoutePrepared ? "is" : "is not") + " prepared. Direction: " + locomotive.getDirection() + (dispatcher.getRouteBean() != null ? " Route: " + dispatcher.getRouteBean().getId() : "") + " Speed: " + locomotive.getVelocity() + "...");
 
     if (alwaysStop || automodeInActive || !nextRoutePrepared) {
       return new WaitingState();

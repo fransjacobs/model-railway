@@ -124,16 +124,55 @@ class StateMachine {
         Thread.currentThread().interrupt();
       }
     }
+    Logger.trace(dispatcher.getName() + " StateMachineRunner stopped in state " + currentState.getName());
     stateMachineRunner = null;
 
     currentState.onExit();
+
+    //Remove listeners is still registered....
+    Integer enterSensorId = dispatcher.getEnterSensorId();
+    Integer inSensorId = dispatcher.getInSensorId();
+    Integer occupationSensorId = dispatcher.getOccupationSensorId();
+    Integer exitSensorId = dispatcher.getExitSensorId();
+
+    if (enterSensorId != null && dispatcher.getSensorMonitor().isSensorRegisteredWithCallback(enterSensorId)) {
+      Logger.trace(dispatcher.getName() + " Unsubscribe enterSensorId " + enterSensorId);
+      if (currentState instanceof SensorEventCallback sensorEventCallback) {
+        dispatcher.getSensorMonitor().unsubscribe(enterSensorId, sensorEventCallback);
+      } else {
+        dispatcher.getSensorMonitor().unsubscribe(enterSensorId, null);
+      }
+    }
+
+    if (inSensorId != null && dispatcher.getSensorMonitor().isSensorRegisteredWithCallback(inSensorId)) {
+      Logger.trace(dispatcher.getName() + " Unsubscribe inSensorId " + inSensorId);
+      if (currentState instanceof SensorEventCallback sensorEventCallback) {
+        dispatcher.getSensorMonitor().unsubscribe(inSensorId, sensorEventCallback);
+      } else {
+        dispatcher.getSensorMonitor().unsubscribe(inSensorId, null);
+      }
+    }
+
+    //The occupationSensorId and exitSensorId might be subscribe
+    if (occupationSensorId != null && dispatcher.getSensorMonitor().isSensorRegisteredWithoutCallback(occupationSensorId)) {
+      Logger.trace(dispatcher.getName() + " Unsubscribe occupationSensorId " + occupationSensorId);
+      dispatcher.getSensorMonitor().unsubscribe(occupationSensorId, null);
+    }
+
+    if (exitSensorId != null && dispatcher.getSensorMonitor().isSensorRegisteredWithoutCallback(exitSensorId)) {
+      Logger.trace(dispatcher.getName() + " Unsubscribe exitSensorId " + exitSensorId);
+      dispatcher.getSensorMonitor().unsubscribe(exitSensorId, null);
+    }
+
+    // Stop dispatcher and set state to Idle
+    dispatcher.stopLocomotive();
     currentState = new IdleState();
     currentState.onEnter(dispatcher);
-    dispatcher.stopLocomotive();
 
     dispatcher.setEnterSensorId(null);
     dispatcher.setInSensorId(null);
     dispatcher.setExitSensorId(null);
+    dispatcher.setOccupationSensorId(null);
 
     BlockBean destination = dispatcher.getDestinationBlock();
     if (destination != null) {
@@ -148,6 +187,13 @@ class StateMachine {
     BlockBean departure = dispatcher.getDepartureBlock();
     departure.setBlockState(BlockBean.BlockState.OCCUPIED);
 
+    RouteBean nextRoute = dispatcher.getNextRouteBean();
+    if (nextRoute != null) {
+      nextRoute.setLocked(false);
+      PersistenceFactory.getService().persist(nextRoute);
+      dispatcher.resetRoute(nextRoute);
+    }
+
     RouteBean route = dispatcher.getRouteBean();
     if (route != null) {
       route.setLocked(false);
@@ -156,21 +202,14 @@ class StateMachine {
       dispatcher.resetRoute(route);
     }
 
-    RouteBean nextRoute = dispatcher.getNextRouteBean();
-    if (nextRoute != null) {
-      nextRoute.setLocked(false);
-      PersistenceFactory.getService().persist(nextRoute);
-      dispatcher.resetRoute(nextRoute);
-    }
-
     PersistenceFactory.getService().persist(departure);
     dispatcher.showBlockState(departure);
 
-    dispatcher.setRouteBean(null);
     dispatcher.setNextRouteBean(null);
+    dispatcher.setRouteBean(null);
     dispatcher.setDestinationBlockId(null);
 
-    Logger.trace(dispatcher.getName() + " has been Reset");
+    Logger.debug(dispatcher.getName() + " has been Reset");
   }
 
   boolean executeState() {

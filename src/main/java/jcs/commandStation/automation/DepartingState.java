@@ -40,7 +40,7 @@ class DepartingState extends AbstractState {
     departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
     destinationBlock.setBlockState(BlockBean.BlockState.LOCKED);
 
-    Logger.trace("Starting " + locomotive.getName() + " Direction " + locomotive.getDirection());
+    Logger.debug("Starting: " + locomotive.getName() + " Direction: " + locomotive.getDirection()+" Route: "+dispatcher.getRouteBean().getId());
 
     //Speed to ~75% or speed 3
     Integer speed3 = locomotive.getSpeedThree();
@@ -54,7 +54,6 @@ class DepartingState extends AbstractState {
 
     locomotive.setVelocity((int) velocity);
     departureBlock.setLocomotive(locomotive);
-    //departureBlock.setLogicalDirection(locomotive.getDirection().getDirection());
     PersistenceFactory.getService().persist(departureBlock);
     PersistenceFactory.getService().persist(destinationBlock);
 

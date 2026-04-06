@@ -74,13 +74,25 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
   public void subscribe(Integer sensorId, SensorEventCallback callback) {
     subscribers.computeIfAbsent(sensorId, k -> new CopyOnWriteArrayList<>()).add(callback);
 
-    //Check if the sensor is triggered before subscription
-    SensorBean sb = PersistenceFactory.getService().getSensor(sensorId);
-    if (sb.isActive()) {
-      SensorEvent se = new SensorEvent(sb);
-      Logger.warn("Sensor {} already active at subscription time, firing callback", sensorId);
-      callback.onEvent(se);
+    if (Logger.isTraceEnabled() && callback instanceof Dispatcher d) {
+      String sensorType;
+      if (sensorId.equals(d.getEnterSensorId())) {
+        sensorType = "enter";
+      } else if (sensorId.equals(d.getInSensorId())) {
+        sensorType = "in";
+      } else {
+        sensorType = "other";
+      }
+      Logger.trace("Subscribed " + sensorType + " sensorId: " + sensorId + " for " + d.getName());
     }
+
+//    //Check if the sensor is triggered before subscription
+//    SensorBean sb = PersistenceFactory.getService().getSensor(sensorId);
+//    if (sb.isActive()) {
+//      SensorEvent se = new SensorEvent(sb);
+//      Logger.warn("Sensor {} already active at subscription time, firing callback", sensorId);
+//      callback.onEvent(se);
+//    }
   }
 
   public void subscribeWithoutCallback(Integer sensorId) {
@@ -110,6 +122,19 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
       if (callbacks.isEmpty()) {
         subscribers.remove(sensorId);
       }
+
+      if (Logger.isTraceEnabled() && callback instanceof Dispatcher d) {
+        String sensorType;
+        if (sensorId.equals(d.getEnterSensorId())) {
+          sensorType = "enter";
+        } else if (sensorId.equals(d.getInSensorId())) {
+          sensorType = "in";
+        } else {
+          sensorType = "other";
+        }
+        Logger.trace("Unsubscribed " + sensorType + " sensorId: " + sensorId + " for " + d.getName());
+      }
+
     } else {
       //remove all
       subscribers.remove(sensorId);
@@ -172,10 +197,9 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
     Integer sensorId = event.getSensorId();
     //this can be faster... ignore in case a block is set to not used...
     for (BlockBean block : blocks) {
-
       if ((block.getMinSensorId().equals(sensorId) || block.getPlusSensorId().equals(sensorId)) && block.getLocomotiveId() == null) {
         Tile tile = TileCache.findTile(block.getTileId());
-        if (event.getSensorBean().isActive()) {
+        if (event.getSensorBean().isActive() && block.getBlockState() != BlockBean.BlockState.GHOST && block.getBlockState() != BlockBean.BlockState.OUT_OF_ORDER) {
           block.setBlockState(BlockBean.BlockState.GHOST);
 
           if (tile != null) {
@@ -188,14 +212,15 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
           Logger.warn("##### Ghost Detected! @ Sensor " + sensorId + " in block " + block.getId() + " #####");
           //Switch power OFF!
           JCS.getJcsCommandStation().switchPower(false);
-        } else {
-          if (block.getLocomotiveId() != null) {
-            //keep state as is
-          } else {
-            block.setBlockState(BlockBean.BlockState.FREE);
-            tile.setBlockState(BlockBean.BlockState.FREE);
-          }
         }
+//        else {
+//          if (block.getLocomotiveId() != null) {
+//            //keep state as is
+//          } else {
+//            block.setBlockState(BlockBean.BlockState.FREE);
+//            tile.setBlockState(BlockBean.BlockState.FREE);
+//          }
+//        }
         break;
       }
     }
