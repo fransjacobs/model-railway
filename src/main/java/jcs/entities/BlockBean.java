@@ -19,6 +19,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 
 import java.util.Collections;
 import java.util.Map;
@@ -28,7 +30,7 @@ import jcs.entities.TileBean.Orientation;
 import jcs.ui.layout.tiles.Block;
 
 @Table(name = "blocks")
-public class BlockBean {
+public class BlockBean implements Comparable<BlockBean> {
 
   private String id;
   private String tileId;
@@ -59,7 +61,10 @@ public class BlockBean {
   private AccessoryBean minSignal;
   private LocomotiveBean locomotive;
 
+  private transient PropertyChangeSupport pcs;
+
   public BlockBean() {
+    this(null);
   }
 
   public BlockBean(TileBean tileBean) {
@@ -68,6 +73,7 @@ public class BlockBean {
       this.tileId = tileBean.getId();
       this.id = tileBean.getId();
     }
+    this.pcs = new PropertyChangeSupport(this);
   }
 
   @Id
@@ -220,6 +226,13 @@ public class BlockBean {
       } else {
         this.arrivalSuffix = "-";
       }
+    } else {
+      String depSuffix = getDepartureSuffix();
+      if ("-".equals(depSuffix)) {
+        this.arrivalSuffix = "+";
+      } else {
+        this.arrivalSuffix = "-";
+      }
     }
   }
 
@@ -315,6 +328,13 @@ public class BlockBean {
 
   public void setLogicalDirection(String logicalDirection) {
     this.logicalDirection = logicalDirection;
+  }
+
+  public void addPropertyChangeListener(PropertyChangeListener listener) {
+    if (pcs == null) {
+      pcs = new PropertyChangeSupport(this);
+    }
+    pcs.addPropertyChangeListener(listener);
   }
 
   @Transient
@@ -446,7 +466,11 @@ public class BlockBean {
 
   @Override
   public String toString() {
-    return tileId;
+    if (description != null) {
+      return description + " [" + tileId + "]";
+    } else {
+      return tileId;
+    }
   }
 
   public String toLogString() {
@@ -503,6 +527,26 @@ public class BlockBean {
       }
       return ENUM_MAP.get(state);
     }
+  }
+
+  @Override
+  public int compareTo(BlockBean o) {
+    //Avoid null pointers
+    String oo = o.getDescription();
+    if (oo == null) {
+      oo = o.getId();
+      if (oo == null) {
+        oo = "bbb";
+      }
+    }
+    String aa = this.description;
+    if (aa == null) {
+      aa = this.id;
+      if (aa == null) {
+        aa = "aaa";
+      }
+    }
+    return aa.compareTo(oo);
   }
 
 }

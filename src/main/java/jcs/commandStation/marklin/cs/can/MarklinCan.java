@@ -93,6 +93,10 @@ interface MarklinCan {
   public static final int FUNCTION_OFF = 0x00;
   public static final int FUNCTION_ON = 0x01;
 
+  public static final int S88_POLLING = 0x20;
+  public static final int READ_CONFIG = 0x0E;
+  public static final int LOK_DISCOVERY = 0x02;
+
   //Switching Messages
   public final static int ACCESSORY_SWITCHING = 0x16;
   public final static int ACCESSORY_SWITCHING_RESP = 0x17;
@@ -180,5 +184,10 @@ interface MarklinCan {
 
   public static final int DCC_ACCESSORY_OFFSET = 14336;
   public static final int MM_ACCESSORY_OFFSET = 12288;
+
+  public static final String MAIN = "MAIN";
+  public static final String PROG = "PROG";
+  public static final String VOLT = "VOLT";
+  public static final String TEMP = "TEMP";
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 frans.
+ * Copyright 2024 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,16 @@
  */
 package jcs.commandStation.virtual;
 
-import jcs.commandStation.autopilot.DriveSimulator;
+import jcs.commandStation.automation.DriveSimulator;
 import java.awt.Image;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import jcs.JCS;
 import jcs.commandStation.AbstractController;
 import jcs.commandStation.AccessoryController;
 import jcs.commandStation.DecoderController;
 import jcs.commandStation.FeedbackController;
-import jcs.commandStation.autopilot.AutoPilot;
+import jcs.commandStation.automation.RailController;
 import jcs.commandStation.entities.Device;
 import jcs.commandStation.events.AccessoryEvent;
 import jcs.commandStation.events.AccessoryEventListener;
@@ -45,16 +44,16 @@ import jcs.commandStation.entities.InfoBean;
 import jcs.commandStation.events.AllSensorEventsListener;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.SensorBean;
+import jcs.entities.TileBean;
+import jcs.entities.TileBean.TileType;
+import jcs.persistence.PersistenceFactory;
 import jcs.util.NetworkUtil;
 import org.tinylog.Logger;
 
 /**
- *
- * @author frans
+ * Virtual Command Station for Simulation and Testing
  */
 public class VirtualCommandStationImpl extends AbstractController implements DecoderController, AccessoryController, FeedbackController {
-
-  public static final String VIRTUAL_CS = "virtual";
 
   private InfoBean infoBean;
 
@@ -66,8 +65,6 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
 
   public VirtualCommandStationImpl(CommandStationBean commandStationBean, boolean autoConnect) {
     super(autoConnect, commandStationBean);
-    //scheduledExecutor = new ScheduledThreadPoolExecutor(30);
-
     simulator = new DriveSimulator();
     if (autoConnect) {
       autoConnect();
@@ -82,13 +79,6 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   public synchronized boolean connect() {
     this.connected = true;
 
-//    mainDevice = new DeviceBean();
-//    mainDevice.setArticleNumber("JCS Virtual CS");
-//    mainDevice.setVersion(VersionInfo.getVersion());
-//
-//    mainDevice.setSerial("1");
-//    mainDevice.setIdentifier(this.commandStationBean.getIdString());
-//    mainDevice.setName(this.commandStationBean.getDescription());
     infoBean = new InfoBean();
     infoBean.setProductName(commandStationBean.getDescription());
     infoBean.setArticleNumber(commandStationBean.getShortName());
@@ -103,7 +93,7 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   public void disconnect() {
     this.connected = false;
     this.infoBean = null;
-    //this.mainDevice = null;
+
   }
 
   @Override
@@ -119,6 +109,13 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   @Override
   public List<Device> getDevices() {
     List<Device> devices = new ArrayList<>();
+
+    Device s88 = new Device();
+    s88.setChannels(1);
+    s88.setFeedback(true);
+    s88.setId("vfb");
+    s88.setName("Virtual Feedback Device");
+    devices.add(s88);
 
     return devices;
   }
@@ -144,7 +141,6 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
     } else {
       return false;
     }
-
   }
 
   private void fireAllPowerEventListeners(final PowerEvent powerEvent) {
@@ -173,11 +169,9 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   }
 
   private void fireAllDirectionEventListeners(final LocomotiveDirectionEvent directionEvent) {
-    //if (directionEvent.isValid()) {
     for (LocomotiveDirectionEventListener listener : this.locomotiveDirectionEventListeners) {
       listener.onDirectionChange(directionEvent);
     }
-    //}
   }
 
   @Override
@@ -186,12 +180,14 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
       Logger.debug("locUid " + locUid + " speed " + speed);
 
       LocomotiveSpeedEvent lse = new LocomotiveSpeedEvent(locUid, commandStationBean.getId(), speed);
+
       executor.execute(() -> {
         fireAllLocomotiveSpeedEventListeners(lse);
 
         //When a locomotive has a speed change (>0) check if Auto mode is on.
         //When in Auto mode try to simulate the first sensor the locomotive is suppose to hit.
-        if (AutoPilot.isAutoModeActive() && speed > 0) {
+        //if (AutoPilot.isAutoModeActive() && speed > 0) {
+        if (RailController.getInstance().isAutoModeActive() && speed > 0) {
           //simulateDriving(locUid, speed, direction);
           this.simulator.simulateDriving(locUid, speed, direction);
         }
@@ -230,7 +226,8 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
 
   @Override
   public List<LocomotiveBean> getLocomotives() {
-    throw new UnsupportedOperationException("Not supported yet.");
+    //Use the Locomotive from the database
+    return PersistenceFactory.getService().getAllLocomotives();
   }
 
   @Override
@@ -284,12 +281,29 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
 
   @Override
   public List<AccessoryBean> getAccessories() {
-    return Collections.emptyList();
+    return PersistenceFactory.getService().getAccessories();
   }
 
   @Override
   public List<FeedbackModule> getFeedbackModules() {
-    return Collections.emptyList();
+    List<TileBean> tileBeans = PersistenceFactory.getService().getTileBeans();
+    List<TileBean> sensorTileBeans = new ArrayList<>();
+    //Filter the sensors
+    for (TileBean tb : tileBeans) {
+      if (TileType.SENSOR == tb.getTileType()) {
+        sensorTileBeans.add(tb);
+      }
+    }
+    Logger.trace("Found " + sensorTileBeans.size() + " Sensors");
+    int nrOfFeedbackModules = (int) Math.ceil((double) sensorTileBeans.size() / 16);
+
+    List<FeedbackModule> feedbackModules = new ArrayList<>();
+    for (int i = 0; i < nrOfFeedbackModules; i++) {
+      FeedbackModule fm = new FeedbackModule(i, i + 1, this.commandStationBean.getId());
+      feedbackModules.add(fm);
+    }
+
+    return feedbackModules;
   }
 
   @Override

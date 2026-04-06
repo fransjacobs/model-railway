@@ -48,8 +48,10 @@ public class CanMessageFactory implements MarklinCan {
   /**
    * System Stop
    *
-   * Track format processor stops operation on main and programming track.Electrical energy is no longer supplied.All speed levels/function values and settings are retained. As a special form,
-   * attention must be paid to a general stop command, which affects all track format processors.
+   * Track format processor stops operation on main and programming track.Electrical energy is no longer supplied.<br>
+   * All speed levels/function values and settings are retained.<br>
+   * As a special form, attention must be paid to a general stop command, which affects all track format processors.<br>
+   * Since version 2.6.0 it looks like the broadcast address is needed for power on/of
    *
    * @param go true GO, false STOP
    * @param gfpUid the uid of the GFP
@@ -59,7 +61,8 @@ public class CanMessageFactory implements MarklinCan {
     byte[] data = new byte[CanMessage.DATA_SIZE];
     byte[] hash;
     if (gfpUid > 0) {
-      byte[] uid = CanMessage.to4Bytes(gfpUid);
+      //byte[] uid = CanMessage.to4Bytes(gfpUid);
+      byte[] uid = CanMessage.to4Bytes(0);
       System.arraycopy(uid, 0, data, 0, uid.length);
       hash = CanMessage.generateHash(gfpUid);
     } else {
@@ -192,8 +195,8 @@ public class CanMessageFactory implements MarklinCan {
 
   /**
    *
+   * @param uid
    * @param channel the number of the channel to get the measurement value for
-   * @param gfpUid the GFP UID
    * @return
    */
   public static CanMessage systemStatus(int uid, int channel) {
@@ -402,7 +405,12 @@ public class CanMessageFactory implements MarklinCan {
   /**
    * Create a CanMessage for an (virtual) event. Used for the Virtual drive simulator
    *
-   * @param sensorbean
+   * @param nodeId
+   * @param contactId
+   * @param value
+   * @param previousValue
+   * @param millis
+   * @param uid
    * @return
    */
   public static CanMessage sensorEventMessage(int nodeId, int contactId, int value, int previousValue, int millis, int uid) {

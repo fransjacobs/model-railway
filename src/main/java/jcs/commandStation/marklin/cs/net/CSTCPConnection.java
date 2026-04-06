@@ -24,16 +24,15 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.LinkedTransferQueue;
-import java.util.concurrent.TransferQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import jcs.commandStation.events.ConnectionEvent;
 import jcs.commandStation.marklin.cs.can.CanMessage;
 import org.tinylog.Logger;
 import jcs.commandStation.events.ConnectionEventListener;
 
 /**
- *
- * @author Frans Jacobs
+ * TCP Connection with the Central Station
  */
 class CSTCPConnection implements CSConnection {
 
@@ -48,14 +47,14 @@ class CSTCPConnection implements CSConnection {
   private static final long SHORT_TIMEOUT = 1000L;
   private static final long LONG_TIMEOUT = 5000L;
 
-  private boolean debug = false;
-
-  private final TransferQueue<CanMessage> eventQueue;
+  private final boolean debug;
+  private final BlockingQueue<CanMessage> eventQueue;
 
   CSTCPConnection(InetAddress csAddress) {
     centralStationAddress = csAddress;
     debug = System.getProperty("message.debug", "false").equalsIgnoreCase("true");
-    eventQueue = new LinkedTransferQueue<>();
+    eventQueue = new LinkedBlockingQueue<>();
+
     disconnectionEventListeners = new ArrayList<>();
     checkConnection();
   }
@@ -80,7 +79,7 @@ class CSTCPConnection implements CSConnection {
   }
 
   @Override
-  public TransferQueue<CanMessage> getEventQueue() {
+  public BlockingQueue<CanMessage> getEventQueue() {
     return this.eventQueue;
   }
 
@@ -89,34 +88,10 @@ class CSTCPConnection implements CSConnection {
     this.disconnectionEventListeners.add(listener);
   }
 
-  private void disconnect() {
-    if (messageReceiver != null) {
-      messageReceiver.quit();
-    }
-    if (dos != null) {
-      try {
-        dos.close();
-      } catch (IOException ex) {
-        Logger.error("Can't close output stream. Cause: " + ex.getMessage());
-        Logger.trace(ex);
-      }
-    }
-
-    disconnectionEventListeners.clear();
-    if (clientSocket != null) {
-      try {
-        clientSocket.close();
-      } catch (IOException ex) {
-        Logger.error("Can't close socket. Cause: " + ex.getMessage());
-        Logger.trace(ex);
-      }
-    }
-  }
-
   private class ResponseCallback {
 
     private final CanMessage tx;
-    private boolean done = false;
+    private volatile boolean done = false;
 
     ResponseCallback(final CanMessage tx) {
       this.tx = tx;
@@ -144,50 +119,79 @@ class CSTCPConnection implements CSConnection {
   }
 
   @Override
+  @SuppressWarnings("SleepWhileInLoop")
   public synchronized CanMessage sendCanMessage(CanMessage message) {
     if (message == null) {
       Logger.warn("Message is NULL?");
       return null;
     }
 
+    //Most messages will return a response hence a single callback.
+    //The CS can most likely only process one message at the time...
+    //Therefor the method is synchronized...
     ResponseCallback callback = null;
-
-    if (message.expectsResponse() || message.expectsLongResponse()) {
-      //Message is expecting response so lets register for response
-      callback = new ResponseCallback(message);
-      messageReceiver.registerResponseCallback(callback);
-    }
-
     try {
-      byte[] bytes = message.getMessage();
-      //Send the message
-      dos.write(bytes);
-      dos.flush();
-    } catch (IOException ex) {
-      Logger.error(ex.getMessage());
-    }
-
-    if (CanMessage.PING_RESP != message.getCommand()) {
-      //Do not log the ping response as this message is send every 5 seconds or so as a response to the CS ping request.
-      if (debug) {
-        Logger.trace("TX: " + message);
+      if (message.expectsResponse() || message.expectsLongResponse()) {
+        //Message is expecting response so lets register for response
+        callback = new ResponseCallback(message);
+        messageReceiver.registerResponseCallback(callback);
       }
+
+      try {
+        byte[] bytes = message.getMessage();
+        //Send the message
+        dos.write(bytes);
+        dos.flush();
+      } catch (IOException ex) {
+        Logger.error(ex.getMessage());
+      }
+
+      if (CanMessage.PING_RESP != message.getCommand()) {
+        //Do not log the ping response as this message is send every 5 seconds or so as a response to the CS ping request.
+        if (debug) {
+          Logger.trace("TX: " + message);
+        }
+      }
+
+      waitForResponse(message, callback);
+
+      //Capture messages for now to be able to develop the virtual mode
+      Logger.trace("#TX: " + message + (message.isResponseMessage() ? " response msg" : ""));
+      if (!message.isResponseMessage()) {
+        if (message.getResponses().size() > 1) {
+          List<CanMessage> responses = message.getResponses();
+          for (int i = 0; i < responses.size(); i++) {
+            Logger.trace("#RX " + i + ": " + message.getResponse(i));
+          }
+        } else {
+          Logger.trace("#RX: " + message.getResponse());
+        }
+      }
+    } finally {
+      //Remove the callback
+      messageReceiver.unRegisterResponseCallback();
     }
 
-    long now = System.currentTimeMillis();
-    long start = now;
-    long timeout;
+    return message;
+  }
 
-    if (message.expectsLongResponse()) {
-      timeout = now + LONG_TIMEOUT;
-    } else if (message.expectsResponse()) {
-      timeout = now + SHORT_TIMEOUT;
-    } else {
-      timeout = now;
-    }
+  @SuppressWarnings("SleepWhileInLoop")
+  private void waitForResponse(CanMessage message, ResponseCallback callback) {
 
     if (callback != null) {
-      //Wait for the response
+
+      long now = System.currentTimeMillis();
+      long start = now;
+      long timeout;
+
+      if (message.expectsLongResponse()) {
+        timeout = now + LONG_TIMEOUT;
+      } else if (message.expectsResponse()) {
+        timeout = now + SHORT_TIMEOUT;
+      } else {
+        timeout = now;
+      }
+
       boolean responseComplete = callback.isResponseComplete();
 
       //When querying the CS CAN Bus sometimes the responses have a little delay. This could sometimes lead to missing responses.
@@ -199,6 +203,11 @@ class CSTCPConnection implements CSConnection {
       while (!responseComplete && now < timeout) {
         responseComplete = callback.isResponseComplete();
         now = System.currentTimeMillis();
+        try {
+          Thread.sleep(1);
+        } catch (InterruptedException ex) {
+          Thread.currentThread().interrupt();
+        }
       }
 
       if (debug) {
@@ -208,30 +217,34 @@ class CSTCPConnection implements CSConnection {
           Logger.trace("No Response for " + message + " in " + (now - start) + " ms");
         }
       }
-
-      //Remove the callback
-      messageReceiver.unRegisterResponseCallback();
     }
-
-    //Capture messages for now to be able to develop the virtual mode
-    Logger.trace("#TX: " + message + (message.isResponseMessage() ? " response msg" : ""));
-    if (!message.isResponseMessage()) {
-      if (message.getResponses().size() > 1) {
-        List<CanMessage> responses = message.getResponses();
-        for (int i = 0; i < responses.size(); i++) {
-          Logger.trace("#RX " + i + ": " + message.getResponse(i));
-        }
-      } else {
-        Logger.trace("#RX: " + message.getResponse());
-      }
-    }
-
-    return message;
   }
 
   @Override
   public void close() throws Exception {
-    disconnect();
+    if (messageReceiver != null) {
+      messageReceiver.quit();
+
+      messageReceiver.join();
+    }
+    if (dos != null) {
+      try {
+        dos.close();
+      } catch (IOException ex) {
+        Logger.error("Can't close output stream. Cause: " + ex.getMessage());
+        Logger.trace(ex);
+      }
+    }
+
+    disconnectionEventListeners.clear();
+    if (clientSocket != null) {
+      try {
+        clientSocket.close();
+      } catch (IOException ex) {
+        Logger.error("Can't close socket. Cause: " + ex.getMessage());
+        Logger.trace(ex);
+      }
+    }
   }
 
   @Override
@@ -248,17 +261,19 @@ class CSTCPConnection implements CSConnection {
     try {
       Thread.sleep(10);
     } catch (InterruptedException ex) {
+      Thread.currentThread().interrupt();
     }
   }
 
   private class ClientMessageReceiver extends Thread {
 
-    private boolean quit = true;
+    private volatile boolean quit = true;
     private DataInputStream din;
 
-    private ResponseCallback callBack;
+    private volatile ResponseCallback callBack;
 
     public ClientMessageReceiver(Socket socket) {
+      super("CS-CAN-RX");
       try {
         BufferedInputStream bis = new BufferedInputStream(socket.getInputStream());
         din = new DataInputStream(bis);
@@ -275,18 +290,16 @@ class CSTCPConnection implements CSConnection {
       callBack = null;
     }
 
-    synchronized void quit() {
+    void quit() {
       quit = true;
     }
 
-    synchronized boolean isRunning() {
+    boolean isRunning() {
       return !quit;
     }
 
     @Override
     public void run() {
-      Thread.currentThread().setName("CS-CAN-RX");
-
       quit = false;
       Logger.trace("Started listening on port " + clientSocket.getLocalPort() + "...");
 
@@ -306,17 +319,18 @@ class CSTCPConnection implements CSConnection {
           CanMessage rx = new CanMessage(prio, cmd, hash, dlc, data);
 
           //Logger.trace("RX: "+rx +"; "+ din.available());
-          if (callBack != null && this.callBack.isSubscribedfor(cmd)) {
+          if (callBack != null && callBack.isSubscribedfor(cmd)) {
+            //TODO create a method to esimate the number of bytes expected... 
             callBack.addResponse(rx, din.available());
           } else {
             eventQueue.offer(rx);
             //Logger.trace("Enqueued: " + rx + " QueueSize: " + eventQueue.size());
           }
-
         } catch (SocketException se) {
+          //java.io.EOFException
           if (!quit) {
             String msg = "Host " + centralStationAddress.getHostName();
-            ConnectionEvent de = new ConnectionEvent(msg, false);
+            ConnectionEvent de = new ConnectionEvent(msg, false, false);
             for (ConnectionEventListener listener : disconnectionEventListeners) {
               listener.onConnectionChange(de);
             }

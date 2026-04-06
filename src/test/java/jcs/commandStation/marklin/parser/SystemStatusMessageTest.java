@@ -15,6 +15,7 @@
  */
 package jcs.commandStation.marklin.parser;
 
+import jcs.commandStation.marklin.cs.can.parser.SystemStatusMessage;
 import jcs.commandStation.entities.MeasurementBean;
 import jcs.commandStation.marklin.cs.can.CanMessage;
 import jcs.commandStation.marklin.cs.can.device.MeasuringChannel;

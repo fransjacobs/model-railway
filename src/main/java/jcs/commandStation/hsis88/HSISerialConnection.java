@@ -175,7 +175,7 @@ class HSISerialConnection implements HSIConnection {
       Logger.trace("Port " + commPort.getSystemPortName() + " is Disconnected");
 
       String msg = commPort.getDescriptivePortName() + " [" + commPort.getSystemPortName() + "]";
-      ConnectionEvent de = new ConnectionEvent(msg, false);
+      ConnectionEvent de = new ConnectionEvent(msg, false, false);
 
       for (HSIMessageListener listener : feedbackListeners) {
         listener.onDisconnect(de);

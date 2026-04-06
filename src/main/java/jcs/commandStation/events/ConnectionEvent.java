@@ -22,10 +22,12 @@ public class ConnectionEvent {
 
   private final String source;
   private final boolean connected;
+  private final boolean virtual;
 
-  public ConnectionEvent(String source, boolean connected) {
+  public ConnectionEvent(String source, boolean connected, boolean virtual) {
     this.source = source;
     this.connected = connected;
+    this.virtual = virtual;
   }
 
   public String getSource() {
@@ -34,6 +36,10 @@ public class ConnectionEvent {
 
   public boolean isConnected() {
     return connected;
+  }
+
+  public boolean isVirtual() {
+    return virtual;
   }
 
 }

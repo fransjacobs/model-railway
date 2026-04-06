@@ -1,7 +1,13 @@
 delete from route_elements;
 delete from routes;
+delete from station_blocks;
+delete from stations;
 delete from blocks;
 delete from tiles;
+delete from stations;
+
+commit;
+
 commit;
 
 INSERT INTO jcs.tiles (id,tile_type,orientation,direction,x,y,signal_type,accessory_id,sensor_id) VALUES

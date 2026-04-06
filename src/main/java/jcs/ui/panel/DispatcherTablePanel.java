@@ -30,18 +30,18 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.RowSorterEvent;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableRowSorter;
-import jcs.commandStation.autopilot.AutoPilot;
-import jcs.commandStation.autopilot.AutoPilotStatusListener;
-import jcs.commandStation.autopilot.state.Dispatcher;
+import jcs.commandStation.automation.Dispatcher;
+import jcs.commandStation.automation.RailController;
 import jcs.entities.LocomotiveBean;
 import jcs.ui.DriverCabDialog;
 import jcs.ui.util.LocomotiveSelectionChangedListener;
 import org.tinylog.Logger;
+import jcs.commandStation.automation.RailControllerStatusListener;
 
 /**
  *
  */
-public class DispatcherTablePanel extends JPanel implements AutoPilotStatusListener {
+public class DispatcherTablePanel extends JPanel implements RailControllerStatusListener {
 
   private static final long serialVersionUID = -7052304625809395213L;
 
@@ -61,14 +61,14 @@ public class DispatcherTablePanel extends JPanel implements AutoPilotStatusListe
   }
 
   private void initModel() {
-    AutoPilot.addAutoPilotStatusListener(this);
-    statusChanged(AutoPilot.isAutoModeActive());
+    RailController.getInstance().addStatusListener(this);
+    onControllerStatusChange(RailController.getInstance().getStatus());
   }
 
   @Override
-  public void statusChanged(boolean running) {
-    List<Dispatcher> dispatchers = AutoPilot.getLocomotiveDispatchers();
-    Logger.trace("Found " + dispatchers.size() + " Dispatchers. Automode: " + (running ? "on" : "off"));
+  public void onControllerStatusChange(String status) {
+    List<Dispatcher> dispatchers = RailController.getInstance().getDispatchers();
+    Logger.trace("Found " + dispatchers.size() + " Dispatchers. Automode status: " + (status));
     locomotiveDispatcherTableModel.refresh();
   }
 
@@ -167,7 +167,7 @@ public class DispatcherTablePanel extends JPanel implements AutoPilotStatusListe
     super.setVisible(aFlag);
     if (aFlag) {
       //AutoPilot.addAutoPilotStatusListener(this);
-      statusChanged(AutoPilot.isAutoModeActive());
+//      statusChanged(AutoPilot.isAutoModeActive());
     } else {
       //AutoPilot.removeAutoPilotStatusListener(this);
     }

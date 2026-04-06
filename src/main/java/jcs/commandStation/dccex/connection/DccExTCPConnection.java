@@ -126,7 +126,7 @@ class DccExTCPConnection implements DccExConnection {
     } catch (IOException ex) {
       Logger.error(ex);
       String msg = "Host " + dccExAddress.getHostName();
-      ConnectionEvent de = new ConnectionEvent(msg, false);
+      ConnectionEvent de = new ConnectionEvent(msg, false, false);
 
       messageReceiver.messageListener.onDisconnect(de);
       messageReceiver.quit();
@@ -216,7 +216,7 @@ class DccExTCPConnection implements DccExConnection {
         } catch (SocketException se) {
           Logger.error(se.getMessage());
           String msg = "Host " + dccExAddress.getHostName();
-          ConnectionEvent de = new ConnectionEvent(msg, false);
+          ConnectionEvent de = new ConnectionEvent(msg, false, false);
           this.messageListener.onDisconnect(de);
           quit();
         } catch (IOException ioe) {

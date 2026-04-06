@@ -89,7 +89,8 @@ public class CSConnectionFactory {
       if (virtual) {
         controllerConnection = new CSVirtualConnection(controllerHost);
       } else {
-        controllerConnection = new CSTCPConnection(controllerHost);
+        //controllerConnection = new CSTCPConnection(controllerHost);
+        controllerConnection = new ImprovedCSTCPConnection(controllerHost);
       }
     }
 

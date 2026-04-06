@@ -32,7 +32,7 @@ import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import jcs.JCS;
-import jcs.commandStation.autopilot.AutoPilot;
+import jcs.commandStation.automation.RailController;
 import jcs.commandStation.events.PowerEvent;
 import jcs.commandStation.events.PowerEventListener;
 import jcs.entities.TileBean.TileType;
@@ -336,18 +336,24 @@ public class LayoutPanel extends JPanel {
       startAllLocomotivesBtn.setEnabled(false);
     }
 
-    AutoPilot.runAutoPilot(autoPilotBtn.isSelected());
+    RailController.getInstance().enableAutomode(autoPilotBtn.isSelected());
+
+//    if (autoPilotBtn.isSelected()) {
+//      RailController.getInstance().startAutoMode();
+//    } else {
+//      RailController.getInstance().stopAutoMode();
+//    }
   }//GEN-LAST:event_autoPilotBtnActionPerformed
 
   private void startAllLocomotivesBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startAllLocomotivesBtnActionPerformed
     Logger.trace(evt.getActionCommand() + " Start All Locomotives " + this.startAllLocomotivesBtn.isSelected());
     if (startAllLocomotivesBtn.isSelected()) {
-      AutoPilot.startAllLocomotives();
+      RailController.getInstance().startAllLocomotives();
     }
   }//GEN-LAST:event_startAllLocomotivesBtnActionPerformed
 
   private void resetAutopilotBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_resetAutopilotBtnActionPerformed
-    AutoPilot.reset();
+    RailController.getInstance().reset();
   }//GEN-LAST:event_resetAutopilotBtnActionPerformed
 
   private void gridBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_gridBtnActionPerformed

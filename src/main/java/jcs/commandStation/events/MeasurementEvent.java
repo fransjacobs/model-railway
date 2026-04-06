@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 frans.
+ * Copyright 2025 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,37 +15,41 @@
  */
 package jcs.commandStation.events;
 
-import jcs.commandStation.entities.MeasuredChannels;
+import java.util.Map;
 import jcs.commandStation.entities.MeasurementBean;
+import jcs.commandStation.marklin.cs.can.CanMessage;
 
 /**
- * Signals the lastMeasurment(s)
+ * Contains the latest measurement(s)
  */
 public class MeasurementEvent {
 
-  private final MeasuredChannels measuredChannels;
+  private final Map<String, MeasurementBean> measurement;
+  private final boolean measurementEnabled;
 
-  public MeasurementEvent(MeasuredChannels measuredChannels) {
-    this.measuredChannels = measuredChannels;
-  }
-
-  public MeasuredChannels getMeasuredChannels() {
-    return measuredChannels;
+  public MeasurementEvent(Map<String, MeasurementBean> measurement, boolean measurementEnabled) {
+    this.measurementEnabled = measurementEnabled;
+    this.measurement = measurement;
   }
 
   public MeasurementBean getMain() {
-    return measuredChannels.getMain();
+    return measurement.get(CanMessage.MAIN);
   }
 
   public MeasurementBean getProg() {
-    return measuredChannels.getProg();
+    return measurement.get(CanMessage.PROG);
   }
 
   public MeasurementBean getVolt() {
-    return measuredChannels.getVolt();
+    return measurement.get(CanMessage.VOLT);
   }
 
   public MeasurementBean getTemp() {
-    return measuredChannels.getTemp();
+    return measurement.get(CanMessage.TEMP);
   }
+
+  public boolean isMeasurementsEnabled() {
+    return measurementEnabled;
+  }
+
 }

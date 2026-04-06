@@ -41,6 +41,8 @@ import jcs.entities.LocomotiveBean.DecoderType;
 import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
 import jcs.entities.SensorBean;
+import jcs.entities.StationBean;
+import jcs.entities.StationBlockBean;
 import jcs.entities.TileBean;
 import jcs.persistence.sqlmakers.H2SqlMaker;
 import org.tinylog.Logger;
@@ -271,7 +273,7 @@ public class H2PersistenceService implements PersistenceService {
       dt = DecoderType.DCC;
     }
 
-    Object[] args = new Object[]{address, dt.getDecoderType()+"%", commandStationId};
+    Object[] args = new Object[]{address, dt.getDecoderType() + "%", commandStationId};
 
     LocomotiveBean loco = database.where("address=? and decoder_type like ? and command_station_id=?", args).first(LocomotiveBean.class);
     if (loco != null) {
@@ -920,6 +922,67 @@ public class H2PersistenceService implements PersistenceService {
     return addBlockReleatedObjects(blocks);
   }
 
+  @Override
+  public List<BlockBean> getNonStationBlocks() {
+    List<BlockBean> blocks = database.sql("select b.* from blocks b left join station_blocks sb on b.id = sb.block_id where sb.block_id is null").results(BlockBean.class);
+    return addBlockReleatedObjects(blocks);
+  }
+
+  @Override
+  public List<BlockBean> getStationBlocks(StationBean stationBean) {
+    List<BlockBean> blocks = database.sql("select b.* from blocks b join station_blocks sb on b.id = sb.block_id where sb.station_id = ?", stationBean.getId()).results(BlockBean.class);
+    return addBlockReleatedObjects(blocks);
+  }
+
+  @Override
+  public Long getLocomotiveCount(StationBean stationBean) {
+
+    String sql = "select count(*) "
+            + "from stations s "
+            + "join station_blocks sb on s.id = sb.station_id "
+            + "join blocks b on sb.block_id = b.id and b.locomotive_id is not null and b.status = 'Occupied' "
+            + "where s.id = ?";
+
+    return database.sql(sql, stationBean.getId()).first(Long.class);
+  }
+
+  @Override
+  public Long getFirstLocomotiveId(StationBean stationBean) {
+    String sql = "with stations_locomotives as ("
+            + "select sb.station_id, sb.block_id, b.locomotive_id, s.min_locs , sb.last_updated"
+            + ", count(distinct b.locomotive_id) over (partition by sb.station_id) as loc_count"
+            + ", row_number() over (partition by sb.station_id order by sb.last_updated asc) as rn "
+            + "from station_blocks sb "
+            + "join stations s on sb.station_id = s.id "
+            + "join blocks b on sb.block_id = b.id and b.locomotive_id is not null and b.status = 'Occupied' "
+            + "where s.id = ? "
+            + "group by sb.station_id, sb.block_id, b.locomotive_id, s.min_locs) "
+            + "select locomotive_id from stations_locomotives where rn =1 ";
+
+    Long locomotiveId = database.sql(sql, stationBean.getId()).first(Long.class);
+    return locomotiveId;
+  }
+
+  @Override
+  public Double getAverageAccessorySwitchTime() {
+    //return database.sql("select ceil(avg(a.switch_time)) from accessories a where a.type like '%weiche%'").first(Long.class);
+    return database.sql("select ceil(avg(a.switch_time)) from accessories").first(Double.class);
+  }
+
+  @Override
+  public Double getAverageAccessorySwitchTime(RouteBean routeBean) {
+    if (routeBean != null) {
+      return database.sql("select ceil(avg(a.switch_time)) from routes r join route_elements re on r.id = re.route_id and re.accessory_value is not null join tiles t on re.tile_id = t.id join accessories a on t.accessory_id = a.id where r.id  = ?", routeBean.getId()).first(Double.class);
+    } else {
+      return getAverageAccessorySwitchTime();
+    }
+  }
+
+  @Override
+  public Long getGhostBlockCount() {
+    return database.sql("select count(*) from blocks b where b.status = 'Ghost'").first(Long.class);
+  }
+
   private List<BlockBean> addBlockReleatedObjects(List<BlockBean> blockBeans) {
     for (BlockBean bb : blockBeans) {
       addReleatedObjects(bb);
@@ -1000,14 +1063,18 @@ public class H2PersistenceService implements PersistenceService {
 
   @Override
   public synchronized void remove(BlockBean block) {
-    int rows = database.delete(block).getRowsAffected();
-    Logger.trace(rows + " rows deleted");
+    int rows = database.sql("delete from station_blocks where block_id =?", block.getId()).execute().getRowsAffected();
+    Logger.trace("Deleted " + rows + " StationBlocks");
+    rows = database.delete(block).getRowsAffected();
+    Logger.trace("Deleted " + rows + " blocks");
     changeSupport.firePropertyChange("data.block.deleted", block, null);
   }
 
   @Override
   public synchronized void removeAllBlocks() {
-    int rows = database.sql("delete from blocks").execute().getRowsAffected();
+    int rows = database.sql("delete from station_blocks").execute().getRowsAffected();
+    Logger.trace("Deleted " + rows + " StationBlocks");
+    rows = database.sql("delete from blocks").execute().getRowsAffected();
     Logger.trace("Deleted " + rows + " blocks");
     changeSupport.firePropertyChange("data.block.deleted", null, null);
   }
@@ -1053,6 +1120,90 @@ public class H2PersistenceService implements PersistenceService {
 
     changeSupport.firePropertyChange("data.commandStation", prev, newDefaultCommandStationBean);
     return newDefaultCommandStationBean;
+  }
+
+  StationBean addReleatedObjects(StationBean stationBean) {
+    List<StationBlockBean> stationBlockBeans = database.where("station_id=?", stationBean.getId()).results(StationBlockBean.class);
+    for (StationBlockBean sbb : stationBlockBeans) {
+      sbb.setStation(stationBean);
+      sbb.setBlock(getBlock(sbb.getBlockId()));
+    }
+    stationBean.setBlocks(stationBlockBeans);
+    return stationBean;
+  }
+
+  @Override
+  public List<StationBean> getStations() {
+    List<StationBean> stationBeans = database.results(StationBean.class);
+    for (StationBean sb : stationBeans) {
+      addReleatedObjects(sb);
+    }
+    return stationBeans;
+  }
+
+  @Override
+  public StationBean getStation(String id) {
+    StationBean sb = database.where("id=?", id).first(StationBean.class);
+    if (sb != null) {
+      return addReleatedObjects(sb);
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public StationBean getStation(BlockBean blockBean) {
+    StationBean sb = database.sql("select s.* from stations s join station_blocks sb on s.id = sb.station_id where sb.block_id = ?", blockBean.getId()).first(StationBean.class);
+    if (sb != null) {
+      return addReleatedObjects(sb);
+    } else {
+      return null;
+    }
+  }
+
+  StationBlockBean getStationBlock(String id) {
+    StationBlockBean sbb = database.where("id=?", id).first(StationBlockBean.class);
+    return sbb;
+  }
+
+  @Override
+  public StationBean persist(StationBean station) {
+    StationBean dsb = getStation(station.getId());
+    if (dsb != null) {
+      database.update(station);
+    } else {
+      database.insert(station);
+    }
+    List<StationBlockBean> currentStationBlockBeans = database.where("station_id=?", station.getId()).results(StationBlockBean.class);
+
+    List<StationBlockBean> updatedStationBlockBeans = station.getBlocks();
+
+    for (StationBlockBean sbb : currentStationBlockBeans) {
+      if (!updatedStationBlockBeans.contains(sbb)) {
+        int rows = database.delete(sbb).getRowsAffected();
+        Logger.trace("Deleted " + rows + " stationBlock(s)");
+      }
+    }
+
+    for (StationBlockBean sbb : updatedStationBlockBeans) {
+      StationBlockBean dsbb = getStationBlock(sbb.getId());
+      if (dsbb != null) {
+        database.update(sbb);
+      } else {
+        database.insert(sbb);
+      }
+    }
+
+    return station;
+  }
+
+  @Override
+  public void remove(StationBean station) {
+    int rows = database.sql("delete from station_blocks where station_id =?", station.getId()).execute().getRowsAffected();
+    Logger.trace("Deleted " + rows + " StationBlocks");
+    rows = database.delete(station).getRowsAffected();
+    Logger.trace("Deleted " + rows + " station(s)");
+    changeSupport.firePropertyChange("data.station.deleted", station, null);
   }
 
 }

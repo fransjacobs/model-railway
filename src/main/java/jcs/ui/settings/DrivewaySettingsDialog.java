@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 frans.
+ * Copyright 2025 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import org.tinylog.Logger;
  */
 public class DrivewaySettingsDialog extends javax.swing.JDialog {
 
-  private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(DrivewaySettingsDialog.class.getName());
+  private static final long serialVersionUID = 7353060423412514136L;
 
   /**
    * Creates new form RoutesDialog
@@ -65,21 +65,18 @@ public class DrivewaySettingsDialog extends javax.swing.JDialog {
     //</editor-fold>
 
     /* Create and display the dialog */
-    java.awt.EventQueue.invokeLater(new Runnable() {
-      @Override
-      public void run() {
-        DrivewaySettingsDialog dialog = new DrivewaySettingsDialog(new javax.swing.JFrame(), true);
-        dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-          @Override
-          public void windowClosing(java.awt.event.WindowEvent e) {
-            System.exit(0);
-          }
-        });
-        
-        dialog.pack();
-        dialog.setLocationRelativeTo(null);
-        dialog.setVisible(true);
-      }
+    java.awt.EventQueue.invokeLater(() -> {
+      DrivewaySettingsDialog dialog = new DrivewaySettingsDialog(new javax.swing.JFrame(), true);
+      dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+        @Override
+        public void windowClosing(java.awt.event.WindowEvent e) {
+          System.exit(0);
+        }
+      });
+      
+      dialog.pack();
+      dialog.setLocationRelativeTo(null);
+      dialog.setVisible(true);
     });
   }
 

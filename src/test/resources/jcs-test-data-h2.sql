@@ -1,7 +1,11 @@
 delete from route_elements;
 delete from routes;
+delete from station_blocks;
+delete from stations;
+delete from station_blocks;
 delete from blocks;
 delete from tiles;
+delete from stations;
 
 commit;
 
@@ -77,6 +81,8 @@ commit;
 insert into tiles (id,tile_type,orientation,direction,x,y,signal_type,accessory_id,sensor_id) values
 	 ('bk-1','Block','East','Center',320,140,null,null,null),
 	 ('bk-2','Block','East','Center',420,140,null,null,null),
+	 ('bk-3','Block','East','Center',620,140,null,null,null),
+	 ('bk-4','Block','East','Center',720,140,null,null,null),
 	 ('ct-2','Curved','East','Center',260,140,null,null,null),
 	 ('ct-5','Curved','South','Center',180,380,null,null,null),
 	 ('se-5','Sensor','North','Center',340,380,null,NULL,2),
@@ -101,6 +107,18 @@ commit;
 
 insert into blocks (id,tile_id,description,plus_sensor_id,min_sensor_id,plus_signal_id,min_signal_id,locomotive_id) values
   ('bk-1','bk-1','Block 1',null,null,null,null,null),
-  ('bk-2','bk-2','Block 2',null,null,null,null,null);
+  ('bk-2','bk-2','Block 2',null,null,null,null,null),
+  ('bk-3','bk-3','Block 3',null,null,null,null,null),
+  ('bk-4','bk-4','Block 4',null,null,null,null,null);
+
+commit;
+
+insert into stations(id, name, min_locs, loc_count, use_fifo) values 
+  ('st-1','Mittelstadt Hbf', 1, 0, true),
+  ('st-2','Wildpark', 2, 0, true);
+
+insert into station_blocks(id,station_id,block_id,last_updated) values
+  ('st-1~bk-3','st-1','bk-3',TIMESTAMP '2025-12-12 21:00:00'),
+  ('st-1~bk-4','st-1','bk-4',TIMESTAMP '2025-12-12 21:00:10');
 
 commit;

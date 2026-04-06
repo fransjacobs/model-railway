@@ -29,8 +29,7 @@ import jcs.util.ByteUtil;
 import org.tinylog.Logger;
 
 /**
- *
- * @author frans
+ * Inflate a CAN ConfigDataMessage which is in zlib format
  */
 public class MessageInflator {
 
@@ -38,6 +37,7 @@ public class MessageInflator {
     boolean debug = System.getProperty("inflate.debug", "false").equalsIgnoreCase("true");
 
     try {
+      int crc = 0;
       List<CanMessage> responses = message.getResponses();
       if (debug) {
         Logger.trace("There are " + responses.size() + " responses");
@@ -70,9 +70,7 @@ public class MessageInflator {
               byte[] crca = new byte[2];
               byte[] dt = lenResp.getData();
               System.arraycopy(dt, 4, crca, 0, crca.length);
-              int crc = ByteUtil.toInt(crca);
-              //For now the CRC is ignored as the Inflate will probaby fail when the message contains errors
-              Logger.error("Data length: " + dataLength + " CRC: " + crc);
+              crc = ByteUtil.toInt(crca);
             }
           }
           default -> {
@@ -109,6 +107,11 @@ public class MessageInflator {
       if (debug) {
         Logger.trace("All Packets in Buffer " + databuf.length);
       }
+
+      int calculatedCRC = calculateCRC(databuf);
+
+      Logger.trace("Data length: " + dataLength + " received CRC: " + crc + " Calculated CRC: " + calculatedCRC);
+
       //The First 4 byte represent the uncompressed length of the file
       byte[] uclb = new byte[4];
       System.arraycopy(databuf, 0, uclb, 0, uclb.length);
@@ -151,8 +154,7 @@ public class MessageInflator {
       if (debug) {
         Logger.trace("Real Uncompressed length " + inflatedFile.length());
 
-        Logger.trace("\n" + inflatedFile);
-
+        //Logger.trace("\n" + inflatedFile);
         //Write to a file for debug when set in property
         Path path = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + filename + ".cs2");
         try {
@@ -168,6 +170,49 @@ public class MessageInflator {
       Logger.error(ex);
     }
     return null;
+  }
+
+  /**
+   * Calculates a CRC-16 checksum using the CCITT polynomial (0x1021) with an initial value of 0xFFFF,<br>
+   * as specified in the Märklin CS2 CAN protocol documentation (section 7.2, Config Data Stream).
+   *
+   * @param data the byte array to calculate the CRC for
+   * @return the 16-bit CRC value
+   */
+  private static int calculateCRC(byte[] data) {
+    int crc = 0xFFFF;
+    for (byte b : data) {
+      crc = updateCRC(crc, b & 0xFF);
+    }
+    return crc;
+  }
+
+  /**
+   * Updates the running CRC with a single input byte.<br>
+   * Direct port of CtDataSender::updateCRC from the Märklin CS2 CAN protocol spec.
+   *
+   * @param crc the current CRC accumulator (16-bit)
+   * @param input the next input byte (0–255)
+   * @return the updated CRC accumulator
+   */
+  private static int updateCRC(int crc, int input) {
+    final int POLY = 0x1021;
+
+    // XOR input byte into high byte of accumulator
+    crc = crc ^ (input << 8);
+
+    // Process each of the 8 bits
+    for (int i = 0; i < 8; i++) {
+      if ((crc & 0x8000) != 0) {
+        crc = (crc << 1) ^ POLY;
+      } else {
+        crc = crc << 1;
+      }
+      // Keep within 16 bits
+      crc &= 0xFFFF;
+    }
+
+    return crc;
   }
 
 }

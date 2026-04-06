@@ -15,10 +15,12 @@
  */
 package jcs.ui.table.model;
 
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.ImageIcon;
-import jcs.commandStation.autopilot.AutoPilot;
-import jcs.commandStation.autopilot.state.Dispatcher;
-import jcs.commandStation.autopilot.state.StateEventListener;
+import jcs.commandStation.automation.Dispatcher;
+import jcs.commandStation.automation.RailController;
+import jcs.commandStation.automation.StateEventListener;
 import jcs.entities.LocomotiveBean.Direction;
 import org.tinylog.Logger;
 
@@ -30,39 +32,46 @@ public class LocomotiveDispatcherTableModel extends AbstractBeanTableModel<Dispa
   private static final String[] DISPLAY_COLUMNS = new String[]{"image", "name", "state", "speed"};
   private static final long serialVersionUID = 5321472215655025458L;
 
+  private Map<Dispatcher, String> extraStateInfo;
+
   public LocomotiveDispatcherTableModel() {
     super(Dispatcher.class, DISPLAY_COLUMNS);
+
+    extraStateInfo = new HashMap<>();
   }
 
   @Override
   public void refresh() {
-    if (AutoPilot.isAutoModeActive()) {
-      setBeans(AutoPilot.getLocomotiveDispatchers());
+    if (RailController.getInstance().isAutoModeActive()) {
+      setBeans(RailController.getInstance().getDispatchers());
       Logger.trace("There are " + beans.size() + " dispatchers");
 
       for (Dispatcher ld : beans) {
         ld.addStateEventListener(this);
         Logger.trace("Listen to dispatcher " + ld.getName());
+        extraStateInfo.put(ld, "");
       }
     } else {
       if (beans != null) {
         for (Dispatcher ld : beans) {
           ld.removeStateEventListener(this);
           Logger.trace("Remove Listen to dispatcher " + ld.getName());
+          extraStateInfo.remove(ld);
         }
       }
-      setBeans(AutoPilot.getLocomotiveDispatchers());
+      setBeans(RailController.getInstance().getDispatchers());
     }
   }
 
   @Override
-  public void onStateChange(Dispatcher dispatcher) {
+  public void onStateChange(Dispatcher dispatcher, String oldState, String newState, String comment) {
     if (beans.contains(dispatcher)) {
-      //replace
       int idx = beans.indexOf(dispatcher);
       beans.set(idx, dispatcher);
+
+      extraStateInfo.put(dispatcher, comment);
+
       //Logger.trace("idx: "+idx+" "+dispatcher.getName()+" "+dispatcher.getDispatcherStateString());
-      //table data changed is too much?
       fireTableDataChanged();
     }
   }
@@ -110,13 +119,21 @@ public class LocomotiveDispatcherTableModel extends AbstractBeanTableModel<Dispa
       Dispatcher b = beans.get(row);
 
       if (b != null) {
+        String stateName = b.getStateName();
+        if (extraStateInfo.containsKey(b)) {
+          if (extraStateInfo.get(b) != null && extraStateInfo.get(b).length() > 0) {
+            stateName = stateName + "" + extraStateInfo.get(b) + "";
+          }
+        }
+
         return switch (column) {
           case 0 ->
             b.getLocomotiveBean().getLocIcon();
           case 1 ->
             b.getName();
           case 2 ->
-            b.getStateName();
+            //b.getStateName();
+            stateName;
           case 3 ->
             (Direction.FORWARDS == b.getLocomotiveBean().getDirection() ? ">>" : "<<") + " " + ((Long) Math.round((b.getLocomotiveBean().getVelocity() / 1000.0) * 100)).intValue();
           default ->

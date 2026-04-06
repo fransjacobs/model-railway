@@ -1,5 +1,7 @@
 delete from route_elements;
 delete from routes;
+delete from station_blocks;
+delete from stations;
 delete from blocks;
 delete from tiles;
 

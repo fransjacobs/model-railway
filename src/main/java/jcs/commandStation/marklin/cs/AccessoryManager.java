@@ -15,20 +15,21 @@
  */
 package jcs.commandStation.marklin.cs;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import jcs.commandStation.events.AccessoryEvent;
+import jcs.commandStation.events.AccessoryEventListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.AccessoryBean.AccessoryValue;
 import org.tinylog.Logger;
 
 /**
  * Accessory Manager for Marklin CS. <br>
- * This Manager check whether an accessory has 2 addresses like 3 way turnouts or Signals.<br>
- * The order event are give sometime matters, hence all accessory command go via this class.
+ * This Manager check whether an accessory has 2 addresses, like 3 way turnouts or Signals.<br>
+ * The order of events are given sometime matters, hence all accessory commands go via this class.
  *
- * @author frans
  */
 class AccessoryManager {
 
@@ -60,7 +61,7 @@ class AccessoryManager {
     return this.accessories.get(address);
   }
 
-  void notifyAccessoryEventListeners(final AccessoryEvent accessoryEvent) {
+  void notifyAccessoryEventListeners(final AccessoryEvent accessoryEvent, boolean command) {
     AccessoryBean ab = accessoryEvent.getAccessoryBean();
     //Check is this event is for a biAddress accessory
     AccessoryBean storedAccessory = accessories.get(ab.getAddress());
@@ -87,14 +88,28 @@ class AccessoryManager {
 
         //pass the 2nd on
         Logger.trace("Notify event for " + storedAccessory.getAddress() + " " + storedAccessory.getName() + " Value " + storedAccessory.getAccessoryValue());
-        this.marklinCentralStationImpl.notifyAccessoryEventListeners(new AccessoryEvent(storedAccessory));
+        //this.marklinCentralStationImpl.notifyAccessoryEventListeners(new AccessoryEvent(storedAccessory));
+
+        fireAccessoryEventListeners(new AccessoryEvent(storedAccessory));
       } else {
         //wait for the second event, store this event for a shortwhile
         accessoryEvents.put(storedAccessory.getAddress(), ab);
         Logger.trace("Stored event for " + ab.getAddress() + " with main address: " + storedAccessory.getAddress() + " and value " + ab.getAccessoryValue());
       }
     } else {
-      this.marklinCentralStationImpl.notifyAccessoryEventListeners(accessoryEvent);
+      //Check the status 
+      if (command || (storedAccessory.getAccessoryValue() != accessoryEvent.getValue())) {
+        storedAccessory.setAccessoryValue(accessoryEvent.getValue());
+        fireAccessoryEventListeners(accessoryEvent);
+      }
+    }
+  }
+
+  void fireAccessoryEventListeners(final AccessoryEvent accessoryEvent) {
+    List<AccessoryEventListener> snapshot = new ArrayList<>(marklinCentralStationImpl.getAccessoryEventListeners());
+
+    for (AccessoryEventListener listener : snapshot) {
+      listener.onAccessoryChange(accessoryEvent);
     }
   }
 

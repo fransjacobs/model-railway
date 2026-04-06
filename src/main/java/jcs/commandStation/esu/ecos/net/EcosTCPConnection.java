@@ -146,7 +146,7 @@ class EcosTCPConnection implements EcosConnection {
     } catch (IOException | InterruptedException ex) {
       Logger.error(ex);
       String msg = "Host " + ecosAddress.getHostName();
-      ConnectionEvent de = new ConnectionEvent(msg, false);
+      ConnectionEvent de = new ConnectionEvent(msg, false, false);
 
       messageReceiver.messageListener.onDisconnect(de);
       messageReceiver.quit();
@@ -273,7 +273,7 @@ class EcosTCPConnection implements EcosConnection {
         } catch (SocketException se) {
           Logger.error(se.getMessage());
           String msg = "Host " + ecosAddress.getHostName();
-          ConnectionEvent de = new ConnectionEvent(msg, false);
+          ConnectionEvent de = new ConnectionEvent(msg, false, false);
           messageListener.onDisconnect(de);
           quit();
         } catch (IOException | InterruptedException ex) {

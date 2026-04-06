@@ -58,7 +58,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.border.LineBorder;
 import jcs.JCS;
-import jcs.commandStation.autopilot.AutoPilot;
+import jcs.commandStation.automation.RailController;
+import jcs.commandStation.automation.RailControllerStatusListener;
 import jcs.commandStation.events.ConnectionEvent;
 import jcs.commandStation.events.PowerEvent;
 import jcs.commandStation.entities.InfoBean;
@@ -81,12 +82,13 @@ import jcs.commandStation.events.ConnectionEventListener;
 import jcs.commandStation.events.PowerEventListener;
 import jcs.persistence.util.Backup;
 import jcs.ui.settings.DrivewaySettingsDialog;
+import jcs.ui.settings.StationSettingsDialog;
 import jcs.util.Ping;
 
 /**
  * JCS Main Frame
  */
-public class JCSFrame extends JFrame implements UICallback, ConnectionEventListener, PowerEventListener {
+public class JCSFrame extends JFrame implements UICallback, ConnectionEventListener, PowerEventListener, RailControllerStatusListener {
 
   private static final long serialVersionUID = -5800900684173242844L;
 
@@ -100,6 +102,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   private DrivewaySettingsDialog drivewaySettingsDialog;
   private CommandStationDialog commandStationDialog;
   private PropertiesDialog propertiesDialog;
+  private StationSettingsDialog stationSettingsDialog;
 
   private SettingsDialog settingsDialog;
 
@@ -149,6 +152,9 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
       //Show the default panel
       showOverviewPanel();
       editMode = false;
+
+      //Register the main fram as listener for RailwayController statusses
+      RailController.getInstance().addStatusListener(this);
     }
   }
 
@@ -257,6 +263,15 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     drivewaySettingsDialog.setVisible(true);
   }
 
+  private void showStations() {
+    if (stationSettingsDialog == null) {
+      stationSettingsDialog = new StationSettingsDialog(this, true);
+      stationSettingsDialog.pack();
+      stationSettingsDialog.setLocationRelativeTo(null);
+    }
+    stationSettingsDialog.setVisible(true);
+  }
+
   private void showProperties() {
     if (propertiesDialog == null) {
       propertiesDialog = new PropertiesDialog(this, true);
@@ -294,14 +309,14 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   }
 
   private void showEditLayoutPanel() {
-    if (!AutoPilot.isAutoModeActive()) {
-      CardLayout card = (CardLayout) centerPanel.getLayout();
-      card.show(centerPanel, "designPanel");
+    //if (RailController.getInstance().isAutoModeActive()) {
+    CardLayout card = (CardLayout) centerPanel.getLayout();
+    card.show(centerPanel, "designPanel");
 
-      dispatcherStatusPanel.showComponentsTab();
-      layoutPanel.loadLayoutInBackground();
-      editMode = true;
-    }
+    dispatcherStatusPanel.showComponentsTab();
+    layoutPanel.loadLayoutInBackground();
+    editMode = true;
+    //}
   }
 
   private void setControllerProperties() {
@@ -412,6 +427,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     showDrivewaysMI = new JMenuItem();
     showCommandStationsMI = new JMenuItem();
     showPropertiesMI = new JMenuItem();
+    showStationsMI = new JMenuItem();
     helpMenu = new JMenu();
     aboutMI = new JMenuItem();
 
@@ -589,7 +605,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     filler4.setName("filler4"); // NOI18N
     jcsToolBar.add(filler4);
 
-    autoPilotBtn.setIcon(new ImageIcon(getClass().getResource("/media/pilot.png"))); // NOI18N
+    autoPilotBtn.setIcon(new ImageIcon(getClass().getResource("/media/cruise-control-on-black.png"))); // NOI18N
     autoPilotBtn.setToolTipText("En- or Disable automatic driving");
     autoPilotBtn.setBorder(BorderFactory.createLineBorder(new Color(204, 204, 204)));
     autoPilotBtn.setDoubleBuffered(true);
@@ -600,7 +616,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     autoPilotBtn.setMinimumSize(new Dimension(40, 40));
     autoPilotBtn.setName("autoPilotBtn"); // NOI18N
     autoPilotBtn.setPreferredSize(new Dimension(40, 40));
-    autoPilotBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/pilot-green.png"))); // NOI18N
+    autoPilotBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/cruise-control-on-yellow.png"))); // NOI18N
     autoPilotBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
     autoPilotBtn.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
@@ -973,6 +989,15 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     });
     settingsMenu.add(showPropertiesMI);
 
+    showStationsMI.setText("Stations");
+    showStationsMI.setName("showStationsMI"); // NOI18N
+    showStationsMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        showStationsMIActionPerformed(evt);
+      }
+    });
+    settingsMenu.add(showStationsMI);
+
     jcsMenuBar.add(settingsMenu);
 
     helpMenu.setText("Help");
@@ -1036,8 +1061,13 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     if (result == JOptionPane.YES_OPTION) {
       setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-      //Disconnect Command stations
-      JCS.getJcsCommandStation().switchPower(false);
+      boolean powerOnWhenQuit = Boolean.parseBoolean("keep.power.on.when.quit");
+
+      if (!powerOnWhenQuit) {
+        JCS.getJcsCommandStation().switchPower(false);
+        //Give the communication time to switchoff
+        JCS.getJcsCommandStation().pause(5);
+      }
       JCS.getJcsCommandStation().disconnect();
 
       setVisible(false);
@@ -1146,16 +1176,51 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
 
   private void startAutopilot() {
     if (autoPilotBtn.isSelected()) {
-      startAllLocsBtn.setEnabled(true);
-      dispatcherStatusPanel.showDispatcherTab();
+      //startAllLocsBtn.setEnabled(true);
+      //dispatcherStatusPanel.showDispatcherTab();
       // startAllLocsBtn.setIcon(new ImageIcon(getClass().getResource("/media/arrowhead-right-gn.png")));
     } else {
-      startAllLocsBtn.setEnabled(false);
-      dispatcherStatusPanel.showLocomotiveTab();
+      //startAllLocsBtn.setEnabled(false);
+      //dispatcherStatusPanel.showLocomotiveTab();
     }
 
-    AutoPilot.runAutoPilot(autoPilotBtn.isSelected());
+    //AutoPilot.runAutoPilot(autoPilotBtn.isSelected());
+    RailController.getInstance().enableAutomode(autoPilotBtn.isSelected());
   }
+
+  @Override
+  public void onControllerStatusChange(String status) {
+    Logger.trace(status);
+
+    if (status == null) {
+      return;
+    }
+
+    switch (status) {
+      case RailController.PENDING -> {
+        autoPilotBtn.setEnabled(false);
+      }
+      case RailController.STARTED -> {
+        autoPilotBtn.setEnabled(true);
+        startAllLocsBtn.setEnabled(true);
+        dispatcherStatusPanel.showDispatcherTab();
+        autoPilotBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/cruise-control-on-green.png")));
+        autoPilotBtn.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/media/cruise-control-on-green.png")));
+      }
+      case RailController.STOPPING -> {
+        autoPilotBtn.setEnabled(false);
+        startAllLocsBtn.setEnabled(false);
+        autoPilotBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/cruise-control-on-red.png")));
+      }
+      case RailController.STOPPED -> {
+        autoPilotBtn.setEnabled(true);
+        dispatcherStatusPanel.showLocomotiveTab();
+        autoPilotBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/cruise-control-on-black.png")));
+        autoPilotBtn.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/media/cruise-control-on-yellow.png")));
+      }
+    }
+  }
+
 
   private void startAllLocsBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startAllLocsBtnActionPerformed
     startAllLocomotives();
@@ -1209,7 +1274,8 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   }//GEN-LAST:event_autoPilotMIActionPerformed
 
   private void resetAutopilotMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_resetAutopilotMIActionPerformed
-    AutoPilot.reset();
+    //AutoPilot.reset();
+    RailController.getInstance().reset();
   }//GEN-LAST:event_resetAutopilotMIActionPerformed
 
   private void startAllLocsMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startAllLocsMIActionPerformed
@@ -1272,10 +1338,15 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     showDriveways();
   }//GEN-LAST:event_showDrivewaysMIActionPerformed
 
+  private void showStationsMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showStationsMIActionPerformed
+    showStations();
+  }//GEN-LAST:event_showStationsMIActionPerformed
+
   private void startAllLocomotives() {
     int result = JOptionPane.showConfirmDialog(this, "Are you sure you want to start All Locomotives?", "Start ALL Locomotives", JOptionPane.YES_NO_OPTION);
     if (result == JOptionPane.YES_OPTION) {
-      AutoPilot.startAllLocomotives();
+      //AutoPilot.startAllLocomotives();
+      RailController.getInstance().startAllLocomotives();
     }
   }
 
@@ -1431,6 +1502,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   private JMenuItem showPropertiesMI;
   private JMenuItem showRoutesMI;
   private JMenuItem showSensorMonitor;
+  private JMenuItem showStationsMI;
   private JButton showVNCBtn;
   private SmallDriverCabPanel smallDriverCabPanel;
   private JButton startAllLocsBtn;

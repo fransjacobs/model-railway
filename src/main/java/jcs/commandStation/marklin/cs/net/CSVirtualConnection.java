@@ -292,7 +292,7 @@ class CSVirtualConnection implements CSConnection, VirtualConnection {
       }
 
       String msg = "Host " + centralStationAddress.getHostName();
-      ConnectionEvent de = new ConnectionEvent(msg, false);
+      ConnectionEvent de = new ConnectionEvent(msg, false, true);
       for (ConnectionEventListener listener : disconnectionEventListeners) {
         listener.onConnectionChange(de);
       }

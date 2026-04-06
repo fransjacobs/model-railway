@@ -29,7 +29,6 @@ import jcs.commandStation.AbstractController;
 import jcs.commandStation.AccessoryController;
 import jcs.commandStation.DecoderController;
 import jcs.commandStation.FeedbackController;
-import jcs.commandStation.autopilot.AutoPilot;
 import jcs.commandStation.esu.ecos.net.EcosConnection;
 import jcs.commandStation.esu.ecos.net.EcosConnectionFactory;
 import jcs.commandStation.events.PowerEvent;
@@ -48,8 +47,9 @@ import jcs.commandStation.events.LocomotiveFunctionEvent;
 import jcs.commandStation.events.LocomotiveFunctionEventListener;
 import jcs.commandStation.events.LocomotiveSpeedEvent;
 import jcs.commandStation.events.LocomotiveSpeedEventListener;
-import jcs.commandStation.autopilot.DriveSimulator;
+import jcs.commandStation.automation.DriveSimulator;
 import jcs.commandStation.VirtualConnection;
+import jcs.commandStation.automation.RailController;
 import jcs.commandStation.entities.Device;
 import jcs.commandStation.events.AllSensorEventsListener;
 import jcs.commandStation.events.ConnectionEvent;
@@ -283,8 +283,8 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
       if (eventMessageHandler != null) {
         Logger.trace("Stopping event handling...");
         eventMessageHandler.quit();
-        eventMessageHandler.join();
 
+        //eventMessageHandler.join();
         eventMessageHandler = null;
       }
       if (connected) {
@@ -467,7 +467,8 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     if (isVirtual()) {
       //When a locomotive has a speed change (>0) check if Auto mode is on.
       //When in Auto mode try to simulate the first sensor the locomotive is suppose to hit.
-      if (AutoPilot.isAutoModeActive() && speed > 0) {
+      //if (AutoPilot.isAutoModeActive() && speed > 0) {
+      if (RailController.getInstance().isAutoModeActive() && speed > 0) {
         simulator.simulateDriving(locUid, speed, direction);
       }
     }

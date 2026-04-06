@@ -16,7 +16,8 @@
 package jcs.ui.layout.tiles;
 
 import java.util.List;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 import jcs.JCS;
 import jcs.commandStation.FeedbackController;
 import jcs.commandStation.events.AccessoryEvent;
@@ -30,59 +31,50 @@ import org.tinylog.Logger;
  */
 class TileActionEventHandler extends Thread {
 
-  private boolean stop = false;
-  private boolean quit = true;
+  private volatile boolean running = true;
 
-  private final ConcurrentLinkedQueue<JCSActionEvent> eventQueue;
+  private final BlockingQueue<JCSActionEvent> eventQueue;
 
-  TileActionEventHandler(ConcurrentLinkedQueue eventQueue) {
+  TileActionEventHandler(BlockingQueue<JCSActionEvent> eventQueue) {
+    super("TILE-ACTION-EVENT-HANDLER");
     this.eventQueue = eventQueue;
   }
 
-  void quit() {
-    this.quit = true;
-  }
+//  @SuppressWarnings("unused")
+//  void quit() {
+//    this.running = false;
+//  }
 
+  @SuppressWarnings("unused")
   boolean isRunning() {
-    return !this.quit;
-  }
-
-  boolean isFinished() {
-    return this.stop;
+    return this.running;
   }
 
   @Override
   public void run() {
-    this.quit = false;
-    this.setName("TILE-ACTION-EVENT-HANDLER");
+    running = true;
 
     Logger.trace("Tile ActionEventHandler Started...");
 
-    while (isRunning()) {
+    while (running) {
       try {
-        JCSActionEvent actionEvent = eventQueue.poll();
+        JCSActionEvent actionEvent = eventQueue.poll(100, TimeUnit.MILLISECONDS);
         if (actionEvent != null) {
           Object event = actionEvent.getEventObject();
           if (event instanceof SensorEvent sensorEvent) {
             fireSensorEvent(sensorEvent);
           }
           if (event instanceof AccessoryEvent accessoryEvent) {
-            switchChanged(accessoryEvent);
-          }
-
-        } else {
-          //lets sleep for a while
-          synchronized (this) {
-            wait(1000);
+            AccessoryBean ab = accessoryEvent.getAccessoryBean();
+            JCS.getJcsCommandStation().switchAccessory(ab, ab.getAccessoryValue());
           }
         }
-
       } catch (InterruptedException ex) {
         Logger.error(ex);
+        Thread.currentThread().interrupt();
+        break;
       }
     }
-
-    stop = true;
     Logger.trace("Tile ActionEventHandler Stopped...");
   }
 
@@ -92,11 +84,6 @@ class TileActionEventHandler extends Thread {
     for (FeedbackController fbc : acl) {
       fbc.fireAllSensorEventsListeners(sensorEvent);
     }
-  }
-
-  private void switchChanged(AccessoryEvent accessoryEvent) {
-    AccessoryBean ab = accessoryEvent.getAccessoryBean();
-    JCS.getJcsCommandStation().switchAccessory(ab, ab.getAccessoryValue());
   }
 
 }

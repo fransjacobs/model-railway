@@ -131,14 +131,14 @@ Zodra je layout klaar is, kun je beginnen met het verkennen van Autopilot en han
 
 Voordat je JCS start, zorg ervoor dat je het volgende hebt:
 
-- **Java 21** geïnstalleerd (bijv. [Temurin OpenJDK](https://adoptium.net/temurin/releases/))  
+- **Java 25** geïnstalleerd (bijv. [Temurin OpenJDK](https://adoptium.net/temurin/releases/))  
 - Een **ondersteund commandostation** verbonden en geconfigureerd (zie [Ondersteunde Commandostations](#ondersteunde-commandostations))  
 
 > Tip: Zorg dat je Java-omgeving correct in je systeem-PATH staat om de applicatie via de command line te kunnen starten.
 
 ### 💾 Download een Prebuilt Release
 
-De nieuwste stabiele versie is **v0.0.2** (uitgebracht op 27 september 2024):  
+De nieuwste stabiele versie is **v0.0.3** (uitgebracht op 24 november 2025):  
 
 - Eerste volledig geautomatiseerde rijversie  
 - Uitvoerbare bestanden voor **Windows, macOS, Linux** en een **cross-platform Uber-JAR**  
@@ -199,7 +199,7 @@ Heel veel dank aan iedereen die dit project ondersteunt!
 Ik hoop dat dit project je inspireert om **te experimenteren, knutselen en plezier te hebben met modeltreinen en code!**  
 
 
-## 📜 Copyright 2018 - 2025 Frans Jacobs
+## 📜 Copyright 2018 - 2026 Frans Jacobs
 
 Hierbij wordt gratis toestemming verleend aan iedereen die een kopie van deze software en bijbehorende documentatiebestanden (de "Software") verkrijgt om te werken met de Software **zonder enige beperking**, inclusief de rechten om te gebruiken, kopiëren, wijzigen, samenvoegen, publiceren, distribueren, sublicentiëren en/of verkopen van kopieën van de Software, en om personen aan wie de Software wordt verstrekt dit te doen, onder de volgende voorwaarden:
 
