@@ -103,7 +103,7 @@ class PrepareRouteState extends AbstractState {
   @Override
   void onExit() {
     // Make sure the locomotive is stopped
-    dispatcher.changeLocomotiveVelocity(0); 
+    //dispatcher.changeLocomotiveVelocity(0); 
   }
 
   @Override

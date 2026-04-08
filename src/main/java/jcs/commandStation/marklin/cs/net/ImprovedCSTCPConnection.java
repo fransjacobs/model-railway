@@ -83,6 +83,7 @@ class ImprovedCSTCPConnection implements CSConnection {
         clientSocket = new Socket(centralStationAddress, CSConnection.CS_RX_PORT);
         clientSocket.setKeepAlive(true);
         clientSocket.setTcpNoDelay(true);
+        
         dos = new DataOutputStream(clientSocket.getOutputStream());
 
         messageReceiver = new ClientMessageReceiver(clientSocket);
@@ -111,6 +112,7 @@ class ImprovedCSTCPConnection implements CSConnection {
    */
   private static class PendingRequest {
 
+    @SuppressWarnings("unused")
     private final int requestId;
     private final CanMessage txMessage;
     private final CountDownLatch responseLatch;
@@ -376,7 +378,7 @@ class ImprovedCSTCPConnection implements CSConnection {
   }
 
   @Override
-  public CanMessage sendCanMessage(CanMessage message) {
+  public synchronized CanMessage sendCanMessage(CanMessage message) {
     if (message == null) {
       Logger.warn("Message is NULL?");
       return null;

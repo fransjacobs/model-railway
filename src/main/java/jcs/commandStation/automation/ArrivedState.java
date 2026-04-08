@@ -62,7 +62,6 @@ class ArrivedState extends AbstractState {
   AbstractState execute() {
     boolean nextRoutePrepared = false;
 
-    LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
     BlockBean departureBlock = dispatcher.getDepartureBlock();
     BlockBean destinationBlock = dispatcher.getDestinationBlock();
 
@@ -80,6 +79,7 @@ class ArrivedState extends AbstractState {
     PersistenceFactory.getService().persist(departureBlock);
 
     destinationBlock.setBlockState(BlockBean.BlockState.OCCUPIED);
+    LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
     destinationBlock.setLocomotive(locomotive);
     destinationBlock.setLogicalDirection(locomotive.getDirection().getDirection());
     destinationBlock.setArrivalSuffix(dispatcher.getRouteBean().getToSuffix());
@@ -170,6 +170,8 @@ class ArrivedState extends AbstractState {
     boolean automodeInActive = !dispatcher.getRailwayController().isAutoModeActive();
     automodeInActive = automodeInActive && !dispatcher.isLocomotiveStarted();
 
+    //refresh
+    locomotive = dispatcher.getLocomotiveBean();
     Logger.debug("Locomotive: " + locomotive.getName() + " Arrived in " + destinationBlock.getDescription() + " next Route " + (nextRoutePrepared ? "is" : "is not") + " prepared. Direction: " + locomotive.getDirection() + (dispatcher.getRouteBean() != null ? " Route: " + dispatcher.getRouteBean().getId() : "") + " Speed: " + locomotive.getVelocity() + "...");
 
     if (alwaysStop || automodeInActive || !nextRoutePrepared) {
@@ -177,7 +179,6 @@ class ArrivedState extends AbstractState {
     } else {
       return new DepartingState();
     }
-
   }
 
   @Override
