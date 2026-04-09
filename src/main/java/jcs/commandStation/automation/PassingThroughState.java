@@ -62,8 +62,7 @@ class PassingThroughState extends AbstractState implements SensorEventCallback {
     dispatcher.getRouteManager().showRoute(route, Color.magenta);
     dispatcher.showBlockState(destinationBlock);
 
-    Logger.debug("Locomotive: " + dispatcher.getName() + " in " + destinationBlock.getDescription() + " Current Route: " + dispatcher.getRouteBean().getId() + " Next Route: " + dispatcher.getNextRouteBean().getId() + " Speed: " + dispatcher.getLocomotiveBean().getVelocity() + "waiting for n SensorId: " + inSensorId + "...");
-
+    Logger.debug("Locomotive: " + dispatcher.getName() + " in " + destinationBlock.getDescription() + " Current Route: " + dispatcher.getRouteBean().getId() + " Next Route: " + dispatcher.getNextRouteBean().getId() + " Speed: " + dispatcher.getLocomotiveBean().getVelocity() + " waiting for In SensorId: " + inSensorId + " InsensorTriggered: " + inSensorTriggered + " ...");
   }
 
   @Override
