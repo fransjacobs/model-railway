@@ -28,40 +28,40 @@ import org.tinylog.Logger;
  * The Waiting State is used when a Train is in a block and must wait, or after a route is searched and nothing is found.
  */
 class WaitingState extends AbstractState {
-  
+
   private ScheduledExecutorService scheduler;
   private ScheduledFuture<?> countdownTask;
   private volatile long remainingTime;
   private volatile boolean waitCompleted = false;
   private volatile boolean cancelled = false;
-  
+
   WaitingState() {
     super("Waiting");
   }
-  
+
   @Override
   void onEnter(Dispatcher dispatcher) {
     super.onEnter(dispatcher);
-    
+
     waitCompleted = false;
     cancelled = false;
 
     // Calculate wait time
     BlockBean blockBean = dispatcher.getDepartureBlock();
     LocomotiveBean locomotiveBean = dispatcher.getLocomotiveBean();
-    
+
     //This check should not be necessary....
     if (locomotiveBean.getVelocity() > 0) {
       Logger.warn("##@@! " + dispatcher.getName() + " Velocity " + locomotiveBean.getVelocity() + " is > 0 !");
       dispatcher.changeLocomotiveVelocity(0);
     }
-    
+
     Logger.debug("Locomotive " + locomotiveBean.getName() + " Direction: " + locomotiveBean.getDirection().getDirection() + " start waiting in block " + blockBean.getId() + " logicalDir: " + blockBean.getLogicalDirection() + " Arrived at " + blockBean.getArrivalSuffix() + " side.");
-    
+
     remainingTime = calculateWaitTime(blockBean);
     long waitTime = remainingTime;
     Logger.trace("Waiting for " + remainingTime + " s. Block Random " + blockBean.isRandomWait() + " Block max: " + blockBean.getMaxWaitTime());
-    
+
     if (remainingTime > 0) {
       // Initialize scheduler
       ThreadGroup threadGroup = dispatcher.getThreadGroup();
@@ -70,15 +70,18 @@ class WaitingState extends AbstractState {
 
       // Schedule countdown task - runs every second
       countdownTask = scheduler.scheduleAtFixedRate(() -> {
-        
+
         if (!dispatcher.isLocomotiveStarted()) {
           // Automode disabled - cancel waiting
           Logger.debug("Automode is disabled for " + dispatcher.getName() + " Exit " + dispatcher.getStateName());
           cancelled = true;
           stopScheduler();
+
+          dispatcher.fireStateListeners(name, name, " (-)");
+
           return;
         }
-        
+
         dispatcher.fireStateListeners(name, name, " (" + remainingTime + ")");
         //Logger.trace("Remaining time for " + dispatcher.getName() + " " + remainingTime + " s...");
 
@@ -91,21 +94,19 @@ class WaitingState extends AbstractState {
         }
       }, 0, 1, TimeUnit.SECONDS); // Initial delay 0, period 1 second
 
-      //Logger.trace(dispatcher.getName() + " wakeup (1)...");
-      //dispatcher.wakeup();
     } else {
       waitCompleted = true;
       Logger.trace(dispatcher.getName() + " wakeup (2)...");
       dispatcher.wakeup();
     }
   }
-  
+
   @Override
   AbstractState execute() {
     // Just check the status - actual waiting happens in scheduler
     if (waitCompleted) {
       Logger.trace("Wait completed for " + dispatcher.getName() + "...");
-      
+
       return new PrepareRouteState();
     } else if (cancelled || !dispatcher.isLocomotiveStarted()) {
       return new IdleState();
@@ -114,17 +115,17 @@ class WaitingState extends AbstractState {
     // Stay in current state while waiting
     return this;
   }
-  
+
   @Override
   void onExit() {
     stopScheduler();
   }
-  
+
   @Override
   boolean canStopLocomotive() {
     return true;
   }
-  
+
   private void stopScheduler() {
     if (countdownTask != null && !countdownTask.isCancelled()) {
       countdownTask.cancel(false);
@@ -141,20 +142,20 @@ class WaitingState extends AbstractState {
       }
     }
   }
-  
+
   private long calculateWaitTime(BlockBean blockBean) {
-    
+
     int minWait = blockBean.getMinWaitTime();
     int maxWait;
-    
+
     if (blockBean.getMaxWaitTime() != null) {
       maxWait = blockBean.getMaxWaitTime();
     } else {
       maxWait = Integer.getInteger("default.max.waittime", 20);
     }
-    
+
     long waitTime;
-    
+
     if (blockBean.isRandomWait()) {
       Random random = new Random();
       // Seed a bit....
@@ -179,10 +180,10 @@ class WaitingState extends AbstractState {
     boolean alwayStop = blockBean.isAlwaysStop();
     if (!alwayStop) {
       //waitTime = Integer.getInteger("default.no.stop.waittime", 1);
-      // Use a shorter time
+      //Use a shorter time...
       waitTime = waitTime / 2;
     }
-    
+
     return waitTime;
   }
 }
