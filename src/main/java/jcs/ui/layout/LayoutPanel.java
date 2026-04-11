@@ -40,14 +40,17 @@ import jcs.util.RunUtil;
 import org.tinylog.Logger;
 
 /**
- * The `LayoutPanel` class is a custom `JPanel` used to visually represent and manipulate a layout. It provides a graphical canvas (`LayoutCanvas`) for drawing and editing elements,<br>
- * along with a toolbar offering various tools for adding, deleting, manipulating, and loading/saving layouts. The panel can operate in read-only mode, disabling editing functionalities.
+ * The `LayoutPanel` class is a custom `JPanel` used to visually represent and manipulate a layout.<br>
+ * It provides a graphical canvas (`LayoutCanvas`) for drawing and editing elements,<br>
+ * along with a toolbar offering various tools for adding, deleting, manipulating, and loading/saving layouts.<br>
+ * The panel can operate in read-only mode, disabling editing functionalities.
  *
  * It uses a tile-based system to represent tracks and other elements, allowing for easy manipulation and modification of the layout.<br>
  * The class handles events related to adding, deleting, rotating, and flipping tiles, as well as loading and saving layout configurations.<br>
- * It supports different tile types (straight tracks, curved tracks, blocks, sensors, signals, switches, and crossings), each with different properties and behaviors. external resource (e.g., a
- * database or configuration file) to load and save layout data. It also incorporates an undo/redo mechanism for easy recovery from mistakes.It provides options for showing/hiding the grid and offers
- * different modes of operation (adding, deleting, selecting, moving).
+ * It supports different tile types (straight tracks, curved tracks, blocks, sensors, signals, switches, and crossings),<br>
+ * each with different properties and behaviors. external resource (e.g., a database or configuration file) to load and save layout data.<br>
+ * It also incorporates an undo/redo mechanism for easy recovery from mistakes.<br>
+ * It provides options for showing/hiding the grid and offers different modes of operation (adding, deleting, selecting, moving).
  *
  */
 public class LayoutPanel extends JPanel {
@@ -99,7 +102,6 @@ public class LayoutPanel extends JPanel {
       canvas.setGridType(gridType);
 
       toolBar.remove(autoPilotBtn);
-      toolBar.remove(resetAutopilotBtn);
       toolBar.remove(startAllLocomotivesBtn);
 
       if (readonly) {
@@ -148,7 +150,6 @@ public class LayoutPanel extends JPanel {
     routeBtn = new JButton();
     autoPilotBtn = new JToggleButton();
     startAllLocomotivesBtn = new JToggleButton();
-    resetAutopilotBtn = new JButton();
     filler1 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
     gridBtn = new JButton();
     filler2 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
@@ -247,21 +248,6 @@ public class LayoutPanel extends JPanel {
       }
     });
     toolBar.add(startAllLocomotivesBtn);
-
-    resetAutopilotBtn.setIcon(new ImageIcon(getClass().getResource("/media/director-red.png"))); // NOI18N
-    resetAutopilotBtn.setToolTipText("Reset AutoPilot");
-    resetAutopilotBtn.setFocusable(false);
-    resetAutopilotBtn.setHorizontalTextPosition(SwingConstants.CENTER);
-    resetAutopilotBtn.setMaximumSize(new Dimension(38, 38));
-    resetAutopilotBtn.setMinimumSize(new Dimension(38, 38));
-    resetAutopilotBtn.setPreferredSize(new Dimension(38, 38));
-    resetAutopilotBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
-    resetAutopilotBtn.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        resetAutopilotBtnActionPerformed(evt);
-      }
-    });
-    toolBar.add(resetAutopilotBtn);
     toolBar.add(filler1);
 
     gridBtn.setIcon(new ImageIcon(getClass().getResource("/media/square-grid-24.png"))); // NOI18N
@@ -300,7 +286,7 @@ public class LayoutPanel extends JPanel {
   }// </editor-fold>//GEN-END:initComponents
 
     private void loadBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_loadBtnActionPerformed
-      this.loadLayoutInBackground();
+      loadLayoutInBackground();
     }//GEN-LAST:event_loadBtnActionPerformed
 
     private void routeBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_routeBtnActionPerformed
@@ -308,14 +294,12 @@ public class LayoutPanel extends JPanel {
     }//GEN-LAST:event_routeBtnActionPerformed
 
     private void formComponentHidden(ComponentEvent evt) {//GEN-FIRST:event_formComponentHidden
-      ///Logger.trace("HIDDEN");
       if (JCS.getParentFrame() != null) {
         JCS.getParentFrame().hideExtraToolbar(this.toolBar);
       }
     }//GEN-LAST:event_formComponentHidden
 
     private void formComponentShown(ComponentEvent evt) {//GEN-FIRST:event_formComponentShown
-      //Logger.trace("SHOWN");
       if (JCS.getParentFrame() != null) {
         topPanel.remove(this.toolBar);
         this.remove(topPanel);
@@ -330,19 +314,9 @@ public class LayoutPanel extends JPanel {
     if (autoPilotBtn.isSelected()) {
       startAllLocomotivesBtn.setEnabled(true);
     } else {
-      ///if (startAllLocomotivesBtn.isSelected()) {
-      //  startAllLocomotivesBtn.doClick();
-      //}
       startAllLocomotivesBtn.setEnabled(false);
     }
-
     RailController.getInstance().enableAutomode(autoPilotBtn.isSelected());
-
-//    if (autoPilotBtn.isSelected()) {
-//      RailController.getInstance().startAutoMode();
-//    } else {
-//      RailController.getInstance().stopAutoMode();
-//    }
   }//GEN-LAST:event_autoPilotBtnActionPerformed
 
   private void startAllLocomotivesBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startAllLocomotivesBtnActionPerformed
@@ -351,10 +325,6 @@ public class LayoutPanel extends JPanel {
       RailController.getInstance().startAllLocomotives();
     }
   }//GEN-LAST:event_startAllLocomotivesBtnActionPerformed
-
-  private void resetAutopilotBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_resetAutopilotBtnActionPerformed
-    RailController.getInstance().reset();
-  }//GEN-LAST:event_resetAutopilotBtnActionPerformed
 
   private void gridBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_gridBtnActionPerformed
     gridType++;
@@ -384,8 +354,6 @@ public class LayoutPanel extends JPanel {
 
     @Override
     public void onPowerChange(PowerEvent event) {
-      //Logger.info("Track Power is " + (event.isPower() ? "on" : "off"));
-
       if (!event.isPower() && autoPilotBtn.isSelected()) {
         autoPilotBtn.doClick();
       }
@@ -403,7 +371,6 @@ public class LayoutPanel extends JPanel {
   private Box.Filler filler4;
   private JButton gridBtn;
   private JButton loadBtn;
-  private JButton resetAutopilotBtn;
   private JButton routeBtn;
   private JToggleButton startAllLocomotivesBtn;
   private JToolBar toolBar;

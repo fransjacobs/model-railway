@@ -52,10 +52,9 @@ public class DispatcherTablePanel extends JPanel implements RailControllerStatus
     initComponents();
 
     dispatcherTable.setDefaultRenderer(ImageIcon.class, new LocIconRenderer());
-
-    dispatcherTable.getRowSorter().addRowSorterListener((RowSorterEvent e) -> {
+    //dispatcherTable.getRowSorter().addRowSorterListener((RowSorterEvent e) -> {
       //Logger.trace(e.getType() + "," + e.getSource().getSortKeys());// Sorting changed
-    });
+    //});
 
     initModel();
   }
@@ -69,7 +68,7 @@ public class DispatcherTablePanel extends JPanel implements RailControllerStatus
   public void onControllerStatusChange(String status) {
     List<Dispatcher> dispatchers = RailController.getInstance().getDispatchers();
     Logger.trace("Found " + dispatchers.size() + " Dispatchers. Automode status: " + (status));
-    locomotiveDispatcherTableModel.refresh();
+    refresh();
   }
 
   private class LocIconRenderer extends DefaultTableCellRenderer {
@@ -116,6 +115,7 @@ public class DispatcherTablePanel extends JPanel implements RailControllerStatus
 
     dispatcherSP.setViewportView(dispatcherTable);
 
+    dispatcherTable.setAutoCreateRowSorter(true);
     dispatcherTable.setModel(locomotiveDispatcherTableModel);
     dispatcherTable.setDoubleBuffered(true);
     dispatcherTable.setDragEnabled(true);
@@ -134,14 +134,16 @@ public class DispatcherTablePanel extends JPanel implements RailControllerStatus
   private void dispatcherTableMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_dispatcherTableMouseReleased
     int row = dispatcherTable.getSelectedRow();
 
-    Dispatcher dispatcher = locomotiveDispatcherTableModel.getBeanAt(row);
-    if (row >= 0 && dispatcher != null) {
-      Logger.trace("Selected " + dispatcher.getName() + " " + evt.getClickCount());
+    if (!locomotiveDispatcherTableModel.getBeans().isEmpty()) {
+      Dispatcher dispatcher = locomotiveDispatcherTableModel.getBeanAt(row);
+      if (row >= 0 && dispatcher != null) {
+        Logger.trace("Selected " + dispatcher.getName() + " " + evt.getClickCount());
 
-      if (evt.getClickCount() == 2) {
-        showDriverCabDialog(dispatcher.getLocomotiveBean());
+        if (evt.getClickCount() == 2) {
+          showDriverCabDialog(dispatcher.getLocomotiveBean());
+        }
+        fireSelectionChangedListeners(dispatcher);
       }
-      fireSelectionChangedListeners(dispatcher);
     }
   }//GEN-LAST:event_dispatcherTableMouseReleased
 

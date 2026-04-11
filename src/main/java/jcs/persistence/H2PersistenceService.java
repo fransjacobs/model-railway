@@ -323,6 +323,17 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
+  public boolean isOnTrack(LocomotiveBean locomotive) {
+    if (locomotive != null && locomotive.getId() != null) {
+      String sql = "select count(*) from blocks b where b.locomotive_id = ?";
+      Long count = database.sql(sql, locomotive.getId()).first(Long.class);
+      return count > 0;
+    } else {
+      return false;
+    }
+  }
+
+  @Override
   public List<LocomotiveBean> getAllLocomotives() {
     List<LocomotiveBean> locos = database.orderBy("id").results(LocomotiveBean.class);
 

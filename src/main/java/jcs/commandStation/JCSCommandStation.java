@@ -95,7 +95,7 @@ public class JCSCommandStation {
   private final Set<Protocol> supportedProtocols;
   private CommandStationBean commandStation;
 
-  private final ExecutorService executor;
+  private ExecutorService executor;
 
   private final BlockingQueue<SensorEvent> sensorEventQueue;
   private final BlockingQueue<AccessoryEvent> accessoryEventQueue;
@@ -176,59 +176,63 @@ public class JCSCommandStation {
   }
 
   public final boolean connectInBackground() {
-    long now = System.currentTimeMillis();
-    long start = now;
-    long timemax = now + 3000;
-
-    executor.execute(() -> {
-      connect();
-      wakeUp();
-    });
-
     boolean con = false;
 
-    while (!con && now < timemax) {
-      try {
-        synchronized (lock) {
-          lock.wait(500);
+    try {
+      long now = System.currentTimeMillis();
+      long start = now;
+      long timemax = now + 3000;
+
+      executor.execute(() -> {
+        connect();
+        wakeUp();
+      });
+
+      while (!con && now < timemax) {
+        try {
+          synchronized (lock) {
+            lock.wait(500);
+          }
+        } catch (InterruptedException ex) {
+          Thread.currentThread().interrupt();
+          Logger.trace(ex);
+          break;
         }
-      } catch (InterruptedException ex) {
-        Thread.currentThread().interrupt();
-        Logger.trace(ex);
-        break;
+
+        now = System.currentTimeMillis();
+        if (decoderController != null) {
+          con = decoderController.isConnected();
+        } else {
+          Logger.trace("Can't connect as there is no DecoderController configured !");
+        }
       }
 
-      now = System.currentTimeMillis();
-      if (decoderController != null) {
-        con = decoderController.isConnected();
+      if (con) {
+        Logger.trace("Connected to " + decoderController.getCommandStationBean().getDescription() + " in " + (now - start) + " ms");
+        //Switch the track power on
+        //TODO: make this configurable via property
+        boolean power = decoderController.power(true);
+        Logger.trace("Power is " + (power ? "On" : "Off"));
+
+        if (!isVirtual()) {
+          ConnectionEvent ce = new ConnectionEvent(commandStation.getDescription(), true, isVirtual());
+          for (ConnectionEventListener cel : connectionEventListeners) {
+            cel.onConnectionChange(ce);
+          }
+        }
+
       } else {
-        Logger.trace("Can't connect as there is no DecoderController configured !");
-      }
-    }
+        Logger.trace("Timeout connecting...");
 
-    if (con) {
-      Logger.trace("Connected to " + decoderController.getCommandStationBean().getDescription() + " in " + (now - start) + " ms");
-      //Switch the track power on
-      //TODO: make this configurable via property
-      boolean power = decoderController.power(true);
-      Logger.trace("Power is " + (power ? "On" : "Off"));
-
-      if (!isVirtual()) {
-        ConnectionEvent ce = new ConnectionEvent(commandStation.getDescription(), true, isVirtual());
-        for (ConnectionEventListener cel : connectionEventListeners) {
-          cel.onConnectionChange(ce);
+        if (!isVirtual()) {
+          ConnectionEvent ce = new ConnectionEvent(commandStation.getDescription(), false, isVirtual());
+          for (ConnectionEventListener cel : connectionEventListeners) {
+            cel.onConnectionChange(ce);
+          }
         }
       }
-
-    } else {
-      Logger.trace("Timeout connecting...");
-
-      if (!isVirtual()) {
-        ConnectionEvent ce = new ConnectionEvent(commandStation.getDescription(), false, isVirtual());
-        for (ConnectionEventListener cel : connectionEventListeners) {
-          cel.onConnectionChange(ce);
-        }
-      }
+    } catch (Exception e) {
+      Logger.trace(e.getMessage());
     }
 
     return con;
@@ -237,6 +241,11 @@ public class JCSCommandStation {
   public final boolean connect() {
     boolean decoderControllerConnected = false;
     boolean alreadyConnected = false;
+
+    if (executor.isShutdown()) {
+      Logger.trace("Restarting executers...");
+      executor = Executors.newCachedThreadPool(runnable -> new Thread(threadGroup, runnable, "JCS-WORKER"));
+    }
 
     //Check if already connected to avoid duplication....
     if (commandStation != null && decoderController != null) {
@@ -414,6 +423,7 @@ public class JCSCommandStation {
   }
 
   public void disconnect() {
+    Logger.debug("Disconnecting...");
     for (FeedbackController fc : feedbackControllers.values()) {
       if (fc != decoderController) {
         fc.disconnect();
@@ -425,6 +435,8 @@ public class JCSCommandStation {
       }
     }
 
+    this.executor.shutdown();
+
     if (decoderController != null) {
       if (measurementEventHandler != null) {
         decoderController.removeMeasurementEventListener(measurementEventHandler);
@@ -434,10 +446,9 @@ public class JCSCommandStation {
       decoderController.disconnect();
     }
 
-    //Enable command station switching so
-    decoderController = null;
     accessoryControllers.clear();
     feedbackControllers.clear();
+    decoderController = null;
     commandStation = null;
     ControllerFactory.reset();
   }
@@ -455,18 +466,23 @@ public class JCSCommandStation {
   }
 
   private void notifyPowerListeners(final PowerEvent powerEvent) {
-    if (powerEventRunning.compareAndSet(false, true)) {
-      try {
-        if (!powerEventListeners.isEmpty()) {
-          executor.execute(() -> {
-            for (PowerEventListener pel : powerEventListeners) {
-              pel.onPowerChange(powerEvent);
-            }
-          });
+    try {
+
+      if (powerEventRunning.compareAndSet(false, true)) {
+        try {
+          if (!powerEventListeners.isEmpty()) {
+            executor.execute(() -> {
+              for (PowerEventListener pel : powerEventListeners) {
+                pel.onPowerChange(powerEvent);
+              }
+            });
+          }
+        } finally {
+          powerEventRunning.set(false);
         }
-      } finally {
-        powerEventRunning.set(false);
       }
+    } catch (Exception e) {
+      Logger.trace(e.getMessage());
     }
   }
 

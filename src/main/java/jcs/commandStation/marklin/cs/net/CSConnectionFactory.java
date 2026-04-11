@@ -89,8 +89,8 @@ public class CSConnectionFactory {
       if (virtual) {
         controllerConnection = new CSVirtualConnection(controllerHost);
       } else {
-        //controllerConnection = new CSTCPConnection(controllerHost);
-        controllerConnection = new ImprovedCSTCPConnection(controllerHost);
+        controllerConnection = new CSTCPConnection(controllerHost);
+        //controllerConnection = new ImprovedCSTCPConnection(controllerHost);
       }
     }
 
@@ -111,7 +111,9 @@ public class CSConnectionFactory {
   public static void disconnectAll() {
     if (controllerConnection != null) {
       try {
-        controllerConnection.close();
+        if (controllerConnection.isConnected()) {
+          controllerConnection.close();
+        }
       } catch (Exception ex) {
         Logger.trace("Error during disconnect " + ex);
       }

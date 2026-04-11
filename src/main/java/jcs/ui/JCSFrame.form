@@ -124,20 +124,20 @@
             </MenuItem>
           </SubComponents>
         </Menu>
-        <Menu class="javax.swing.JMenu" name="autopilotMenu">
+        <Menu class="javax.swing.JMenu" name="railControllerMenu">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Auto Pilot"/>
-            <Property name="name" type="java.lang.String" value="autopilotMenu" noResource="true"/>
+            <Property name="text" type="java.lang.String" value="Rail Controller"/>
+            <Property name="name" type="java.lang.String" value="railControllerMenu" noResource="true"/>
           </Properties>
           <SubComponents>
-            <MenuItem class="javax.swing.JMenuItem" name="autoPilotMI">
+            <MenuItem class="javax.swing.JMenuItem" name="autoDrivingMI">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Autopilot"/>
-                <Property name="toolTipText" type="java.lang.String" value="Switch Autopilot on"/>
-                <Property name="name" type="java.lang.String" value="autoPilotMI" noResource="true"/>
+                <Property name="text" type="java.lang.String" value="Automatic Driving"/>
+                <Property name="toolTipText" type="java.lang.String" value="Automatic Driving"/>
+                <Property name="name" type="java.lang.String" value="autoDrivingMI" noResource="true"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="autoPilotMIActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="autoDrivingMIActionPerformed"/>
               </Events>
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="startAllLocsMI">
@@ -150,14 +150,14 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="startAllLocsMIActionPerformed"/>
               </Events>
             </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="resetAutopilotMI">
+            <MenuItem class="javax.swing.JMenuItem" name="resetRailControllerMI">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Reset Autopilot"/>
-                <Property name="toolTipText" type="java.lang.String" value="Reset Autopilot"/>
-                <Property name="name" type="java.lang.String" value="resetAutopilotMI" noResource="true"/>
+                <Property name="text" type="java.lang.String" value="Reset Rail Controller"/>
+                <Property name="toolTipText" type="java.lang.String" value="Reset Rail Controller Engine"/>
+                <Property name="name" type="java.lang.String" value="resetRailControllerMI" noResource="true"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="resetAutopilotMIActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="resetRailControllerMIActionPerformed"/>
               </Events>
             </MenuItem>
           </SubComponents>

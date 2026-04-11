@@ -25,7 +25,9 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import jcs.commandStation.events.ConnectionEvent;
 import jcs.commandStation.marklin.cs.can.CanMessage;
 import org.tinylog.Logger;
@@ -50,6 +52,8 @@ class CSTCPConnection implements CSConnection {
   private final boolean debug;
   private final BlockingQueue<CanMessage> eventQueue;
 
+  private CSTCPConnection.PendingRequest pendingRequest;
+
   CSTCPConnection(InetAddress csAddress) {
     centralStationAddress = csAddress;
     debug = System.getProperty("message.debug", "false").equalsIgnoreCase("true");
@@ -68,8 +72,9 @@ class CSTCPConnection implements CSConnection {
         dos = new DataOutputStream(clientSocket.getOutputStream());
 
         messageReceiver = new ClientMessageReceiver(clientSocket);
-        messageReceiver.setDaemon(true);
         messageReceiver.start();
+      } else {
+        Logger.trace("Already connected to " + centralStationAddress.getHostName());
       }
     } catch (IOException ex) {
       this.clientSocket = null;
@@ -88,143 +93,346 @@ class CSTCPConnection implements CSConnection {
     this.disconnectionEventListeners.add(listener);
   }
 
-  private class ResponseCallback {
-
-    private final CanMessage tx;
-    private volatile boolean done = false;
-
-    ResponseCallback(final CanMessage tx) {
-      this.tx = tx;
-    }
-
-    public boolean isSubscribedfor(int command) {
-      int txCmd = this.tx.getCommand();
-      if (CanMessage.REQUEST_CONFIG_DATA == txCmd) {
-        //Special case so valid are +1 and +2
-        return txCmd == (command - 1) || txCmd == (command - 2);
-      } else {
-        return txCmd == (command - 1);
-      }
-    }
-
-    public void addResponse(CanMessage rx, int moreAvailable) {
-      this.tx.addResponse(rx);
-      this.done = moreAvailable == 0;
-    }
-
-    public boolean isResponseComplete() {
-      //Most of the messages will have just one response but there are some which have more
-      return tx.isResponseComplete() && this.done;
-    }
-  }
-
+  /**
+   * Most of the CS CAN messages will return a response.<br>
+   * Therefor a single callback is sufficient.<br>
+   * The CS can only process one command, message at the time.<br>
+   * It leads to errors when multiple commands are send in a network packet.<br>
+   * Hence the send method is synchronized.
+   *
+   * @param message
+   * @return
+   */
   @Override
-  @SuppressWarnings("SleepWhileInLoop")
   public synchronized CanMessage sendCanMessage(CanMessage message) {
     if (message == null) {
-      Logger.warn("Message is NULL?");
-      return null;
+      Logger.trace("Message is NULL?");
+      return message;
     }
 
-    //Most messages will return a response hence a single callback.
-    //The CS can most likely only process one message at the time...
-    //Therefor the method is synchronized...
-    ResponseCallback callback = null;
     try {
-      if (message.expectsResponse() || message.expectsLongResponse()) {
-        //Message is expecting response so lets register for response
-        callback = new ResponseCallback(message);
-        messageReceiver.registerResponseCallback(callback);
+      long timeout;
+      if (message.expectsLongResponse()) {
+        timeout = LONG_TIMEOUT;
+      } else if (message.expectsResponse()) {
+        timeout = SHORT_TIMEOUT;
+      } else {
+        timeout = 0;
       }
 
-      try {
-        byte[] bytes = message.getMessage();
-        //Send the message
-        dos.write(bytes);
-        dos.flush();
-      } catch (IOException ex) {
-        Logger.error(ex.getMessage());
+      if (timeout > 0) {
+        pendingRequest = new CSTCPConnection.PendingRequest(message, timeout);
       }
 
-      if (CanMessage.PING_RESP != message.getCommand()) {
-        //Do not log the ping response as this message is send every 5 seconds or so as a response to the CS ping request.
-        if (debug) {
-          Logger.trace("TX: " + message);
+      byte[] bytes = message.getMessage();
+      //Send the message
+      dos.write(bytes);
+      dos.flush();
+    } catch (IOException ex) {
+      Logger.error(ex.getMessage());
+      if (pendingRequest != null) {
+        pendingRequest.markComplete();
+      }
+    }
+
+    //Do not log the ping response as this message is send every 5 seconds or so as a response to the CS ping request.
+    if (debug) {
+      Logger.trace("TX: " + message);
+    }
+
+    // Wait for response if needed
+    if (pendingRequest != null) {
+      waitForResponse(pendingRequest);
+    }
+
+    Logger.trace("#TX: " + message + (message.isResponseMessage() ? " response msg" : ""));
+    if (!message.isResponseMessage()) {
+      if (message.getResponses().size() > 1) {
+        List<CanMessage> responses = message.getResponses();
+        for (int i = 0; i < responses.size(); i++) {
+          Logger.trace("#RX " + i + ": " + message.getResponse(i));
         }
+      } else {
+        Logger.trace("#RX: " + message.getResponse());
       }
-
-      waitForResponse(message, callback);
-
-      //Capture messages for now to be able to develop the virtual mode
-      Logger.trace("#TX: " + message + (message.isResponseMessage() ? " response msg" : ""));
-      if (!message.isResponseMessage()) {
-        if (message.getResponses().size() > 1) {
-          List<CanMessage> responses = message.getResponses();
-          for (int i = 0; i < responses.size(); i++) {
-            Logger.trace("#RX " + i + ": " + message.getResponse(i));
-          }
-        } else {
-          Logger.trace("#RX: " + message.getResponse());
-        }
-      }
-    } finally {
-      //Remove the callback
-      messageReceiver.unRegisterResponseCallback();
     }
 
     return message;
   }
 
-  @SuppressWarnings("SleepWhileInLoop")
-  private void waitForResponse(CanMessage message, ResponseCallback callback) {
+  private void waitForResponse(CSTCPConnection.PendingRequest request) {
+    long start = System.currentTimeMillis();
 
-    if (callback != null) {
+    try {
+      // Wait with timeout using CountDownLatch (more efficient than sleep polling)
+      boolean completed = request.await();
 
-      long now = System.currentTimeMillis();
-      long start = now;
-      long timeout;
-
-      if (message.expectsLongResponse()) {
-        timeout = now + LONG_TIMEOUT;
-      } else if (message.expectsResponse()) {
-        timeout = now + SHORT_TIMEOUT;
-      } else {
-        timeout = now;
-      }
-
-      boolean responseComplete = callback.isResponseComplete();
-
-      //When querying the CS CAN Bus sometimes the responses have a little delay. This could sometimes lead to missing responses.
-      //Therefor just wait for 10 milliseconds to be sure with queries where this has been observed...
-      if (message.getCommand() == CanMessage.STATUS_CONFIG || message.getCommand() == CanMessage.PING_REQ) {
-        pause10Millis();
-      }
-
-      while (!responseComplete && now < timeout) {
-        responseComplete = callback.isResponseComplete();
-        now = System.currentTimeMillis();
-        try {
-          Thread.sleep(1);
-        } catch (InterruptedException ex) {
-          Thread.currentThread().interrupt();
-        }
-      }
+      long elapsed = System.currentTimeMillis() - start;
 
       if (debug) {
-        if (responseComplete) {
-          Logger.trace("Got Response in " + (now - start) + " ms");
+        if (completed) {
+          Logger.trace("Got Response in " + elapsed + " ms");
         } else {
-          Logger.trace("No Response for " + message + " in " + (now - start) + " ms");
+          Logger.trace("No Response for " + request.getMessage() + " in " + elapsed + " ms (timeout)");
         }
       }
+
+    } catch (InterruptedException ex) {
+      Thread.currentThread().interrupt();
+      Logger.warn("Interrupted while waiting for response");
+    }
+  }
+
+  private static class PendingRequest {
+
+    private final CanMessage txMessage;
+    private final CountDownLatch responseLatch;
+    private final long timeoutMs;
+    //private final long createdAt;
+
+    // Track expected response packets
+    private volatile int expectedPackets = -1; // -1 = unknown, 0 = done, >0 = packets remaining
+    private volatile boolean completed = false;
+
+    PendingRequest(CanMessage txMessage, long timeoutMs) {
+      this.txMessage = txMessage;
+      this.timeoutMs = timeoutMs;
+      //his.createdAt = System.currentTimeMillis();
+      this.responseLatch = new CountDownLatch(1);
+    }
+
+    /**
+     * Check if this request matches the incoming response command
+     */
+    boolean matchesResponse(int responseCommand) {
+      int txCmd = txMessage.getCommand();
+
+      // Special case for CONFIG_DATA requests
+      if (CanMessage.REQUEST_CONFIG_DATA == txCmd) {
+        return txCmd == (responseCommand - 1) || txCmd == (responseCommand - 2);
+      } else {
+        return txCmd == (responseCommand - 1);
+      }
+    }
+
+    /**
+     * Add a response packet
+     *
+     * @param rx The response message
+     * @param remainingBytes Bytes still available in the stream (for multi-packet detection)
+     * @return true if response is now complete
+     */
+    boolean addResponse(CanMessage rx, int remainingBytes) {
+      txMessage.addResponse(rx);
+
+      // Determine if more packets are expected
+      // This is a heuristic - adjust based on your protocol specifics
+      if (expectedPackets == -1) {
+        // First packet - try to determine total expected
+        expectedPackets = estimateRemainingPackets(rx, remainingBytes);
+      } else if (expectedPackets > 0) {
+        expectedPackets--;
+      }
+
+      // Check if we're done
+      if (txMessage.isResponseComplete() && expectedPackets == 0) {
+        markComplete();
+        return true;
+      }
+
+      return false;
+    }
+
+    /**
+     * Estimate remaining packets based on the Märklin CS2/3 CAN protocol (v2.0).
+     *
+     * Protocol invariants from the spec:
+     * <ul>
+     * <li>Every CAN-over-Ethernet packet is exactly 13 bytes: 4 bytes CAN-ID, 1 byte DLC, 8 bytes data (zero-padded when DLC &lt; 8).</li>
+     * <li>The DLC field indicates how many data bytes are meaningful (0–8).</li>
+     * <li>Responses always echo the command byte + 1 (response bit set).</li>
+     * </ul>
+     *
+     * Multi-packet commands (per spec section references):
+     * <ul>
+     * <li><b>Config Data Stream (0x21)</b> §7.2 — first response packet has DLC=6 and carries a 4-byte stream length; remaining data packets always have DLC=8 carrying 8 bytes each. Expected
+     * follow-on packets = ceil(streamLength / 8).</li>
+     * <li><b>Statusdaten Konfiguration (0x1D)</b> §6.2 — transmitted as a data stream; the closing confirmation frame carries the packet count in D-Byte 5 (Paketanzahl).</li>
+     * <li><b>S88 Polling (0x10)</b> §5.1 — one DLC=7 response per module; the request carries the module count in D-Byte 4, so that many responses are expected.</li>
+     * <li><b>Read Config (0x07)</b> §3.7 — one response per byte read; D-Byte 6 of the request ("Anzahl") is the byte count. Value 0 means 256.</li>
+     * <li><b>Lok Discovery (0x01)</b> §3.1 — MFX discovery runs in 32 steps (Range 0→32); intermediate responses carry the current range value in D-Byte 4. Non-MFX discoveries produce a single
+     * response.</li>
+     * </ul>
+     *
+     * All other commands produce exactly one response packet.
+     *
+     * @param firstPacket The first response packet that has just been received.
+     * @param remainingBytes Bytes currently buffered in the DataInputStream (from {@code din.available()}).
+     * @return The number of <em>additional</em> packets still expected after {@code firstPacket}. Returns 0 when this is the only response.
+     */
+    private int estimateRemainingPackets(CanMessage firstPacket, int remainingBytes) {
+      // The command value in a *response* has the response bit set, so strip it
+      // to recover the original command code.  The response bit is bit 0 of the
+      // command byte (the entire low bit of the second byte in the CAN-ID).
+      // Dividing by 2 (right-shift 1) gives the base command index per the table
+      // in §1.4 of the spec.
+      int responseCmd = firstPacket.getCommand();
+
+      // -----------------------------------------------------------------------
+      // §7.2 Config Data Stream (command 0x21, CAN-ID 0x42)
+      // First response: DLC=6  → bytes 0-3 = stream length (Big Endian uint32),
+      //                          bytes 4-5 = CRC16.
+      // All subsequent: DLC=8  → 8 bytes of payload, zero-padded at the end.
+      // -----------------------------------------------------------------------
+      if (responseCmd == CanMessage.CONFIG_DATA_STREAM || responseCmd == CanMessage.CONFIG_DATA_STREAM + 1) {
+        int dlc = firstPacket.getDlc();
+        if (dlc == 6 || dlc == 7) {
+          // This is the header frame; extract the 4-byte stream length (Big Endian).
+          byte[] data = firstPacket.getData();
+          long streamLength = ((data[0] & 0xFFL) << 24)
+                  | ((data[1] & 0xFFL) << 16)
+                  | ((data[2] & 0xFFL) << 8)
+                  | (data[3] & 0xFFL);
+
+          if (streamLength <= 0) {
+            return 0;
+          }
+          // Each data packet carries exactly 8 bytes; use integer ceiling division.
+          return (int) ((streamLength + 7) / 8);
+        }
+        // DLC=8 → data packet inside an already-started stream; caller handles it.
+        return 0;
+      }
+
+      // -----------------------------------------------------------------------
+      // §5.1 S88 Polling (command 0x10, CAN-ID 0x20)
+      // Request DLC=5: bytes 0-3 = device UID, byte 4 = module count.
+      // Response: one DLC=7 frame per module.
+      // The request is stored in txMessage so we can retrieve the module count.
+      // -----------------------------------------------------------------------
+      if (responseCmd == CanMessage.S88_POLLING || responseCmd == CanMessage.S88_POLLING + 1) {
+        // The number of requested modules is in D-Byte 4 of the *request*.
+        CanMessage request = txMessage;
+        if (request != null && request.getDlc() == 5) {
+          int moduleCount = request.getData()[4] & 0xFF;
+          // We've already received the first response; expect moduleCount-1 more.
+          return Math.max(0, moduleCount - 1);
+        }
+        // Fallback: estimate from buffered bytes (each response = 13 bytes).
+        return remainingBytes / CanMessage.MESSAGE_SIZE;
+      }
+
+      // -----------------------------------------------------------------------
+      // §3.7 Read Config (command 0x07, CAN-ID 0x0E)
+      // Request DLC=7: D-Byte 4 = CV-Index(6)|CV-Num(10 hi), D-Byte 5 = CV-Num lo,
+      //                D-Byte 6 = Anzahl (number of bytes to read; 0 means 256).
+      // One response frame per byte read (each carries one value byte in D-Byte 6).
+      // Negative ACK comes back as DLC=6 (missing D-Byte 6) — that is a single frame.
+      // -----------------------------------------------------------------------
+      if (responseCmd == CanMessage.READ_CONFIG || responseCmd == CanMessage.READ_CONFIG + 1) {
+        CanMessage request = txMessage;
+        if (request != null && request.getDlc() == 7) {
+          int anzahl = request.getData()[6] & 0xFF;
+          if (anzahl == 0) {
+            anzahl = 256; // Per spec: value 0 means read 256 bytes
+          }
+          // Already received the first byte; expect anzahl-1 more.
+          // Negative ACK (DLC=6 on the first packet) → no further packets.
+          if (firstPacket.getDlc() < 7) {
+            return 0; // Read failed / negative ACK
+          }
+          return Math.max(0, anzahl - 1);
+        }
+        return 0;
+      }
+
+      // -----------------------------------------------------------------------
+      // §3.1 Lok Discovery (command 0x01, CAN-ID 0x02)
+      // MFX full discovery runs in 32 steps (Range 0 → 32).
+      // The intermediate response (DLC=5) carries the current Range in D-Byte 4.
+      // Range=32 signals the final (complete) packet.
+      // Non-MFX discoveries and negative results use DLC=0 or DLC=5 with a
+      // protocol-specific range value ≥ 33 (MM2=33/34, DCC=35-37, SX1=38/39).
+      // -----------------------------------------------------------------------
+      if (responseCmd == CanMessage.LOK_DISCOVERY || responseCmd == CanMessage.LOK_DISCOVERY + 1) {
+        int dlc = firstPacket.getDlc();
+        if (dlc == 5) {
+          byte[] data = firstPacket.getData();
+          int range = data[4] & 0xFF; // D-Byte 4 = Range / Protokollkennung
+          if (range < 33) {
+            // MFX discovery in progress; Range steps remaining until 32.
+            return Math.max(0, 32 - range);
+          }
+        }
+        // DLC=0 (negative), DLC=6 (ASK debug), or non-MFX → single response.
+        return 0;
+      }
+
+      // -----------------------------------------------------------------------
+      // §6.2 Statusdaten Konfiguration (command 0x1D, CAN-ID 0x3A)
+      // Data is streamed; the closing confirmation carries Paketanzahl in D-Byte 5.
+      // Individual stream packets have DLC=8 and use the Hash for packet numbering.
+      // The closing frame has DLC=6 and carries the total packet count.
+      // -----------------------------------------------------------------------
+      if (responseCmd == CanMessage.STATUS_CONFIG || responseCmd == CanMessage.STATUS_CONFIG + 1) {
+        int dlc = firstPacket.getDlc();
+        if (dlc == 8) {
+          // Stream data packet; more are coming — use buffered byte estimate.
+          return Math.max(0, remainingBytes / CanMessage.MESSAGE_SIZE);
+        }
+        // DLC=6 is the closing confirmation frame → no further packets.
+        return 0;
+      }
+
+      // -----------------------------------------------------------------------
+      // All other commands produce exactly ONE response packet.
+      //
+      // This covers (among others):
+      //   System Stopp/Go/Halt (0x00 sub-cmds)   §2.1–2.3  DLC=5
+      //   Lok Nothalt (0x00/0x03)                §2.4      DLC=5
+      //   Lok Geschwindigkeit (0x04)              §3.4      DLC=4 or 6
+      //   Lok Richtung (0x05)                     §3.5      DLC=4 or 5
+      //   Lok Funktion (0x06)                     §3.6      DLC=5, 6, or 8
+      //   MFX Bind (0x02)                         §3.2      DLC=6
+      //   MFX Verify (0x03)                       §3.3      DLC=6 or 7
+      //   Write Config (0x08)                     §3.8      DLC=8
+      //   Zubehör Schalten (0x0B)                 §4.1      DLC=6 or 8
+      //   S88 Event / Rückmelde Event (0x11)      §5.2      DLC=8
+      //   Softwarestand / Teilnehmer Ping (0x18)  §6.1      DLC=0 or 8
+      //   Automatik schalten (0x30)               §9.1      DLC=6 or 8
+      // -----------------------------------------------------------------------
+      return 0;
+    }
+
+    void markComplete() {
+      if (!completed) {
+        completed = true;
+        responseLatch.countDown();
+      }
+    }
+
+//    boolean isComplete() {
+//      return completed;
+//    }
+    boolean await() throws InterruptedException {
+      return responseLatch.await(timeoutMs, TimeUnit.MILLISECONDS);
+    }
+
+//    boolean isTimedOut() {
+//      return System.currentTimeMillis() - createdAt > timeoutMs;
+//    }
+    CanMessage getMessage() {
+      return txMessage;
     }
   }
 
   @Override
   public void close() throws Exception {
+
+    disconnectionEventListeners.clear();
+
     if (messageReceiver != null) {
       messageReceiver.quit();
-
       messageReceiver.join();
     }
     if (dos != null) {
@@ -236,7 +444,6 @@ class CSTCPConnection implements CSConnection {
       }
     }
 
-    disconnectionEventListeners.clear();
     if (clientSocket != null) {
       try {
         clientSocket.close();
@@ -257,20 +464,17 @@ class CSTCPConnection implements CSConnection {
     return messageReceiver != null && messageReceiver.isRunning();
   }
 
-  private void pause10Millis() {
-    try {
-      Thread.sleep(10);
-    } catch (InterruptedException ex) {
-      Thread.currentThread().interrupt();
-    }
-  }
-
+//  private void pause10Millis() {
+//    try {
+//      Thread.sleep(10);
+//    } catch (InterruptedException ex) {
+//      Thread.currentThread().interrupt();
+//    }
+//  }
   private class ClientMessageReceiver extends Thread {
 
-    private volatile boolean quit = true;
+    private volatile boolean running = false;
     private DataInputStream din;
-
-    private volatile ResponseCallback callBack;
 
     public ClientMessageReceiver(Socket socket) {
       super("CS-CAN-RX");
@@ -278,75 +482,116 @@ class CSTCPConnection implements CSConnection {
         BufferedInputStream bis = new BufferedInputStream(socket.getInputStream());
         din = new DataInputStream(bis);
       } catch (IOException ex) {
-        Logger.error(ex);
+        Logger.error("Failed to create input stream", ex);
       }
     }
 
-    void registerResponseCallback(ResponseCallback callBack) {
-      this.callBack = callBack;
-    }
-
-    void unRegisterResponseCallback() {
-      callBack = null;
-    }
-
     void quit() {
-      quit = true;
+      running = false;
+      interrupt(); // Wake up from blocking read
     }
 
     boolean isRunning() {
-      return !quit;
+      return running;
     }
 
     @Override
     public void run() {
-      quit = false;
+      running = true;
       Logger.trace("Started listening on port " + clientSocket.getLocalPort() + "...");
 
-      while (isRunning()) {
+      while (running) {
         try {
-          int prio = din.readUnsignedByte();
-          int cmd = din.readUnsignedByte();
-          int hash = din.readUnsignedShort();
-          int dlc = din.readUnsignedByte();
-          //read the data
-          int dataIdx = 0;
-          byte[] data = new byte[CanMessage.DATA_SIZE];
-          while (dataIdx < CanMessage.DATA_SIZE) {
-            data[dataIdx] = din.readByte();
-            dataIdx++;
-          }
-          CanMessage rx = new CanMessage(prio, cmd, hash, dlc, data);
+          CanMessage rx = readCanMessage();
 
-          //Logger.trace("RX: "+rx +"; "+ din.available());
-          if (callBack != null && callBack.isSubscribedfor(cmd)) {
-            //TODO create a method to esimate the number of bytes expected... 
-            callBack.addResponse(rx, din.available());
-          } else {
-            eventQueue.offer(rx);
-            //Logger.trace("Enqueued: " + rx + " QueueSize: " + eventQueue.size());
+          if (rx != null) {
+            routeMessage(rx);
           }
+
         } catch (SocketException se) {
-          //java.io.EOFException
-          if (!quit) {
-            String msg = "Host " + centralStationAddress.getHostName();
-            ConnectionEvent de = new ConnectionEvent(msg, false, false);
-            for (ConnectionEventListener listener : disconnectionEventListeners) {
-              listener.onConnectionChange(de);
-            }
+          // Only notify if not intentionally closed
+          if (running) {
+            handleDisconnection();
+            running = false;
           }
 
-          quit();
         } catch (IOException ex) {
-          Logger.error(ex);
+          if (running) {
+            Logger.error("Error reading CAN message", ex);
+          }
         }
       }
 
       Logger.debug("Stop receiving");
+      cleanup();
+    }
+
+    /**
+     * Read a single CAN message from the stream
+     */
+    private CanMessage readCanMessage() throws IOException {
+      // Read CAN message header (5 bytes)
+      int prio = din.readUnsignedByte();
+      int cmd = din.readUnsignedByte();
+      int hash = din.readUnsignedShort();
+      int dlc = din.readUnsignedByte();
+
+      // Read data bytes (always 8 bytes, even if DLC < 8)
+      byte[] data = new byte[CanMessage.DATA_SIZE];
+      din.readFully(data);
+
+      return new CanMessage(prio, cmd, hash, dlc, data);
+    }
+
+    /**
+     * Route message to either a pending request or the event queue
+     */
+    private void routeMessage(CanMessage rx) {
+      int cmd = rx.getCommand();
+      boolean routed = false;
+
+      if (pendingRequest != null && pendingRequest.matchesResponse(cmd)) {
+        // This is a response to a pending request
+        try {
+          int remainingBytes = din.available();
+          boolean complete = pendingRequest.addResponse(rx, remainingBytes);
+
+          if (debug) {
+            Logger.trace("RX (response): " + rx + " remaining=" + remainingBytes + " complete=" + complete);
+          }
+
+          routed = true;
+        } catch (IOException ex) {
+          Logger.error("Error checking available bytes", ex);
+          pendingRequest.markComplete();
+        }
+      }
+
+      // If not routed to a pending request, it's an unsolicited event
+      if (!routed) {
+        eventQueue.offer(rx);
+
+        if (debug) {
+          Logger.trace("RX (event): " + rx + " QueueSize: " + eventQueue.size());
+        }
+      }
+    }
+
+    private void handleDisconnection() {
+      String msg = "Host " + centralStationAddress.getHostName();
+      ConnectionEvent de = new ConnectionEvent(msg, false, false);
+      for (ConnectionEventListener listener : disconnectionEventListeners) {
+        listener.onConnectionChange(de);
+      }
+    }
+
+    private void cleanup() {
       try {
-        din.close();
+        if (din != null) {
+          din.close();
+        }
       } catch (IOException ex) {
-        Logger.error(ex);
+        Logger.error("Error closing input stream", ex);
       }
     }
   }
