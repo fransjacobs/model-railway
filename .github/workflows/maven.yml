@@ -10,6 +10,7 @@ name: Java CI with Maven
 
 permissions:
   contents: write
+  
 on:
   push:
     branches: [ "master" ]
