@@ -159,6 +159,13 @@ public interface PersistenceService {
 
   // Locomotive
   /**
+   *
+   * @param locomotive
+   * @return true when the locomotive is placed on the track
+   */
+  boolean isOnTrack(LocomotiveBean locomotive);
+
+  /**
    * Retrieves all LocomotiveBeans.
    *
    * @return A List of all LocomotiveBeans.

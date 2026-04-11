@@ -410,10 +410,10 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     commandStationMenu = new JMenu();
     connectMI = new JMenuItem();
     virtualCBMI = new JCheckBoxMenuItem();
-    autopilotMenu = new JMenu();
-    autoPilotMI = new JMenuItem();
+    railControllerMenu = new JMenu();
+    autoDrivingMI = new JMenuItem();
     startAllLocsMI = new JMenuItem();
-    resetAutopilotMI = new JMenuItem();
+    resetRailControllerMI = new JMenuItem();
     viewMenu = new JMenu();
     showHome = new JMenuItem();
     editLayout = new JMenuItem();
@@ -833,18 +833,18 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
 
     jcsMenuBar.add(commandStationMenu);
 
-    autopilotMenu.setText("Auto Pilot");
-    autopilotMenu.setName("autopilotMenu"); // NOI18N
+    railControllerMenu.setText("Rail Controller");
+    railControllerMenu.setName("railControllerMenu"); // NOI18N
 
-    autoPilotMI.setText("Autopilot");
-    autoPilotMI.setToolTipText("Switch Autopilot on");
-    autoPilotMI.setName("autoPilotMI"); // NOI18N
-    autoPilotMI.addActionListener(new ActionListener() {
+    autoDrivingMI.setText("Automatic Driving");
+    autoDrivingMI.setToolTipText("Automatic Driving");
+    autoDrivingMI.setName("autoDrivingMI"); // NOI18N
+    autoDrivingMI.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
-        autoPilotMIActionPerformed(evt);
+        autoDrivingMIActionPerformed(evt);
       }
     });
-    autopilotMenu.add(autoPilotMI);
+    railControllerMenu.add(autoDrivingMI);
 
     startAllLocsMI.setText("Start All Locomotives");
     startAllLocsMI.setToolTipText("Start All Locomotives");
@@ -854,19 +854,19 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
         startAllLocsMIActionPerformed(evt);
       }
     });
-    autopilotMenu.add(startAllLocsMI);
+    railControllerMenu.add(startAllLocsMI);
 
-    resetAutopilotMI.setText("Reset Autopilot");
-    resetAutopilotMI.setToolTipText("Reset Autopilot");
-    resetAutopilotMI.setName("resetAutopilotMI"); // NOI18N
-    resetAutopilotMI.addActionListener(new ActionListener() {
+    resetRailControllerMI.setText("Reset Rail Controller");
+    resetRailControllerMI.setToolTipText("Reset Rail Controller Engine");
+    resetRailControllerMI.setName("resetRailControllerMI"); // NOI18N
+    resetRailControllerMI.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
-        resetAutopilotMIActionPerformed(evt);
+        resetRailControllerMIActionPerformed(evt);
       }
     });
-    autopilotMenu.add(resetAutopilotMI);
+    railControllerMenu.add(resetRailControllerMI);
 
-    jcsMenuBar.add(autopilotMenu);
+    jcsMenuBar.add(railControllerMenu);
 
     viewMenu.setText("View");
     viewMenu.setName("viewMenu"); // NOI18N
@@ -1195,7 +1195,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     if (status == null) {
       return;
     }
-
     switch (status) {
       case RailController.PENDING -> {
         autoPilotBtn.setEnabled(false);
@@ -1203,9 +1202,9 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
       case RailController.STARTED -> {
         autoPilotBtn.setEnabled(true);
         startAllLocsBtn.setEnabled(true);
-        dispatcherStatusPanel.showDispatcherTab();
         autoPilotBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/cruise-control-on-green.png")));
         autoPilotBtn.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/media/cruise-control-on-green.png")));
+        dispatcherStatusPanel.showDispatcherTab();
       }
       case RailController.STOPPING -> {
         autoPilotBtn.setEnabled(false);
@@ -1214,9 +1213,10 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
       }
       case RailController.STOPPED -> {
         autoPilotBtn.setEnabled(true);
-        dispatcherStatusPanel.showLocomotiveTab();
         autoPilotBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/cruise-control-on-black.png")));
         autoPilotBtn.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/media/cruise-control-on-yellow.png")));
+
+        dispatcherStatusPanel.showLocomotiveTab();
       }
     }
   }
@@ -1269,14 +1269,13 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     showVNCConsole();
   }//GEN-LAST:event_vncMIActionPerformed
 
-  private void autoPilotMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_autoPilotMIActionPerformed
+  private void autoDrivingMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_autoDrivingMIActionPerformed
     // TODO add your handling code here:
-  }//GEN-LAST:event_autoPilotMIActionPerformed
+  }//GEN-LAST:event_autoDrivingMIActionPerformed
 
-  private void resetAutopilotMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_resetAutopilotMIActionPerformed
-    //AutoPilot.reset();
+  private void resetRailControllerMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_resetRailControllerMIActionPerformed
     RailController.getInstance().reset();
-  }//GEN-LAST:event_resetAutopilotMIActionPerformed
+  }//GEN-LAST:event_resetRailControllerMIActionPerformed
 
   private void startAllLocsMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startAllLocsMIActionPerformed
     startAllLocomotives();
@@ -1449,9 +1448,8 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private JMenuItem aboutMI;
+  private JMenuItem autoDrivingMI;
   private JToggleButton autoPilotBtn;
-  private JMenuItem autoPilotMI;
-  private JMenu autopilotMenu;
   private JMenuItem backupMI;
   private JFileChooser backupRestoreFileDialog;
   private JPanel centerPanel;
@@ -1484,7 +1482,8 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   private LayoutPanel overviewPanel;
   private JToggleButton powerButton;
   private JMenuItem quitMI;
-  private JMenuItem resetAutopilotMI;
+  private JMenu railControllerMenu;
+  private JMenuItem resetRailControllerMI;
   private JMenuItem restoreMI;
   private JMenuItem rotateTileMI;
   private JMenu settingsMenu;

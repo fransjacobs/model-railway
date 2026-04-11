@@ -94,19 +94,22 @@ public class LocomotiveTablePanel extends JPanel implements RefreshEventListener
 
         LocomotiveBeanTableModel model = (LocomotiveBeanTableModel) locomotiveTable.getModel();
         LocomotiveBean locomotiveBean = model.getBeanAt(selectedRow);
-        
+
         //refresh the data as it might have changed...
-        locomotiveBean = PersistenceFactory.getService().getLocomotive(locomotiveBean.getId());
-
-        if (locomotiveBean.getLocIcon() != null) {
-          setDragImage(locomotiveBean.getLocIcon().getImage());
+        //Check if this locomotive is not already placed on the track
+        if (!PersistenceFactory.getService().isOnTrack(locomotiveBean)) {
+          locomotiveBean = PersistenceFactory.getService().getLocomotive(locomotiveBean.getId());
+          if (locomotiveBean.getLocIcon() != null) {
+            setDragImage(locomotiveBean.getLocIcon().getImage());
+          }
+          Logger.trace("LocomotiveBean: " + locomotiveBean);
+          return new LocomotiveTablePanel.LocomotiveBeanTransferable(locomotiveBean);
+        } else {
+          Logger.trace("LocomotiveBean: " + locomotiveBean + " is already on track...");
+          return null;
         }
-
-        Logger.trace("LocomotiveBean: " + locomotiveBean);
-        return new LocomotiveTablePanel.LocomotiveBeanTransferable(locomotiveBean);
       }
     });
-
   }
 
   @Override

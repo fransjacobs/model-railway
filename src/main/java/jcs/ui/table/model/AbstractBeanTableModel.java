@@ -59,7 +59,7 @@ public abstract class AbstractBeanTableModel<T> extends AbstractTableModel {
     } else {
       this.beans = Collections.<T>emptyList();
     }
-    this.fireTableDataChanged();
+    fireTableDataChanged();
   }
 
   protected abstract void refresh();

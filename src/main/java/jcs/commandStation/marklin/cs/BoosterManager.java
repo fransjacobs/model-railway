@@ -110,8 +110,16 @@ class BoosterManager implements ConnectionEventListener {
       if (measurementTimer != null) {
         measurementTimer.cancel();
       }
-    }
+      if (channelConfigurationQuery != null) {
+        channelConfigurationQuery.quit();
 
+        try {
+          channelConfigurationQuery.join(2000);
+        } catch (InterruptedException ex) {
+          Thread.currentThread().interrupt();
+        }
+      }
+    }
   }
 
   private void performMeasurements() {
@@ -275,7 +283,7 @@ class BoosterManager implements ConnectionEventListener {
           }
         }
 
-        Logger.debug("Channel config finished");
+        Logger.debug("ChannelConfig finished");
       }
     }
   }

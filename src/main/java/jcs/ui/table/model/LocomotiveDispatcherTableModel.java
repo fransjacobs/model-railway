@@ -32,7 +32,7 @@ public class LocomotiveDispatcherTableModel extends AbstractBeanTableModel<Dispa
   private static final String[] DISPLAY_COLUMNS = new String[]{"image", "name", "state", "speed"};
   private static final long serialVersionUID = 5321472215655025458L;
 
-  private Map<Dispatcher, String> extraStateInfo;
+  private final Map<Dispatcher, String> extraStateInfo;
 
   public LocomotiveDispatcherTableModel() {
     super(Dispatcher.class, DISPLAY_COLUMNS);
@@ -48,14 +48,14 @@ public class LocomotiveDispatcherTableModel extends AbstractBeanTableModel<Dispa
 
       for (Dispatcher ld : beans) {
         ld.addStateEventListener(this);
-        Logger.trace("Listen to dispatcher " + ld.getName());
+        //Logger.trace("Listen to dispatcher " + ld.getName());
         extraStateInfo.put(ld, "");
       }
     } else {
       if (beans != null) {
         for (Dispatcher ld : beans) {
           ld.removeStateEventListener(this);
-          Logger.trace("Remove Listen to dispatcher " + ld.getName());
+          //Logger.trace("Remove Listener of dispatcher " + ld.getName());
           extraStateInfo.remove(ld);
         }
       }
@@ -68,9 +68,7 @@ public class LocomotiveDispatcherTableModel extends AbstractBeanTableModel<Dispa
     if (beans.contains(dispatcher)) {
       int idx = beans.indexOf(dispatcher);
       beans.set(idx, dispatcher);
-
       extraStateInfo.put(dispatcher, comment);
-
       //Logger.trace("idx: "+idx+" "+dispatcher.getName()+" "+dispatcher.getDispatcherStateString());
       fireTableDataChanged();
     }
