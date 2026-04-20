@@ -444,9 +444,27 @@ public class AccessoryKeyPanel16 extends JPanel {
     Logger.trace("ID: " + id + " Value: " + value);
 
     if (JCS.getJcsCommandStation() != null) {
-      AccessoryBean a = new AccessoryBean(id, address, null, (name != null ? name : actionCommand), null, (selected ? 1 : 0), null, null, null, commandStationId);
+      AccessoryBean a = JCS.getPersistenceService().getAccessoryByAddressAndCommandStationId(address, commandStationId);
+      if (a == null) {
+        //Try address2
+        a = JCS.getPersistenceService().getAccessoryByAddress2AndCommandStationId(address, commandStationId);
+
+        if (a == null) {
+          Logger.trace("Accessory with address/ address2 " + address + " not found in database");
+          a = new AccessoryBean(id, address, null, (name != null ? name : actionCommand), null, (selected ? 1 : 0), 200, "mm", null, commandStationId);
+        }
+      }
+
+      if (a.isBiAddress() && address.equals(a.getAddress2())) {
+        if (AccessoryValue.GREEN == value) {
+          value = AccessoryValue.GREEN2;
+        } else {
+          value = AccessoryValue.RED2;
+        }
+      }
 
       JCS.getJcsCommandStation().switchAccessory(a, value);
+
     }
   }
 

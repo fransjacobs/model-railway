@@ -18,21 +18,18 @@
  */
 package jcs.ui.widgets;
 
-import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.net.URL;
-import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.border.BevelBorder;
-import javax.swing.border.SoftBevelBorder;
+import jcs.JCS;
 import jcs.ui.swing.layout.VerticalFlowLayout;
 import org.tinylog.Logger;
 
@@ -244,6 +241,12 @@ public class KeyboardPanelWide extends JPanel {
       UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
     } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
       Logger.error("Can't set the LookAndFeel: " + ex);
+    }
+
+    if (!JCS.getJcsCommandStation().isConnected()) {
+      JCS.getJcsCommandStation().connect();
+      
+      JCS.getJcsCommandStation().switchPower(true);
     }
 
     java.awt.EventQueue.invokeLater(() -> {

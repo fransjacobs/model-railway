@@ -890,13 +890,8 @@ public class JCSCommandStation {
 
     @Override
     public void onSensorChange(SensorEvent sensorEvent) {
-      //if ("true".equals(System.getProperty("state.machine.stepTest", "false"))) {
-      //  Logger.warn("Handle sensorevent inline...");
-      //  handleSensorEvent(sensorEvent);
-      //} else {
       Logger.trace("Enqueued SensorEvent ID: " + sensorEvent.getSensorId() + " Active: " + sensorEvent.isActive());
       commandStation.sensorEventQueue.offer(sensorEvent);
-      //}
     }
   }
 
@@ -944,60 +939,33 @@ public class JCSCommandStation {
         }
       }
     }
-//    else {
-//      Logger.trace("There is Not an AllSensorsListener registered!");
-//    }
   }
 
   private void handleAccessoryEvent(AccessoryEvent event) {
     AccessoryBean ab = event.getAccessoryBean();
     int address = ab.getAddress();
     String commandStationId = ab.getCommandStationId();
-
-    AccessoryValue newValue = event.getValue();
     AccessoryBean dbab = PersistenceFactory.getService().getAccessory(event.getId());
 
     if (dbab == null) {
-      //Try using the deviceId and contactId and command station...
       dbab = PersistenceFactory.getService().getAccessoryByAddressAndCommandStationId(address, commandStationId);
     }
 
     if (dbab == null) {
-      //check if address is even, might be the second address of a signal
-      if (address % 2 == 0) {
-        address = address - 1;
-        dbab = PersistenceFactory.getService().getAccessoryByAddressAndCommandStationId(address, commandStationId);
-        if (dbab != null && dbab.isSignal() && dbab.getStates() > 2) {
-          ab.setAddress(address);
-          int p = ab.getState() + 2;
-          ab.setState(p);
-        } else {
-          dbab = null;
-        }
-      }
+      dbab = PersistenceFactory.getService().getAccessoryByAddress2AndCommandStationId(address, commandStationId);
     }
 
     if (dbab != null) {
-      AccessoryValue previous = dbab.getAccessoryValue();
-      boolean changed = newValue != previous;
-      if (changed) {
-        //set all current properties
-        ab.copyInto(dbab);
-        //update the value
-        ab.setAccessoryValue(newValue);
-        PersistenceFactory.getService().persist(ab);
-      } else {
-        Logger.trace("Value " + newValue + " for accessory " + dbab.getId() + " has NOT changed...");
-      }
-    }
+      dbab.setState(ab.getState());
+      PersistenceFactory.getService().persist(dbab);
 
-    if (accessoryEventListeners.containsKey(ab.getId())) {
-      List<AccessoryEventListener> snapshot = new ArrayList<>(accessoryEventListeners.get(ab.getId()));
-      Logger.trace("Obtaining listener for accessory " + ab.getId() + " which has " + snapshot.size() + " listeners to set to value " + event.getValue());
+      if (accessoryEventListeners.containsKey(dbab.getId())) {
+        List<AccessoryEventListener> snapshot = new ArrayList<>(accessoryEventListeners.get(dbab.getId()));
+        //Logger.trace("Obtaining listener for accessory " + dbab.getId() + " which has " + snapshot.size() + " listeners to set to value " + event.getValue());
 
-      for (AccessoryEventListener al : snapshot) {
-        Logger.trace("Listener source " + al.getClass().getName());
-        al.onAccessoryChange(event);
+        for (AccessoryEventListener al : snapshot) {
+          al.onAccessoryChange(new AccessoryEvent(dbab));
+        }
       }
     }
   }

@@ -337,6 +337,15 @@ public interface PersistenceService {
   AccessoryBean getAccessoryByAddressAndCommandStationId(Integer address, String commandStationId);
 
   /**
+   * Retrieves an AccessoryBean by it second address and command station ID.
+   *
+   * @param address2 The address.
+   * @param commandStationId The command station ID.
+   * @return The AccessoryBean, or null if not found.
+   */
+  AccessoryBean getAccessoryByAddress2AndCommandStationId(Integer address2, String commandStationId);
+
+  /**
    * Retrieves an AccessoryBean by ID.
    *
    * @param id The ID of the AccessoryBean to retrieve.

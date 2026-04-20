@@ -151,8 +151,10 @@ class AccessoryManager implements AccessoryEventListener {
       switch (state) {
         case "0" ->
           value = AccessoryBean.AccessoryValue.GREEN;
-        case "1" ->
+        case "1" -> {
+          //Could be the case the for a 3way switch the red must be a red2 and vice versa,,,
           value = AccessoryBean.AccessoryValue.RED;
+        }
         case "2" -> {
           if (accessory.isTurnout()) {
             value = AccessoryBean.AccessoryValue.RED2;
