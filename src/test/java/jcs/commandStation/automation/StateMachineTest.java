@@ -192,6 +192,8 @@ public class StateMachineTest {
     //Stop the dispatcher!
     ns1631.stopLocomotive();
     assertFalse(ns1631.isLocomotiveStarted());
+    
+    pause(250);
   }
 
   @Order(3)
@@ -384,10 +386,13 @@ public class StateMachineTest {
     assertFalse(ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(block4.getPlusSensorId()));
 
     assertEquals("Waiting", stateMachine.getCurrentStateName());
+    
     assertNull(ns1631.getDestinationBlock());
 
     assertEquals(0, ns1631.getLocomotiveBean().getVelocity());
     stateMachine.reset();
+    
+    pause(250);
   }
 
   @Order(5)
