@@ -125,8 +125,8 @@ class AccessoryManager {
     return adr;
   }
 
-  void switchAccessory(Integer address, String protocol, AccessoryValue value) {
-    Logger.trace("Try to switch accessory " + protocol + " " + address + " to " + value);
+  void switchAccessory(Integer address, String protocol, AccessoryValue value, Integer switchTime) {
+    Logger.trace("Try to switch accessory " + protocol + " " + address + " to " + value + " Switchtime: " + switchTime);
 
     //obtain the accessory
     AccessoryBean accessory = accessories.get(address);
@@ -139,6 +139,15 @@ class AccessoryManager {
       return;
     }
 
+    Integer st;
+    if(switchTime != null) {
+      st = switchTime / 10;
+    } else {
+      st = accessory.getSwitchTime() / 10;
+    }  
+    
+    
+    
     //For 3 way switch 2 messages must be send
     if (accessory.isBiAddress() && accessory.is3WaySwitch()) {
       //need to send 2 messages on both addresses       
@@ -151,16 +160,16 @@ class AccessoryManager {
       CanMessage switchMessage2;
       switch (value) {
         case RED -> {
-          switchMessage = CanMessageFactory.switchAccessory(adr2, AccessoryValue.GREEN, true, accessory.getSwitchTime(), marklinCentralStationImpl.getCsUid());
-          switchMessage2 = CanMessageFactory.switchAccessory(adr, value, true, accessory.getSwitchTime(), marklinCentralStationImpl.getCsUid());
+          switchMessage = CanMessageFactory.switchAccessory(adr2, AccessoryValue.GREEN, true, st, marklinCentralStationImpl.getCsUid());
+          switchMessage2 = CanMessageFactory.switchAccessory(adr, value, true, st, marklinCentralStationImpl.getCsUid());
         }
         case RED2 -> {
-          switchMessage = CanMessageFactory.switchAccessory(adr, AccessoryValue.GREEN, true, accessory.getSwitchTime(), marklinCentralStationImpl.getCsUid());
-          switchMessage2 = CanMessageFactory.switchAccessory(adr2, AccessoryValue.RED, true, accessory.getSwitchTime(), marklinCentralStationImpl.getCsUid());
+          switchMessage = CanMessageFactory.switchAccessory(adr, AccessoryValue.GREEN, true, st, marklinCentralStationImpl.getCsUid());
+          switchMessage2 = CanMessageFactory.switchAccessory(adr2, AccessoryValue.RED, true, st, marklinCentralStationImpl.getCsUid());
         }
         default -> {
-          switchMessage = CanMessageFactory.switchAccessory(adr, value, true, accessory.getSwitchTime(), marklinCentralStationImpl.getCsUid());
-          switchMessage2 = CanMessageFactory.switchAccessory(adr2, value, true, accessory.getSwitchTime(), marklinCentralStationImpl.getCsUid());
+          switchMessage = CanMessageFactory.switchAccessory(adr, value, true, st, marklinCentralStationImpl.getCsUid());
+          switchMessage2 = CanMessageFactory.switchAccessory(adr2, value, true, st, marklinCentralStationImpl.getCsUid());
         }
       }
 
@@ -205,7 +214,7 @@ class AccessoryManager {
         }
       }
 
-      CanMessage signalMessage = CanMessageFactory.switchAccessory(adr, val, true, accessory.getSwitchTime(), marklinCentralStationImpl.getCsUid());
+      CanMessage signalMessage = CanMessageFactory.switchAccessory(adr, val, true, st, marklinCentralStationImpl.getCsUid());
 
       Logger.trace("Switching accessory " + adr + " to: " + val + " Message: " + signalMessage);
       CanMessage message = marklinCentralStationImpl.sendMessage(signalMessage);
@@ -213,7 +222,7 @@ class AccessoryManager {
       update(ae);
     } else {
       int adr = getCSAddress(address, protocol);
-      CanMessage switchMessage = CanMessageFactory.switchAccessory(adr, value, true, accessory.getSwitchTime(), marklinCentralStationImpl.getCsUid());
+      CanMessage switchMessage = CanMessageFactory.switchAccessory(adr, value, true, st, marklinCentralStationImpl.getCsUid());
 
       Logger.trace("Switching accessory " + adr + " to: " + value + " Message: " + switchMessage);
       CanMessage message = marklinCentralStationImpl.sendMessage(switchMessage);

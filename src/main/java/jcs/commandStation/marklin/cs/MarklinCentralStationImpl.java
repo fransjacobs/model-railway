@@ -784,7 +784,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   @Override
   public void switchAccessory(Integer address, String protocol, AccessoryValue value, Integer switchTime) {
     if (power && connected) {
-      accessoryManager.switchAccessory(address, protocol, value);
+      accessoryManager.switchAccessory(address, protocol, value, switchTime);
     } else {
       Logger.warn("Trackpower is OFF! Can't switch Accessory: " + address + " to: " + value + "!");
     }
