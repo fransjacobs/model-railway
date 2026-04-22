@@ -23,6 +23,7 @@ import java.util.Set;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JTextField;
+import jcs.entities.AccessoryBean;
 import jcs.entities.BlockBean;
 import jcs.entities.SensorBean;
 import jcs.persistence.PersistenceFactory;
@@ -34,8 +35,7 @@ import jcs.ui.layout.tiles.Tile;
 import org.tinylog.Logger;
 
 /**
- *
- * @author fransjacobs
+ * BlockDialog is show as a pop up when editing the layout and user performs a right click on a block
  */
 public class BlockDialog extends javax.swing.JDialog {
 
@@ -46,9 +46,11 @@ public class BlockDialog extends javax.swing.JDialog {
 
   private ComboBoxModel<SensorBean> plusSensorComboBoxModel;
   private ComboBoxModel<SensorBean> minSensorComboBoxModel;
+  private ComboBoxModel<AccessoryBean> plusSignalComboBoxModel;
+  private ComboBoxModel<AccessoryBean> minSignalComboBoxModel;
 
   /**
-   * Creates new form SensorDialog
+   * Creates new form BlockDialog
    *
    * @param parent
    * @param block
@@ -78,17 +80,37 @@ public class BlockDialog extends javax.swing.JDialog {
     return linkedSensorIds;
   }
 
+  private Set<String> getLinkedSignalIds() {
+    List<BlockBean> blocks = PersistenceFactory.getService().getBlocks();
+    Set<String> linkedSignalIds = new HashSet<>();
+    for (BlockBean bb : blocks) {
+      if (bb.getPlusSignalId() != null) {
+        linkedSignalIds.add(bb.getPlusSignalId());
+      }
+      if (bb.getMinSignalId() != null) {
+        linkedSignalIds.add(bb.getMinSignalId());
+      }
+    }
+    return linkedSignalIds;
+  }
+
   private void postInit() {
     setLocationRelativeTo(null);
-    String text = this.headingLbl.getText() + " " + this.block.getId();
-    this.headingLbl.setText(text);
+    String text = headingLbl.getText() + " " + block.getId();
+    headingLbl.setText(text);
 
-    if (this.block != null) {
+    if (block != null) {
       //Get a list of all sensors
       List<SensorBean> allSensors = PersistenceFactory.getService().getSensors();
+      List<AccessoryBean> signals = PersistenceFactory.getService().getSignals();
+
       List<SensorBean> freeSensors = new ArrayList<>();
+      List<AccessoryBean> freeSignals = new ArrayList<>();
+
       // filter the list, remove sensors which are already linked to other blocks.
       Set<Integer> linkedSensorIds = getLinkedSensorIds();
+
+      Set<String> linkedSignalIds = getLinkedSignalIds();
 
       for (SensorBean sb : allSensors) {
         if (!linkedSensorIds.contains(sb.getId())) {
@@ -96,9 +118,18 @@ public class BlockDialog extends javax.swing.JDialog {
         }
       }
 
+      for (AccessoryBean signal : signals) {
+        if (!linkedSignalIds.contains(signal.getId())) {
+          freeSignals.add(signal);
+        }
+      }
+
       //Expand with an empty one for display
       SensorBean emptyBean = new SensorBean();
+
+      AccessoryBean emptySignal = new AccessoryBean();
       freeSensors.add(emptyBean);
+      freeSignals.add(emptySignal);
 
       BlockBean bb = this.block.getBlockBean();
       if (bb == null) {
@@ -120,7 +151,7 @@ public class BlockDialog extends javax.swing.JDialog {
 
       if (bb.getMinSensorId() != null && bb.getMinSensorBean() == null) {
         minSb = PersistenceFactory.getService().getSensor(bb.getMinSensorId());
-        bb.setPlusSensorBean(plusSb);
+        bb.setMinSensorBean(minSb);
       } else {
         minSb = bb.getMinSensorBean();
       }
@@ -137,8 +168,38 @@ public class BlockDialog extends javax.swing.JDialog {
       plusSensorComboBoxModel = new DefaultComboBoxModel(freeSensors.toArray());
       minSensorComboBoxModel = new DefaultComboBoxModel(freeSensors.toArray());
 
-      this.plusSensorCB.setModel(plusSensorComboBoxModel);
-      this.minSensorCB.setModel(minSensorComboBoxModel);
+      plusSensorCB.setModel(plusSensorComboBoxModel);
+      minSensorCB.setModel(minSensorComboBoxModel);
+
+      AccessoryBean plusSig, minSig;
+      if (bb.getPlusSignalId() != null && bb.getPlusSignal() == null) {
+        plusSig = PersistenceFactory.getService().getAccessory(bb.getPlusSignalId());
+        bb.setPlusSignal(plusSig);
+      } else {
+        plusSig = bb.getPlusSignal();
+      }
+
+      if (bb.getMinSignalId() != null && bb.getMinSignal() == null) {
+        minSig = PersistenceFactory.getService().getAccessory(bb.getMinSignalId());
+        bb.setMinSignal(minSig);
+      } else {
+        minSig = bb.getMinSignal();
+      }
+
+      if (bb.getPlusSignal() != null) {
+        //Add the used sensor also the the filtered list
+        freeSignals.add(bb.getPlusSignal());
+      }
+      if (bb.getMinSignal() != null) {
+        //Add the used sensor also the the filtered list
+        freeSignals.add(bb.getMinSignal());
+      }
+
+      plusSignalComboBoxModel = new DefaultComboBoxModel(freeSignals.toArray());
+      minSignalComboBoxModel = new DefaultComboBoxModel(freeSignals.toArray());
+
+      plusSignalCB.setModel(plusSignalComboBoxModel);
+      minSignalCB.setModel(minSignalComboBoxModel);
 
       this.blockIdTF.setText(this.block.getId());
       this.blockNameTF.setText(bb.getDescription());
@@ -155,6 +216,18 @@ public class BlockDialog extends javax.swing.JDialog {
       } else {
         this.minSensorComboBoxModel.setSelectedItem(emptyBean);
       }
+
+      if (plusSig != null) {
+        this.plusSignalComboBoxModel.setSelectedItem(plusSig);
+      } else {
+        this.plusSignalComboBoxModel.setSelectedItem(emptySignal);
+      }
+      if (minSig != null) {
+        this.minSignalComboBoxModel.setSelectedItem(minSig);
+      } else {
+        this.minSignalComboBoxModel.setSelectedItem(emptySignal);
+      }
+
     }
   }
 
@@ -189,7 +262,6 @@ public class BlockDialog extends javax.swing.JDialog {
         Logger.trace("Auto linked Min Sensor: " + ms + " " + minSb.getName());
       }
     }
-
   }
 
   /**
@@ -215,6 +287,11 @@ public class BlockDialog extends javax.swing.JDialog {
     plusSensorCB = new javax.swing.JComboBox<>();
     minSensorLbl = new javax.swing.JLabel();
     minSensorCB = new javax.swing.JComboBox<>();
+    signalsPanel = new javax.swing.JPanel();
+    plusSignalLbl = new javax.swing.JLabel();
+    plusSignalCB = new javax.swing.JComboBox<>();
+    minSignalLbl = new javax.swing.JLabel();
+    minSignalCB = new javax.swing.JComboBox<>();
     saveExitPanel = new javax.swing.JPanel();
     saveExitBtn = new javax.swing.JButton();
 
@@ -222,7 +299,7 @@ public class BlockDialog extends javax.swing.JDialog {
     setTitle("Block Properties");
     setBounds(new java.awt.Rectangle(0, 25, 450, 275));
     setMinimumSize(new java.awt.Dimension(340, 250));
-    setPreferredSize(new java.awt.Dimension(450, 275));
+    setPreferredSize(new java.awt.Dimension(460, 285));
     getContentPane().setLayout(new javax.swing.BoxLayout(getContentPane(), javax.swing.BoxLayout.Y_AXIS));
 
     headingPanel.setMinimumSize(new java.awt.Dimension(290, 40));
@@ -347,6 +424,39 @@ public class BlockDialog extends javax.swing.JDialog {
 
     getContentPane().add(sensorPanel);
 
+    signalsPanel.setPreferredSize(new java.awt.Dimension(290, 40));
+    java.awt.FlowLayout flowLayout5 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
+    flowLayout5.setAlignOnBaseline(true);
+    signalsPanel.setLayout(flowLayout5);
+
+    plusSignalLbl.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+    plusSignalLbl.setText("Signals +:");
+    plusSignalLbl.setPreferredSize(new java.awt.Dimension(100, 17));
+    signalsPanel.add(plusSignalLbl);
+
+    plusSignalCB.setPreferredSize(new java.awt.Dimension(150, 23));
+    plusSignalCB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        plusSignalCBActionPerformed(evt);
+      }
+    });
+    signalsPanel.add(plusSignalCB);
+
+    minSignalLbl.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+    minSignalLbl.setText("-:");
+    minSignalLbl.setPreferredSize(new java.awt.Dimension(10, 17));
+    signalsPanel.add(minSignalLbl);
+
+    minSignalCB.setPreferredSize(new java.awt.Dimension(150, 23));
+    minSignalCB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        minSignalCBActionPerformed(evt);
+      }
+    });
+    signalsPanel.add(minSignalCB);
+
+    getContentPane().add(signalsPanel);
+
     saveExitPanel.setPreferredSize(new java.awt.Dimension(290, 50));
     java.awt.FlowLayout flowLayout4 = new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT);
     flowLayout4.setAlignOnBaseline(true);
@@ -425,6 +535,14 @@ public class BlockDialog extends javax.swing.JDialog {
     autoLink();
   }//GEN-LAST:event_autoLinkButtonActionPerformed
 
+  private void plusSignalCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_plusSignalCBActionPerformed
+    this.block.getBlockBean().setPlusSignal((AccessoryBean) plusSignalCB.getSelectedItem());
+  }//GEN-LAST:event_plusSignalCBActionPerformed
+
+  private void minSignalCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_minSignalCBActionPerformed
+    this.block.getBlockBean().setMinSignal((AccessoryBean) minSignalCB.getSelectedItem());
+  }//GEN-LAST:event_minSignalCBActionPerformed
+
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JButton autoLinkButton;
   private javax.swing.JLabel autoLinkLbl;
@@ -438,11 +556,16 @@ public class BlockDialog extends javax.swing.JDialog {
   private javax.swing.JPanel headingPanel;
   private javax.swing.JComboBox<SensorBean> minSensorCB;
   private javax.swing.JLabel minSensorLbl;
+  private javax.swing.JComboBox<AccessoryBean> minSignalCB;
+  private javax.swing.JLabel minSignalLbl;
   private javax.swing.JPanel namePanel;
   private javax.swing.JComboBox<SensorBean> plusSensorCB;
   private javax.swing.JLabel plusSensorLbl;
+  private javax.swing.JComboBox<AccessoryBean> plusSignalCB;
+  private javax.swing.JLabel plusSignalLbl;
   private javax.swing.JButton saveExitBtn;
   private javax.swing.JPanel saveExitPanel;
   private javax.swing.JPanel sensorPanel;
+  private javax.swing.JPanel signalsPanel;
   // End of variables declaration//GEN-END:variables
 }

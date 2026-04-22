@@ -68,6 +68,7 @@ import jcs.commandStation.events.AllSensorEventsListener;
 import jcs.commandStation.events.LocomotiveEvent;
 import jcs.commandStation.events.MeasurementEvent;
 import jcs.commandStation.events.PowerEvent;
+import jcs.entities.AccessoryBean.SignalValue;
 
 /**
  * The JCSCommandStation is the layer between the UI, engines and Command stations
@@ -112,6 +113,8 @@ public class JCSCommandStation {
   private ThreadGroup threadGroup;
 
   private final Object lock = new Object();
+
+  private boolean signalsRestored = false;
 
   /**
    * Wrapper around the "real" CommandStation implementation.<br>
@@ -403,6 +406,10 @@ public class JCSCommandStation {
       pl.onPowerChange(pe);
     }
 
+    if (!signalsRestored) {
+      restoreSignalValues();
+    }
+
     return decoderControllerConnected;
   }
 
@@ -566,6 +573,18 @@ public class JCSCommandStation {
     Logger.trace("Stored image " + imageName + ".png in the cache");
   }
 
+  //Restore the signal values, as most new decoders do not remember the last state
+  void restoreSignalValues() {
+    List<AccessoryBean> signals = PersistenceFactory.getService().getSignals();
+
+    for (AccessoryBean signal : signals) {
+      switchAccessory(signal, signal.getSignalValue());
+    }
+
+    this.signalsRestored = true;
+    Logger.debug("Restored the signalValue For " + signals.size() + " signals...");
+  }
+
   public InfoBean getCommandStationInfo() {
     if (decoderController != null) {
       return decoderController.getCommandStationInfo();
@@ -682,6 +701,24 @@ public class JCSCommandStation {
     } else {
       Logger.warn("Can't switch function decoderController is null!");
     }
+  }
+
+  public void switchAccessory(AccessoryBean accessory, SignalValue sValue) {
+    //Convert the signal value into a Accessory Value
+    AccessoryValue aValue;
+    switch (sValue) {
+      case SignalValue.Hp0 ->
+        aValue = AccessoryValue.RED;
+      case SignalValue.Hp1 ->
+        aValue = AccessoryValue.GREEN;
+      case SignalValue.Hp0Sh1 ->
+        aValue = AccessoryValue.WHITE;
+      case SignalValue.Hp2 ->
+        aValue = AccessoryValue.YELLOW;
+      default ->
+        aValue = AccessoryValue.OFF;
+    }
+    switchAccessory(accessory, aValue);
   }
 
   public void switchAccessory(AccessoryBean accessory, AccessoryValue value) {

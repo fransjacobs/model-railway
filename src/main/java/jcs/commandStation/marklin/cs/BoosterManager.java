@@ -221,9 +221,21 @@ class BoosterManager implements ConnectionEventListener {
       return running;
     }
 
+    private void zleep(long millis) {
+      try {
+        sleep(millis);
+      } catch (InterruptedException ex) {
+        Thread.currentThread().interrupt();
+      }
+    }
+
     @Override
     public void run() {
       running = true;
+
+      //Wait for 5 seconds before querying the channels
+      zleep(5000);
+
       Logger.debug("Obtaining channel configuration...");
       while (!configured && running) {
         CanDevice gfp = boosterManager.marklinCentralStationImpl.getCanDevice(this.boosterManager.marklinCentralStationImpl.getCsUid());
@@ -270,23 +282,27 @@ class BoosterManager implements ConnectionEventListener {
               Logger.debug("Started Measurements Timer with an interval of " + measureInterval + " ms");
             }
           } else {
+            zleep(10000);
+            boosterManager.marklinCentralStationImpl.obtainDevices();
+            zleep(2000);
+            
             Logger.debug("Re-query the Measurement Channels...");
-            synchronized (this) {
-              try {
-                wait(10000);
-              } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
-                Logger.debug("Interupted");
-                break;
-              }
-            }
           }
         }
-
         Logger.debug("ChannelConfig finished");
       }
     }
   }
+  
+  
+//  TRACE	2026-04-22 19:28:17.057 [BM-CHANNEL-CONFIG-QUERY-THREAD] BoosterManager$ChannelConfigurationQueryThread.run(): There are 4 Measurement Channels...
+//TRACE	2026-04-22 19:28:17.057 [BM-CHANNEL-CONFIG-QUERY-THREAD] BoosterManager$ChannelConfigurationQueryThread.run(): Main: MeasuringChannel{number=1, name=MAIN, scale=-3, colorGreen=48, colorYellow=240, colorRed=224, colorMax=192, zero=0, rangeGreen=312, rangeYellow=336, rangeRed=336, rangeMax=396, startValue=0.0, endValue=3.3, unit=A}
+//TRACE	2026-04-22 19:28:17.057 [BM-CHANNEL-CONFIG-QUERY-THREAD] BoosterManager$ChannelConfigurationQueryThread.run(): Prog: MeasuringChannel{number=2, name=PROG, scale=-3, colorGreen=48, colorYellow=240, colorRed=224, colorMax=192, zero=0, rangeGreen=330, rangeYellow=363, rangeRed=363, rangeMax=759, startValue=0.0, endValue=2.3, unit=A}
+//TRACE	2026-04-22 19:28:17.057 [BM-CHANNEL-CONFIG-QUERY-THREAD] BoosterManager$ChannelConfigurationQueryThread.run(): Volt: MeasuringChannel{number=3, name=VOLT, scale=-3, colorGreen=192, colorYellow=12, colorRed=48, colorMax=192, zero=0, rangeGreen=194, rangeYellow=252, rangeRed=252, rangeMax=659, startValue=10.0, endValue=27.0, unit=V}
+//TRACE	2026-04-22 19:28:17.057 [BM-CHANNEL-CONFIG-QUERY-THREAD] BoosterManager$ChannelConfigurationQueryThread.run(): Temp: MeasuringChannel{number=4, name=TEMP, scale=0, colorGreen=12, colorYellow=8, colorRed=240, colorMax=192, zero=0, rangeGreen=121, rangeYellow=145, rangeRed=145, rangeMax=193, startValue=0.0, endValue=80.0, unit=C}
+//
+  
+  
 
   private class MeasurementTask extends TimerTask {
 

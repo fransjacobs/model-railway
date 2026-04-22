@@ -105,7 +105,7 @@ class AccessoryManager {
 
     if (ab != null) {
       if (ab.isSignal()) {
-        Logger.trace("SignalValue: " + ab.getSignalValue().getSignalValue() + " State: " + ab.getState());
+        Logger.trace("Id: " + ab.getId() + " " + ab.getProtocol() + " Address: " + ab.getAddress() + (ab.isBiAddress() ? " Address2: " + ab.getAddress2() : "") + "  SignalValue: " + ab.getSignalValue().getSignalValue() + " State: " + ab.getState() + " of states: " + ab.getStates() + "...");
       }
 
       fireAccessoryEventListeners(new AccessoryEvent(ab));
@@ -140,14 +140,12 @@ class AccessoryManager {
     }
 
     Integer st;
-    if(switchTime != null) {
+    if (switchTime != null) {
       st = switchTime / 10;
     } else {
       st = accessory.getSwitchTime() / 10;
-    }  
-    
-    
-    
+    }
+
     //For 3 way switch 2 messages must be send
     if (accessory.isBiAddress() && accessory.is3WaySwitch()) {
       //need to send 2 messages on both addresses       
