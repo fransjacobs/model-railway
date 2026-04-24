@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 frans.
+ * Copyright 2026 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,13 +30,16 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.tinylog.Logger;
 
 /**
  * Check the basic functionality of the SensorMonitor.<br>
  * Monitor Methods are called directly
  */
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class SensorMonitorTest {
 
   protected final PersistenceTestHelper testHelper;
@@ -71,11 +74,24 @@ public class SensorMonitorTest {
 
   @AfterEach
   public void tearDown() {
-    //Reset the Ghost
     BlockBean block1 = ps.getBlockByTileId("bk-1");
     block1.setBlockState(BlockBean.BlockState.FREE);
     ps.persist(block1);
     Logger.trace("Reset Block 1");
+
+    // Restore power if ghost detection cut it
+    if (!JCS.getJcsCommandStation().isPowerOn()) {
+      JCS.getJcsCommandStation().switchPower(true);
+      Logger.trace("Power restored in tearDown");
+    }
+  }
+
+  void pause(int millis) {
+    try {
+      Thread.sleep(millis);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+    }
   }
 
   @Order(1)
@@ -126,6 +142,9 @@ public class SensorMonitorTest {
     assertTrue(timeout > now);
     assertFalse(instance.isRunning());
     Logger.trace("Monitor <stopped in " + (now - start) + " ms...");
+
+    // Add a small buffer so the thread is fully gone from the pool
+    pause(100);
   }
 
   @Order(3)

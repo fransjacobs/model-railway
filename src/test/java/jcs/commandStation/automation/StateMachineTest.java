@@ -364,6 +364,7 @@ public class StateMachineTest {
 
     stateMachine.executeState();
     assertEquals("Braking", stateMachine.getCurrentStateName());
+    pause(150);
 
     assertEquals(NS_1631, block2.getLocomotiveId());
     assertEquals(83, ns1631.getLocomotiveBean().getVelocity());
