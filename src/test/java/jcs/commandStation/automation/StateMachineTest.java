@@ -28,7 +28,11 @@ import jcs.persistence.PersistenceService;
 import jcs.persistence.util.PersistenceTestHelper;
 import jcs.ui.layout.tiles.Tile;
 import jcs.ui.layout.tiles.TileCache;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.MethodOrderer;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,16 +44,20 @@ import org.tinylog.Logger;
 /**
  * Test the State machine
  */
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class StateMachineTest {
 
   protected final PersistenceTestHelper testHelper;
   protected final PersistenceService ps;
+
+  //private Dispatcher ns1631;
+  //private StateMachine stateMachine;
   @SuppressWarnings("unused")
   private List<Tile> tiles;
   //private int eventCallbackCount = 0;
 
   SensorMonitor sensorMonitor;
-  private final RailController railwayController;
+  private RailController railwayController;
 
   protected static final long BR_101_003_2 = 23;
   protected static final long NS_1631 = 39;
@@ -75,17 +83,16 @@ public class StateMachineTest {
       Logger.error("###### Can't connect to command station! ########");
     }
 
-    railwayController = RailController.getInstance();
-    railwayController.setAutomodeOn(true);
-
-    sensorMonitor = new SensorMonitor();
-    railwayController.setSensorMonitor(sensorMonitor);
-    //Register the sensors
-    sensorMonitor.registerAllSensors();
-    //sensorMonitor.start();
-
-    railwayController.prepareAllDispatchers();
-
+//    railwayController = RailController.getInstance();
+//    railwayController.setAutomodeOn(true);
+//
+//    sensorMonitor = new SensorMonitor();
+//    railwayController.setSensorMonitor(sensorMonitor);
+//    //Register the sensors
+//    sensorMonitor.registerAllSensors();
+//    //sensorMonitor.start();
+//
+//    railwayController.prepareAllDispatchers();
   }
 
   @BeforeAll
@@ -96,22 +103,43 @@ public class StateMachineTest {
   public static void tearDownClass() {
   }
 
-  @BeforeEach
-  public void setUp() {
-    testHelper.runTestDataInsertScript("autopilot_queue_test.sql");
-
-    if (JCS.getJcsCommandStation().connect()) {
-
-      JCS.getJcsCommandStation().switchPower(true);
-      tiles = TileCache.loadTiles(true);
-    }
-  }
-
+//  @BeforeEach
+//  public void setUp() {
+//    testHelper.runTestDataInsertScript("autopilot_queue_test.sql");
+//
+//    if (JCS.getJcsCommandStation().connect()) {
+//
+//      JCS.getJcsCommandStation().switchPower(true);
+//      tiles = TileCache.loadTiles(true);
+//    }
+//  }
   @AfterEach
   public void tearDown() {
     TileCache.flush();
   }
 
+  @BeforeEach
+  public void setUp() {
+    testHelper.runTestDataInsertScript("autopilot_queue_test.sql");
+
+    if (JCS.getJcsCommandStation().connect()) {
+      JCS.getJcsCommandStation().switchPower(true);
+      tiles = TileCache.loadTiles(true);
+    }
+
+    // Move from constructor to here:
+    railwayController = RailController.getInstance();
+    railwayController.setAutomodeOn(true);
+    sensorMonitor = new SensorMonitor();
+    railwayController.setSensorMonitor(sensorMonitor);
+    sensorMonitor.registerAllSensors();
+    railwayController.prepareAllDispatchers();
+  }
+
+//@AfterEach
+//public void tearDown() {
+//    TileCache.flush();
+//}  
   void pause(int millis) {
     try {
       Thread.sleep(millis);
@@ -129,7 +157,7 @@ public class StateMachineTest {
 
     sensorMonitor.handleSensorEvent(sensorEvent);
     //Wait a little while to let the sensormonitor process the sensor
-    pause(50);
+    pause(150);
   }
 
   @Order(1)
@@ -192,7 +220,7 @@ public class StateMachineTest {
     //Stop the dispatcher!
     ns1631.stopLocomotive();
     assertFalse(ns1631.isLocomotiveStarted());
-    
+
     pause(250);
   }
 
@@ -316,7 +344,7 @@ public class StateMachineTest {
     assertEquals(BlockBean.BlockState.LOCKED, block2.getBlockState());
 
     stateMachine.executeState();
-    pause(30);
+    pause(150);
 
     assertEquals("Running", stateMachine.getCurrentStateName());
 
@@ -386,12 +414,12 @@ public class StateMachineTest {
     assertFalse(ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(block4.getPlusSensorId()));
 
     assertEquals("Waiting", stateMachine.getCurrentStateName());
-    
+
     assertNull(ns1631.getDestinationBlock());
 
     assertEquals(0, ns1631.getLocomotiveBean().getVelocity());
     stateMachine.reset();
-    
+
     pause(250);
   }
 
