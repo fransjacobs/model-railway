@@ -498,6 +498,8 @@ public class StateMachineTest {
     //Departure -> Running
     stateMachine.executeState();
     assertEquals("Running", stateMachine.getCurrentStateName());
+    
+    pause(100);
 
     assertEquals(NS_1631, block2.getLocomotiveId());
     assertEquals(625, ns1631.getLocomotiveBean().getVelocity());
