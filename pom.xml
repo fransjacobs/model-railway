@@ -17,6 +17,7 @@
         <app.main.class>jcs.JCS</app.main.class>
         <maven.compiler.release>25</maven.compiler.release>
         <app.distribution.directory>${project.build.directory}/distributions/app</app.distribution.directory>
+        <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss z</maven.build.timestamp.format>
     </properties>    
     <licenses>
         <license>
@@ -222,6 +223,19 @@
     </dependencies>
     <build>        
         <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>templating-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>generate-jcs-version</id>
+                        <goals>
+                            <goal>filter-sources</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>

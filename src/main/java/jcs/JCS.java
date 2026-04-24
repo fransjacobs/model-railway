@@ -106,8 +106,7 @@ public class JCS extends Thread {
   public static RailController getRailController() {
     return RailController.getInstance();
   }
-  
-  
+
   /**
    * Executed at shutdown in response to a Ctrl-C etc.
    */
@@ -117,7 +116,7 @@ public class JCS extends Thread {
     Thread.currentThread().setName("JCS finalize thread");
     Logger.trace("Shutting Down...");
     ProcessFactory.getInstance().shutdown();
-    Logger.info("JCS " + VersionInfo.getVersion() + " session finished");
+    Logger.info("JCS " + VersionInfo.getDisplayVersion() + " session finished");
   }
 
   public static JCS getInstance() {
@@ -148,7 +147,7 @@ public class JCS extends Thread {
   public static void main(String[] args) {
     System.setProperty("fazecast.jSerialComm.appid", "JCS");
     version = VersionInfo.getVersion();
-    Logger.info("Starting JCS Version " + version + "...");
+    Logger.info("Starting JCS Version " + VersionInfo.getDisplayVersion() + " ...");
 
     if (GraphicsEnvironment.isHeadless()) {
       Logger.error("This JDK environment is headless, can't start a GUI!");

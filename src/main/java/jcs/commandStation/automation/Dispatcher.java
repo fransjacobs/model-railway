@@ -366,7 +366,7 @@ public class Dispatcher {
 
     SignalValue newValue = SignalValue.OFF;
     switch (state) {
-      case DEPARTING -> {
+      case PREPROUTE -> {
         BlockBean departureBlock = getDepartureBlock();
         String departureSuffix = getRouteBean().getFromSuffix();
         if ("-".equals(departureSuffix) && departureBlock.getMinSignalId() != null) {
@@ -394,14 +394,14 @@ public class Dispatcher {
       }
     }
 
-    if (getActiveSignal() != null && newValue != SignalValue.OFF) {
-      Logger.trace("Signal " + getActiveSignal().getId() + " will be set to: " + newValue + "...");
+    if (signal != null && newValue != SignalValue.OFF) {
+      Logger.trace("Signal " + signal.getId() + " will be set to: " + newValue + "...");
 
-      JCS.getJcsCommandStation().switchAccessory(activeSignal, newValue);
+      JCS.getJcsCommandStation().switchAccessory(signal, newValue);
       if (SignalValue.Hp0 == newValue) {
-        this.setActiveSignal(null);
+        setActiveSignal(null);
       }
-      Logger.debug("Signal " + getActiveSignal().getId() + " set to: " + newValue + " " + (getActiveSignal() != null ? "active" : "not active") + "...");
+      Logger.debug("Signal " + signal.getId() + " set to: " + newValue + " " + (getActiveSignal() != null ? "active" : "not active") + "...");
     }
 
   }

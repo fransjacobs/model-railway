@@ -15,53 +15,23 @@
  */
 package jcs.util;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Properties;
-
 /**
- * Obtain Version information from the project generated pom.properties file
+ * Obtain Version information from the project JCSVersion.class
  */
 public class VersionInfo {
 
   private static String artifactId = "NOT SET";
   private static String groupId = "NOT SET";
   private static String version = "NOT SET";
+  private static String buildTime = "NOT SET";
+  private static boolean snapshot = false;
 
   static {
-    Properties prop = readFromJARFile("META-INF/maven/jcs/jcs/pom.properties");
-    if (prop.isEmpty()) {
-      prop = readFromSourceFile("target/maven-archiver/pom.properties");
-    }
-    artifactId = prop.getProperty("artifactId", "NOT SET");
-    groupId = prop.getProperty("groupId", "NOT SET");
-    version = prop.getProperty("version", "NOT SET");
-  }
-
-  private static Properties readFromJARFile(String filename) {
-    Properties prop = new Properties();
-    try {
-      prop.load(new InputStreamReader(VersionInfo.class.getClassLoader().getResourceAsStream(filename)));
-    } catch (NullPointerException | IOException ex) {
-      //ignore
-    }
-    return prop;
-  }
-
-  private static Properties readFromSourceFile(String filename) {
-    Properties prop = new Properties();
-    try {
-      File p = new File(filename);
-      if (p.exists()) {
-        FileInputStream inputStream = new FileInputStream(p);
-        prop.load(inputStream);
-      }
-    } catch (NullPointerException | IOException ex) {
-      //ignore
-    }
-    return prop;
+    artifactId = JCSVersion.ARTIFACT_ID;
+    groupId = JCSVersion.GROUP_ID;
+    version = JCSVersion.VERSION;
+    buildTime = JCSVersion.BUILD_TIME;
+    snapshot = JCSVersion.isSnapshot();
   }
 
   public static String getVersion() {
@@ -74,5 +44,17 @@ public class VersionInfo {
 
   public static String getGroupId() {
     return groupId;
+  }
+
+  public static String getBuildTime() {
+    return buildTime;
+  }
+
+  public static boolean isSnapshot() {
+    return snapshot;
+  }
+
+  public static String getDisplayVersion() {
+    return JCSVersion.getDisplayVersion();
   }
 }
