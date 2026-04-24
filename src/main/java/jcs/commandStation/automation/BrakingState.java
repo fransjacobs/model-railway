@@ -16,6 +16,7 @@
 package jcs.commandStation.automation;
 
 import java.awt.Color;
+import static jcs.commandStation.automation.AbstractState.State.BRAKE;
 
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.BlockBean;
@@ -36,7 +37,7 @@ class BrakingState extends AbstractState implements SensorEventCallback {
   private boolean inSensorTriggerred = false;
 
   BrakingState(boolean inSensorTriggerred) {
-    super("Braking");
+    super(BRAKE);
     this.inSensorTriggerred = inSensorTriggerred;
   }
 
@@ -104,7 +105,7 @@ class BrakingState extends AbstractState implements SensorEventCallback {
         Logger.trace("In Event from Sensor " + event.getSensorId() + " for " + dispatcher.getName());
         dispatcher.wakeup();
       }
-    } 
+    }
   }
 
 }

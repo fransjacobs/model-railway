@@ -19,7 +19,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import jcs.JCS;
+import jcs.commandStation.automation.AbstractState.State;
 import jcs.entities.AccessoryBean;
+import jcs.entities.AccessoryBean.SignalValue;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.Direction;
@@ -38,7 +40,7 @@ import org.tinylog.Logger;
  */
 public class Dispatcher {
 
-  private final RailController railwayController;
+  private final RailController railController;
   private final Long locomotiveId;
   private final String name;
 
@@ -60,6 +62,8 @@ public class Dispatcher {
   //The exit of the departure
   private volatile Integer exitSensorId;
 
+  private volatile AccessoryBean activeSignal;
+
   volatile boolean locomotiveStarted = false;
   private final List<StateEventListener> stateEventListeners;
 
@@ -78,7 +82,7 @@ public class Dispatcher {
    * @param locomotiveBean
    */
   Dispatcher(RailController railwayController, LocomotiveBean locomotiveBean) {
-    this.railwayController = railwayController;
+    this.railController = railwayController;
     locomotiveId = locomotiveBean.getId();
     name = locomotiveBean.getName();
     routeManager = new RouteManager(this);
@@ -86,12 +90,12 @@ public class Dispatcher {
   }
 
   @SuppressWarnings("unused")
-  RailController getRailwayController() {
-    return railwayController;
+  RailController getRailController() {
+    return railController;
   }
 
   SensorMonitor getSensorMonitor() {
-    return railwayController.getSensorMonitor();
+    return railController.getSensorMonitor();
   }
 
   RouteManager getRouteManager() {
@@ -135,7 +139,7 @@ public class Dispatcher {
   }
 
   void enable() {
-    if (railwayController.isAutoModeActive()) {
+    if (railController.isAutoModeActive()) {
       if (stateMachine == null || !stateMachine.isRunning()) {
         // Explicitly clean up old state machine if present
         if (stateMachine != null) {
@@ -150,7 +154,7 @@ public class Dispatcher {
   }
 
   public void startLocomotive() {
-    if (railwayController.isAutoModeActive()) {
+    if (railController.isAutoModeActive()) {
       if (stateMachine != null && !stateMachine.isRunning()) {
         stateMachine.startStateMachineThread();
         locomotiveStarted = stateMachine.isRunning();
@@ -190,7 +194,7 @@ public class Dispatcher {
   }
 
   ThreadGroup getThreadGroup() {
-    return railwayController.getThreadGroup();
+    return railController.getThreadGroup();
   }
 
   public void reset() {
@@ -205,6 +209,7 @@ public class Dispatcher {
     setEnterSensorId(null);
     setInSensorId(null);
     setExitSensorId(null);
+    setActiveSignal(null);
 
     BlockBean destination = getDestinationBlock();
     if (destination != null) {
@@ -346,6 +351,59 @@ public class Dispatcher {
 
   void setExitSensorId(Integer exitSensorId) {
     this.exitSensorId = exitSensorId;
+  }
+
+  AccessoryBean getActiveSignal() {
+    return activeSignal;
+  }
+
+  void setActiveSignal(AccessoryBean activeSignal) {
+    this.activeSignal = activeSignal;
+  }
+
+  void handleSignal(State state) {
+    AccessoryBean signal = getActiveSignal();
+
+    SignalValue newValue = SignalValue.OFF;
+    switch (state) {
+      case DEPARTING -> {
+        BlockBean departureBlock = getDepartureBlock();
+        String departureSuffix = getRouteBean().getFromSuffix();
+        if ("-".equals(departureSuffix) && departureBlock.getMinSignalId() != null) {
+          signal = PersistenceFactory.getService().getAccessory(departureBlock.getMinSignalId());
+        } else {
+          signal = PersistenceFactory.getService().getAccessory(departureBlock.getPlusSignalId());
+        }
+
+        setActiveSignal(signal);
+        newValue = SignalValue.Hp1;
+      }
+      case APPROACH -> {
+        newValue = SignalValue.Hp0;
+      }
+      case PREPNEXTROUTE -> {
+        BlockBean departureBlock = this.getDestinationBlock();
+        String departureSuffix = getRouteBean().getFromSuffix();
+        if ("-".equals(departureSuffix) && departureBlock.getMinSignalId() != null) {
+          signal = PersistenceFactory.getService().getAccessory(departureBlock.getMinSignalId());
+        } else {
+          signal = PersistenceFactory.getService().getAccessory(departureBlock.getPlusSignalId());
+        }
+        setActiveSignal(signal);
+        newValue = SignalValue.Hp1;
+      }
+    }
+
+    if (getActiveSignal() != null && newValue != SignalValue.OFF) {
+      Logger.trace("Signal " + getActiveSignal().getId() + " will be set to: " + newValue + "...");
+
+      JCS.getJcsCommandStation().switchAccessory(activeSignal, newValue);
+      if (SignalValue.Hp0 == newValue) {
+        this.setActiveSignal(null);
+      }
+      Logger.debug("Signal " + getActiveSignal().getId() + " set to: " + newValue + " " + (getActiveSignal() != null ? "active" : "not active") + "...");
+    }
+
   }
 
   void changeLocomotiveVelocity(double velocity) {

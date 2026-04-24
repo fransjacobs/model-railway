@@ -15,6 +15,7 @@
  */
 package jcs.commandStation.automation;
 
+import static jcs.commandStation.automation.AbstractState.State.IDLE;
 import org.tinylog.Logger;
 
 /**
@@ -23,7 +24,7 @@ import org.tinylog.Logger;
 class IdleState extends AbstractState {
 
   IdleState() {
-    super("Idle");
+    super(IDLE);
   }
 
   @Override

@@ -20,8 +20,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import static jcs.commandStation.automation.AbstractState.State.WAIT;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
+import static org.apache.batik.svggen.font.table.Table.name;
 import org.tinylog.Logger;
 
 /**
@@ -36,7 +38,7 @@ class WaitingState extends AbstractState {
   private volatile boolean cancelled = false;
 
   WaitingState() {
-    super("Waiting");
+    super(WAIT);
   }
 
   @Override
@@ -77,12 +79,12 @@ class WaitingState extends AbstractState {
           cancelled = true;
           stopScheduler();
 
-          dispatcher.fireStateListeners(name, name, " (-)");
+          dispatcher.fireStateListeners(getName(), getName(), " (-)");
 
           return;
         }
 
-        dispatcher.fireStateListeners(name, name, " (" + remainingTime + ")");
+        dispatcher.fireStateListeners(getName(), getName(), " (" + remainingTime + ")");
         //Logger.trace("Remaining time for " + dispatcher.getName() + " " + remainingTime + " s...");
 
         remainingTime--;

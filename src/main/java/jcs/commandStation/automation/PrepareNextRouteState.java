@@ -16,6 +16,7 @@
 package jcs.commandStation.automation;
 
 import java.awt.Color;
+import static jcs.commandStation.automation.AbstractState.State.PREPNEXTROUTE;
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.BlockBean;
 import jcs.entities.RouteBean;
@@ -35,7 +36,7 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
   private boolean nextRouteAvaliable = false;
 
   PrepareNextRouteState() {
-    super("PrepareNextRoute");
+    super(PREPNEXTROUTE);
   }
 
   @Override
@@ -135,7 +136,7 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
         Logger.trace("No lock permits available");
       }
 
-      boolean automodeInActive = !dispatcher.getRailwayController().isAutoModeActive();
+      boolean automodeInActive = !dispatcher.getRailController().isAutoModeActive();
 
       //Check for a stop request
       if (dispatcher.getStateMachine().isRequestStop() || !dispatcher.isLocomotiveStarted() || automodeInActive) {
@@ -149,6 +150,7 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
     if (inSensorTriggered) {
       return new ArrivedState();
     } else if (nextRouteAvaliable) {
+      dispatcher.handleSignal(state);
       return new PassingThroughState(inSensorTriggered);
     } else {
       return new BrakingState(inSensorTriggered);

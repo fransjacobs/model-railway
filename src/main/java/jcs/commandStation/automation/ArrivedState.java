@@ -17,6 +17,7 @@ package jcs.commandStation.automation;
 
 import java.awt.Color;
 import java.util.Date;
+import static jcs.commandStation.automation.AbstractState.State.ARRIVED;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.RouteBean;
@@ -33,7 +34,7 @@ class ArrivedState extends AbstractState {
   boolean alwaysStop = true;
 
   public ArrivedState() {
-    super("Arrived");
+    super(ARRIVED);
   }
 
   /**
@@ -167,7 +168,7 @@ class ArrivedState extends AbstractState {
     }
 
     //Check to which next state we can switch
-    boolean automodeInActive = !dispatcher.getRailwayController().isAutoModeActive();
+    boolean automodeInActive = !dispatcher.getRailController().isAutoModeActive();
     automodeInActive = automodeInActive && !dispatcher.isLocomotiveStarted();
 
     //refresh

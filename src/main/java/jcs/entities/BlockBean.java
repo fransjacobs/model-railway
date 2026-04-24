@@ -338,6 +338,11 @@ public class BlockBean implements Comparable<BlockBean> {
   }
 
   @Transient
+  public boolean hasSignal() {
+    return this.minSignalId != null || this.plusSignalId != null;
+  }
+
+  @Transient
   public BlockState getBlockState() {
     if (this.status != null) {
       return BlockState.get(status);

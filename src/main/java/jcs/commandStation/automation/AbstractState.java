@@ -15,17 +15,21 @@
  */
 package jcs.commandStation.automation;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * Base State
  */
 abstract class AbstractState {
 
-  protected final String name;
+  protected final State state;
 
   protected volatile Dispatcher dispatcher;
 
-  protected AbstractState(String name) {
-    this.name = name;
+  protected AbstractState(State state) {
+    this.state = state;
   }
 
   /**
@@ -62,11 +66,50 @@ abstract class AbstractState {
   }
 
   /**
+   * 
+   * @return the current State 
+   */
+  public State getState() {
+    return this.state;
+  }
+
+  /**
    *
    * @return the name of the State
    */
   public String getName() {
-    return this.name;
+    return this.state.getName();
+  }
+
+  public enum State {
+    IDLE("Idle"), PREPROUTE("PrepareRoute"), DEPARTING("Departing"), RUNNING("Running"), APPROACH("Approaching"), BRAKE("Braking"), PASSTHROUGH("PassingThrough"), ARRIVED("Arrived"), PREPNEXTROUTE("PrepareNextRoute"), WAIT("Waiting");
+
+    private final String name;
+
+    private static final Map<String, State> ENUM_MAP;
+
+    State(String name) {
+      this.name = name;
+    }
+
+    public String getName() {
+      return this.name;
+    }
+
+    static {
+      Map<String, State> map = new ConcurrentHashMap<>();
+      for (State instance : State.values()) {
+        map.put(instance.getName(), instance);
+      }
+      ENUM_MAP = Collections.unmodifiableMap(map);
+    }
+
+    public static State get(String name) {
+      if (name == null) {
+        return null;
+      }
+      return ENUM_MAP.get(name);
+    }
   }
 
 }

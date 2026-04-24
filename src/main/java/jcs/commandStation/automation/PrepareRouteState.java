@@ -16,6 +16,7 @@
 package jcs.commandStation.automation;
 
 import java.awt.Color;
+import static jcs.commandStation.automation.AbstractState.State.PREPROUTE;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.StationBean;
@@ -30,14 +31,14 @@ class PrepareRouteState extends AbstractState {
   private volatile boolean canDepart;
 
   PrepareRouteState() {
-    super("PrepareRoute");
+    super(PREPROUTE);
   }
 
   @Override
   void onEnter(Dispatcher dispatcher) {
     super.onEnter(dispatcher);
 
-    //Check if we can reallt depart. Departure could be determined when the departure block is part of a Station.
+    //Check if we can depart. Departure could be determined when the departure block is part of a Station.
     //If the is the case, should the Station act as a FIFO, or can we just leave based on the numbers?    
     BlockBean departureBlock = dispatcher.getDepartureBlock();
     StationBean station = dispatcher.getStation(departureBlock);
@@ -69,9 +70,9 @@ class PrepareRouteState extends AbstractState {
   AbstractState execute() {
     boolean canAdvanceToNextState = false;
     if (canDepart) {
-      BlockBean blockBean = dispatcher.getDepartureBlock();
+      BlockBean departureBlock = dispatcher.getDepartureBlock();
       LocomotiveBean locomotiveBean = dispatcher.getLocomotiveBean();
-      Logger.debug("Locomotive " + locomotiveBean.getName() + " Direction: " + locomotiveBean.getDirection().getDirection() + " search for route from block " + blockBean.getId() + " logicalDir: " + blockBean.getLogicalDirection() + " Arrived at " + blockBean.getArrivalSuffix());
+      Logger.debug("Locomotive " + locomotiveBean.getName() + " Direction: " + locomotiveBean.getDirection().getDirection() + " search for route from block " + departureBlock.getId() + " logicalDir: " + departureBlock.getLogicalDirection() + " Arrived at " + departureBlock.getArrivalSuffix());
 
       int permits = RailController.avialablePermits();
       Logger.trace("Obtaining a lock. There is currently " + permits + " available permits...");
@@ -92,6 +93,7 @@ class PrepareRouteState extends AbstractState {
 
     if (canAdvanceToNextState) {
       dispatcher.getRouteManager().showRoute(dispatcher.getRouteBean(), Color.magenta);
+      dispatcher.handleSignal(state);
 
       return new DepartingState();
     } else {
@@ -102,8 +104,6 @@ class PrepareRouteState extends AbstractState {
 
   @Override
   void onExit() {
-    // Make sure the locomotive is stopped
-    //dispatcher.changeLocomotiveVelocity(0); 
   }
 
   @Override

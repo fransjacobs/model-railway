@@ -16,6 +16,7 @@
 package jcs.commandStation.automation;
 
 import java.awt.Color;
+import static jcs.commandStation.automation.AbstractState.State.PASSTHROUGH;
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.BlockBean;
 import jcs.entities.RouteBean;
@@ -38,7 +39,7 @@ class PassingThroughState extends AbstractState implements SensorEventCallback {
    * @param inSensorTriggered
    */
   PassingThroughState(boolean inSensorTriggered) {
-    super("PassingThrough");
+    super(PASSTHROUGH);
     this.inSensorTriggered = inSensorTriggered;
   }
 

@@ -15,6 +15,7 @@
  */
 package jcs.commandStation.automation;
 
+import static jcs.commandStation.automation.AbstractState.State.RUNNING;
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.BlockBean;
 import org.tinylog.Logger;
@@ -31,7 +32,7 @@ class RunningState extends AbstractState implements SensorEventCallback {
   private boolean enterSensorTriggered = false;
 
   RunningState() {
-    super("Running");
+    super(RUNNING);
   }
 
   @Override

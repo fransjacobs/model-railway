@@ -15,6 +15,7 @@
  */
 package jcs.commandStation.automation;
 
+import static jcs.commandStation.automation.AbstractState.State.DEPARTING;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.persistence.PersistenceFactory;
@@ -29,7 +30,7 @@ import org.tinylog.Logger;
 class DepartingState extends AbstractState {
 
   DepartingState() {
-    super("Departing");
+    super(DEPARTING);
   }
 
   @Override
@@ -40,7 +41,7 @@ class DepartingState extends AbstractState {
     departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
     destinationBlock.setBlockState(BlockBean.BlockState.LOCKED);
 
-    Logger.debug("Starting: " + locomotive.getName() + " Direction: " + locomotive.getDirection()+" Route: "+dispatcher.getRouteBean().getId());
+    Logger.debug("Starting: " + locomotive.getName() + " Direction: " + locomotive.getDirection() + " Route: " + dispatcher.getRouteBean().getId());
 
     //Speed to ~75% or speed 3
     Integer speed3 = locomotive.getSpeedThree();

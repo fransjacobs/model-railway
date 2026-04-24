@@ -258,6 +258,8 @@ public class StateMachineTest {
     stateMachine.reset();
     assertEquals("Idle", stateMachine.getCurrentStateName());
     //assertFalse(ns1631.isLocomotiveStarted());
+
+    pause(250);
   }
 
   @Order(4)
@@ -400,7 +402,7 @@ public class StateMachineTest {
   }
 
   @Order(5)
-  //@Test
+  @Test
   public void testOneFullDrivewayContinue() {
     System.out.println("OneFullDrivewayContinue");
     Dispatcher ns1631 = railwayController.getDispatcher((int) NS_1631);
@@ -600,21 +602,21 @@ public class StateMachineTest {
     assertTrue(ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(enterSensorId));
     assertTrue(ns1631.getSensorMonitor().isSensorRegisteredWithoutCallback(inSensorId));
 
-    //assertNull(ns1631.getOccupationSensorId());
-    //assertNull(ns1631.getExitSensorId());
     //Departure
     block4 = ps.getBlockByTileId("bk-4");
-    assertEquals(BlockBean.BlockState.FREE, block4.getBlockState());
-    assertNull(block4.getLocomotiveId());
-
+    assertEquals(BlockBean.BlockState.OUTBOUND, block4.getBlockState());
+    assertEquals(NS_1631, block4.getLocomotiveId());
+    
     //Destination
     block2 = ps.getBlockByTileId("bk-2");
-    assertEquals(BlockBean.BlockState.OCCUPIED, block2.getBlockState());
+    assertEquals(BlockBean.BlockState.INBOUND, block2.getBlockState());
     assertEquals(NS_1631, block2.getLocomotiveId());
 
     //Arrived -> Departing
     stateMachine.executeState();
     assertEquals("Departing", stateMachine.getCurrentStateName());
+    
+    pause(100);
 
     assertNotNull(ns1631.getRouteBean());
     assertNull(ns1631.getNextRouteBean());
@@ -675,5 +677,7 @@ public class StateMachineTest {
     assertEquals("Running", stateMachine.getCurrentStateName());
 
     stateMachine.reset();
+
+    pause(250);
   }
 }
