@@ -82,17 +82,6 @@ public class StateMachineTest {
     } else {
       Logger.error("###### Can't connect to command station! ########");
     }
-
-//    railwayController = RailController.getInstance();
-//    railwayController.setAutomodeOn(true);
-//
-//    sensorMonitor = new SensorMonitor();
-//    railwayController.setSensorMonitor(sensorMonitor);
-//    //Register the sensors
-//    sensorMonitor.registerAllSensors();
-//    //sensorMonitor.start();
-//
-//    railwayController.prepareAllDispatchers();
   }
 
   @BeforeAll
@@ -101,21 +90,6 @@ public class StateMachineTest {
 
   @AfterAll
   public static void tearDownClass() {
-  }
-
-//  @BeforeEach
-//  public void setUp() {
-//    testHelper.runTestDataInsertScript("autopilot_queue_test.sql");
-//
-//    if (JCS.getJcsCommandStation().connect()) {
-//
-//      JCS.getJcsCommandStation().switchPower(true);
-//      tiles = TileCache.loadTiles(true);
-//    }
-//  }
-  @AfterEach
-  public void tearDown() {
-    TileCache.flush();
   }
 
   @BeforeEach
@@ -136,10 +110,11 @@ public class StateMachineTest {
     railwayController.prepareAllDispatchers();
   }
 
-//@AfterEach
-//public void tearDown() {
-//    TileCache.flush();
-//}  
+  @AfterEach
+  public void tearDown() {
+    TileCache.flush();
+  }
+
   void pause(int millis) {
     try {
       Thread.sleep(millis);
@@ -157,7 +132,7 @@ public class StateMachineTest {
 
     sensorMonitor.handleSensorEvent(sensorEvent);
     //Wait a little while to let the sensormonitor process the sensor
-    pause(150);
+    pause(50);
   }
 
   @Order(1)
@@ -344,7 +319,7 @@ public class StateMachineTest {
     assertEquals(BlockBean.BlockState.LOCKED, block2.getBlockState());
 
     stateMachine.executeState();
-    pause(150);
+    pause(250);
 
     assertEquals("Running", stateMachine.getCurrentStateName());
 
