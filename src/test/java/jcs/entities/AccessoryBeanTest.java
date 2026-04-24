@@ -192,60 +192,100 @@ public class AccessoryBeanTest {
     assertEquals(0, instance.getState());
   }
 
-  /**
-   * Test of getSignalValue method, of class AccessoryBean.
-   */
-  //@Test
+  @Test
   public void testGetSignalValue() {
     System.out.println("getSignalValue");
+
+    // Null state → OFF
     AccessoryBean instance = new AccessoryBean();
-    AccessoryBean.SignalValue expResult = null;
-    AccessoryBean.SignalValue result = instance.getSignalValue();
-    assertEquals(expResult, result);
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
+    assertEquals(AccessoryBean.SignalValue.Hp0, instance.getSignalValue());
+
+    // State 0 → Hp0 (stop)
+    instance.setState(0);
+    assertEquals(AccessoryBean.SignalValue.Hp0, instance.getSignalValue());
+
+    // State 1 → Hp1 (proceed)
+    instance.setState(1);
+    assertEquals(AccessoryBean.SignalValue.Hp1, instance.getSignalValue());
+
+    // State 2 → Hp0Sh1 (stop + shunting allowed)
+    instance.setState(2);
+    assertEquals(AccessoryBean.SignalValue.Hp0Sh1, instance.getSignalValue());
+
+    // State 3 → Hp2 (proceed slowly)
+    instance.setState(3);
+    assertEquals(AccessoryBean.SignalValue.Hp2, instance.getSignalValue());
   }
 
-  /**
-   * Test of isSignal method, of class AccessoryBean.
-   */
-  //@Test
+  @Test
   public void testIsSignal() {
     System.out.println("isSignal");
+
+    // Null type → false
     AccessoryBean instance = new AccessoryBean();
-    boolean expResult = false;
-    boolean result = instance.isSignal();
-    assertEquals(expResult, result);
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
+    assertFalse(instance.isSignal());
+
+    // Turnout type → false
+    instance.setType("linksweiche");
+    assertFalse(instance.isSignal());
+
+    // Plain lichtsignal → true
+    instance.setType("lichtsignal_HP01");
+    assertTrue(instance.isSignal());
+
+    // Prefixed lichtsignal → true
+    instance.setType("urc_lichtsignal_HP012");
+    assertTrue(instance.isSignal());
+
+    // 4-state lichtsignal → true
+    instance.setType("lichtsignal_HP012_SH01");
+    assertTrue(instance.isSignal());
   }
 
-  /**
-   * Test of isTurnout method, of class AccessoryBean.
-   */
-  //@Test
+  @Test
   public void testIsTurnout() {
     System.out.println("isTurnout");
+
+    // Null type → false
     AccessoryBean instance = new AccessoryBean();
-    boolean expResult = false;
-    boolean result = instance.isTurnout();
-    assertEquals(expResult, result);
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
+    assertFalse(instance.isTurnout());
+
+    // Signal type → false
+    instance.setType("lichtsignal_HP01");
+    assertFalse(instance.isTurnout());
+
+    // Left turnout (linksweiche) → true
+    instance.setType("linksweiche");
+    assertTrue(instance.isTurnout());
+
+    // Right turnout (rechtsweiche) → true
+    instance.setType("rechtsweiche");
+    assertTrue(instance.isTurnout());
+
+    // Three-way switch (dreiwegweiche) → true, also contains "weiche"
+    instance.setType("dreiwegweiche");
+    assertTrue(instance.isTurnout());
   }
 
-  /**
-   * Test of isOther method, of class AccessoryBean.
-   */
-  //@Test
+  @Test
   public void testIsOther() {
     System.out.println("isOther");
+
+    // Null type → neither signal nor turnout, so isOther = true
     AccessoryBean instance = new AccessoryBean();
-    boolean expResult = false;
-    boolean result = instance.isOther();
-    assertEquals(expResult, result);
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
+    assertTrue(instance.isOther());
+
+    // Turnout → not other
+    instance.setType("linksweiche");
+    assertFalse(instance.isOther());
+
+    // Signal → not other
+    instance.setType("lichtsignal_HP01");
+    assertFalse(instance.isOther());
+
+    // Uncoupler or generic accessory → other
+    instance.setType("entkuppler");
+    assertTrue(instance.isOther());
   }
 
 }

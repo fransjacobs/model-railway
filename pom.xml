@@ -113,13 +113,13 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>6.0.3</version>
+            <version>5.14.3</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-params</artifactId>
-            <version>6.0.3</version>
+            <version>5.14.3</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -131,7 +131,7 @@
         <dependency>
             <groupId>org.junit.vintage</groupId>
             <artifactId>junit-vintage-engine</artifactId>
-            <version>6.0.3</version>
+            <version>5.14.3</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -172,7 +172,7 @@
         <dependency>
             <groupId>org.httprpc</groupId>
             <artifactId>sierra</artifactId>
-            <version>4.3.1</version>
+            <version>4.5</version>
         </dependency>     
         <dependency>
             <groupId>eu.hansolo</groupId>
@@ -236,7 +236,7 @@
                 <configuration>
                     <!--compilerArgs>-Xlint:unchecked,-verbose</compilerArgs-->
                     <compilerArgs>-verbose</compilerArgs>
-                    <release>21</release>
+                    <release>25</release>
                     <showDeprecation>true</showDeprecation>
                 </configuration>
             </plugin>  
@@ -262,7 +262,8 @@
                 <version>3.6.2</version>
                 <executions>
                     <execution>
-                        <phase>package</phase>
+                        <phase>none</phase>  <!-- disabled by default; enabled via profile -->
+                        <!--phase>package</phase-->
                         <goals>
                             <goal>shade</goal>
                         </goals>
@@ -644,7 +645,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-shade-plugin</artifactId>
-                        <version>3.6.1</version>
+                        <version>3.6.2</version>
                         <executions>
                             <execution>
                                 <phase>none</phase>
@@ -685,6 +686,26 @@
                             <execution>
                                 <id>aggregate-download-licenses</id>
                                 <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>package-app</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-shade-plugin</artifactId>
+                        <version>3.6.2</version>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>shade</goal>
+                                </goals>
                             </execution>
                         </executions>
                     </plugin>
