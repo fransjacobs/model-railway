@@ -46,6 +46,8 @@ public class RouteBean implements Serializable {
   private String color;
   private boolean locked;
   private String status;
+  private String from_signalId;
+  private String to_signalId;
 
   private List<RouteElementBean> routeElements;
 

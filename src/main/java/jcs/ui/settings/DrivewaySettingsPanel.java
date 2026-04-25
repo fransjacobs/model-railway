@@ -230,6 +230,18 @@ public class DrivewaySettingsPanel extends JPanel {
     commandPanel = new JPanel();
     drivewayTableSP = new JScrollPane();
     drivewayCommandTable = new JTable();
+    signalPanel = new JPanel();
+    jPanel1 = new JPanel();
+    fromSignalPanel = new JPanel();
+    minusBlockSignal = new JLabel();
+    signalIdLbl = new JLabel();
+    departureValLbl = new JLabel();
+    minSignalDepartureValueCB = new JComboBox<>();
+    toSignalPanel = new JPanel();
+    plusBlockSignal = new JLabel();
+    signalIdLbl1 = new JLabel();
+    departureValLbl1 = new JLabel();
+    minSignalDepartureValueCB1 = new JComboBox<>();
     westPanel = new JPanel();
     routesSP = new JScrollPane();
     routeList = new JList<>();
@@ -456,6 +468,54 @@ public class DrivewaySettingsPanel extends JPanel {
 
     mainTP.addTab("Commands", commandPanel);
 
+    signalPanel.setLayout(new BorderLayout());
+
+    jPanel1.setLayout(new BoxLayout(jPanel1, BoxLayout.PAGE_AXIS));
+
+    fromSignalPanel.setPreferredSize(new Dimension(452, 50));
+    FlowLayout flowLayout13 = new FlowLayout(FlowLayout.LEFT);
+    flowLayout13.setAlignOnBaseline(true);
+    fromSignalPanel.setLayout(flowLayout13);
+
+    minusBlockSignal.setText("- side Signal:");
+    minusBlockSignal.setToolTipText("");
+    fromSignalPanel.add(minusBlockSignal);
+
+    signalIdLbl.setText("s-nn");
+    fromSignalPanel.add(signalIdLbl);
+
+    departureValLbl.setText("Departure Value");
+    fromSignalPanel.add(departureValLbl);
+
+    minSignalDepartureValueCB.setModel(new DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+    fromSignalPanel.add(minSignalDepartureValueCB);
+
+    jPanel1.add(fromSignalPanel);
+
+    toSignalPanel.setPreferredSize(new Dimension(452, 50));
+    FlowLayout flowLayout14 = new FlowLayout(FlowLayout.LEFT);
+    flowLayout14.setAlignOnBaseline(true);
+    toSignalPanel.setLayout(flowLayout14);
+
+    plusBlockSignal.setText("+ side Signal:");
+    plusBlockSignal.setToolTipText("");
+    toSignalPanel.add(plusBlockSignal);
+
+    signalIdLbl1.setText("s-nn");
+    toSignalPanel.add(signalIdLbl1);
+
+    departureValLbl1.setText("Departure Value");
+    toSignalPanel.add(departureValLbl1);
+
+    minSignalDepartureValueCB1.setModel(new DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+    toSignalPanel.add(minSignalDepartureValueCB1);
+
+    jPanel1.add(toSignalPanel);
+
+    signalPanel.add(jPanel1, BorderLayout.PAGE_START);
+
+    mainTP.addTab("Signals", signalPanel);
+
     add(mainTP, BorderLayout.CENTER);
 
     westPanel.setMinimumSize(new Dimension(175, 500));
@@ -667,6 +727,8 @@ public class DrivewaySettingsPanel extends JPanel {
   JPanel buttonPanel;
   JPanel commandPanel;
   JButton deleteBtn;
+  JLabel departureValLbl;
+  JLabel departureValLbl1;
   JPanel detailPanel;
   JTable drivewayCommandTable;
   DrivewayCommandTableModel drivewayCommandTableModel;
@@ -676,13 +738,19 @@ public class DrivewaySettingsPanel extends JPanel {
   JComboBox<BlockBean> fromCB;
   JLabel fromLbl;
   JLabel fromLbl1;
+  JPanel fromSignalPanel;
   JSpinner fromSuffixSpinner;
   JLabel idLbl;
+  JPanel jPanel1;
   JPanel leftPanel;
   JCheckBox lockedCB;
   JTabbedPane mainTP;
+  JComboBox<String> minSignalDepartureValueCB;
+  JComboBox<String> minSignalDepartureValueCB1;
+  JLabel minusBlockSignal;
   JLabel nameLbl;
   JButton newBtn;
+  JLabel plusBlockSignal;
   JPanel rightPanel;
   JList<RouteBean> routeList;
   JComboBox<RouteBean.RouteState> routeStateCB;
@@ -697,11 +765,15 @@ public class DrivewaySettingsPanel extends JPanel {
   JPanel row7Panel;
   JPanel row9Panel;
   JButton saveBtn;
+  JLabel signalIdLbl;
+  JLabel signalIdLbl1;
+  JPanel signalPanel;
   JLabel statusLbl;
   JComboBox<BlockBean.BlockState> toBlockStateCB;
   JComboBox<BlockBean> toCB;
   JLabel toLbl;
   JLabel toLbl1;
+  JPanel toSignalPanel;
   JSpinner toSuffixSpinner;
   JPanel topPanel;
   JPanel westPanel;
