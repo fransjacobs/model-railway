@@ -48,9 +48,12 @@ import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
+import jcs.commandStation.entities.DrivewayCommand;
+import jcs.entities.AccessoryBean;
 import jcs.entities.BlockBean;
 import jcs.entities.RouteBean;
 import jcs.entities.RouteBean.RouteState;
+import jcs.entities.RouteElementBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.table.model.DrivewayCommandTableModel;
 import org.tinylog.Logger;
@@ -75,6 +78,9 @@ public class DrivewaySettingsPanel extends JPanel {
   private final DefaultComboBoxModel<RouteBean.RouteState> routeStateCBModel;
   private final DefaultComboBoxModel<BlockBean.BlockState> fromBlockStateCBModel;
   private final DefaultComboBoxModel<BlockBean.BlockState> toBlockStateCBModel;
+
+  private DefaultComboBoxModel<AccessoryBean.SignalValue> minSignalValueCBModel;
+  private DefaultComboBoxModel<AccessoryBean.SignalValue> plusSignalValueCBModel;
 
   public DrivewaySettingsPanel() {
     routeListModel = new RouteBeanListModel();
@@ -486,8 +492,6 @@ public class DrivewaySettingsPanel extends JPanel {
 
     departureValLbl.setText("Departure Value");
     fromSignalPanel.add(departureValLbl);
-
-    minSignalDepartureValueCB.setModel(new DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
     fromSignalPanel.add(minSignalDepartureValueCB);
 
     jPanel1.add(fromSignalPanel);
@@ -506,8 +510,6 @@ public class DrivewaySettingsPanel extends JPanel {
 
     departureValLbl1.setText("Departure Value");
     toSignalPanel.add(departureValLbl1);
-
-    minSignalDepartureValueCB1.setModel(new DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
     toSignalPanel.add(minSignalDepartureValueCB1);
 
     jPanel1.add(toSignalPanel);
@@ -722,6 +724,39 @@ public class DrivewaySettingsPanel extends JPanel {
     }
   }
 
+  protected List<DrivewayCommand> getSignalsInRoute(RouteBean routeBean) {
+    List<RouteElementBean> rel = routeBean.getRouteElements();
+    List<DrivewayCommand> drivewayCommands = new ArrayList<>();
+    for (RouteElementBean reb : rel) {
+      if (reb.isSignal()) {
+        AccessoryBean signal = reb.getTileBean().getAccessoryBean();
+
+        DrivewayCommand dc = new DrivewayCommand(reb.getId(), reb.getRouteId(), reb.getTileId(), signal.getId(), signal.getAddress(), signal.getAddress2(), signal.getProtocol().toString(), signal.getName(), reb.getAccessoryValue(), signal.getSignalType(), signal.getSignalValue(), reb.getElementOrder());
+        drivewayCommands.add(dc);
+      }
+    }
+    Collections.sort(drivewayCommands, new DrivewayCommandBySortOrderSorter());
+    return drivewayCommands;
+  }
+
+  class DrivewayCommandBySortOrderSorter implements Comparator<DrivewayCommand> {
+
+    @Override
+    public int compare(DrivewayCommand a, DrivewayCommand b) {
+      //Avoid null pointers
+      Integer aa = a.getSortOrder();
+      if (aa == null) {
+        aa = 0;
+      }
+      Integer bb = b.getSortOrder();
+      if (bb == null) {
+        bb = 0;
+      }
+      return aa.compareTo(bb);
+    }
+  }
+
+
   // Variables declaration - do not modify//GEN-BEGIN:variables
   JPanel bottomPanel;
   JPanel buttonPanel;
@@ -745,8 +780,8 @@ public class DrivewaySettingsPanel extends JPanel {
   JPanel leftPanel;
   JCheckBox lockedCB;
   JTabbedPane mainTP;
-  JComboBox<String> minSignalDepartureValueCB;
-  JComboBox<String> minSignalDepartureValueCB1;
+  JComboBox<AccessoryBean.SignalValue> minSignalDepartureValueCB;
+  JComboBox<AccessoryBean.SignalValue> minSignalDepartureValueCB1;
   JLabel minusBlockSignal;
   JLabel nameLbl;
   JButton newBtn;

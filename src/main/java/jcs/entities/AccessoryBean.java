@@ -260,6 +260,15 @@ public class AccessoryBean {
     }
   }
 
+  @Transient
+  public SignalType getSignalType() {
+    if (this.type != null) {
+      return SignalType.get(type);
+    } else {
+      return null;
+    }
+  }
+
   public void setSignalValue(SignalValue signalValue) {
     this.state = signalValue.getCSValue();
   }
