@@ -18,6 +18,7 @@ package jcs.ui.settings;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -50,6 +51,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import jcs.commandStation.entities.DrivewayCommand;
 import jcs.entities.AccessoryBean;
+import jcs.entities.AccessoryBean.SignalValue;
 import jcs.entities.BlockBean;
 import jcs.entities.RouteBean;
 import jcs.entities.RouteBean.RouteState;
@@ -79,8 +81,7 @@ public class DrivewaySettingsPanel extends JPanel {
   private final DefaultComboBoxModel<BlockBean.BlockState> fromBlockStateCBModel;
   private final DefaultComboBoxModel<BlockBean.BlockState> toBlockStateCBModel;
 
-  private DefaultComboBoxModel<AccessoryBean.SignalValue> minSignalValueCBModel;
-  private DefaultComboBoxModel<AccessoryBean.SignalValue> plusSignalValueCBModel;
+  private DefaultComboBoxModel<AccessoryBean.SignalValue> departureSignalValueCBModel;
 
   public DrivewaySettingsPanel() {
     routeListModel = new RouteBeanListModel();
@@ -177,6 +178,9 @@ public class DrivewaySettingsPanel extends JPanel {
       fromBlockCBModel.setSelectedItem(new BlockBean());
       toBlockCBModel.setSelectedItem(new BlockBean());
     }
+
+    setDeparureSignalFields(selectedRoute);
+
     enableFields(selectedRoute != null);
   }
 
@@ -237,17 +241,11 @@ public class DrivewaySettingsPanel extends JPanel {
     drivewayTableSP = new JScrollPane();
     drivewayCommandTable = new JTable();
     signalPanel = new JPanel();
-    jPanel1 = new JPanel();
     fromSignalPanel = new JPanel();
-    minusBlockSignal = new JLabel();
-    signalIdLbl = new JLabel();
-    departureValLbl = new JLabel();
-    minSignalDepartureValueCB = new JComboBox<>();
-    toSignalPanel = new JPanel();
-    plusBlockSignal = new JLabel();
-    signalIdLbl1 = new JLabel();
-    departureValLbl1 = new JLabel();
-    minSignalDepartureValueCB1 = new JComboBox<>();
+    departureSignalLbl = new JLabel();
+    departureSignalIdLbl = new JLabel();
+    departureSignalValueLbl = new JLabel();
+    departureSignalValueCB = new JComboBox<>();
     westPanel = new JPanel();
     routesSP = new JScrollPane();
     routeList = new JList<>();
@@ -322,7 +320,7 @@ public class DrivewaySettingsPanel extends JPanel {
     fromLbl.setPreferredSize(new Dimension(120, 17));
     row0Panel.add(fromLbl);
 
-    fromCB.setPreferredSize(new Dimension(80, 23));
+    fromCB.setPreferredSize(new Dimension(120, 23));
     row0Panel.add(fromCB);
 
     fromSuffixSpinner.setModel(new SpinnerListModel(new String[] {" ", "+", "-"}));
@@ -332,10 +330,10 @@ public class DrivewaySettingsPanel extends JPanel {
     toLbl.setLabelFor(toCB);
     toLbl.setText("To:");
     toLbl.setToolTipText("");
-    toLbl.setPreferredSize(new Dimension(120, 17));
+    toLbl.setPreferredSize(new Dimension(80, 17));
     row0Panel.add(toLbl);
 
-    toCB.setPreferredSize(new Dimension(80, 23));
+    toCB.setPreferredSize(new Dimension(120, 23));
     row0Panel.add(toCB);
 
     toSuffixSpinner.setModel(new SpinnerListModel(new String[] {" ", "+", "-"}));
@@ -476,45 +474,34 @@ public class DrivewaySettingsPanel extends JPanel {
 
     signalPanel.setLayout(new BorderLayout());
 
-    jPanel1.setLayout(new BoxLayout(jPanel1, BoxLayout.PAGE_AXIS));
-
-    fromSignalPanel.setPreferredSize(new Dimension(452, 50));
+    fromSignalPanel.setPreferredSize(new Dimension(452, 40));
     FlowLayout flowLayout13 = new FlowLayout(FlowLayout.LEFT);
     flowLayout13.setAlignOnBaseline(true);
     fromSignalPanel.setLayout(flowLayout13);
 
-    minusBlockSignal.setText("- side Signal:");
-    minusBlockSignal.setToolTipText("");
-    fromSignalPanel.add(minusBlockSignal);
+    departureSignalLbl.setText("Departure Signal:");
+    departureSignalLbl.setToolTipText("");
+    fromSignalPanel.add(departureSignalLbl);
 
-    signalIdLbl.setText("s-nn");
-    fromSignalPanel.add(signalIdLbl);
+    departureSignalIdLbl.setFont(new Font("sansserif", 1, 13)); // NOI18N
+    departureSignalIdLbl.setText("s-nn");
+    departureSignalIdLbl.setPreferredSize(new Dimension(70, 17));
+    fromSignalPanel.add(departureSignalIdLbl);
 
-    departureValLbl.setText("Departure Value");
-    fromSignalPanel.add(departureValLbl);
-    fromSignalPanel.add(minSignalDepartureValueCB);
+    departureSignalValueLbl.setHorizontalAlignment(SwingConstants.TRAILING);
+    departureSignalValueLbl.setText("Departure Value:");
+    departureSignalValueLbl.setPreferredSize(new Dimension(110, 17));
+    fromSignalPanel.add(departureSignalValueLbl);
 
-    jPanel1.add(fromSignalPanel);
+    departureSignalValueCB.setPreferredSize(new Dimension(80, 23));
+    departureSignalValueCB.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        departureSignalValueCBActionPerformed(evt);
+      }
+    });
+    fromSignalPanel.add(departureSignalValueCB);
 
-    toSignalPanel.setPreferredSize(new Dimension(452, 50));
-    FlowLayout flowLayout14 = new FlowLayout(FlowLayout.LEFT);
-    flowLayout14.setAlignOnBaseline(true);
-    toSignalPanel.setLayout(flowLayout14);
-
-    plusBlockSignal.setText("+ side Signal:");
-    plusBlockSignal.setToolTipText("");
-    toSignalPanel.add(plusBlockSignal);
-
-    signalIdLbl1.setText("s-nn");
-    toSignalPanel.add(signalIdLbl1);
-
-    departureValLbl1.setText("Departure Value");
-    toSignalPanel.add(departureValLbl1);
-    toSignalPanel.add(minSignalDepartureValueCB1);
-
-    jPanel1.add(toSignalPanel);
-
-    signalPanel.add(jPanel1, BorderLayout.PAGE_START);
+    signalPanel.add(fromSignalPanel, BorderLayout.NORTH);
 
     mainTP.addTab("Signals", signalPanel);
 
@@ -607,6 +594,11 @@ public class DrivewaySettingsPanel extends JPanel {
   private void toBlockStateCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_toBlockStateCBActionPerformed
 
   }//GEN-LAST:event_toBlockStateCBActionPerformed
+
+  private void departureSignalValueCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_departureSignalValueCBActionPerformed
+    SignalValue signalValue = (SignalValue) departureSignalValueCBModel.getSelectedItem();
+    selectedRoute.setDepartureSignalValue(signalValue.getSignalValue());
+  }//GEN-LAST:event_departureSignalValueCBActionPerformed
 
   private void alignDrivewayCommandsTable() {
     DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
@@ -724,46 +716,97 @@ public class DrivewaySettingsPanel extends JPanel {
     }
   }
 
-  protected List<DrivewayCommand> getSignalsInRoute(RouteBean routeBean) {
-    List<RouteElementBean> rel = routeBean.getRouteElements();
-    List<DrivewayCommand> drivewayCommands = new ArrayList<>();
-    for (RouteElementBean reb : rel) {
-      if (reb.isSignal()) {
-        AccessoryBean signal = reb.getTileBean().getAccessoryBean();
+  private DefaultComboBoxModel<AccessoryBean.SignalValue> getSignalValueComboBoxModel(AccessoryBean signal) {
+    List<SignalValue> signalValues = new ArrayList<>(Arrays.asList(AccessoryBean.SignalValue.values()));
+    AccessoryBean.SignalType signalType = signal.getSignalType();
 
-        DrivewayCommand dc = new DrivewayCommand(reb.getId(), reb.getRouteId(), reb.getTileId(), signal.getId(), signal.getAddress(), signal.getAddress2(), signal.getProtocol().toString(), signal.getName(), reb.getAccessoryValue(), signal.getSignalType(), signal.getSignalValue(), reb.getElementOrder());
-        drivewayCommands.add(dc);
+    switch (signalType) {
+      case HP01 -> {
+        signalValues.remove(SignalValue.Hp0Sh1);
+        signalValues.remove(SignalValue.Hp2);
+        signalValues.remove(SignalValue.OFF);
+        return new DefaultComboBoxModel(signalValues.toArray());
+      }
+      case HP012 -> {
+        signalValues.remove(SignalValue.Hp0Sh1);
+        signalValues.remove(SignalValue.OFF);
+        return new DefaultComboBoxModel(signalValues.toArray());
+      }
+      case HP012SH1 -> {
+        signalValues.remove(SignalValue.OFF);
+        return new DefaultComboBoxModel(signalValues.toArray());
+      }
+      case HP0SH1 -> {
+        signalValues.remove(SignalValue.Hp0Sh1);
+        signalValues.remove(SignalValue.Hp2);
+        signalValues.remove(SignalValue.OFF);
+        return new DefaultComboBoxModel(signalValues.toArray());
+      }
+      default -> {
+        signalValues.remove(SignalValue.Hp0Sh1);
+        signalValues.remove(SignalValue.Hp2);
+        signalValues.remove(SignalValue.OFF);
+        return new DefaultComboBoxModel(signalValues.toArray());
       }
     }
-    Collections.sort(drivewayCommands, new DrivewayCommandBySortOrderSorter());
-    return drivewayCommands;
   }
 
-  class DrivewayCommandBySortOrderSorter implements Comparator<DrivewayCommand> {
-
-    @Override
-    public int compare(DrivewayCommand a, DrivewayCommand b) {
-      //Avoid null pointers
-      Integer aa = a.getSortOrder();
-      if (aa == null) {
-        aa = 0;
-      }
-      Integer bb = b.getSortOrder();
-      if (bb == null) {
-        bb = 0;
-      }
-      return aa.compareTo(bb);
+  private AccessoryBean getDepartureSignal(String departureSuffix, BlockBean departureBlock) {
+    if ("-".equals(departureSuffix) && departureBlock.getMinSignalId() != null) {
+      return PersistenceFactory.getService().getAccessory(departureBlock.getMinSignalId());
+    } else if ("+".equals(departureSuffix) && departureBlock.getPlusSignalId() != null) {
+      return PersistenceFactory.getService().getAccessory(departureBlock.getPlusSignalId());
+    } else {
+      return null;
     }
   }
 
+  private void setDeparureSignalFields(RouteBean routeBean) {
+    if (routeBean != null) {
+      BlockBean departureBlock = PersistenceFactory.getService().getBlockByTileId(routeBean.getFromTileId());
+      String departureSuffix = routeBean.getFromSuffix();
+
+      AccessoryBean departureSignal = getDepartureSignal(departureSuffix, departureBlock);
+
+      if (departureSignal != null) {
+        if (departureSignal.getName() != null && departureSignal.getName().length() > 0) {
+          departureSignalIdLbl.setText(departureSignal.getName());
+        } else {
+          departureSignalIdLbl.setText(departureSignal.getId());
+        }
+
+        departureSignalValueCBModel = getSignalValueComboBoxModel(departureSignal);
+
+        SignalValue selectedSignalValue;
+        if (selectedRoute.getDepartureSignalValue() != null) {
+          selectedSignalValue = SignalValue.get(selectedRoute.getDepartureSignalValue());
+        } else {
+          //Set a default (green) or Hp1
+          selectedSignalValue = SignalValue.Hp1;
+          selectedRoute.setDepartureSignalValue(selectedSignalValue.getSignalValue());
+        }
+        departureSignalValueCBModel.setSelectedItem(selectedSignalValue);
+        departureSignalValueCB.setModel(departureSignalValueCBModel);
+        departureSignalValueCB.setEnabled(true);
+      } else {
+        departureSignalIdLbl.setText("");
+        departureSignalValueCB.setEnabled(false);
+      }
+    } else {
+      departureSignalIdLbl.setText("");
+      departureSignalValueCB.setEnabled(false);
+    }
+  }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   JPanel bottomPanel;
   JPanel buttonPanel;
   JPanel commandPanel;
   JButton deleteBtn;
-  JLabel departureValLbl;
-  JLabel departureValLbl1;
+  JLabel departureSignalIdLbl;
+  JLabel departureSignalLbl;
+  JComboBox<AccessoryBean.SignalValue> departureSignalValueCB;
+  JLabel departureSignalValueLbl;
   JPanel detailPanel;
   JTable drivewayCommandTable;
   DrivewayCommandTableModel drivewayCommandTableModel;
@@ -776,16 +819,11 @@ public class DrivewaySettingsPanel extends JPanel {
   JPanel fromSignalPanel;
   JSpinner fromSuffixSpinner;
   JLabel idLbl;
-  JPanel jPanel1;
   JPanel leftPanel;
   JCheckBox lockedCB;
   JTabbedPane mainTP;
-  JComboBox<AccessoryBean.SignalValue> minSignalDepartureValueCB;
-  JComboBox<AccessoryBean.SignalValue> minSignalDepartureValueCB1;
-  JLabel minusBlockSignal;
   JLabel nameLbl;
   JButton newBtn;
-  JLabel plusBlockSignal;
   JPanel rightPanel;
   JList<RouteBean> routeList;
   JComboBox<RouteBean.RouteState> routeStateCB;
@@ -800,15 +838,12 @@ public class DrivewaySettingsPanel extends JPanel {
   JPanel row7Panel;
   JPanel row9Panel;
   JButton saveBtn;
-  JLabel signalIdLbl;
-  JLabel signalIdLbl1;
   JPanel signalPanel;
   JLabel statusLbl;
   JComboBox<BlockBean.BlockState> toBlockStateCB;
   JComboBox<BlockBean> toCB;
   JLabel toLbl;
   JLabel toLbl1;
-  JPanel toSignalPanel;
   JSpinner toSuffixSpinner;
   JPanel topPanel;
   JPanel westPanel;

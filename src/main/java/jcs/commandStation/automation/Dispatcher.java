@@ -361,6 +361,16 @@ public class Dispatcher {
     this.activeSignal = activeSignal;
   }
 
+  private AccessoryBean getDepartureSignal(String departureSuffix, BlockBean departureBlock) {
+    if ("-".equals(departureSuffix) && departureBlock.getMinSignalId() != null) {
+      return PersistenceFactory.getService().getAccessory(departureBlock.getMinSignalId());
+    } else if ("+".equals(departureSuffix) && departureBlock.getPlusSignalId() != null) {
+      return PersistenceFactory.getService().getAccessory(departureBlock.getPlusSignalId());
+    } else {
+      return null;
+    }
+  }
+
   void handleSignal(State state) {
     AccessoryBean signal = getActiveSignal();
 
@@ -369,28 +379,31 @@ public class Dispatcher {
       case PREPROUTE -> {
         BlockBean departureBlock = getDepartureBlock();
         String departureSuffix = getRouteBean().getFromSuffix();
-        if ("-".equals(departureSuffix) && departureBlock.getMinSignalId() != null) {
-          signal = PersistenceFactory.getService().getAccessory(departureBlock.getMinSignalId());
-        } else {
-          signal = PersistenceFactory.getService().getAccessory(departureBlock.getPlusSignalId());
-        }
-
+        signal = getDepartureSignal(departureSuffix, departureBlock);
         setActiveSignal(signal);
-        newValue = SignalValue.Hp1;
+
+        if (routeBean.getDepartureSignalValue() != null) {
+          newValue = SignalValue.get(routeBean.getDepartureSignalValue());
+        } else {
+          newValue = SignalValue.Hp1;
+        }
       }
       case APPROACH -> {
         newValue = SignalValue.Hp0;
       }
       case PREPNEXTROUTE -> {
-        BlockBean departureBlock = this.getDestinationBlock();
-        String departureSuffix = getRouteBean().getFromSuffix();
-        if ("-".equals(departureSuffix) && departureBlock.getMinSignalId() != null) {
-          signal = PersistenceFactory.getService().getAccessory(departureBlock.getMinSignalId());
-        } else {
-          signal = PersistenceFactory.getService().getAccessory(departureBlock.getPlusSignalId());
+        RouteBean nextRoute = getNextRouteBean();
+        if (nextRoute != null) {
+          BlockBean departureBlock = PersistenceFactory.getService().getBlockByTileId(nextRoute.getFromTileId());
+          String departureSuffix = getNextRouteBean().getFromSuffix();
+          signal = getDepartureSignal(departureSuffix, departureBlock);
+          setActiveSignal(signal);
+          if (nextRoute.getDepartureSignalValue() != null) {
+            newValue = SignalValue.get(nextRoute.getDepartureSignalValue());
+          } else {
+            newValue = SignalValue.Hp1;
+          }
         }
-        setActiveSignal(signal);
-        newValue = SignalValue.Hp1;
       }
     }
 
@@ -403,7 +416,6 @@ public class Dispatcher {
       }
       Logger.debug("Signal " + signal.getId() + " set to: " + newValue + " " + (getActiveSignal() != null ? "active" : "not active") + "...");
     }
-
   }
 
   void changeLocomotiveVelocity(double velocity) {

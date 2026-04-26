@@ -740,7 +740,12 @@ public class AccessoryBean {
 
     public static SignalType get(String signalType) {
       if (signalType != null) {
-        return ENUM_MAP.get(signalType);
+        if (ENUM_MAP.containsKey(signalType)) {
+          return ENUM_MAP.get(signalType);
+        } else {
+          String sts = translateSignalString(signalType);
+          return ENUM_MAP.get(sts);
+        }
       } else {
         return null;
       }

@@ -15,6 +15,7 @@
  */
 package jcs.entities;
 
+import jcs.entities.AccessoryBean.SignalType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -286,6 +287,39 @@ public class AccessoryBeanTest {
     // Uncoupler or generic accessory → other
     instance.setType("entkuppler");
     assertTrue(instance.isOther());
+  }
+
+  @Test
+  public void testGetSignalType() {
+    System.out.println("signatType");
+
+    AccessoryBean instance = new AccessoryBean();
+    instance.setType("lichtsignal_HP01");
+    assertEquals(SignalType.HP01, instance.getSignalType());
+
+    instance.setType("urc_lichtsignal_HP01");
+    assertEquals(SignalType.HP01, instance.getSignalType());
+
+    instance.setType("HP01");
+    assertEquals(SignalType.HP01, instance.getSignalType());
+
+    instance.setType("lichtsignal_HP012");
+    assertEquals(SignalType.HP012, instance.getSignalType());
+
+    instance.setType("urc_lichtsignal_HP012");
+    assertEquals(SignalType.HP012, instance.getSignalType());
+
+    instance.setType("lichtsignal_HP012_SH01");
+    assertEquals(SignalType.HP012SH1, instance.getSignalType());
+
+    instance.setType("urc_lichtsignal_HP012_SH01");
+    assertEquals(SignalType.HP012SH1, instance.getSignalType());
+
+    instance.setType("formsignal_SH01");
+    assertEquals(SignalType.HP0SH1, instance.getSignalType());
+
+    instance.setType("urc_lichtsignal_SH01");
+    assertEquals(SignalType.HP0SH1, instance.getSignalType());
   }
 
 }

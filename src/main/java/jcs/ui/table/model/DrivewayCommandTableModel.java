@@ -139,8 +139,6 @@ public class DrivewayCommandTableModel extends BeanTableModel<DrivewayCommand> {
     List<DrivewayCommand> drivewayCommands = new ArrayList<>();
     for (RouteElementBean reb : rel) {
       if (reb.isTurnout()) {
-
-        //AccessoryBean.AccessoryValue av = reb.getAccessoryValue();
         AccessoryBean turnout = reb.getTileBean().getAccessoryBean();
 
         DrivewayCommand dc = new DrivewayCommand(reb.getId(), reb.getRouteId(), reb.getTileId(), turnout.getId(), turnout.getAddress(), turnout.getProtocol().toString(), turnout.getName(), reb.getAccessoryValue(), reb.getElementOrder());
