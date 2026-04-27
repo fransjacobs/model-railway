@@ -36,12 +36,29 @@ class DepartingState extends AbstractState {
   @Override
   AbstractState execute() {
     LocomotiveBean locomotive = PersistenceFactory.getService().getLocomotive(dispatcher.getLocomotiveId());
+
+    boolean delay = dispatcher.handleSignal(state);
+
+    if (delay) {
+      //delay the start a while
+      long startDelayTime = Long.getLong("default.start-delaytime", 2000L);
+      Logger.debug("Delaying departure of {} by {}ms (signal)", locomotive.getName(), startDelayTime);
+      try {
+        Thread.sleep(startDelayTime);
+      } catch (InterruptedException ie) {
+        Thread.currentThread().interrupt();
+        Logger.warn("Departure delay interrupted for: {}", locomotive.getName());
+        return this;
+      }
+    }
+
     BlockBean departureBlock = dispatcher.getDepartureBlock();
     BlockBean destinationBlock = dispatcher.getDestinationBlock();
     departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
     destinationBlock.setBlockState(BlockBean.BlockState.LOCKED);
 
-    Logger.debug("Starting: " + locomotive.getName() + " Direction: " + locomotive.getDirection() + " Route: " + dispatcher.getRouteBean().getId());
+    Logger.debug("Starting: {} Direction: {} Route: {}",
+            locomotive.getName(), locomotive.getDirection(), dispatcher.getRouteBean().getId());
 
     //Speed to ~75% or speed 3
     Integer speed3 = locomotive.getSpeedThree();

@@ -23,7 +23,6 @@ import java.util.concurrent.TimeUnit;
 import static jcs.commandStation.automation.AbstractState.State.WAIT;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
-import static org.apache.batik.svggen.font.table.Table.name;
 import org.tinylog.Logger;
 
 /**

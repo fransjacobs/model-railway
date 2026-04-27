@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Objects;
 import jcs.JCS;
 import jcs.commandStation.automation.AbstractState.State;
+import static jcs.commandStation.automation.AbstractState.State.DEPARTING;
 import jcs.entities.AccessoryBean;
 import jcs.entities.AccessoryBean.SignalValue;
 import jcs.entities.BlockBean;
@@ -371,12 +372,13 @@ public class Dispatcher {
     }
   }
 
-  void handleSignal(State state) {
+  boolean handleSignal(State state) {
+    boolean delayStart = false;
     AccessoryBean signal = getActiveSignal();
 
     SignalValue newValue = SignalValue.OFF;
     switch (state) {
-      case PREPROUTE -> {
+      case DEPARTING -> {
         BlockBean departureBlock = getDepartureBlock();
         String departureSuffix = getRouteBean().getFromSuffix();
         signal = getDepartureSignal(departureSuffix, departureBlock);
@@ -387,7 +389,20 @@ public class Dispatcher {
         } else {
           newValue = SignalValue.Hp1;
         }
+        delayStart = true;
       }
+//      case PREPROUTE -> {
+//        BlockBean departureBlock = getDepartureBlock();
+//        String departureSuffix = getRouteBean().getFromSuffix();
+//        signal = getDepartureSignal(departureSuffix, departureBlock);
+//        setActiveSignal(signal);
+//
+//        if (routeBean.getDepartureSignalValue() != null) {
+//          newValue = SignalValue.get(routeBean.getDepartureSignalValue());
+//        } else {
+//          newValue = SignalValue.Hp1;
+//        }
+//      }
       case APPROACH -> {
         newValue = SignalValue.Hp0;
       }
@@ -416,6 +431,7 @@ public class Dispatcher {
       }
       Logger.debug("Signal " + signal.getId() + " set to: " + newValue + " " + (getActiveSignal() != null ? "active" : "not active") + "...");
     }
+    return delayStart;
   }
 
   void changeLocomotiveVelocity(double velocity) {
