@@ -65,18 +65,22 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
           //Details
           loco = parseValues(values, event);
         }
-        this.locomotives.put(loco.getId(), loco);
+        if (loco.getId() != null) {
+          locomotives.put(loco.getId(), loco);
+        }
       }
 
       if (values.containsKey(Ecos.SIZE)) {
-        this.size = Integer.parseInt(values.get(Ecos.SIZE).toString());
+        size = Integer.parseInt(values.get(Ecos.SIZE).toString());
       } else {
-        this.size = values.size();
+        size = locomotives.size();
       }
     } else if (values.containsKey(Ecos.ID) && objectId == Integer.parseInt((String) values.get(Ecos.ID))) {
       //Single locomotive
       LocomotiveBean loco = parseValues(values, event);
-      this.locomotives.put(loco.getId(), loco);
+      if (loco.getId() != null) {
+        locomotives.put(loco.getId(), loco);
+      }
     } else {
       Logger.warn("Unknown id: " + message.getMessage());
       Logger.warn("Unknown response: " + message.getResponse());
@@ -96,7 +100,10 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
   }
 
   private LocomotiveBean parseValues(Map<String, Object> values, boolean event) {
-    long id = Long.parseLong(values.get(Ecos.ID).toString());
+    Long id = null;
+    if (values.containsKey(Ecos.ID) && values.get(Ecos.ID) != null) {
+      id = Long.valueOf(values.get(Ecos.ID).toString());
+    }
     LocomotiveBean locomotive;
     if (locomotives.containsKey(id)) {
       locomotive = this.locomotives.get(id);

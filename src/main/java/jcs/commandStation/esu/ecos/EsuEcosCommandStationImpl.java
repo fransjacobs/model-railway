@@ -51,9 +51,11 @@ import jcs.commandStation.automation.DriveSimulator;
 import jcs.commandStation.VirtualConnection;
 import jcs.commandStation.automation.RailController;
 import jcs.commandStation.entities.Device;
+import jcs.commandStation.esu.ecos.entities.EcosBooster;
 import jcs.commandStation.events.AllSensorEventsListener;
 import jcs.commandStation.events.ConnectionEvent;
 import jcs.commandStation.events.ConnectionEventListener;
+import jcs.commandStation.events.MeasurementEventListener;
 import static jcs.entities.AccessoryBean.AccessoryValue.GREEN;
 import static jcs.entities.AccessoryBean.AccessoryValue.RED;
 import jcs.entities.LocomotiveBean;
@@ -63,13 +65,14 @@ import org.tinylog.Logger;
 
 public class EsuEcosCommandStationImpl extends AbstractController implements DecoderController, AccessoryController, FeedbackController, ConnectionEventListener {
 
-  private EcosConnection connection;
+  EcosConnection connection;
   private EventHandler eventMessageHandler;
 
   private EcosManager ecosManager;
   private LocomotiveManager locomotiveManager;
   private AccessoryManager accessoryManager;
   private FeedbackManager feedbackManager;
+  private BoosterManager boosterManager;
 
   private DriveSimulator simulator;
 
@@ -162,20 +165,23 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
         if (connected) {
           //Start the EventHandler
-          eventMessageHandler = new EventHandler(this.connection);
+          eventMessageHandler = new EventHandler(connection);
           eventMessageHandler.start();
 
           //Obtain some info about the ECoS
           initBaseObject();
 
           initLocomotiveManager();
-          Logger.trace("There are " + this.locomotiveManager.getSize() + " locomotives");
+          Logger.trace("There are " + locomotiveManager.getSize() + " locomotives");
 
           initAccessoryManager();
-          Logger.trace("There are " + this.accessoryManager.getSize() + " accessories");
+          Logger.trace("There are " + accessoryManager.getSize() + " accessories");
 
           initFeedbackManager();
-          Logger.trace("There are " + this.feedbackManager.getSize() + " feedback modules");
+          Logger.trace("There are " + feedbackManager.getSize() + " feedback modules");
+
+          initBoosterManager();
+          Logger.trace("There are " + boosterManager.getSize() + " boosters");
 
           if (isVirtual()) {
             simulator = new DriveSimulator();
@@ -209,7 +215,7 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
     connection.sendMessage(EcosMessageFactory.subscribeLokManager());
 
-    for (LocomotiveBean loc : this.locomotiveManager.getLocomotives().values()) {
+    for (LocomotiveBean loc : locomotiveManager.getLocomotives().values()) {
       EcosMessage detailsReply = connection.sendMessage(EcosMessageFactory.getLocomotiveDetails(loc.getId()));
       locomotiveManager.update(detailsReply);
 
@@ -224,9 +230,11 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
   private void initAccessoryManager() {
     EcosMessage reply = connection.sendMessage(EcosMessageFactory.getAccessories());
+    Logger.info(reply.getResponse());
+
     accessoryManager = new AccessoryManager(this, reply);
 
-    for (AccessoryBean accessory : this.accessoryManager.getAccessories().values()) {
+    for (AccessoryBean accessory : accessoryManager.getAccessories().values()) {
       EcosMessage detailsReply = connection.sendMessage(EcosMessageFactory.getAccessoryDetails(accessory.getId()));
       accessoryManager.update(detailsReply);
       //Subscribe
@@ -250,6 +258,19 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     }
   }
 
+  private void initBoosterManager() {
+    EcosMessage reply = connection.sendMessage(EcosMessageFactory.getBoosters());
+    boosterManager = new BoosterManager(this, reply);
+    connection.sendMessage(EcosMessageFactory.subscribeBoosterManager());
+
+    for (EcosBooster eb : boosterManager.getBoosters()) {
+      EcosMessage detailsReply = connection.sendMessage(EcosMessageFactory.getBoosterDetails(eb.getId()));
+      boosterManager.update(detailsReply);
+      connection.sendMessage(EcosMessageFactory.subscribeBooster(eb.getId()));
+    }
+
+  }
+
   @Override
   public SensorBean getSensorStatus(SensorBean sensorBean) {
     Integer sensorId = sensorBean.getId();
@@ -262,19 +283,24 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
       if (connected) {
         power(false);
 
+        Logger.trace("Unsubsribe from " + boosterManager.getSize() + " Boosters...");
+        for (EcosBooster b : boosterManager.getBoosters()) {
+          connection.sendMessage(EcosMessageFactory.unSubscribeBooster(b.getId()));
+        }
         Logger.trace("Unsubsribe from " + feedbackManager.getSize() + " feedback modules...");
         for (FeedbackModule fm : feedbackManager.getModules().values()) {
           connection.sendMessage(EcosMessageFactory.unSubscribeFeedbackModule(fm.getId()));
         }
         Logger.trace("Unsubscribe from " + accessoryManager.getSize() + " accessories...");
-        for (AccessoryBean a : this.accessoryManager.getAccessories().values()) {
+        for (AccessoryBean a : accessoryManager.getAccessories().values()) {
           connection.sendMessage(EcosMessageFactory.unSubscribeAccessory(a.getId()));
         }
         Logger.trace("Unsubscribe from " + locomotiveManager.getSize() + " locomotives...");
-        for (LocomotiveBean l : this.locomotiveManager.getLocomotives().values()) {
+        for (LocomotiveBean l : locomotiveManager.getLocomotives().values()) {
           connection.sendMessage(EcosMessageFactory.unSubscribeLocomotive(l.getId()));
         }
 
+        connection.sendMessage(EcosMessageFactory.unSubscribeBoosterManager());
         connection.sendMessage(EcosMessageFactory.unSubscribeAccessoryManager());
         connection.sendMessage(EcosMessageFactory.unSubscribeLokManager());
         connection.sendMessage(EcosMessageFactory.unSubscribeFeedbackManager());
@@ -532,7 +558,17 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
   @Override
   public boolean isSupportTrackMeasurements() {
-    return false;
+    return boosterManager.isSupportMeasurements();
+  }
+
+  @Override
+  public void addMeasurementEventListener(MeasurementEventListener listener) {
+    this.boosterManager.addMeasurementEventListener(listener);
+  }
+
+  @Override
+  public void removeMeasurementEventListener(MeasurementEventListener listener) {
+    this.boosterManager.removeMeasurementEventListener(listener);
   }
 
   @Override

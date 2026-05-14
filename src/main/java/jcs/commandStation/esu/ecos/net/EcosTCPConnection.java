@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
@@ -42,56 +41,62 @@ class EcosTCPConnection implements EcosConnection {
   private Socket clientSocket;
   private Writer writer;
 
-  private final TransferQueue<String> transferQueue;
+  // Carries completed REPLY messages from the receiver thread to sendMessage().
+  private final TransferQueue<String> replyQueue;
+
+  // Carries completed EVENT messages to the application event consumer.
   private final TransferQueue<EcosMessage> eventQueue;
 
   private ClientMessageReceiver messageReceiver;
-  private boolean debug = false;
-  private static final long TIMEOUT = 500L;
+  private static final boolean DEBUG = Boolean.getBoolean("message.debug");
+  private static final long TIMEOUT_MS = 500L;
 
   EcosTCPConnection(InetAddress address) {
     ecosAddress = address;
-    debug = System.getProperty("message.debug", "false").equalsIgnoreCase("true");
-    transferQueue = new LinkedTransferQueue<>();
+    replyQueue = new LinkedTransferQueue<>();
     eventQueue = new LinkedTransferQueue<>();
     checkConnection();
   }
 
   private void checkConnection() {
     try {
-      if (clientSocket == null || !clientSocket.isConnected()) {
+      if (clientSocket == null || !clientSocket.isConnected()
+              || (messageReceiver != null && !messageReceiver.isRunning())) {
+
         clientSocket = new Socket(ecosAddress, DEFAULT_NETWORK_PORT);
         clientSocket.setKeepAlive(true);
         clientSocket.setTcpNoDelay(true);
         writer = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
 
         messageReceiver = new ClientMessageReceiver(clientSocket);
-        messageReceiver.setDaemon(true);
+        messageReceiver.setName("ESU-ECOS-RX");  // FIX: set name before start(), not inside run()
+        //messageReceiver.setDaemon(true);
         messageReceiver.start();
       }
     } catch (IOException ex) {
       clientSocket = null;
+      writer = null;
+      messageReceiver = null;
       Logger.error("Can't (re)connect with ESU Ecos " + ecosAddress.getHostAddress() + ". Cause: " + ex.getMessage());
       //Logger.trace(ex);
     }
   }
 
   private void disconnect() {
+    if (messageReceiver == null) {
+      return;
+    }
     messageReceiver.quit();
 
-    //wait until the messageReceiver has shut down
-    long now = System.currentTimeMillis();
-    long start = now;
-    long timeout = now + TIMEOUT * 4;
-    boolean finished = messageReceiver.isFinished();
-
-    while (!finished && now < timeout) {
-      finished = messageReceiver.isFinished();
-      now = System.currentTimeMillis();
+    try {
+      messageReceiver.join(TIMEOUT_MS * 4);
+    } catch (InterruptedException ex) {
+      Thread.currentThread().interrupt();
+      Logger.warn("Interrupted while waiting for receiver thread to stop.");
     }
 
-    if (!finished) {
-      Logger.warn("Message receiver thread not finished after " + (now - start) + " ms");
+    if (!messageReceiver.isFinished()) {
+      Logger.warn("Message receiver thread did not finish within timeout.");
     }
 
     if (writer != null) {
@@ -101,7 +106,9 @@ class EcosTCPConnection implements EcosConnection {
         Logger.error("Can't close output. Cause: " + ex.getMessage());
         Logger.trace(ex);
       }
+      writer = null;
     }
+
     if (clientSocket != null) {
       try {
         clientSocket.close();
@@ -109,6 +116,7 @@ class EcosTCPConnection implements EcosConnection {
         Logger.error("Can't close socket. Cause: " + ex.getMessage());
         Logger.trace(ex);
       }
+      clientSocket = null;
     }
   }
 
@@ -121,37 +129,58 @@ class EcosTCPConnection implements EcosConnection {
 
   @Override
   public synchronized EcosMessage sendMessage(EcosMessage message) {
+    if (writer == null || messageReceiver == null) {
+      Logger.error("Cannot send message — not connected.");
+      return message;
+    }
+
     try {
       writer.write(message.getMessage());
       writer.flush();
-      if (debug) {
-        Logger.trace("TX:" + message.getMessage());
+
+      if (DEBUG) {
+        Logger.trace("TX: " + message.getMessage());
       }
 
-      long now = System.currentTimeMillis();
-      long start = now;
-      String reply = this.transferQueue.poll(TIMEOUT, TimeUnit.MILLISECONDS);
+      long start = System.currentTimeMillis();
 
-      message.addResponse(reply);
+      // If no reply arrives in time, reply is null and we log it and move on.
+      String reply = replyQueue.poll(TIMEOUT_MS, TimeUnit.MILLISECONDS);
 
-      now = System.currentTimeMillis();
-      if (debug) {
-        //if (true) {
-        if (message.isResponseComplete()) {
-          Logger.trace("Reply in " + (now - start) + " ms");
-        } else {
-          Logger.trace("No Reply for " + message + " in " + (now - start) + " ms");
+      if (reply == null) {
+        Logger.warn("No reply received for [" + message.getMessage().trim() + "] within " + TIMEOUT_MS + " ms");
+      } else {
+        message.addResponse(reply);
+        if (DEBUG) {
+          long elapsed = System.currentTimeMillis() - start;
+          if (message.isResponseComplete()) {
+            Logger.trace("Reply in " + elapsed + " ms");
+          } else {
+            Logger.trace("Incomplete reply for [" + message.getMessage().trim() + "] in " + elapsed + " ms");
+          }
         }
       }
-    } catch (IOException | InterruptedException ex) {
-      Logger.error(ex);
-      String msg = "Host " + ecosAddress.getHostName();
-      ConnectionEvent de = new ConnectionEvent(msg, false, false);
+    } catch (IOException ex) {
+      Logger.error("I/O error sending message: " + ex.getMessage());
+      notifyDisconnect();
+    } catch (InterruptedException ex) {
+      Thread.currentThread().interrupt();
+      Logger.error("Interrupted while waiting for reply: " + ex.getMessage());
+      notifyDisconnect();
+    }
 
-      messageReceiver.messageListener.onDisconnect(de);
+    return message;
+  }
+
+  /**
+   * Notifies the registered listener of a disconnection and shuts down the receiver.
+   */
+  private void notifyDisconnect() {
+    if (messageReceiver != null) {
+      String host = ecosAddress.getHostName();
+      messageReceiver.notifyDisconnect(new ConnectionEvent(host, false, false));
       messageReceiver.quit();
     }
-    return message;
   }
 
   @Override
@@ -169,127 +198,188 @@ class EcosTCPConnection implements EcosConnection {
     return eventQueue;
   }
 
+  // ---------------------------------------------------------------------------
   private class ClientMessageReceiver extends Thread {
 
-    private boolean stop = false;
-    private boolean quit = true;
+    private volatile boolean quit = false;
+    private volatile boolean finished = false;
+
     private BufferedReader reader;
     private EcosMessageListener messageListener;
 
-    public ClientMessageReceiver(Socket socket) {
+    ClientMessageReceiver(Socket socket) {
       try {
         reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
       } catch (IOException ex) {
-        Logger.error(ex);
+        Logger.error("Failed to open socket input stream: " + ex.getMessage());
+        Logger.trace(ex);
       }
-    }
-
-    synchronized void quit() {
-      quit = true;
-      interrupt();
-      //Shutdown the socket input otherwise the receving thread can't stop
-      try {
-        if (!clientSocket.isClosed()) {
-          clientSocket.shutdownInput();
-        }
-        if (reader != null) {
-          reader.close();
-        }
-      } catch (IOException ex) {
-        Logger.error(ex);
-      }
-    }
-
-    boolean isRunning() {
-      return !quit;
-    }
-
-    boolean isFinished() {
-      return stop;
     }
 
     void setMessageListener(EcosMessageListener messageListener) {
       this.messageListener = messageListener;
     }
 
+    /**
+     * Signals the run loop to stop and interrupts any blocking I/O.
+     */
+    synchronized void quit() {
+      quit = true;
+      interrupt();
+      try {
+        if (clientSocket != null && !clientSocket.isClosed()) {
+          clientSocket.shutdownInput();
+        }
+        if (reader != null) {
+          reader.close();
+        }
+      } catch (IOException ex) {
+        Logger.error("Error shutting down receiver input: " + ex.getMessage());
+        Logger.trace(ex);
+      }
+    }
+
+    boolean isRunning() {
+      return !quit && !finished;
+    }
+
+    boolean isFinished() {
+      return finished;
+    }
+
+    /**
+     * Routes a disconnect event to the registered listener.
+     */
+    void notifyDisconnect(ConnectionEvent event) {
+      if (messageListener != null) {
+        messageListener.onDisconnect(event);
+      }
+    }
+
     @Override
     public void run() {
-      quit = false;
-      setName("ESU-ECOS-RX");
-
       Logger.trace("Started listening on port " + clientSocket.getLocalPort() + " ...");
 
       while (!quit) {
         try {
           String rx = reader.readLine();
-          Logger.trace("RX: " + rx);
-          if (rx != null && rx.startsWith(EcosMessage.REPLY)) {
-            StringBuilder sb = new StringBuilder();
 
-            long now = System.currentTimeMillis();
-            long start = now;
-            long timeout = now + TIMEOUT;
+          if (rx == null) {
+            // null from readLine() means the stream was closed (EOF / shutdownInput).
+            if (!quit) {
+              Logger.warn("Stream closed unexpectedly — disconnecting.");
+              notifyDisconnect(new ConnectionEvent(ecosAddress.getHostName(), false, false));
+              quit();
+            }
+            break;
+          }
 
-            sb.append(rx);
-            boolean complete = EcosMessage.isComplete(rx);
+          if (DEBUG) {
+            Logger.trace("RX: " + rx);
+          }
 
-            while (!complete && now < timeout) {
-              rx = reader.readLine();
-              sb.append(rx);
-              complete = EcosMessage.isComplete(sb.toString());
+          if (rx.startsWith(EcosMessage.REPLY)) {
+            // --- Synchronous reply to a command sent by this client ---
+            String assembled = assembleMessage(rx);
+            if (assembled != null) {
+
+              boolean accepted = replyQueue.offer(assembled, TIMEOUT_MS, TimeUnit.MILLISECONDS);
+              if (!accepted) {
+                Logger.warn("Reply queue not consumed within timeout — discarding orphaned reply.");
+              }
             }
 
-            if (!complete) {
-              Logger.trace("No reply " + sb.toString() + " in " + (now - start) + " ms");
+          } else if (rx.startsWith(EcosMessage.EVENT)) {
+            // --- Unsolicited event from the ECoS ---
+            String assembled = assembleMessage(rx);
+            if (assembled != null) {
+              EcosMessage emsg = new EcosMessage(assembled);
+              if (DEBUG) {
+                Logger.trace("EVENT complete=" + emsg.isResponseComplete()
+                        + (emsg.getMessage() != null ? " -> " + emsg.getMessage() : "")
+                        + " -> " + emsg.getResponse());
+              }
+
+              boolean queued = eventQueue.offer(emsg);
+              if (!queued) {
+                Logger.warn("Event queue full — dropping event: " + emsg.getResponse());
+              }
             }
-            transferQueue.transfer(sb.toString());
           } else {
-            //Logger.trace("RX Event: " + rx);
-
-            StringBuilder sb = new StringBuilder();
-
-            long now = System.currentTimeMillis();
-            long start = now;
-            long timeout = now + TIMEOUT;
-
-            sb.append(rx);
-            boolean complete = EcosMessage.isComplete(rx);
-
-            while (!complete && now < timeout && !quit) {
-              rx = reader.readLine();
-              sb.append(rx);
-              complete = EcosMessage.isComplete(sb.toString());
-            }
-
-            if (!complete) {
-              Logger.trace("Event has no END tag " + sb.toString() + " in " + (now - start) + " ms");
-            } else {
-              EcosMessage emsg = new EcosMessage(sb.toString());
-              Logger.trace("Complete: " + emsg.isResponseComplete() + ((emsg.getMessage() != null) ? " -> " + emsg.getMessage() + " -> " : "") + emsg.getResponse());
-
-              eventQueue.offer(emsg);
-            }
+            Logger.trace("Ignoring unrecognised line: " + rx);
           }
         } catch (SocketException se) {
-          Logger.error(se.getMessage());
-          String msg = "Host " + ecosAddress.getHostName();
-          ConnectionEvent de = new ConnectionEvent(msg, false, false);
-          messageListener.onDisconnect(de);
-          quit();
-        } catch (IOException | InterruptedException ex) {
-          Logger.error(ex);
+          if (!quit) {
+            Logger.error("Socket error: " + se.getMessage());
+            notifyDisconnect(new ConnectionEvent(ecosAddress.getHostName(), false, false));
+            quit();
+          }
+        } catch (IOException ex) {
+          if (!quit) {
+            Logger.error("I/O error in receiver: " + ex.getMessage());
+            Logger.trace(ex);
+          }
+        } catch (InterruptedException ex) {
+          Thread.currentThread().interrupt();
         }
       }
 
-      try {
-        if (reader != null) {
-          reader.close();
+      closeReader();
+      finished = true;
+      Logger.debug("Receiver stopped.");
+    }
+
+    /**
+     * Reads lines from the socket until the message is complete (contains {@code <END}), reassembling them with newlines preserved as the protocol requires.
+     *
+     * @param firstLine the first line already read from the socket
+     * @return the fully assembled message string, or null if timed out / quit
+     */
+    private String assembleMessage(String firstLine) throws IOException, InterruptedException {
+      StringBuilder sb = new StringBuilder();
+      sb.append(firstLine).append("\n");
+
+      boolean complete = EcosMessage.isComplete(firstLine);
+      long deadline = System.currentTimeMillis() + TIMEOUT_MS;
+
+      while (!complete && !quit) {
+        long now = System.currentTimeMillis();
+        if (now >= deadline) {
+          Logger.warn("Timeout assembling message, partial: " + sb.toString().trim());
+          return null;
         }
-      } catch (IOException ex) {
-        Logger.error(ex);
+
+        String rx = reader.readLine();
+
+        if (rx == null) {
+          // Stream closed mid-message.
+          return null;
+        }
+
+        if (DEBUG) {
+          Logger.trace("RX: " + rx);
+        }
+
+        sb.append(rx).append("\n");
+        complete = EcosMessage.isComplete(sb.toString());
       }
-      stop = true;
-      Logger.debug("Stopped receiving");
+
+      if (!complete) {
+        return null;  // quit was set before message completed
+      }
+
+      return sb.toString();
+    }
+
+    private void closeReader() {
+      if (reader != null) {
+        try {
+          reader.close();
+        } catch (IOException ex) {
+          Logger.error("Error closing reader: " + ex.getMessage());
+          Logger.trace(ex);
+        }
+      }
     }
   }
 
