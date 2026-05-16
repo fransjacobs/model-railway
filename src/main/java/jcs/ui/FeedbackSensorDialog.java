@@ -203,7 +203,7 @@ public class FeedbackSensorDialog extends javax.swing.JDialog {
     java.awt.EventQueue.invokeLater(() -> {
       JFrame frame = new JFrame();
       FeedbackSensorDialog dialog = new FeedbackSensorDialog(frame, true);
-      FrameMonitor.registerFrame(dialog, FeedbackSensorDialog.class.getName());
+      FrameMonitor.registerDialogFrame(dialog, FeedbackSensorDialog.class.getName());
       //String frameImageUrl = "/media/jcs-train-64.png";
       String frameImageUrl = "/media/jcs-train-2-512.png";
 

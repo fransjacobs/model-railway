@@ -67,7 +67,6 @@ public class KeyboardSensorPanel extends JPanel {
     sensorModulePanel = new SensorPanelWide();
     messagesPanel = new JPanel();
 
-    setMinimumSize(new Dimension(1010, 850));
     setName("Form"); // NOI18N
     setPreferredSize(new Dimension(1010, 850));
     addComponentListener(new ComponentAdapter() {

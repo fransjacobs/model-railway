@@ -115,7 +115,9 @@ public class LayoutCanvas extends JPanel {
 
   private boolean showCenter;
 
-  private boolean loading;
+  private volatile boolean loading;
+
+  private static final BasicStroke GRID_STROKE = new BasicStroke(1f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 
   public LayoutCanvas() {
     this(false);
@@ -131,7 +133,12 @@ public class LayoutCanvas extends JPanel {
 
     this.readonly = readonly;
     drawGrid = !readonly;
-    executor = Executors.newCachedThreadPool();
+    //executor = Executors.newCachedThreadPool();
+    executor = Executors.newSingleThreadExecutor(r -> {
+      Thread t = new Thread(r, "layout-canvas-worker");
+      t.setDaemon(true);
+      return t;
+    });
 
     if (readonly) {
       mode = Mode.CONTROL;
@@ -200,7 +207,7 @@ public class LayoutCanvas extends JPanel {
     return component;
   }
 
-  private void paintDotGrid(Graphics g) {
+  private void paintDotGridold(Graphics g) {
     int width = getWidth();
     int height = getHeight();
     Graphics2D gc = (Graphics2D) g;
@@ -217,15 +224,29 @@ public class LayoutCanvas extends JPanel {
     gc.setPaint(p);
   }
 
+  private void paintDotGrid(Graphics g) {
+    Graphics2D gc = (Graphics2D) g;
+    Paint p = gc.getPaint();
+    gc.setPaint(Color.BLACK);
+    int w = getWidth(), h = getHeight();
+    for (int x = 0; x < w; x += 40) {
+      for (int y = 0; y < h; y += 40) {
+        gc.fillOval(x - 2, y - 2, 4, 4);
+      }
+    }
+    gc.setPaint(p);
+  }
+
   private void paintLineGrid(Graphics g) {
     int width = getWidth();
     int height = getHeight();
     Graphics2D gc = (Graphics2D) g;
     Paint p = gc.getPaint();
-    gc.setPaint(Color.black);
     gc.setPaint(Color.lightGray);
 
-    gc.setStroke(new BasicStroke(1, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+    //gc.setStroke(new BasicStroke(1, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+    gc.setStroke(GRID_STROKE);
+
     for (int x = 0; x < width; x += 40) {
       gc.drawLine(x, 0, x, height);
     }
@@ -237,7 +258,7 @@ public class LayoutCanvas extends JPanel {
 
   void setGridType(int gridType) {
     this.gridType = gridType;
-    executor.execute((() -> repaint()));
+    repaint();
   }
 
   void setTileType(TileBean.TileType tileType) {
@@ -275,39 +296,37 @@ public class LayoutCanvas extends JPanel {
     }
   }
 
-//  private void loadLayout() {
-//    List<Tile> tiles = TileCache.loadTiles(readonly);
-//    loadTiles(tiles);
-//  }
   private void loadTiles(List<Tile> tiles) {
     removeAll();
     validate();
     selectedTile = null;
 
     Dimension minSize = TileCache.getMinCanvasSize();
-    setMinimumSize(minSize);
+    //setMinimumSize(minSize);
 
-    //Check if we must enlarge the canvas
-    int w = getPreferredSize().width;
-    int h = getPreferredSize().height;
-    boolean changeSize = false;
-    if (w < minSize.width) {
-      w = minSize.width;
-      changeSize = true;
-    }
-    if (h < minSize.height) {
-      h = minSize.height;
-      changeSize = true;
-    }
+    setPreferredSize(minSize);
+    //setSize(minSize);
+    //setMinimumSize(minSize);
 
-    if (changeSize) {
-      setPreferredSize(new Dimension(w, h));
-      setSize(new Dimension(w, h));
-      Logger.trace("Changed size to w: " + w + " h: " + h);
-    } else {
-      Logger.trace("Canvas size; w: " + w + " h: " + h);
-    }
-
+//    //Check if we must enlarge the canvas
+//    int w = getPreferredSize().width;
+//    int h = getPreferredSize().height;
+//    boolean changeSize = false;
+//    if (w < minSize.width) {
+//      w = minSize.width;
+//      changeSize = true;
+//    }
+//    if (h < minSize.height) {
+//      h = minSize.height;
+//      changeSize = true;
+//    }
+//    if (changeSize) {
+//      setPreferredSize(new Dimension(w, h));
+//      setSize(new Dimension(w, h));
+//      Logger.trace("Changed size to w: " + w + " h: " + h);
+//    } else {
+//      Logger.trace("Canvas size; w: " + w + " h: " + h);
+//    }
     for (Tile tile : tiles) {
       add(tile);
       if (showCenter) {
@@ -646,7 +665,8 @@ public class LayoutCanvas extends JPanel {
         }
       }
       //TODO: only repaint the edited tile?
-      repaint();
+      //repaint();
+      repaint(selectedTile.getTileBounds());
     }
   }
 
@@ -1129,7 +1149,6 @@ public class LayoutCanvas extends JPanel {
     addPopupMenu.add(crossingMI);
 
     setBackground(new Color(255, 255, 255));
-    setMinimumSize(new Dimension(1000, 760));
     setPreferredSize(new Dimension(1000, 760));
     addMouseMotionListener(new MouseMotionAdapter() {
       public void mouseDragged(MouseEvent evt) {
@@ -1292,9 +1311,9 @@ public class LayoutCanvas extends JPanel {
 
       block.reverseArrival();
       //logicaldirection?
-      //this.executor.execute(() -> {
-      PersistenceFactory.getService().persist(block.getBlockBean());
-      //});
+      executor.execute(() -> {
+        PersistenceFactory.getService().persist(block.getBlockBean());
+      });
     }
   }//GEN-LAST:event_reverseArrivalSideMIActionPerformed
 

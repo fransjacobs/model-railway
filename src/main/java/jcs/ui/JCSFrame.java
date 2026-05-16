@@ -127,10 +127,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
       if (SystemInfo.isMacFullWindowContentSupported) {
         getRootPane().putClientProperty("apple.awt.transparentTitleBar", false);
         getRootPane().putClientProperty("apple.awt.fullWindowContent", false);
-
-        //getRootPane().putClientProperty("apple.awt.windowTitleVisible", false);
-        //avoid overlap of the red/orange/green buttons and the window title
-        //jcsToolBar.add(Box.createHorizontalStrut(70), 0);
       }
     }
     initJCS();
@@ -182,8 +178,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     actionMap.put(keySensorMonitor, new ShowMonitorAction());
     actionMap.put(keyHome, new HomeAction());
     actionMap.put(keyEdit, new EditAction());
-
-    actionMap.put(keyHome, new HomeAction());
 
     actionMap.put(keyModeSelect, new SelectModeKeyAction());
     actionMap.put(keyModeAdd, new AddModeKeyAction());
@@ -343,7 +337,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     if (feedbackMonitor == null) {
       Logger.trace("Creating a Monitor UI");
       feedbackMonitor = new FeedbackSensorDialog(this, false);
-      FrameMonitor.registerFrame(feedbackMonitor, FeedbackSensorDialog.class.getName());
+      FrameMonitor.registerDialogFrame(feedbackMonitor, FeedbackSensorDialog.class.getName());
     }
     feedbackMonitor.showMonitor();
   }
@@ -444,7 +438,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
     setTitle("Java Central Station");
     setBounds(new Rectangle(0, 0, 1400, 900));
-    setMinimumSize(new Dimension(1350, 950));
     setName("JCSFrame"); // NOI18N
     setPreferredSize(new Dimension(1350, 1024));
     setSize(new Dimension(1350, 870));
@@ -454,6 +447,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
       }
     });
 
+    toolbarPanel.setMinimumSize(new Dimension(10, 10));
     toolbarPanel.setName("toolbarPanel"); // NOI18N
     toolbarPanel.setPreferredSize(new Dimension(1350, 52));
     FlowLayout flowLayout2 = new FlowLayout(FlowLayout.LEFT);
@@ -667,7 +661,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     statusPanel.setPreferredSize(new Dimension(1227, 45));
     getContentPane().add(statusPanel, BorderLayout.SOUTH);
 
-    mainPanel.setMinimumSize(new Dimension(1232, 770));
     mainPanel.setName("mainPanel"); // NOI18N
     mainPanel.setPreferredSize(new Dimension(1232, 770));
     mainPanel.setLayout(new BorderLayout());
@@ -683,25 +676,24 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     locoDisplaySP.setName("locoDisplaySP"); // NOI18N
     locoDisplaySP.setPreferredSize(new Dimension(1050, 850));
 
-    centerPanel.setMinimumSize(new Dimension(1002, 772));
     centerPanel.setName("centerPanel"); // NOI18N
     centerPanel.setPreferredSize(new Dimension(1002, 772));
     centerPanel.setLayout(new CardLayout());
 
-    keyboardSensorMessagePanel.setMinimumSize(new Dimension(1002, 772));
     keyboardSensorMessagePanel.setName("keyboardSensorMessagePanel"); // NOI18N
     keyboardSensorMessagePanel.setPreferredSize(new Dimension(1002, 772));
     centerPanel.add(keyboardSensorMessagePanel, "diagnosticPanel");
 
-    layoutPanel.setMinimumSize(new Dimension(885, 160));
     layoutPanel.setName("layoutPanel"); // NOI18N
     centerPanel.add(layoutPanel, "designPanel");
     layoutPanel.getAccessibleContext().setAccessibleName("designPanel");
 
+    overviewPanel.setMinimumSize(new Dimension(10, 10));
     overviewPanel.setName("overviewPanel"); // NOI18N
     centerPanel.add(overviewPanel, "overviewPanel");
     overviewPanel.getAccessibleContext().setAccessibleName("overviewPanel");
 
+    settingsPanel.setMinimumSize(new Dimension(10, 10));
     settingsPanel.setName("settingsPanel"); // NOI18N
     FlowLayout flowLayout1 = new FlowLayout(FlowLayout.LEFT);
     flowLayout1.setAlignOnBaseline(true);
@@ -712,14 +704,13 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
 
     centerPanel.add(settingsPanel, "settingsPanel");
 
-    vncPanel.setMinimumSize(new Dimension(1002, 772));
+    vncPanel.setMinimumSize(new Dimension(10, 10));
     vncPanel.setName("vncPanel"); // NOI18N
     vncPanel.setPreferredSize(new Dimension(1002, 772));
     centerPanel.add(vncPanel, "vncPanel");
 
     locoDisplaySP.setRightComponent(centerPanel);
 
-    leftPanel.setMinimumSize(new Dimension(225, 772));
     leftPanel.setName("leftPanel"); // NOI18N
     leftPanel.setPreferredSize(new Dimension(225, 772));
     leftPanel.setLayout(new BorderLayout(1, 1));
@@ -730,10 +721,10 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     locoSplitPane.setName("locoSplitPane"); // NOI18N
 
     dispatcherStatusPanel.setName("dispatcherStatusPanel"); // NOI18N
-    locoSplitPane.setLeftComponent(dispatcherStatusPanel);
+    locoSplitPane.setTopComponent(dispatcherStatusPanel);
 
     smallDriverCabPanel.setName("smallDriverCabPanel"); // NOI18N
-    locoSplitPane.setRightComponent(smallDriverCabPanel);
+    locoSplitPane.setBottomComponent(smallDriverCabPanel);
 
     leftPanel.add(locoSplitPane, BorderLayout.CENTER);
 
@@ -1116,18 +1107,31 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     boolean connected = false;
     if (JCS.getJcsCommandStation() != null) {
       if (connect) {
+
         String ip = JCS.getJcsCommandStation().getCommandStationBean().getIpAddress();
         String name = JCS.getJcsCommandStation().getCommandStationBean().getDescription();
-        if (Ping.IsReachable(ip)) {
-          if ("AWT-EventQueue-0".equals(Thread.currentThread().getName())) {
+
+//        if (Ping.IsReachable(ip)) {
+//          if ("AWT-EventQueue-0".equals(Thread.currentThread().getName())) {
+//            JCS.getJcsCommandStation().connectInBackground();
+//          } else {
+//            JCS.getJcsCommandStation().connect();
+//          }
+//        } else {
+//          Logger.debug("Can't reach ip " + ip + "...");
+//          JOptionPane.showMessageDialog(this, "Can't connect to " + name + ", " + ip + " is not reachable.", "Can't Connect", JOptionPane.ERROR_MESSAGE, null);
+//        }
+        executor.execute(() -> {
+          boolean reachable = Ping.IsReachable(ip);
+          SwingUtilities.invokeLater(() -> {
+            if (!reachable) {
+              Logger.debug("Can't reach ip " + ip + "...");
+              JOptionPane.showMessageDialog(this, "Can't connect to " + name + ", " + ip + " is not reachable.", "Can't Connect", JOptionPane.ERROR_MESSAGE, null);
+              return;
+            }
             JCS.getJcsCommandStation().connectInBackground();
-          } else {
-            JCS.getJcsCommandStation().connect();
-          }
-        } else {
-          Logger.debug("Can't reach ip " + ip + "...");
-          JOptionPane.showMessageDialog(this, "Can't connect to " + name + ", " + ip + " is not reachable.", "Can't Connect", JOptionPane.ERROR_MESSAGE, null);
-        }
+          });
+        });
 
         InfoBean info = JCS.getJcsCommandStation().getCommandStationInfo();
         connected = JCS.getJcsCommandStation().isConnected();
@@ -1278,7 +1282,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
 
   private void flipTileVerticallyMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_flipTileVerticallyMIActionPerformed
     if (editMode) {
-      layoutPanel.flipSelectedTileVerical();
+      layoutPanel.flipSelectedTileVertical();
     }
   }//GEN-LAST:event_flipTileVerticallyMIActionPerformed
 
@@ -1656,7 +1660,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
 
     @Override
     public void actionPerformed(ActionEvent e) {
-      layoutPanel.flipSelectedTileVerical();
+      layoutPanel.flipSelectedTileVertical();
     }
   }
 

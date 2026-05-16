@@ -16,6 +16,7 @@
 package jcs;
 
 import java.awt.Desktop;
+import java.awt.EventQueue;
 import java.awt.GraphicsEnvironment;
 import java.awt.Taskbar;
 import java.awt.desktop.AboutEvent;
@@ -31,6 +32,10 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+import java.nio.file.StandardOpenOption;
+import java.util.concurrent.CountDownLatch;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -58,7 +63,7 @@ import org.tinylog.Logger;
  * JCS. This is the run time start point for the application.
  *
  */
-public class JCS extends Thread {
+public class JCS {
 
   private static JCS instance = null;
   private static JCSSplash splashScreen;
@@ -66,9 +71,16 @@ public class JCS extends Thread {
   private static JCSCommandStation jcsCommandStation;
 
   private static JCSFrame jcsFrame;
-  private static String version;
+  private static final String version;
 
-  private static UICallback uiCallback;
+  private static FileChannel lockChannel;
+  private static FileLock appLock;
+
+  private static volatile UICallback uiCallback;
+
+  static {
+    version = VersionInfo.getVersion();
+  }
 
   private JCS() {
   }
@@ -92,7 +104,7 @@ public class JCS extends Thread {
     return persistentStore;
   }
 
-  public static JCSCommandStation getJcsCommandStation() {
+  public static synchronized JCSCommandStation getJcsCommandStation() {
     if (jcsCommandStation == null) {
       if (getPersistenceService() != null) {
         jcsCommandStation = new JCSCommandStation();
@@ -107,168 +119,154 @@ public class JCS extends Thread {
     return RailController.getInstance();
   }
 
-  /**
-   * Executed at shutdown in response to a Ctrl-C etc.
-   */
-  @Override
-  public void run() {
-    // Perform shutdown methods.
-    Thread.currentThread().setName("JCS finalize thread");
-    Logger.trace("Shutting Down...");
-    ProcessFactory.getInstance().shutdown();
-    Logger.info("JCS " + VersionInfo.getDisplayVersion() + " session finished");
-  }
-
   public static JCS getInstance() {
     if (instance == null) {
       instance = new JCS();
 
       // Prepare for shutdown...
-      Runtime.getRuntime().addShutdownHook(instance);
+      Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+        Logger.info("JCS " + version + " shutting down...");
+        ProcessFactory.getInstance().shutdown();
+      }, "JCS-shutdown"));
+
     }
     return instance;
   }
 
   private static boolean lockAppInstance() {
     try {
-      String lockFilePath = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "jcs.lock";
-
-      final File file = new File(lockFilePath);
-      if (file.createNewFile()) {
-        file.deleteOnExit();
-        return true;
-      }
-      return false;
+      File lockFile = new File(
+              System.getProperty("user.home") + File.separator + "jcs" + File.separator + "jcs.lock");
+      lockFile.getParentFile().mkdirs();
+      lockChannel = FileChannel.open(lockFile.toPath(),
+              StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+      appLock = lockChannel.tryLock();
+      return appLock != null;
     } catch (IOException e) {
       return false;
     }
   }
 
-  public static void main(String[] args) {
-    System.setProperty("fazecast.jSerialComm.appid", "JCS");
-    version = VersionInfo.getVersion();
-    Logger.info("Starting JCS Version " + VersionInfo.getDisplayVersion() + " ...");
-
-    if (GraphicsEnvironment.isHeadless()) {
-      Logger.error("This JDK environment is headless, can't start a GUI!");
-      //Quit....
-      System.exit(1);
-    }
-
-    //Load properties
-    RunUtil.loadProperties();
-    RunUtil.loadExternalProperties();
-
+  public static void main(String[] args) throws InterruptedException {
     try {
+      System.setProperty("fazecast.jSerialComm.appid", "JCS");
+
+      Logger.info("Starting JCS Version " + VersionInfo.getDisplayVersion() + " ...");
+
+      if (GraphicsEnvironment.isHeadless()) {
+        Logger.error("This JDK environment is headless, can't start a GUI!");
+        //Quit....
+        System.exit(1);
+      }
+
+      //Load properties
+      RunUtil.loadProperties();
+      RunUtil.loadExternalProperties();
+
       String plaf = System.getProperty("jcs.plaf", "com.formdev.flatlaf.FlatLightLaf");
       if (plaf != null) {
         UIManager.setLookAndFeel(plaf);
       } else {
         UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
       }
+
+      if (!lockAppInstance()) {
+        Logger.warn("Can not obtain a lock. Check if an other instance of JCS is running");
+        JOptionPane.showMessageDialog(new JFrame(), "There is another instance of JCS running.", "JCS allready running", JOptionPane.INFORMATION_MESSAGE, null);
+        System.exit(0);
+      }
+
+      if (RunUtil.isMacOSX()) {
+        System.setProperty("apple.awt.application.name", "JCS");
+        System.setProperty("apple.laf.useScreenMenuBar", "true");
+        System.setProperty("apple.awt.application.appearance", "system");
+      }
+
+      //splashScreen = new JCSSplash();
+      CountDownLatch splashReady = new CountDownLatch(1);
+      EventQueue.invokeLater(() -> {
+        splashScreen = new JCSSplash();
+        splashScreen.showSplash();
+        splashScreen.setProgressMax(25);
+        splashReady.countDown();
+      });
+      splashReady.await();
+
+      if ("true".equalsIgnoreCase(System.getProperty("disable.splash", "false"))) {
+        Logger.info("Splasscreen is disabled");
+      } else {
+        splashScreen.showSplash();
+      }
+
+      splashScreen.setProgressMax(25);
+
+      logProgress("JCS is Starting...");
+
+      //Check the persistent properties, prepare environment
+      if (!H2DatabaseUtil.databaseFileExists()) {
+        //No Database file so maybe first start lets create one
+        logProgress("Create new Database...");
+        H2DatabaseUtil.createDatabaseUsers();
+        H2DatabaseUtil.createDatabase();
+      }
+
+      //Database file exist check whether an update is needed
+      String dbVersion = H2DatabaseUtil.getDataBaseVersion();
+
+      if (!H2DatabaseUtil.DB_VERSION.equals(dbVersion)) {
+        Logger.trace("Current DB Version " + dbVersion + " need to be updated to: " + H2DatabaseUtil.DB_VERSION + "...");
+        logProgress("Updating JCS Database to version " + H2DatabaseUtil.DB_VERSION + "...");
+        dbVersion = H2DatabaseUtil.updateDatabase();
+      }
+
+      logProgress("Connecting to existing Database version " + dbVersion + "...");
+
+      logProgress("Starting JCS Command Station...");
+      persistentStore = getPersistenceService();
+      jcsCommandStation = getJcsCommandStation();
+
+      if (persistentStore != null) {
+        if ("true".equalsIgnoreCase(System.getProperty("commandStation.autoconnect", "false"))) {
+          if (jcsCommandStation != null) {
+            boolean connected = jcsCommandStation.connectInBackground();
+            if (connected) {
+              logProgress("Connected with Command Station...");
+
+              boolean power = jcsCommandStation.isPowerOn();
+              logProgress("Track Power is " + (power ? "on" : "off"));
+              Logger.info("Track Power is " + (power ? "on" : "off"));
+              jcsCommandStation.addPowerEventListener(new JCS.Powerlistener());
+            } else {
+              logProgress("Could NOT connect with Command Station...");
+            }
+          } else {
+            logProgress("NO Default Command Station found...");
+          }
+        }
+
+        logProgress("Starting UI...");
+
+        JCS jcs = JCS.getInstance();
+
+        jcs.startGui();
+
+        //check the connection to the command station
+        if (!JCS.getJcsCommandStation().isConnected()) {
+          Logger.info("Not connected to command station...");
+          //JCS.getJcsCommandStation().connectInBackground();
+        }
+
+      } else {
+        Logger.error("Could not obtain a Persistent store. Quitting....");
+        logProgress("Error! Can't Obtain a Persistent store!");
+        splashScreen.hideSplash(500);
+        splashScreen.close();
+        System.exit(0);
+      }
+
     } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
       Logger.error(ex);
     }
-
-    if (!lockAppInstance()) {
-      Logger.warn("Can not obtain a lock. Check if an other instance of JCS is running");
-      JOptionPane.showMessageDialog(new JFrame(), "There is another instance of JCS running.", "JCS allready running", JOptionPane.INFORMATION_MESSAGE, null);
-      System.exit(0);
-    }
-
-    if (RunUtil.isMacOSX()) {
-      System.setProperty("apple.awt.application.name", "JCS");
-      System.setProperty("apple.laf.useScreenMenuBar", "true");
-      System.setProperty("apple.awt.application.appearance", "system");
-    }
-
-    splashScreen = new JCSSplash();
-
-    if ("true".equalsIgnoreCase(System.getProperty("disable.splash", "false"))) {
-      Logger.info("Splasscreen is disabled");
-    } else {
-      splashScreen.showSplash();
-    }
-
-    splashScreen.setProgressMax(25);
-
-    logProgress("JCS is Starting...");
-
-    //Check the persistent properties, prepare environment
-    if (!H2DatabaseUtil.databaseFileExists()) {
-      //No Database file so maybe first start lets create one
-      logProgress("Create new Database...");
-      H2DatabaseUtil.createDatabaseUsers();
-      H2DatabaseUtil.createDatabase();
-    }
-
-    //Database file exist check whether an update is needed
-    String dbVersion = H2DatabaseUtil.getDataBaseVersion();
-
-    if (!H2DatabaseUtil.DB_VERSION.equals(dbVersion)) {
-      Logger.trace("Current DB Version " + dbVersion + " need to be updated to: " + H2DatabaseUtil.DB_VERSION + "...");
-      logProgress("Updating JCS Database to version " + H2DatabaseUtil.DB_VERSION + "...");
-      dbVersion = H2DatabaseUtil.updateDatabase();
-    }
-
-    logProgress("Connecting to existing Database version " + dbVersion + "...");
-
-    logProgress("Starting JCS Command Station...");
-    persistentStore = getPersistenceService();
-    jcsCommandStation = getJcsCommandStation();
-
-    if (persistentStore != null) {
-      if ("true".equalsIgnoreCase(System.getProperty("commandStation.autoconnect", "false"))) {
-        if (jcsCommandStation != null) {
-          boolean connected = jcsCommandStation.connectInBackground();
-          if (connected) {
-            logProgress("Connected with Command Station...");
-
-            boolean power = jcsCommandStation.isPowerOn();
-            logProgress("Track Power is " + (power ? "on" : "off"));
-            Logger.info("Track Power is " + (power ? "on" : "off"));
-            jcsCommandStation.addPowerEventListener(new JCS.Powerlistener());
-          } else {
-            logProgress("Could NOT connect with Command Station...");
-          }
-        } else {
-          logProgress("NO Default Command Station found...");
-        }
-      }
-
-      logProgress("Starting UI...");
-
-      JCS jcs = JCS.getInstance();
-
-      jcs.startGui();
-
-      //check the connection to the command station
-      if (!JCS.getJcsCommandStation().isConnected()) {
-        Logger.info("Not connected to command station...");
-        //JCS.getJcsCommandStation().connectInBackground();
-      }
-
-    } else {
-      Logger.error("Could not obtain a Persistent store. Quitting....");
-      logProgress("Error! Can't Obtain a Persistent store!");
-      splashScreen.hideSplash(500);
-      splashScreen.close();
-      System.exit(0);
-    }
-  }
-
-  //TODO
-  private static void shutdown() {
-
-    System.gc();
-    if (RunUtil.isMacOSX()) {
-      for (Thread t : Thread.getAllStackTraces().keySet()) {
-        if (t.getName().startsWith("AWT-")) {
-          t.interrupt();
-        }
-      }
-    }
-    Thread.currentThread().interrupt();
 
   }
 
@@ -298,20 +296,24 @@ public class JCS extends Thread {
     }
 
     java.awt.EventQueue.invokeLater(() -> {
-      jcsFrame = new JCSFrame();
-      JCS.uiCallback = jcsFrame;
+      try {
+        jcsFrame = new JCSFrame();
+        JCS.uiCallback = jcsFrame;
 
-      //URL iconUrl = JCS.class.getResource("/media/jcs-train-64.png");
-      URL iconUrl = JCS.class.getResource("/media/jcs-train-2-512.png");
-      if (iconUrl != null) {
-        jcsFrame.setIconImage(new ImageIcon(iconUrl).getImage());
+        URL iconUrl = JCS.class.getResource("/media/jcs-train-2-512.png");
+        if (iconUrl != null) {
+          jcsFrame.setIconImage(new ImageIcon(iconUrl).getImage());
+        }
+
+        FrameMonitor.registerFrame(jcsFrame, JCS.class.getName());
+        jcsFrame.setVisible(true);
+        jcsFrame.toFront();
+        jcsFrame.showOverviewPanel();
+
+      } finally {
+        splashScreen.hideSplash(200);
+        splashScreen.close();
       }
-
-      FrameMonitor.registerFrame(jcsFrame, JCS.class.getName());
-
-      jcsFrame.setVisible(true);
-      jcsFrame.toFront();
-      jcsFrame.showOverviewPanel();
     });
 
     JCS.logProgress("JCS started...");

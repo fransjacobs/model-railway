@@ -326,9 +326,6 @@
     <Property name="bounds" type="java.awt.Rectangle" editor="org.netbeans.beaninfo.editors.RectangleEditor">
       <Rectangle value="[0, 0, 1400, 900]"/>
     </Property>
-    <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-      <Dimension value="[1350, 950]"/>
-    </Property>
     <Property name="name" type="java.lang.String" value="JCSFrame" noResource="true"/>
     <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
       <Dimension value="[1350, 1024]"/>
@@ -362,6 +359,12 @@
   <SubComponents>
     <Container class="javax.swing.JPanel" name="toolbarPanel">
       <Properties>
+        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[10, 10]"/>
+        </Property>
+        <Property name="mixingCutoutShape" type="java.awt.Shape" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="default"/>
+        </Property>
         <Property name="name" type="java.lang.String" value="toolbarPanel" noResource="true"/>
         <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
           <Dimension value="[1350, 52]"/>
@@ -916,9 +919,6 @@
     </Component>
     <Container class="javax.swing.JPanel" name="mainPanel">
       <Properties>
-        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-          <Dimension value="[1232, 770]"/>
-        </Property>
         <Property name="name" type="java.lang.String" value="mainPanel" noResource="true"/>
         <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
           <Dimension value="[1232, 770]"/>
@@ -971,9 +971,6 @@
               <SubComponents>
                 <Container class="javax.swing.JPanel" name="centerPanel">
                   <Properties>
-                    <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                      <Dimension value="[1002, 772]"/>
-                    </Property>
                     <Property name="name" type="java.lang.String" value="centerPanel" noResource="true"/>
                     <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                       <Dimension value="[1002, 772]"/>
@@ -989,9 +986,6 @@
                   <SubComponents>
                     <Component class="jcs.ui.KeyboardSensorPanel" name="keyboardSensorMessagePanel">
                       <Properties>
-                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[1002, 772]"/>
-                        </Property>
                         <Property name="name" type="java.lang.String" value="keyboardSensorMessagePanel" noResource="true"/>
                         <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                           <Dimension value="[1002, 772]"/>
@@ -1005,9 +999,6 @@
                     </Component>
                     <Component class="jcs.ui.layout.LayoutPanel" name="layoutPanel">
                       <Properties>
-                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[885, 160]"/>
-                        </Property>
                         <Property name="name" type="java.lang.String" value="layoutPanel" noResource="true"/>
                       </Properties>
                       <AccessibilityProperties>
@@ -1024,6 +1015,9 @@
                     </Component>
                     <Component class="jcs.ui.layout.LayoutPanel" name="overviewPanel">
                       <Properties>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[10, 10]"/>
+                        </Property>
                         <Property name="name" type="java.lang.String" value="overviewPanel" noResource="true"/>
                       </Properties>
                       <AccessibilityProperties>
@@ -1040,6 +1034,9 @@
                     </Component>
                     <Container class="javax.swing.JPanel" name="settingsPanel">
                       <Properties>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[10, 10]"/>
+                        </Property>
                         <Property name="name" type="java.lang.String" value="settingsPanel" noResource="true"/>
                       </Properties>
                       <Constraints>
@@ -1128,7 +1125,7 @@
                     <Component class="jcs.ui.VNCPanel" name="vncPanel">
                       <Properties>
                         <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[1002, 772]"/>
+                          <Dimension value="[10, 10]"/>
                         </Property>
                         <Property name="name" type="java.lang.String" value="vncPanel" noResource="true"/>
                         <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
@@ -1145,9 +1142,6 @@
                 </Container>
                 <Container class="javax.swing.JPanel" name="leftPanel">
                   <Properties>
-                    <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                      <Dimension value="[225, 772]"/>
-                    </Property>
                     <Property name="name" type="java.lang.String" value="leftPanel" noResource="true"/>
                     <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                       <Dimension value="[225, 772]"/>
