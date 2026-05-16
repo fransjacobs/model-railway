@@ -30,6 +30,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -401,6 +403,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     fileMenu = new JMenu();
     backupMI = new JMenuItem();
     restoreMI = new JMenuItem();
+    newMI = new JMenuItem();
     quitMI = new JMenuItem();
     editMenu = new JMenu();
     rotateTileMI = new JMenuItem();
@@ -447,7 +450,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
       }
     });
 
-    toolbarPanel.setMinimumSize(new Dimension(10, 10));
     toolbarPanel.setName("toolbarPanel"); // NOI18N
     toolbarPanel.setPreferredSize(new Dimension(1350, 52));
     FlowLayout flowLayout2 = new FlowLayout(FlowLayout.LEFT);
@@ -693,7 +695,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     centerPanel.add(overviewPanel, "overviewPanel");
     overviewPanel.getAccessibleContext().setAccessibleName("overviewPanel");
 
-    settingsPanel.setMinimumSize(new Dimension(10, 10));
     settingsPanel.setName("settingsPanel"); // NOI18N
     FlowLayout flowLayout1 = new FlowLayout(FlowLayout.LEFT);
     flowLayout1.setAlignOnBaseline(true);
@@ -704,7 +705,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
 
     centerPanel.add(settingsPanel, "settingsPanel");
 
-    vncPanel.setMinimumSize(new Dimension(10, 10));
     vncPanel.setName("vncPanel"); // NOI18N
     vncPanel.setPreferredSize(new Dimension(1002, 772));
     centerPanel.add(vncPanel, "vncPanel");
@@ -773,6 +773,16 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
       }
     });
     fileMenu.add(restoreMI);
+
+    newMI.setText("New");
+    newMI.setToolTipText("Create a new Configuration");
+    newMI.setName("newMI"); // NOI18N
+    newMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        newMIActionPerformed(evt);
+      }
+    });
+    fileMenu.add(newMI);
 
     quitMI.setText("Quit");
     quitMI.setName("quitMI"); // NOI18N
@@ -1360,6 +1370,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
 
         java.awt.EventQueue.invokeLater(() -> {
           JOptionPane.showMessageDialog(this, "Restored JCS database.\nPlease Restart JCS!", "RESTART JCS!", JOptionPane.WARNING_MESSAGE);
+          QuitApp();
         });
       });
     } else {
@@ -1374,6 +1385,36 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   private void showStationsMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showStationsMIActionPerformed
     showStations();
   }//GEN-LAST:event_showStationsMIActionPerformed
+
+  private void newMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_newMIActionPerformed
+    createNewConfig();
+  }//GEN-LAST:event_newMIActionPerformed
+
+  private void createNewConfig() {
+    int result = JOptionPane.showConfirmDialog(this, "Are you sure you want to create a new configuration?\nAll current settings will be removed.\nDid you create a backup?", "New Configuration", JOptionPane.YES_NO_OPTION);
+    if (result == JOptionPane.YES_OPTION) {
+      try {
+        URL url = getClass().getResource("/empty-jcs.sql");
+        if (url == null) {
+          throw new IllegalStateException("Resource not found on classpath: /empty-jcs.sql");
+        }
+        File emptyJcsFile = new File(url.toURI());
+
+        executor.execute(() -> {
+          Logger.trace("Clear JCS database from file " + emptyJcsFile.getAbsolutePath());
+          Backup.restore(emptyJcsFile);
+
+          java.awt.EventQueue.invokeLater(() -> {
+            JOptionPane.showMessageDialog(this, "Cleared JCS database.\nPlease Restart JCS!", "RESTART JCS!", JOptionPane.WARNING_MESSAGE);
+            QuitApp();
+          });
+        });
+      } catch (IllegalStateException | URISyntaxException e) {
+        Logger.error("Can't clear the database! " + e.getMessage());
+      }
+    }
+
+  }
 
   private void startAllLocomotives() {
     int result = JOptionPane.showConfirmDialog(this, "Are you sure you want to start All Locomotives?", "Start ALL Locomotives", JOptionPane.YES_NO_OPTION);
@@ -1392,7 +1433,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     } else {
       return "JCS " + jcsVersion + " - NOT Connected!";
     }
-    //return "JCS " + jcsVersion;
   }
 
   @Override
@@ -1473,7 +1513,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     this.dispatcherStatusPanel.refresh();
   }
 
-
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private JMenuItem aboutMI;
   private JMenuItem autoDrivingMI;
@@ -1511,6 +1550,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   private JSplitPane locoSplitPane;
   private JPanel logPanel;
   private JPanel mainPanel;
+  private JMenuItem newMI;
   private LayoutPanel overviewPanel;
   private JToggleButton powerButton;
   private JMenuItem quitMI;

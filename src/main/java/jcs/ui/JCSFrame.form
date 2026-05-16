@@ -38,6 +38,16 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="restoreMIActionPerformed"/>
               </Events>
             </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="newMI">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="New"/>
+                <Property name="toolTipText" type="java.lang.String" value="Create a new Configuration"/>
+                <Property name="name" type="java.lang.String" value="newMI" noResource="true"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="newMIActionPerformed"/>
+              </Events>
+            </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="quitMI">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Quit"/>
@@ -359,12 +369,6 @@
   <SubComponents>
     <Container class="javax.swing.JPanel" name="toolbarPanel">
       <Properties>
-        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-          <Dimension value="[10, 10]"/>
-        </Property>
-        <Property name="mixingCutoutShape" type="java.awt.Shape" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="default"/>
-        </Property>
         <Property name="name" type="java.lang.String" value="toolbarPanel" noResource="true"/>
         <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
           <Dimension value="[1350, 52]"/>
@@ -1034,9 +1038,6 @@
                     </Component>
                     <Container class="javax.swing.JPanel" name="settingsPanel">
                       <Properties>
-                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[10, 10]"/>
-                        </Property>
                         <Property name="name" type="java.lang.String" value="settingsPanel" noResource="true"/>
                       </Properties>
                       <Constraints>
@@ -1124,9 +1125,6 @@
                     </Container>
                     <Component class="jcs.ui.VNCPanel" name="vncPanel">
                       <Properties>
-                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[10, 10]"/>
-                        </Property>
                         <Property name="name" type="java.lang.String" value="vncPanel" noResource="true"/>
                         <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                           <Dimension value="[1002, 772]"/>
