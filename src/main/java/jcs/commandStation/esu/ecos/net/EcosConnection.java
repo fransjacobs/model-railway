@@ -16,7 +16,7 @@
 package jcs.commandStation.esu.ecos.net;
 
 import java.net.InetAddress;
-import java.util.concurrent.TransferQueue;
+import java.util.concurrent.BlockingQueue;
 import jcs.commandStation.esu.ecos.EcosMessage;
 
 /**
@@ -29,7 +29,7 @@ public interface EcosConnection extends AutoCloseable {
 
   EcosMessage sendMessage(EcosMessage message);
 
-  TransferQueue<EcosMessage> getEventQueue();
+  BlockingQueue<EcosMessage> getEventQueue();
 
   void setMessageListener(EcosMessageListener messageListener);
 

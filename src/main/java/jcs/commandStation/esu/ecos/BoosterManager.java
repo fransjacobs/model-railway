@@ -21,13 +21,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ConcurrentSkipListMap;
 import jcs.commandStation.entities.MeasurementBean;
 import jcs.commandStation.esu.ecos.entities.EcosBooster;
-import jcs.commandStation.events.ConnectionEvent;
-import jcs.commandStation.events.ConnectionEventListener;
 import jcs.commandStation.events.MeasurementEvent;
 import jcs.commandStation.events.MeasurementEventListener;
 import org.tinylog.Logger;
@@ -36,7 +32,7 @@ import org.tinylog.Logger;
  *
  * BoosterManager (id=27)
  */
-public class BoosterManager implements ConnectionEventListener {
+public class BoosterManager { //implements ConnectionEventListener {
 
   public static final int ID = 27;
 
@@ -50,8 +46,10 @@ public class BoosterManager implements ConnectionEventListener {
 
   private final int maxMeasurementEntries;
 
-  private MeasurementTask measurementTask;
-  private Timer measurementTimer;
+  //private MeasurementTask measurementTask;
+  //private Timer measurementTimer;
+
+  private EcosBooster internal;
 
   BoosterManager(EsuEcosCommandStationImpl esuEcosCommandStationImpl, EcosMessage message) {
     this.ecosCommandStation = esuEcosCommandStationImpl;
@@ -59,15 +57,13 @@ public class BoosterManager implements ConnectionEventListener {
     measurementEventListeners = new LinkedList<>();
     measurements = new ConcurrentSkipListMap<>();
     maxMeasurementEntries = Integer.getInteger("max.measurment.rows", 100);
-
     parse(message);
   }
 
   private void parse(EcosMessage message) {
-    Logger.trace(message.getMessage());
-    Logger.trace(message.getResponse());
+    //Logger.trace(message.getMessage());
+    //Logger.trace(message.getResponse());
 
-    //boolean event = message.isEvent();
     Map<String, Object> values = message.getValueMap();
     int objectId = message.getObjectId();
 
@@ -165,6 +161,39 @@ public class BoosterManager implements ConnectionEventListener {
 
   void update(EcosMessage message) {
     parse(message);
+
+    if (internal == null) {
+      internal = getBooster("65000");
+    } else {
+      long now = System.currentTimeMillis();
+      Map<String, MeasurementBean> measurementRow = new HashMap<>();
+
+      MeasurementBean peakMeasurement = new MeasurementBean(0, "PEAK", true, now, internal.getPeakCurrent().intValue(), internal.getCurrentUnit(), internal.getPeakCurrent());
+      MeasurementBean mainMeasurement = new MeasurementBean(1, "MAIN", true, now, internal.getCurrent().intValue(), internal.getCurrentUnit(), internal.getCurrent());
+      MeasurementBean voltMeasurement = new MeasurementBean(2, "VOLT", true, now, internal.getVoltage().intValue(), "V", internal.getVoltage());
+      MeasurementBean tempMeasurement = new MeasurementBean(3, "TEMP", true, now, internal.getTemperature().intValue(), "C", internal.getTemperature());
+
+      measurementRow.put("PEAK", peakMeasurement);
+      measurementRow.put("MAIN", mainMeasurement);
+      measurementRow.put("VOLT", voltMeasurement);
+      measurementRow.put("TEMP", tempMeasurement);
+
+      //Logger.trace(voltMeasurement.getDisplayValue() + " " + mainMeasurement.getDisplayValue() + " " + tempMeasurement.getDisplayValue());
+      measurements.put(now, measurementRow);
+
+      if (measurements.size() > maxMeasurementEntries) {
+        @SuppressWarnings("unused")
+        Map.Entry<Long, Map<String, MeasurementBean>> oldestRow = measurements.pollFirstEntry();
+        //Logger.trace("Removing measuement of " + new Date(oldestRow.getKey()));
+      }
+
+      MeasurementEvent me = new MeasurementEvent(measurementRow, true);
+      for (MeasurementEventListener listener : measurementEventListeners) {
+        listener.onMeasurement(me);
+      }
+
+    }
+
   }
 
   int getSize() {
@@ -181,64 +210,63 @@ public class BoosterManager implements ConnectionEventListener {
 
   boolean isSupportMeasurements() {
     //check for the internal booster
-    EcosBooster internal = boosters.get("65000");
     return internal != null && internal.getCurrent() != null;
   }
 
-  void startMeasurements() {
-    if (isSupportMeasurements()) {
-      Logger.trace("Start measurements...");
+//  void startMeasurements() {
+//    if (isSupportMeasurements()) {
+//      Logger.trace("Start measurements...");
+//
+//      long measureInterval = Long.parseLong(System.getProperty("measurement.interval", "5"));
+//      measureInterval = measureInterval * 1000;
+//
+//      if (measureInterval > 0 && !ecosCommandStation.isVirtual()) {
+//        measurementTask = new MeasurementTask(this);
+//
+//        measurementTimer = new Timer("MeasurementsTimer");
+//        measurementTimer.schedule(measurementTask, 10, measureInterval);
+//
+//        Logger.debug("Started Measurements Timer with an interval of " + measureInterval + " ms");
+//      }
+//    }
+//  }
 
-      long measureInterval = Long.parseLong(System.getProperty("measurement.interval", "5"));
-      measureInterval = measureInterval * 1000;
-
-      if (measureInterval > 0 && !ecosCommandStation.isVirtual()) {
-        measurementTask = new MeasurementTask(this);
-
-        measurementTimer = new Timer("MeasurementsTimer");
-        measurementTimer.schedule(measurementTask, 10, measureInterval);
-
-        Logger.debug("Started Measurements Timer with an interval of " + measureInterval + " ms");
-      }
-    }
-  }
-
-  private void performMeasurements() {
-    if (ecosCommandStation.isConnected()) {
-      long now = System.currentTimeMillis();
-      Map<String, MeasurementBean> measurementRow = new HashMap<>();
-
-      EcosMessage detailsReply = ecosCommandStation.connection.sendMessage(EcosMessageFactory.getBoosterDetails("65000"));
-      update(detailsReply);
-
-      EcosBooster internal = this.boosters.get("65000");
-
-      MeasurementBean peakMeasurement = new MeasurementBean(0, "PEAK", true, now, internal.getPeakCurrent().intValue(), internal.getCurrentUnit(), internal.getPeakCurrent());
-      MeasurementBean mainMeasurement = new MeasurementBean(1, "MAIN", true, now, internal.getCurrent().intValue(), internal.getCurrentUnit(), internal.getCurrent());
-      MeasurementBean voltMeasurement = new MeasurementBean(2, "VOLT", true, now, internal.getVoltage().intValue(), "V", internal.getVoltage());
-      MeasurementBean tempMeasurement = new MeasurementBean(3, "TEMP", true, now, internal.getTemperature().intValue(), "C", internal.getTemperature());
-
-      measurementRow.put("PEAK", peakMeasurement);
-      measurementRow.put("MAIN", mainMeasurement);
-      measurementRow.put("VOLT", voltMeasurement);
-      measurementRow.put("TEMP", tempMeasurement);
-
-      measurements.put(now, measurementRow);
-
-      if (measurements.size() > maxMeasurementEntries) {
-        @SuppressWarnings("unused")
-        Map.Entry<Long, Map<String, MeasurementBean>> oldestRow = measurements.pollFirstEntry();
-        //Logger.trace("Removing measuement of " + new Date(oldestRow.getKey()));
-      }
-
-      MeasurementEvent me = new MeasurementEvent(measurementRow, true);
-      for (MeasurementEventListener listener : measurementEventListeners) {
-        listener.onMeasurement(me);
-      }
-    } else {
-      Logger.warn("No measurement channels available");
-    }
-  }
+//  private void performMeasurements() {
+//    if (ecosCommandStation.isConnected()) {
+//      long now = System.currentTimeMillis();
+//      Map<String, MeasurementBean> measurementRow = new HashMap<>();
+//
+//      EcosMessage detailsReply = ecosCommandStation.connection.sendMessage(EcosMessageFactory.getBoosterDetails("65000"));
+//      update(detailsReply);
+//
+//      EcosBooster internal = boosters.get("65000");
+//
+//      MeasurementBean peakMeasurement = new MeasurementBean(0, "PEAK", true, now, internal.getPeakCurrent().intValue(), internal.getCurrentUnit(), internal.getPeakCurrent());
+//      MeasurementBean mainMeasurement = new MeasurementBean(1, "MAIN", true, now, internal.getCurrent().intValue(), internal.getCurrentUnit(), internal.getCurrent());
+//      MeasurementBean voltMeasurement = new MeasurementBean(2, "VOLT", true, now, internal.getVoltage().intValue(), "V", internal.getVoltage());
+//      MeasurementBean tempMeasurement = new MeasurementBean(3, "TEMP", true, now, internal.getTemperature().intValue(), "C", internal.getTemperature());
+//
+//      measurementRow.put("PEAK", peakMeasurement);
+//      measurementRow.put("MAIN", mainMeasurement);
+//      measurementRow.put("VOLT", voltMeasurement);
+//      measurementRow.put("TEMP", tempMeasurement);
+//
+//      measurements.put(now, measurementRow);
+//
+//      if (measurements.size() > maxMeasurementEntries) {
+//        @SuppressWarnings("unused")
+//        Map.Entry<Long, Map<String, MeasurementBean>> oldestRow = measurements.pollFirstEntry();
+//        //Logger.trace("Removing measuement of " + new Date(oldestRow.getKey()));
+//      }
+//
+//      MeasurementEvent me = new MeasurementEvent(measurementRow, true);
+//      for (MeasurementEventListener listener : measurementEventListeners) {
+//        listener.onMeasurement(me);
+//      }
+//    } else {
+//      Logger.warn("No measurement channels available");
+//    }
+//  }
 
   void addMeasurementEventListener(MeasurementEventListener listener) {
     this.measurementEventListeners.add(listener);
@@ -258,40 +286,39 @@ public class BoosterManager implements ConnectionEventListener {
     return measurements.lastEntry().getValue();
   }
 
-  @Override
-  public void onConnectionChange(ConnectionEvent event) {
-    if (!event.isConnected()) {
+//  @Override
+//  public void onConnectionChange(ConnectionEvent event) {
+//    if (!event.isConnected()) {
+//      if (measurementTimer != null) {
+//        measurementTimer.cancel();
+//      }
+//
+//    }
+//  }
 
-      if (measurementTimer != null) {
-        measurementTimer.cancel();
-      }
-
-    }
-  }
-
-  private class MeasurementTask extends TimerTask {
-
-    private final BoosterManager boosterManager;
-
-    MeasurementTask(BoosterManager boosterManager) {
-      this.boosterManager = boosterManager;
-    }
-
-    @Override
-    public void run() {
-      if (boosterManager.ecosCommandStation.isConnected() && !boosterManager.ecosCommandStation.isVirtual()) {
-        try {
-          if (boosterManager.ecosCommandStation.isSupportTrackMeasurements()) {
-            boosterManager.performMeasurements();
-          } else {
-            Logger.debug("Track Measurements are not supported. Cancelling the Measurements schedule...");
-            measurementTimer.cancel();
-          }
-        } catch (Exception e) {
-          Logger.error(e);
-        }
-      }
-    }
-  }
+//  private class MeasurementTask extends TimerTask {
+//
+//    private final BoosterManager boosterManager;
+//
+//    MeasurementTask(BoosterManager boosterManager) {
+//      this.boosterManager = boosterManager;
+//    }
+//
+//    @Override
+//    public void run() {
+//      if (boosterManager.ecosCommandStation.isConnected() && !boosterManager.ecosCommandStation.isVirtual()) {
+//        try {
+//          if (boosterManager.ecosCommandStation.isSupportTrackMeasurements()) {
+//            boosterManager.performMeasurements();
+//          } else {
+//            Logger.debug("Track Measurements are not supported. Cancelling the Measurements schedule...");
+//            measurementTimer.cancel();
+//          }
+//        } catch (Exception e) {
+//          Logger.error(e);
+//        }
+//      }
+//    }
+//  }
 
 }

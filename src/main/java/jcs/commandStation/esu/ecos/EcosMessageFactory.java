@@ -180,7 +180,7 @@ public class EcosMessageFactory implements Ecos {
   }
 
   public static EcosMessage subscribeBooster(String boosterId) {
-    return new EcosMessage("request(" + boosterId + ",view");
+    return new EcosMessage("request(" + boosterId + ",view)");
   }
 
   public static EcosMessage unSubscribeBooster(String boosterId) {

@@ -24,6 +24,8 @@ import java.io.Writer;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TransferQueue;
@@ -33,7 +35,7 @@ import org.tinylog.Logger;
 
 /**
  *
- * @author Frans Jacobs
+ * TCP Connection to the ESU ECoS
  */
 class EcosTCPConnection implements EcosConnection {
 
@@ -45,7 +47,7 @@ class EcosTCPConnection implements EcosConnection {
   private final TransferQueue<String> replyQueue;
 
   // Carries completed EVENT messages to the application event consumer.
-  private final TransferQueue<EcosMessage> eventQueue;
+  private final BlockingQueue<EcosMessage> eventQueue;
 
   private ClientMessageReceiver messageReceiver;
   private static final boolean DEBUG = Boolean.getBoolean("message.debug");
@@ -54,7 +56,7 @@ class EcosTCPConnection implements EcosConnection {
   EcosTCPConnection(InetAddress address) {
     ecosAddress = address;
     replyQueue = new LinkedTransferQueue<>();
-    eventQueue = new LinkedTransferQueue<>();
+    eventQueue = new LinkedBlockingQueue<>();
     checkConnection();
   }
 
@@ -69,8 +71,6 @@ class EcosTCPConnection implements EcosConnection {
         writer = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
 
         messageReceiver = new ClientMessageReceiver(clientSocket);
-        messageReceiver.setName("ESU-ECOS-RX");  // FIX: set name before start(), not inside run()
-        //messageReceiver.setDaemon(true);
         messageReceiver.start();
       }
     } catch (IOException ex) {
@@ -93,10 +93,6 @@ class EcosTCPConnection implements EcosConnection {
     } catch (InterruptedException ex) {
       Thread.currentThread().interrupt();
       Logger.warn("Interrupted while waiting for receiver thread to stop.");
-    }
-
-    if (!messageReceiver.isFinished()) {
-      Logger.warn("Message receiver thread did not finish within timeout.");
     }
 
     if (writer != null) {
@@ -194,20 +190,22 @@ class EcosTCPConnection implements EcosConnection {
   }
 
   @Override
-  public TransferQueue<EcosMessage> getEventQueue() {
+  public BlockingQueue<EcosMessage> getEventQueue() {
     return eventQueue;
   }
 
-  // ---------------------------------------------------------------------------
+  /**
+   * Listen to replies or events from the ECoS
+   */
   private class ClientMessageReceiver extends Thread {
 
-    private volatile boolean quit = false;
-    private volatile boolean finished = false;
+    private volatile boolean running = false;
 
     private BufferedReader reader;
     private EcosMessageListener messageListener;
 
     ClientMessageReceiver(Socket socket) {
+      super("ECoS-RX");
       try {
         reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
       } catch (IOException ex) {
@@ -224,7 +222,7 @@ class EcosTCPConnection implements EcosConnection {
      * Signals the run loop to stop and interrupts any blocking I/O.
      */
     synchronized void quit() {
-      quit = true;
+      running = false;
       interrupt();
       try {
         if (clientSocket != null && !clientSocket.isClosed()) {
@@ -240,11 +238,7 @@ class EcosTCPConnection implements EcosConnection {
     }
 
     boolean isRunning() {
-      return !quit && !finished;
-    }
-
-    boolean isFinished() {
-      return finished;
+      return running;
     }
 
     /**
@@ -258,15 +252,16 @@ class EcosTCPConnection implements EcosConnection {
 
     @Override
     public void run() {
+      running = true;
       Logger.trace("Started listening on port " + clientSocket.getLocalPort() + " ...");
 
-      while (!quit) {
+      while (running) {
         try {
           String rx = reader.readLine();
 
           if (rx == null) {
             // null from readLine() means the stream was closed (EOF / shutdownInput).
-            if (!quit) {
+            if (running) {
               Logger.warn("Stream closed unexpectedly — disconnecting.");
               notifyDisconnect(new ConnectionEvent(ecosAddress.getHostName(), false, false));
               quit();
@@ -275,20 +270,18 @@ class EcosTCPConnection implements EcosConnection {
           }
 
           if (DEBUG) {
-            Logger.trace("RX: " + rx);
+            Logger.trace("RX->" + rx);
           }
 
           if (rx.startsWith(EcosMessage.REPLY)) {
             // --- Synchronous reply to a command sent by this client ---
             String assembled = assembleMessage(rx);
             if (assembled != null) {
-
               boolean accepted = replyQueue.offer(assembled, TIMEOUT_MS, TimeUnit.MILLISECONDS);
               if (!accepted) {
                 Logger.warn("Reply queue not consumed within timeout — discarding orphaned reply.");
               }
             }
-
           } else if (rx.startsWith(EcosMessage.EVENT)) {
             // --- Unsolicited event from the ECoS ---
             String assembled = assembleMessage(rx);
@@ -300,7 +293,7 @@ class EcosTCPConnection implements EcosConnection {
                         + " -> " + emsg.getResponse());
               }
 
-              boolean queued = eventQueue.offer(emsg);
+              boolean queued = eventQueue.offer(emsg, TIMEOUT_MS, TimeUnit.MILLISECONDS);
               if (!queued) {
                 Logger.warn("Event queue full — dropping event: " + emsg.getResponse());
               }
@@ -309,13 +302,13 @@ class EcosTCPConnection implements EcosConnection {
             Logger.trace("Ignoring unrecognised line: " + rx);
           }
         } catch (SocketException se) {
-          if (!quit) {
+          if (running) {
             Logger.error("Socket error: " + se.getMessage());
             notifyDisconnect(new ConnectionEvent(ecosAddress.getHostName(), false, false));
             quit();
           }
         } catch (IOException ex) {
-          if (!quit) {
+          if (running) {
             Logger.error("I/O error in receiver: " + ex.getMessage());
             Logger.trace(ex);
           }
@@ -325,7 +318,6 @@ class EcosTCPConnection implements EcosConnection {
       }
 
       closeReader();
-      finished = true;
       Logger.debug("Receiver stopped.");
     }
 
@@ -333,7 +325,7 @@ class EcosTCPConnection implements EcosConnection {
      * Reads lines from the socket until the message is complete (contains {@code <END}), reassembling them with newlines preserved as the protocol requires.
      *
      * @param firstLine the first line already read from the socket
-     * @return the fully assembled message string, or null if timed out / quit
+     * @return the fully assembled message string, or null if timed out / running
      */
     private String assembleMessage(String firstLine) throws IOException, InterruptedException {
       StringBuilder sb = new StringBuilder();
@@ -342,7 +334,7 @@ class EcosTCPConnection implements EcosConnection {
       boolean complete = EcosMessage.isComplete(firstLine);
       long deadline = System.currentTimeMillis() + TIMEOUT_MS;
 
-      while (!complete && !quit) {
+      while (!complete && running) {
         long now = System.currentTimeMillis();
         if (now >= deadline) {
           Logger.warn("Timeout assembling message, partial: " + sb.toString().trim());
@@ -365,7 +357,7 @@ class EcosTCPConnection implements EcosConnection {
       }
 
       if (!complete) {
-        return null;  // quit was set before message completed
+        return null;  // running was set before message completed
       }
 
       return sb.toString();

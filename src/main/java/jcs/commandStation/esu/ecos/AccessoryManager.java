@@ -68,7 +68,7 @@ class AccessoryManager implements AccessoryEventListener {
         size = accessories.size();
       }
 
-    } else if (objectId >= 20000 && objectId < 29999) {
+    } else if (objectId >= 20000 && objectId <= 29999) {
       //Details
       AccessoryBean accessory = parseValues(values, event);
       if (accessory.getId() != null) {
@@ -155,14 +155,21 @@ class AccessoryManager implements AccessoryEventListener {
         case "0" ->
           value = AccessoryBean.AccessoryValue.GREEN;
         case "1" -> {
-          //Could be the case the for a 3way switch the red must be a red2 and vice versa,,,
-          value = AccessoryBean.AccessoryValue.RED;
-        }
-        case "2" -> {
-          if (accessory.isTurnout()) {
+          if (accessory.is3WaySwitch()) {
             value = AccessoryBean.AccessoryValue.RED2;
           } else {
-            value = AccessoryBean.AccessoryValue.WHITE;
+            value = AccessoryBean.AccessoryValue.RED;
+          }
+        }
+        case "2" -> {
+          if (accessory.is3WaySwitch()) {
+            value = AccessoryBean.AccessoryValue.RED;
+          } else {
+            if (accessory.isTurnout()) {
+              value = AccessoryBean.AccessoryValue.RED2;
+            } else {
+              value = AccessoryBean.AccessoryValue.WHITE;
+            }
           }
         }
         case "3" ->
@@ -174,9 +181,6 @@ class AccessoryManager implements AccessoryEventListener {
 
       if (event) {
         Logger.debug(Ecos.STATE + " : " + accessory.getId() + " -> " + accessory.getAccessoryValue() + " State: " + state);
-
-        //  AccessoryEvent ae = new AccessoryEvent(accessory);
-        //  ecosCommandStation.fireAccessoryEventListeners(ae);
       }
 
     }

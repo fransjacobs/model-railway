@@ -123,8 +123,8 @@ public class EcosMessageTest {
   public void testReplyWithMultipleIds() {
     System.out.println("replyWithMultipleIds");
     String tx = "queryObjects(10, name, addr, protocol)";
-    String rx = "<REPLY queryObjects(10, name, addr, protocol)>1002 name[\"FS236-002\"] addr[14] protocol[DCC28]1003 name[\"NS 6505\"] addr[8] protocol[DCC28]1000 name[\"193 304-3 DB AG\"] addr[0] protocol[MFX]1001 name[\"SNCB/NMBS HLE 27\"] addr[3] protocol[DCC28]1004 name[\"NS 1205\"] addr[11] protocol[DCC28]1005 name[\"DB-141-015-8\"] addr[12] protocol[MM14]1006 name[\"NS 1139\"] addr[13] protocol[DCC128]1007 name[\"NS 1139\"] addr[5] protocol[DCC14]1008 name[\"NS 1309\"] addr[68] protocol[DCC28]<END 0 (OK)>";
-    String content = "1002 name[\"FS236-002\"] addr[14] protocol[DCC28]1003 name[\"NS 6505\"] addr[8] protocol[DCC28]1000 name[\"193 304-3 DB AG\"] addr[0] protocol[MFX]1001 name[\"SNCB/NMBS HLE 27\"] addr[3] protocol[DCC28]1004 name[\"NS 1205\"] addr[11] protocol[DCC28]1005 name[\"DB-141-015-8\"] addr[12] protocol[MM14]1006 name[\"NS 1139\"] addr[13] protocol[DCC128]1007 name[\"NS 1139\"] addr[5] protocol[DCC14]1008 name[\"NS 1309\"] addr[68] protocol[DCC28]";
+    String rx = "<REPLY queryObjects(10, name, addr, protocol)>\n1002 name[\"FS236-002\"] addr[14] protocol[DCC28]\n1003 name[\"NS 6505\"] addr[8] protocol[DCC28]\n1000 name[\"193 304-3 DB AG\"] addr[0] protocol[MFX]\n1001 name[\"SNCB/NMBS HLE 27\"] addr[3] protocol[DCC28]\n1004 name[\"NS 1205\"] addr[11] protocol[DCC28]\n1005 name[\"DB-141-015-8\"] addr[12] protocol[MM14]\n1006 name[\"NS 1139\"] addr[13] protocol[DCC128]\n1007 name[\"NS 1139\"] addr[5] protocol[DCC14]\n1008 name[\"NS 1309\"] addr[68] protocol[DCC28]<END 0 (OK)>\n";
+    String content = "\n1002 name[\"FS236-002\"] addr[14] protocol[DCC28]\n1003 name[\"NS 6505\"] addr[8] protocol[DCC28]\n1000 name[\"193 304-3 DB AG\"] addr[0] protocol[MFX]\n1001 name[\"SNCB/NMBS HLE 27\"] addr[3] protocol[DCC28]\n1004 name[\"NS 1205\"] addr[11] protocol[DCC28]\n1005 name[\"DB-141-015-8\"] addr[12] protocol[MM14]\n1006 name[\"NS 1139\"] addr[13] protocol[DCC128]\n1007 name[\"NS 1139\"] addr[5] protocol[DCC14]\n1008 name[\"NS 1309\"] addr[68] protocol[DCC28]";
 
     EcosMessage instance = new EcosMessage(tx);
     instance.addResponse(rx);
@@ -169,7 +169,7 @@ public class EcosMessageTest {
     System.out.println("locomotiveFunctions");
 
     String tx = "get(1001,name,addr,protocol,dir,speed,speedstep,active,locodesc,func,funcdesc)";
-    String rx = "<REPLY get(1001,name,addr,protocol,dir,speed,speedstep,active,locodesc,func,funcdesc)>1001 name[\"SNCB/NMBS HLE 27\"]1001 addr[3]1001 protocol[DCC128]1001 dir[0]1001 speed[0]1001 speedstep[0]1001 active[1]1001 locodesc[LOCO_TYPE_E,IMAGE_TYPE_INT,2]1001 func[0,0]1001 func[1,0]1001 func[2,0]1001 func[3,0]1001 func[4,0]1001 func[5,0]1001 func[6,0]1001 func[7,0]1001 func[8,0]1001 func[9,0]1001 func[10,0]1001 func[11,0]1001 func[12,0]1001 func[13,0]1001 func[14,0]1001 func[15,0]1001 func[16,0]1001 func[17,0]1001 func[18,0]1001 func[19,0]1001 func[20,0]1001 func[21,0]1001 func[22,0]1001 func[23,0]1001 func[24,0]1001 func[25,0]1001 func[26,0]1001 func[27,0]1001 func[28,0]1001 func[29,0]1001 func[30,0]1001 funcdesc[0,3]1001 funcdesc[1,7]1001 funcdesc[2,37,moment]1001 funcdesc[3,37,moment]1001 funcdesc[4,34]1001 funcdesc[5,260]1001 funcdesc[6,10]1001 funcdesc[7,4]1001 funcdesc[8,5]1001 funcdesc[9,3]1001 funcdesc[10,7]1001 funcdesc[11,1287]1001 funcdesc[12,12039]1001 funcdesc[13,2055,moment]1001 funcdesc[14,9,moment]1001 funcdesc[15,40]1001 funcdesc[16,39]1001 funcdesc[17,12039]1001 funcdesc[18,9,moment]1001 funcdesc[19,11527,moment]1001 funcdesc[20,11015]1001 funcdesc[21,8,moment]1001 funcdesc[22,9,moment]1001 funcdesc[23,1033,moment]1001 funcdesc[24,809]1001 funcdesc[25,11783,moment]1001 funcdesc[26,300]1001 funcdesc[27,263]1001 funcdesc[28,12039]1001 funcdesc[29,1033,moment]1001 funcdesc[30,1033,moment]<END 0 (OK)>";
+    String rx = "<REPLY get(1001,name,addr,protocol,dir,speed,speedstep,active,locodesc,func,funcdesc)>\n1001 name[\"SNCB/NMBS HLE 27\"]\n1001 addr[3]\n1001 protocol[DCC128]\n1001 dir[0]\n1001 speed[0]\n1001 speedstep[0]\n1001 active[1]\n1001 locodesc[LOCO_TYPE_E,IMAGE_TYPE_INT,2]\n1001 func[0,0]\n1001 func[1,0]\n1001 func[2,0]\n1001 func[3,0]\n1001 func[4,0]\n1001 func[5,0]\n1001 func[6,0]\n1001 func[7,0]\n1001 func[8,0]\n1001 func[9,0]\n1001 func[10,0]\n1001 func[11,0]\n1001 func[12,0]\n1001 func[13,0]\n1001 func[14,0]\n1001 func[15,0]\n1001 func[16,0]\n1001 func[17,0]\n1001 func[18,0]\n1001 func[19,0]\n1001 func[20,0]\n1001 func[21,0]\n1001 func[22,0]\n1001 func[23,0]\n1001 func[24,0]\n1001 func[25,0]\n1001 func[26,0]\n1001 func[27,0]\n1001 func[28,0]\n1001 func[29,0]\n1001 func[30,0]\n1001 funcdesc[0,3]\n1001 funcdesc[1,7]\n1001 funcdesc[2,37,moment]\n1001 funcdesc[3,37,moment]\n1001 funcdesc[4,34]\n1001 funcdesc[5,260]\n1001 funcdesc[6,10]\n1001 funcdesc[7,4]\n1001 funcdesc[8,5]\n1001 funcdesc[9,3]\n1001 funcdesc[10,7]\n1001 funcdesc[11,1287]\n1001 funcdesc[12,12039]\n1001 funcdesc[13,2055,moment]\n1001 funcdesc[14,9,moment]\n1001 funcdesc[15,40]1001 funcdesc[16,39]1001 funcdesc[17,12039]\n1001 funcdesc[18,9,moment]\n1001 funcdesc[19,11527,moment]\n1001 funcdesc[20,11015]\n1001 funcdesc[21,8,moment]\n1001 funcdesc[22,9,moment]\n1001 funcdesc[23,1033,moment]\n1001 funcdesc[24,809]\n1001 funcdesc[25,11783,moment]\n1001 funcdesc[26,300]\n1001 funcdesc[27,263]\n1001 funcdesc[28,12039]\n1001 funcdesc[29,1033,moment]\n1001 funcdesc[30,1033,moment]\n<END 0 (OK)>\n";
 
     String expFunc = "[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0],[8,0],[9,0],[10,0],[11,0],[12,0],[13,0],[14,0],[15,0],[16,0],[17,0],[18,0],[19,0],[20,0],[21,0],[22,0],[23,0],[24,0],[25,0],[26,0],[27,0],[28,0],[29,0],[30,0]";
 
@@ -205,32 +205,21 @@ public class EcosMessageTest {
     assertEquals(expResult, result);
   }
 
-  /**
-   * Test of isValid method, of class EcosMessage.
-   */
-  //@Test
-  public void testIsValid() {
-    System.out.println("isValid");
-    EcosMessage instance = null;
-    boolean expResult = false;
-    boolean result = instance.isValid();
-    assertEquals(expResult, result);
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
-  }
+  @Test
+  public void testGetValueMapForSwitchEvent() {
+    System.out.println("getValueMapForSwitchEvent");
+    String rx = "<EVENT 20000>\n20000 state[1]\n<END 0 (OK)>\n";
+    EcosMessage instance = new EcosMessage(rx);
 
-  /**
-   * Test of toString method, of class EcosMessage.
-   */
-  //Test
-  public void testToString() {
-    System.out.println("toString");
-    EcosMessage instance = null;
-    String expResult = "";
-    String result = instance.toString();
-    assertEquals(expResult, result);
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
+    assertTrue(instance.isEvent());
+
+    Map<String, Object> valMap = instance.getValueMap();
+    assertTrue(valMap.containsKey(Ecos.ID));
+    assertTrue(valMap.containsKey(Ecos.STATE));
+
+    assertEquals("20000", valMap.get(Ecos.ID));
+    assertEquals("1", valMap.get(Ecos.STATE));
+
   }
 
 }
