@@ -18,6 +18,7 @@
  */
 package jcs.ui.widgets;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ComponentAdapter;
@@ -26,6 +27,7 @@ import java.net.URL;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -53,7 +55,8 @@ public class KeyboardPanelWide extends JPanel {
   // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
   private void initComponents() {
 
-    keyboardTP = new JTabbedPane();
+    keyboardsSP = new JScrollPane();
+    keyboardsTP = new JTabbedPane();
     keyboardsPanel0 = new JPanel();
     switchPanel1 = new AccessoryKeyPanel16(1);
     switchPanel2 = new AccessoryKeyPanel16(2);
@@ -75,9 +78,7 @@ public class KeyboardPanelWide extends JPanel {
     switchPanel15 = new AccessoryKeyPanel16(15);
     switchPanel16 = new AccessoryKeyPanel16(16);
 
-    setMinimumSize(new Dimension(975, 315));
     setName("Form"); // NOI18N
-    setPreferredSize(new Dimension(975, 315));
     addComponentListener(new ComponentAdapter() {
       public void componentHidden(ComponentEvent evt) {
         formComponentHidden(evt);
@@ -86,27 +87,25 @@ public class KeyboardPanelWide extends JPanel {
         formComponentShown(evt);
       }
     });
-    FlowLayout flowLayout1 = new FlowLayout(FlowLayout.LEFT, 0, 0);
-    flowLayout1.setAlignOnBaseline(true);
-    setLayout(flowLayout1);
+    setLayout(new BorderLayout());
 
-    keyboardTP.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
-    keyboardTP.setTabPlacement(JTabbedPane.LEFT);
-    keyboardTP.setAlignmentY(1.0F);
-    keyboardTP.setAutoscrolls(true);
-    keyboardTP.setDoubleBuffered(true);
-    keyboardTP.setMinimumSize(new Dimension(975, 325));
-    keyboardTP.setName("keyboardTP"); // NOI18N
-    keyboardTP.setPreferredSize(new Dimension(975, 325));
-    keyboardTP.setRequestFocusEnabled(false);
+    keyboardsSP.setName("keyboardsSP"); // NOI18N
+
+    keyboardsTP.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+    keyboardsTP.setTabPlacement(JTabbedPane.LEFT);
+    keyboardsTP.setAlignmentY(1.0F);
+    keyboardsTP.setAutoscrolls(true);
+    keyboardsTP.setDoubleBuffered(true);
+    keyboardsTP.setName("keyboardsTP"); // NOI18N
+    keyboardsTP.setRequestFocusEnabled(false);
 
     keyboardsPanel0.setMinimumSize(new Dimension(900, 315));
     keyboardsPanel0.setName("keyboardsPanel0"); // NOI18N
     keyboardsPanel0.setPreferredSize(new Dimension(900, 315));
     VerticalFlowLayout verticalFlowLayout1 = new VerticalFlowLayout();
-    verticalFlowLayout1.setvGap(3);
-    verticalFlowLayout1.sethGap(0);
-    verticalFlowLayout1.sethAlignment(0);
+    verticalFlowLayout1.setvGap(1);
+    verticalFlowLayout1.sethGap(1);
+    verticalFlowLayout1.setvAlignment(1);
     keyboardsPanel0.setLayout(verticalFlowLayout1);
 
     switchPanel1.setName("switchPanel1"); // NOI18N
@@ -121,8 +120,8 @@ public class KeyboardPanelWide extends JPanel {
     switchPanel4.setName("switchPanel4"); // NOI18N
     keyboardsPanel0.add(switchPanel4);
 
-    keyboardTP.addTab("1 - 64", keyboardsPanel0);
-    keyboardsPanel0.getAccessibleContext().setAccessibleParent(keyboardTP);
+    keyboardsTP.addTab("1 - 64", keyboardsPanel0);
+    keyboardsPanel0.getAccessibleContext().setAccessibleParent(keyboardsTP);
 
     keyboardsPanel1.setMinimumSize(new Dimension(900, 315));
     keyboardsPanel1.setName("keyboardsPanel1"); // NOI18N
@@ -146,10 +145,10 @@ public class KeyboardPanelWide extends JPanel {
     switchPanel8.setName("switchPanel8"); // NOI18N
     keyboardsPanel1.add(switchPanel8);
 
-    keyboardTP.addTab("65 - 128", keyboardsPanel1);
+    keyboardsTP.addTab("65 - 128", keyboardsPanel1);
     keyboardsPanel1.getAccessibleContext().setAccessibleName("65 - 128");
     keyboardsPanel1.getAccessibleContext().setAccessibleDescription("");
-    keyboardsPanel1.getAccessibleContext().setAccessibleParent(keyboardTP);
+    keyboardsPanel1.getAccessibleContext().setAccessibleParent(keyboardsTP);
 
     keyboardsPanel2.setMinimumSize(new Dimension(900, 315));
     keyboardsPanel2.setName("keyboardsPanel2"); // NOI18N
@@ -172,9 +171,9 @@ public class KeyboardPanelWide extends JPanel {
     switchPanel12.setName("switchPanel12"); // NOI18N
     keyboardsPanel2.add(switchPanel12);
 
-    keyboardTP.addTab("129 - 192", keyboardsPanel2);
+    keyboardsTP.addTab("129 - 192", keyboardsPanel2);
     keyboardsPanel2.getAccessibleContext().setAccessibleName("129 - 192");
-    keyboardsPanel2.getAccessibleContext().setAccessibleParent(keyboardTP);
+    keyboardsPanel2.getAccessibleContext().setAccessibleParent(keyboardsTP);
 
     keyboardsPanel3.setMinimumSize(new Dimension(895, 300));
     keyboardsPanel3.setName("keyboardsPanel3"); // NOI18N
@@ -197,12 +196,14 @@ public class KeyboardPanelWide extends JPanel {
     switchPanel16.setName("switchPanel16"); // NOI18N
     keyboardsPanel3.add(switchPanel16);
 
-    keyboardTP.addTab("193 - 256", keyboardsPanel3);
+    keyboardsTP.addTab("193 - 256", keyboardsPanel3);
     keyboardsPanel3.getAccessibleContext().setAccessibleName("193 - 256");
 
-    keyboardTP.setSelectedComponent(keyboardsPanel0);
+    keyboardsTP.setSelectedComponent(keyboardsPanel0);
 
-    add(keyboardTP);
+    keyboardsSP.setViewportView(keyboardsTP);
+
+    add(keyboardsSP, BorderLayout.CENTER);
   }// </editor-fold>//GEN-END:initComponents
 
     private void formComponentShown(ComponentEvent evt) {//GEN-FIRST:event_formComponentShown
@@ -212,11 +213,12 @@ public class KeyboardPanelWide extends JPanel {
     }//GEN-LAST:event_formComponentHidden
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
-  private JTabbedPane keyboardTP;
   private JPanel keyboardsPanel0;
   private JPanel keyboardsPanel1;
   private JPanel keyboardsPanel2;
   private JPanel keyboardsPanel3;
+  private JScrollPane keyboardsSP;
+  private JTabbedPane keyboardsTP;
   private AccessoryKeyPanel16 switchPanel1;
   private AccessoryKeyPanel16 switchPanel10;
   private AccessoryKeyPanel16 switchPanel11;

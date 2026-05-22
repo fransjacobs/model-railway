@@ -161,7 +161,6 @@ public class LayoutPanel extends JPanel {
     canvas = new LayoutCanvas(this.readonly);
 
     setOpaque(false);
-    setPreferredSize(new Dimension(1002, 772));
     addComponentListener(new ComponentAdapter() {
       public void componentHidden(ComponentEvent evt) {
         formComponentHidden(evt);
@@ -173,7 +172,6 @@ public class LayoutPanel extends JPanel {
     setLayout(new BorderLayout());
 
     topPanel.setMaximumSize(new Dimension(32767, 50));
-    topPanel.setPreferredSize(new Dimension(1000, 50));
     FlowLayout flowLayout1 = new FlowLayout(FlowLayout.LEFT);
     flowLayout1.setAlignOnBaseline(true);
     topPanel.setLayout(flowLayout1);
@@ -271,11 +269,9 @@ public class LayoutPanel extends JPanel {
 
     add(topPanel, BorderLayout.NORTH);
 
-    canvasScrollPane.setPreferredSize(new Dimension(980, 700));
     canvasScrollPane.setViewportView(canvas);
 
     canvas.setName(""); // NOI18N
-    canvas.setPreferredSize(new Dimension(1000, 720));
     canvasScrollPane.setViewportView(canvas);
 
     add(canvasScrollPane, BorderLayout.CENTER);

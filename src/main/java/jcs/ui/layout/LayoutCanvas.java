@@ -244,7 +244,6 @@ public class LayoutCanvas extends JPanel {
     Paint p = gc.getPaint();
     gc.setPaint(Color.lightGray);
 
-    //gc.setStroke(new BasicStroke(1, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
     gc.setStroke(GRID_STROKE);
 
     for (int x = 0; x < width; x += 40) {
@@ -282,10 +281,10 @@ public class LayoutCanvas extends JPanel {
           java.awt.EventQueue.invokeLater(() -> {
             loadTiles(tiles);
 
-            validate();
+            revalidate();
             repaint();
             long duration = System.currentTimeMillis() - now;
-            if (this.readonly) {
+            if (readonly) {
               Logger.trace("Loading and Repaint of " + tiles.size() + " tiles finished in " + duration + " ms...");
             }
           });
@@ -298,35 +297,12 @@ public class LayoutCanvas extends JPanel {
 
   private void loadTiles(List<Tile> tiles) {
     removeAll();
-    validate();
     selectedTile = null;
 
     Dimension minSize = TileCache.getMinCanvasSize();
-    //setMinimumSize(minSize);
-
     setPreferredSize(minSize);
-    //setSize(minSize);
-    //setMinimumSize(minSize);
+    revalidate();
 
-//    //Check if we must enlarge the canvas
-//    int w = getPreferredSize().width;
-//    int h = getPreferredSize().height;
-//    boolean changeSize = false;
-//    if (w < minSize.width) {
-//      w = minSize.width;
-//      changeSize = true;
-//    }
-//    if (h < minSize.height) {
-//      h = minSize.height;
-//      changeSize = true;
-//    }
-//    if (changeSize) {
-//      setPreferredSize(new Dimension(w, h));
-//      setSize(new Dimension(w, h));
-//      Logger.trace("Changed size to w: " + w + " h: " + h);
-//    } else {
-//      Logger.trace("Canvas size; w: " + w + " h: " + h);
-//    }
     for (Tile tile : tiles) {
       add(tile);
       if (showCenter) {

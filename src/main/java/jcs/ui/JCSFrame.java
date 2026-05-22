@@ -26,6 +26,10 @@ import java.awt.KeyboardFocusManager;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.HierarchyBoundsListener;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.InputMethodEvent;
+import java.awt.event.InputMethodListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -383,22 +387,16 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     filler8 = new Box.Filler(new Dimension(25, 0), new Dimension(25, 0), new Dimension(25, 32767));
     statusPanel = new StatusPanel();
     mainPanel = new JPanel();
-    jSplitPane1 = new JSplitPane();
     locoDisplaySP = new JSplitPane();
     centerPanel = new JPanel();
     keyboardSensorMessagePanel = new KeyboardSensorPanel();
     layoutPanel = new LayoutPanel();
     overviewPanel = new LayoutPanel(true);
-    settingsPanel = new JPanel();
-    commandStationPanel = new CommandStationPanel();
     vncPanel = new VNCPanel();
     leftPanel = new JPanel();
     locoSplitPane = new JSplitPane();
     dispatcherStatusPanel = new DispatcherStatusPanel();
     smallDriverCabPanel = new SmallDriverCabPanel();
-    logPanel = new JPanel();
-    jScrollPane1 = new JScrollPane();
-    jTextArea1 = new JTextArea();
     jcsMenuBar = new JMenuBar();
     fileMenu = new JMenu();
     backupMI = new JMenuItem();
@@ -667,25 +665,21 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     mainPanel.setPreferredSize(new Dimension(1232, 770));
     mainPanel.setLayout(new BorderLayout());
 
-    jSplitPane1.setDividerLocation(850);
-    jSplitPane1.setOrientation(JSplitPane.VERTICAL_SPLIT);
-    jSplitPane1.setLastDividerLocation(700);
-    jSplitPane1.setMinimumSize(new Dimension(1050, 750));
-    jSplitPane1.setName("jSplitPane1"); // NOI18N
-
-    locoDisplaySP.setDividerLocation(302);
-    locoDisplaySP.setMinimumSize(new Dimension(1050, 900));
+    locoDisplaySP.setDividerLocation(320);
+    locoDisplaySP.setDividerSize(10);
+    locoDisplaySP.setContinuousLayout(false);
     locoDisplaySP.setName("locoDisplaySP"); // NOI18N
     locoDisplaySP.setPreferredSize(new Dimension(1050, 850));
 
+    centerPanel.setMinimumSize(new Dimension(10, 10));
     centerPanel.setName("centerPanel"); // NOI18N
-    centerPanel.setPreferredSize(new Dimension(1002, 772));
     centerPanel.setLayout(new CardLayout());
 
+    keyboardSensorMessagePanel.setMinimumSize(new Dimension(10, 10));
     keyboardSensorMessagePanel.setName("keyboardSensorMessagePanel"); // NOI18N
-    keyboardSensorMessagePanel.setPreferredSize(new Dimension(1002, 772));
     centerPanel.add(keyboardSensorMessagePanel, "diagnosticPanel");
 
+    layoutPanel.setMinimumSize(new Dimension(10, 10));
     layoutPanel.setName("layoutPanel"); // NOI18N
     centerPanel.add(layoutPanel, "designPanel");
     layoutPanel.getAccessibleContext().setAccessibleName("designPanel");
@@ -695,22 +689,12 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     centerPanel.add(overviewPanel, "overviewPanel");
     overviewPanel.getAccessibleContext().setAccessibleName("overviewPanel");
 
-    settingsPanel.setName("settingsPanel"); // NOI18N
-    FlowLayout flowLayout1 = new FlowLayout(FlowLayout.LEFT);
-    flowLayout1.setAlignOnBaseline(true);
-    settingsPanel.setLayout(flowLayout1);
-
-    commandStationPanel.setName("commandStationPanel"); // NOI18N
-    settingsPanel.add(commandStationPanel);
-
-    centerPanel.add(settingsPanel, "settingsPanel");
-
     vncPanel.setName("vncPanel"); // NOI18N
-    vncPanel.setPreferredSize(new Dimension(1002, 772));
     centerPanel.add(vncPanel, "vncPanel");
 
     locoDisplaySP.setRightComponent(centerPanel);
 
+    leftPanel.setMinimumSize(new Dimension(100, 100));
     leftPanel.setName("leftPanel"); // NOI18N
     leftPanel.setPreferredSize(new Dimension(225, 772));
     leftPanel.setLayout(new BorderLayout(1, 1));
@@ -730,24 +714,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
 
     locoDisplaySP.setLeftComponent(leftPanel);
 
-    jSplitPane1.setTopComponent(locoDisplaySP);
-
-    logPanel.setName("logPanel"); // NOI18N
-    logPanel.setPreferredSize(new Dimension(1200, 200));
-    logPanel.setLayout(new BorderLayout());
-
-    jScrollPane1.setName("jScrollPane1"); // NOI18N
-
-    jTextArea1.setColumns(20);
-    jTextArea1.setRows(5);
-    jTextArea1.setName("jTextArea1"); // NOI18N
-    jScrollPane1.setViewportView(jTextArea1);
-
-    logPanel.add(jScrollPane1, BorderLayout.CENTER);
-
-    jSplitPane1.setBottomComponent(logPanel);
-
-    mainPanel.add(jSplitPane1, BorderLayout.CENTER);
+    mainPanel.add(locoDisplaySP, BorderLayout.CENTER);
 
     getContentPane().add(mainPanel, BorderLayout.CENTER);
 
@@ -1525,7 +1492,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   private JFileChooser backupRestoreFileDialog;
   private JPanel centerPanel;
   private JMenu commandStationMenu;
-  private CommandStationPanel commandStationPanel;
   private JToggleButton connectButton;
   private JMenuItem connectMI;
   private JMenuItem deleteTileMI;
@@ -1542,9 +1508,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   private JMenuItem flipTileHorizontallyMI;
   private JMenuItem flipTileVerticallyMI;
   private JMenu helpMenu;
-  private JScrollPane jScrollPane1;
-  private JSplitPane jSplitPane1;
-  private JTextArea jTextArea1;
   private JMenuBar jcsMenuBar;
   private JToolBar jcsToolBar;
   private KeyboardSensorPanel keyboardSensorMessagePanel;
@@ -1552,7 +1515,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   private JPanel leftPanel;
   private JSplitPane locoDisplaySP;
   private JSplitPane locoSplitPane;
-  private JPanel logPanel;
   private JPanel mainPanel;
   private JMenuItem newMI;
   private LayoutPanel overviewPanel;
@@ -1563,7 +1525,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   private JMenuItem restoreMI;
   private JMenuItem rotateTileMI;
   private JMenu settingsMenu;
-  private JPanel settingsPanel;
   private JMenuItem showAccessoryMI;
   private JMenuItem showCommandStationsMI;
   private JMenuItem showDrivewaysMI;
