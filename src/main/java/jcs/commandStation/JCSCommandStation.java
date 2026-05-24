@@ -690,6 +690,15 @@ public class JCSCommandStation {
     }
   }
 
+  public void haltAllOnTrackLocomotives() {
+    List<LocomotiveBean> locomotivesOnTrack = PersistenceFactory.getService().getOnTrackLocomotives();
+
+    for (LocomotiveBean loco : locomotivesOnTrack) {
+      changeLocomotiveSpeed(0, loco);
+    }
+
+  }
+
   public void changeLocomotiveFunction(Boolean newValue, Integer functionNumber, LocomotiveBean locomotive) {
     Logger.trace("Changing Function " + functionNumber + " to " + (newValue ? "on" : "off") + " on " + locomotive.getName());
     int address = resolveAddress(locomotive);

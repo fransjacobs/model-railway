@@ -345,6 +345,18 @@ public class H2PersistenceService implements PersistenceService {
     return locos;
   }
 
+  public List<LocomotiveBean> getOnTrackLocomotives() {
+    String query = "select distinct l.* from blocks b join locomotives l on b.locomotive_id = l.id";
+    List<LocomotiveBean> locos = database.sql(query).orderBy("id").results(LocomotiveBean.class);
+
+    for (LocomotiveBean loco : locos) {
+      loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
+      loco.addAllFunctions(getLocomotiveFunctions(loco));
+    }
+
+    return locos;
+  }
+
   @Override
   public List<LocomotiveBean> getLocomotives(boolean show) {
     String commandStationId = getDefaultCommandStation().getId();
@@ -387,7 +399,7 @@ public class H2PersistenceService implements PersistenceService {
   public FunctionBean persist(FunctionBean functionBean) {
     if (functionBean.getId() == null) {
       // Might be a new refresh of an existing function so let try to find it
-      FunctionBean dbFb = this.getLocomotiveFunction(functionBean.getLocomotiveId(), functionBean.getNumber());
+      FunctionBean dbFb = getLocomotiveFunction(functionBean.getLocomotiveId(), functionBean.getNumber());
       if (dbFb != null) {
         functionBean.setId(dbFb.getId());
       }

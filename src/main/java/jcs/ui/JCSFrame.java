@@ -97,23 +97,23 @@ import jcs.util.Ping;
  * JCS Main Frame
  */
 public class JCSFrame extends JFrame implements UICallback, ConnectionEventListener, PowerEventListener, RailControllerStatusListener {
-  
+
   private static final long serialVersionUID = -5800900684173242844L;
-  
+
   private final Map<KeyStroke, Action> actionMap;
   private FeedbackSensorDialog feedbackMonitor;
-  
+
   private boolean editMode = false;
-  
+
   private LocomotiveDialog locomotiveDialog;
   private AccessoryDialog accessoryDialog;
   private DrivewaySettingsDialog drivewaySettingsDialog;
   private CommandStationDialog commandStationDialog;
   private PropertiesDialog propertiesDialog;
   private StationSettingsDialog stationSettingsDialog;
-  
+
   private SettingsDialog settingsDialog;
-  
+
   private final ExecutorService executor;
 
   /**
@@ -123,7 +123,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     actionMap = new HashMap<>();
     executor = Executors.newCachedThreadPool();
     initComponents();
-    
+
     if (RunUtil.isMacOSX()) {
       //quitMI.setVisible(false);
       //optionsMI.setVisible(false);
@@ -138,14 +138,14 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     initJCS();
     initKeyStrokes();
   }
-  
+
   private void initJCS() {
     if (PersistenceFactory.getService() != null) {
       setTitle(getTitleString());
-      
+
       JCS.getJcsCommandStation().addConnectionEventListener(this);
       JCS.getJcsCommandStation().addPowerEventListener(this);
-      
+
       if (JCS.getJcsCommandStation().isConnected()) {
         setControllerProperties();
       }
@@ -161,11 +161,12 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
       RailController.getInstance().addStatusListener(this);
     }
   }
-  
+
   private void initKeyStrokes() {
     KeyStroke keySpace = KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0);
+    KeyStroke keyPower = KeyStroke.getKeyStroke(KeyEvent.VK_P, 0);
     KeyStroke keyQuit = KeyStroke.getKeyStroke(KeyEvent.VK_Q, KeyEvent.CTRL_DOWN_MASK);
-    
+
     KeyStroke keySensorMonitor = KeyStroke.getKeyStroke(KeyEvent.VK_M, KeyEvent.ALT_DOWN_MASK);
     KeyStroke keyHome = KeyStroke.getKeyStroke(KeyEvent.VK_H, KeyEvent.CTRL_DOWN_MASK);
     KeyStroke keyEdit = KeyStroke.getKeyStroke(KeyEvent.VK_E, KeyEvent.CTRL_DOWN_MASK);
@@ -174,32 +175,33 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     KeyStroke keyModeSelect = KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.ALT_DOWN_MASK);
     KeyStroke keyModeAdd = KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.ALT_DOWN_MASK);
     KeyStroke keyModeDelete = KeyStroke.getKeyStroke(KeyEvent.VK_D, KeyEvent.ALT_DOWN_MASK);
-    
+
     KeyStroke keyRotate = KeyStroke.getKeyStroke(KeyEvent.VK_R, KeyEvent.ALT_DOWN_MASK);
     KeyStroke keyFlipHorizontal = KeyStroke.getKeyStroke(KeyEvent.VK_H, KeyEvent.ALT_DOWN_MASK);
     KeyStroke keyFlipVertical = KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.ALT_DOWN_MASK);
-    
-    actionMap.put(keySpace, new PowerAction());
+
+    actionMap.put(keySpace, new HaltAction());
+    actionMap.put(keyPower, new PowerAction());
     actionMap.put(keyQuit, new QuitAction());
     actionMap.put(keySensorMonitor, new ShowMonitorAction());
     actionMap.put(keyHome, new HomeAction());
     actionMap.put(keyEdit, new EditAction());
-    
+
     actionMap.put(keyModeSelect, new SelectModeKeyAction());
     actionMap.put(keyModeAdd, new AddModeKeyAction());
     actionMap.put(keyModeDelete, new DeleteModeKeyAction());
-    
+
     actionMap.put(keyRotate, new RotateKeyAction());
     actionMap.put(keyFlipHorizontal, new FlipHorizontalKeyAction());
     actionMap.put(keyFlipVertical, new FlipVerticalKeyAction());
-    
+
     KeyboardFocusManager kfm = KeyboardFocusManager.getCurrentKeyboardFocusManager();
     kfm.addKeyEventDispatcher((KeyEvent e) -> {
       KeyStroke keyStroke = KeyStroke.getKeyStrokeForEvent(e);
-      
+
       if (actionMap.containsKey(keyStroke)) {
         final Action a = actionMap.get(keyStroke);
-        
+
         final ActionEvent ae = new ActionEvent(e.getSource(), e.getID(), null);
         SwingUtilities.invokeLater(() -> {
           a.actionPerformed(ae);
@@ -209,36 +211,36 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
       return false;
     });
   }
-  
+
   public void showExtraToolbar(JToolBar toolbar) {
     jcsToolBar.add(toolbar);
     jcsToolBar.doLayout();
     toolbarPanel.repaint();
   }
-  
+
   public void hideExtraToolbar(JToolBar toolbar) {
     jcsToolBar.remove(toolbar);
     jcsToolBar.doLayout();
     toolbarPanel.repaint();
   }
-  
+
   public void showOverviewPanel() {
     CardLayout card = (CardLayout) centerPanel.getLayout();
     card.show(centerPanel, "overviewPanel");
     editMode = false;
-    
+
     if (autoPilotBtn.isSelected()) {
       dispatcherStatusPanel.showDispatcherTab();
     } else {
       dispatcherStatusPanel.showLocomotiveTab();
     }
-    
+
     overviewPanel.loadLayoutInBackground();
   }
-  
+
   private void showLocomotives() {
     Logger.debug("Show Locomotives");
-    
+
     if (locomotiveDialog == null) {
       locomotiveDialog = new LocomotiveDialog(this, true);
       locomotiveDialog.pack();
@@ -246,7 +248,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     }
     locomotiveDialog.setVisible(true);
   }
-  
+
   private void showAccessories() {
     if (accessoryDialog == null) {
       accessoryDialog = new AccessoryDialog(this, true);
@@ -255,7 +257,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     }
     accessoryDialog.setVisible(true);
   }
-  
+
   private void showDriveways() {
     if (drivewaySettingsDialog == null) {
       drivewaySettingsDialog = new DrivewaySettingsDialog(this, true);
@@ -264,7 +266,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     }
     drivewaySettingsDialog.setVisible(true);
   }
-  
+
   private void showStations() {
     if (stationSettingsDialog == null) {
       stationSettingsDialog = new StationSettingsDialog(this, true);
@@ -273,7 +275,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     }
     stationSettingsDialog.setVisible(true);
   }
-  
+
   private void showProperties() {
     if (propertiesDialog == null) {
       propertiesDialog = new PropertiesDialog(this, true);
@@ -282,7 +284,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     }
     propertiesDialog.setVisible(true);
   }
-  
+
   private void showCommandStations() {
     if (commandStationDialog == null) {
       commandStationDialog = new CommandStationDialog(this, true);
@@ -291,40 +293,40 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     }
     commandStationDialog.setVisible(true);
   }
-  
+
   private void showRoutes() {
     if (editMode) {
       layoutPanel.showRoutes();
     }
   }
-  
+
   private void showKeyboards() {
     CardLayout card = (CardLayout) this.centerPanel.getLayout();
     card.show(centerPanel, "diagnosticPanel");
     editMode = false;
   }
-  
+
   private void showVNCConsole() {
     CardLayout card = (CardLayout) this.centerPanel.getLayout();
     card.show(centerPanel, "vncPanel");
     editMode = false;
   }
-  
+
   private void showEditLayoutPanel() {
     //if (RailController.getInstance().isAutoModeActive()) {
     CardLayout card = (CardLayout) centerPanel.getLayout();
     card.show(centerPanel, "designPanel");
-    
+
     dispatcherStatusPanel.showComponentsTab();
     layoutPanel.loadLayoutInBackground();
     editMode = true;
     //}
   }
-  
+
   private void setControllerProperties() {
     if (JCS.getJcsCommandStation() != null) {
       InfoBean info = JCS.getJcsCommandStation().getCommandStationInfo();
-      
+
       java.awt.EventQueue.invokeLater(() -> {
         if (info != null) {
           this.connectButton.setSelected(JCS.getJcsCommandStation().isConnected());
@@ -338,7 +340,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
       });
     }
   }
-  
+
   private void showSensorMonitor() {
     if (feedbackMonitor == null) {
       Logger.trace("Creating a Monitor UI");
@@ -347,12 +349,12 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     }
     feedbackMonitor.showMonitor();
   }
-  
+
   @Override
   public void setVisible(boolean b) {
     Logger.debug("Showing main screen");
     super.setVisible(b);
-    
+
     if (!JCS.getJcsCommandStation().isConnected()) {
       Logger.info("Try to connect with a command station...");
       JCS.getJcsCommandStation().connectInBackground();
@@ -1053,13 +1055,13 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     private void showFeedbackMonitorBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showFeedbackMonitorBtnActionPerformed
       showSensorMonitor();
     }//GEN-LAST:event_showFeedbackMonitorBtnActionPerformed
-  
+
   private boolean QuitApp() {
     int result = JOptionPane.showConfirmDialog(this, "Are you sure you want to exit JCS?", "Exit JCS", JOptionPane.YES_NO_OPTION);
     if (result == JOptionPane.YES_OPTION) {
       setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
       try {
-        
+
         boolean powerOnWhenQuit = Boolean.parseBoolean("keep.power.on.when.quit");
         if (!powerOnWhenQuit) {
           JCS.getJcsCommandStation().switchPower(false);
@@ -1067,11 +1069,11 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
           JCS.getJcsCommandStation().pause(5);
         }
         JCS.getJcsCommandStation().disconnect();
-        
+
       } catch (Exception e) {
         Logger.error("Error closinbg resources! " + e.getMessage());
       }
-      
+
       setVisible(false);
       dispose();
 
@@ -1083,25 +1085,15 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     }
     return false;
   }
-  
+
   public void connect(boolean connect) {
     boolean connected = false;
     if (JCS.getJcsCommandStation() != null) {
       if (connect) {
-        
+
         String ip = JCS.getJcsCommandStation().getCommandStationBean().getIpAddress();
         String name = JCS.getJcsCommandStation().getCommandStationBean().getDescription();
 
-//        if (Ping.IsReachable(ip)) {
-//          if ("AWT-EventQueue-0".equals(Thread.currentThread().getName())) {
-//            JCS.getJcsCommandStation().connectInBackground();
-//          } else {
-//            JCS.getJcsCommandStation().connect();
-//          }
-//        } else {
-//          Logger.debug("Can't reach ip " + ip + "...");
-//          JOptionPane.showMessageDialog(this, "Can't connect to " + name + ", " + ip + " is not reachable.", "Can't Connect", JOptionPane.ERROR_MESSAGE, null);
-//        }
         executor.execute(() -> {
           boolean reachable = Ping.IsReachable(ip);
           SwingUtilities.invokeLater(() -> {
@@ -1113,10 +1105,10 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
             JCS.getJcsCommandStation().connectInBackground();
           });
         });
-        
+
         InfoBean info = JCS.getJcsCommandStation().getCommandStationInfo();
         connected = JCS.getJcsCommandStation().isConnected();
-        
+
         if (info != null && connected) {
           connectButton.setSelected(true);
           powerButton.setSelected(JCS.getJcsCommandStation().isPowerOn());
@@ -1132,10 +1124,10 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
         connectMI.setText("Connect");
       }
     }
-    
+
     powerButton.setEnabled(connect && connected);
     showFeedbackMonitorBtn.setEnabled(connect && connected);
-    
+
     showVNCBtn.setEnabled(connect && connected);
     setControllerProperties();
   }
@@ -1176,7 +1168,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     AboutDialog dialog = new AboutDialog(this, true);
     dialog.pack();
     dialog.setLocationRelativeTo(null);
-    
+
     dialog.setVisible(true);
   }//GEN-LAST:event_aboutMIActionPerformed
 
@@ -1188,7 +1180,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     //Logger.trace(evt.getActionCommand() + (autoPilotBtn.isSelected() ? " Enable" : " Disable") + " Auto mode");
     startAutopilot();
   }//GEN-LAST:event_autoPilotBtnActionPerformed
-  
+
   private void startAutopilot() {
     if (autoPilotBtn.isSelected()) {
       //startAllLocsBtn.setEnabled(true);
@@ -1202,11 +1194,11 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     //AutoPilot.runAutoPilot(autoPilotBtn.isSelected());
     RailController.getInstance().enableAutomode(autoPilotBtn.isSelected());
   }
-  
+
   @Override
   public void onControllerStatusChange(String status) {
     Logger.trace(status);
-    
+
     if (status == null) {
       return;
     }
@@ -1230,12 +1222,12 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
         autoPilotBtn.setEnabled(true);
         autoPilotBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/cruise-control-on-black.png")));
         autoPilotBtn.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/media/cruise-control-on-yellow.png")));
-        
+
         dispatcherStatusPanel.showLocomotiveTab();
       }
     }
   }
-  
+
 
   private void startAllLocsBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startAllLocsBtnActionPerformed
     startAllLocomotives();
@@ -1302,21 +1294,21 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
 
   private void backupMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_backupMIActionPerformed
     String path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + Backup.DEFAULT_BACKUP_FILENAME;
-    
+
     backupRestoreFileDialog.setSelectedFile(new File(path));
     int accept = backupRestoreFileDialog.showSaveDialog(this);
-    
+
     if (accept == JFileChooser.APPROVE_OPTION) {
       File backupFile = backupRestoreFileDialog.getSelectedFile();
       if (backupFile.exists()) {
         Logger.warn(backupFile.getAbsolutePath() + " allready exists! Overwriting it....");
       }
-      
+
       Logger.trace("Backup JCS database to " + backupFile.getAbsolutePath());
-      
+
       executor.execute(() -> {
         Backup.backup(backupFile);
-        
+
         java.awt.EventQueue.invokeLater(() -> {
           JOptionPane.showMessageDialog(this, "Created a backup of the current JCS database in file: " + backupFile.getAbsolutePath(), "JCS Backup", JOptionPane.INFORMATION_MESSAGE);
         });
@@ -1328,17 +1320,17 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
 
   private void restoreMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_restoreMIActionPerformed
     String path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + Backup.DEFAULT_BACKUP_FILENAME;
-    
+
     backupRestoreFileDialog.setSelectedFile(new File(path));
     int accept = backupRestoreFileDialog.showOpenDialog(this);
-    
+
     if (accept == JFileChooser.APPROVE_OPTION) {
       File backupFile = backupRestoreFileDialog.getSelectedFile();
       Logger.trace("Restoring JCS database from file " + backupFile.getAbsolutePath());
-      
+
       executor.execute(() -> {
         Backup.restore(backupFile);
-        
+
         java.awt.EventQueue.invokeLater(() -> {
           JOptionPane.showMessageDialog(this, "Restored JCS database.\nPlease Restart JCS!", "RESTART JCS!", JOptionPane.WARNING_MESSAGE);
           QuitApp();
@@ -1360,7 +1352,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   private void newMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_newMIActionPerformed
     createNewConfig();
   }//GEN-LAST:event_newMIActionPerformed
-  
+
   private void createNewConfig() {
     int result = JOptionPane.showConfirmDialog(this, "Are you sure you want to create a new configuration?\nAll current settings will be removed.\nDid you create a backup?", "New Configuration", JOptionPane.YES_NO_OPTION);
     if (result == JOptionPane.YES_OPTION) {
@@ -1370,11 +1362,11 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
           throw new IllegalStateException("Resource not found on classpath: /empty-jcs.sql");
         }
         File emptyJcsFile = new File(url.toURI());
-        
+
         executor.execute(() -> {
           Logger.trace("Clear JCS database from file " + emptyJcsFile.getAbsolutePath());
           Backup.restore(emptyJcsFile);
-          
+
           java.awt.EventQueue.invokeLater(() -> {
             JOptionPane.showMessageDialog(this, "Cleared JCS database.\nPlease Restart JCS!", "RESTART JCS!", JOptionPane.WARNING_MESSAGE);
             QuitApp();
@@ -1384,9 +1376,9 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
         Logger.error("Can't clear the database! " + e.getMessage());
       }
     }
-    
+
   }
-  
+
   private void startAllLocomotives() {
     int result = JOptionPane.showConfirmDialog(this, "Are you sure you want to start All Locomotives?", "Start ALL Locomotives", JOptionPane.YES_NO_OPTION);
     if (result == JOptionPane.YES_OPTION) {
@@ -1394,10 +1386,10 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
       RailController.getInstance().startAllLocomotives();
     }
   }
-  
+
   private String getTitleString() {
     String jcsVersion = VersionInfo.getVersion();
-    
+
     if (JCS.getJcsCommandStation() != null && JCS.getJcsCommandStation().getCommandStationInfo() != null && JCS.getJcsCommandStation().getCommandStationInfo().getProductName() != null) {
       InfoBean info = JCS.getJcsCommandStation().getCommandStationInfo();
       return "JCS " + "Connected to " + info.getProductName();
@@ -1405,12 +1397,12 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
       return "JCS " + jcsVersion + " - NOT Connected!";
     }
   }
-  
+
   @Override
   public void openFiles(List<File> files) {
     Logger.trace("Open Files...");
   }
-  
+
   @Override
   public void onConnectionChange(ConnectionEvent event) {
     if (event.isConnected()) {
@@ -1434,7 +1426,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
       });
     }
   }
-  
+
   @Override
   public void onPowerChange(PowerEvent event) {
     boolean power = event.isPower();
@@ -1446,12 +1438,12 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
       }
     });
   }
-  
+
   @Override
   public boolean handleQuitRequest() {
     return QuitApp();
   }
-  
+
   @Override
   public void handleAbout() {
     //ImageIcon jcsIcon = new ImageIcon(JCSFrame.class.getResource("/media/jcs-train-64.png"));
@@ -1475,11 +1467,11 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     }
     settingsDialog.setVisible(true);
   }
-  
+
   public void refreshData() {
     Logger.trace("Refresh data due to settings change...");
   }
-  
+
   public void refreshLocomotives() {
     this.dispatcherStatusPanel.refresh();
   }
@@ -1552,59 +1544,69 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   // End of variables declaration//GEN-END:variables
 
   private class PowerAction extends AbstractAction {
-    
+
     private static final long serialVersionUID = 4263882874269440066L;
-    
+
     @Override
     public void actionPerformed(ActionEvent e) {
       powerButton.doClick(50);
     }
   }
-  
+
+  private class HaltAction extends AbstractAction {
+
+    private static final long serialVersionUID = 5265575175764625850L;
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      JCS.getJcsCommandStation().haltAllOnTrackLocomotives();
+    }
+  }
+
   private class QuitAction extends AbstractAction {
-    
+
     private static final long serialVersionUID = 106411709893099942L;
-    
+
     @Override
     public void actionPerformed(ActionEvent e) {
       QuitApp();
     }
   }
-  
+
   private class ShowMonitorAction extends AbstractAction {
-    
+
     private static final long serialVersionUID = -3352181383049583600L;
-    
+
     @Override
     public void actionPerformed(ActionEvent e) {
       showSensorMonitor();
     }
   }
-  
+
   private class HomeAction extends AbstractAction {
-    
+
     private static final long serialVersionUID = 6369350924548859534L;
-    
+
     @Override
     public void actionPerformed(ActionEvent e) {
       showOverviewPanel();
     }
   }
-  
+
   private class EditAction extends AbstractAction {
-    
+
     private static final long serialVersionUID = -4725560671766567186L;
-    
+
     @Override
     public void actionPerformed(ActionEvent e) {
       showEditLayoutPanel();
     }
   }
-  
+
   private class SelectModeKeyAction extends AbstractAction {
-    
+
     private static final long serialVersionUID = -5543240676519086334L;
-    
+
     @Override
     public void actionPerformed(ActionEvent e) {
       if (editMode) {
@@ -1612,11 +1614,11 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
       }
     }
   }
-  
+
   private class AddModeKeyAction extends AbstractAction {
-    
+
     private static final long serialVersionUID = -429465825958791906L;
-    
+
     @Override
     public void actionPerformed(ActionEvent e) {
       if (editMode) {
@@ -1624,11 +1626,11 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
       }
     }
   }
-  
+
   private class DeleteModeKeyAction extends AbstractAction {
-    
+
     private static final long serialVersionUID = 569113006687591145L;
-    
+
     @Override
     public void actionPerformed(ActionEvent e) {
       if (editMode) {
@@ -1636,11 +1638,11 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
       }
     }
   }
-  
+
   private class RotateKeyAction extends AbstractAction {
-    
+
     private static final long serialVersionUID = -292237743142583719L;
-    
+
     @Override
     public void actionPerformed(ActionEvent e) {
       if (editMode) {
@@ -1648,25 +1650,25 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
       }
     }
   }
-  
+
   private class FlipHorizontalKeyAction extends AbstractAction {
-    
+
     private static final long serialVersionUID = 7657976620206362097L;
-    
+
     @Override
     public void actionPerformed(ActionEvent e) {
       layoutPanel.flipSelectedTileHorizontal();
     }
   }
-  
+
   private class FlipVerticalKeyAction extends AbstractAction {
-    
+
     private static final long serialVersionUID = -4269202419142803636L;
-    
+
     @Override
     public void actionPerformed(ActionEvent e) {
       layoutPanel.flipSelectedTileVertical();
     }
   }
-  
+
 }

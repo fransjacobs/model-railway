@@ -68,7 +68,7 @@ import org.tinylog.Logger;
  * When a/all Locomotives is/are started the following events should happen: - The dispatcher for the Locomotive of choice should be started.<br>
  *
  * The Dispatcher is run in this Thread.<br>
-The RailController has it own Monitor Thread: RailwayControllerMonitorThread.<br>
+ * The RailController has it own Monitor Thread: RailwayControllerMonitorThread.<br>
  * This moditorThread takes car of watching for ghost during automatic driving.
  *
  */
@@ -588,7 +588,7 @@ public final class RailController {
     return false;
   }
 
-  public List<LocomotiveBean> getOnTrackLocomotives() {
+  public List<LocomotiveBean> getOnTrackLocomotivesOld() {
     List<BlockBean> blocks = PersistenceFactory.getService().getBlocks();
     //filter..
     List<BlockBean> occupiedBlocks = blocks.stream().filter(t -> t.getLocomotive() != null && t.getLocomotive().getId() != null).collect(Collectors.toList());
@@ -607,6 +607,10 @@ public final class RailController {
       }
     }
     return activeLocomotives;
+  }
+
+  public List<LocomotiveBean> getOnTrackLocomotives() {
+    return PersistenceFactory.getService().getOnTrackLocomotives();
   }
 
   public static boolean isGostDetected() {
