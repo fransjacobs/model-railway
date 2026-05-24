@@ -17,6 +17,7 @@ package jcs.commandStation.automation;
 
 import java.awt.Color;
 import static jcs.commandStation.automation.AbstractState.State.PREPROUTE;
+import static jcs.commandStation.automation.RailController.TAG;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.StationBean;
@@ -52,7 +53,7 @@ class PrepareRouteState extends AbstractState {
             Long firstToLeaveLocomotiveId = PersistenceFactory.getService().getFirstLocomotiveId(station);
             canDepart = dispatcher.getLocomotiveId().equals(firstToLeaveLocomotiveId);
             if (!canDepart) {
-              Logger.trace("Locomotive " + dispatcher.getName() + " is not the first to leave Station " + station.getName() + "...");
+              Logger.tag(TAG).trace("Locomotive " + dispatcher.getName() + " is not the first to leave Station " + station.getName() + "...");
             }
           } else {
             canDepart = true;
@@ -72,22 +73,22 @@ class PrepareRouteState extends AbstractState {
     if (canDepart) {
       BlockBean departureBlock = dispatcher.getDepartureBlock();
       LocomotiveBean locomotiveBean = dispatcher.getLocomotiveBean();
-      Logger.debug("Locomotive " + locomotiveBean.getName() + " Direction: " + locomotiveBean.getDirection().getDirection() + " search for route from block " + departureBlock.getId() + " logicalDir: " + departureBlock.getLogicalDirection() + " Arrived at " + departureBlock.getArrivalSuffix());
+      Logger.tag(TAG).debug("Locomotive " + locomotiveBean.getName() + " Direction: " + locomotiveBean.getDirection().getDirection() + " search for route from block " + departureBlock.getId() + " logicalDir: " + departureBlock.getLogicalDirection() + " Arrived at " + departureBlock.getArrivalSuffix());
 
       int permits = RailController.avialablePermits();
       Logger.trace("Obtaining a lock. There is currently " + permits + " available permits...");
 
       if (RailController.tryAquireLock()) {
         try {
-          Logger.trace("##### Locked ####");
+          Logger.tag(TAG).trace("##### Locked ####");
           canAdvanceToNextState = dispatcher.getRouteManager().searchAndReserveRoute();
         } finally {
           //Make sure the lock is released
           RailController.releaseLock();
-          Logger.trace("##### Released ####");
+          Logger.tag(TAG).trace("##### Released ####");
         }
       } else {
-        Logger.trace("No Semaphore available");
+        Logger.tag(TAG).trace("No Semaphore available");
       }
     }
 

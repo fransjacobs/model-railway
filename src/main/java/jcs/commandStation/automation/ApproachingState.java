@@ -17,6 +17,7 @@ package jcs.commandStation.automation;
 
 import java.awt.Color;
 import static jcs.commandStation.automation.AbstractState.State.APPROACH;
+import static jcs.commandStation.automation.RailController.TAG;
 import jcs.entities.BlockBean;
 import jcs.entities.RouteBean;
 import jcs.persistence.PersistenceFactory;
@@ -57,7 +58,7 @@ class ApproachingState extends AbstractState {
     dispatcher.getRouteManager().showRoute(route, Color.magenta);
     dispatcher.showBlockState(destinationBlock);
 
-    Logger.debug("Locomotive " + dispatcher.getName() + " enters destination: " + destinationBlock.getDescription() + " Route: " + dispatcher.getRouteBean().getId() + " and " + (destinationBlock.isAlwaysStop() ? " will stop" : " can continue") + "...");
+    Logger.tag(TAG).debug("Locomotive " + dispatcher.getName() + " enters destination: " + destinationBlock.getDescription() + " Route: " + dispatcher.getRouteBean().getId() + " and " + (destinationBlock.isAlwaysStop() ? " will stop" : " can continue") + "...");
   }
 
   @Override

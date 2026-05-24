@@ -21,6 +21,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import static jcs.commandStation.automation.AbstractState.State.WAIT;
+import static jcs.commandStation.automation.RailController.TAG;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import org.tinylog.Logger;
@@ -53,15 +54,15 @@ class WaitingState extends AbstractState {
 
     //This check should not be necessary....
     if (locomotiveBean.getVelocity() > 0) {
-      Logger.warn("##@@! " + dispatcher.getName() + " Velocity " + locomotiveBean.getVelocity() + " is > 0 !");
+      Logger.tag(TAG).warn("##@@! " + dispatcher.getName() + " Velocity " + locomotiveBean.getVelocity() + " is > 0 !");
       dispatcher.changeLocomotiveVelocity(0);
     }
 
-    Logger.debug("Locomotive " + locomotiveBean.getName() + " Direction: " + locomotiveBean.getDirection().getDirection() + " start waiting in block " + blockBean.getId() + " logicalDir: " + blockBean.getLogicalDirection() + " Arrived at " + blockBean.getArrivalSuffix() + " side.");
+    Logger.tag(TAG).debug("Locomotive " + locomotiveBean.getName() + " Direction: " + locomotiveBean.getDirection().getDirection() + " start waiting in block " + blockBean.getId() + " logicalDir: " + blockBean.getLogicalDirection() + " Arrived at " + blockBean.getArrivalSuffix() + " side.");
 
     remainingTime = calculateWaitTime(blockBean);
     long waitTime = remainingTime;
-    Logger.trace("Waiting for " + remainingTime + " s. Block Random " + blockBean.isRandomWait() + " Block max: " + blockBean.getMaxWaitTime());
+    Logger.tag(TAG).trace("Waiting for " + remainingTime + " s. Block Random " + blockBean.isRandomWait() + " Block max: " + blockBean.getMaxWaitTime());
 
     if (remainingTime > 0) {
       // Initialize scheduler
@@ -74,7 +75,7 @@ class WaitingState extends AbstractState {
 
         if (!dispatcher.isLocomotiveStarted()) {
           // Automode disabled - cancel waiting
-          Logger.debug("Automode is disabled for " + dispatcher.getName() + " Exit " + dispatcher.getStateName());
+          Logger.tag(TAG).debug("Automode is disabled for " + dispatcher.getName() + " Exit " + dispatcher.getStateName());
           cancelled = true;
           stopScheduler();
 
@@ -90,14 +91,14 @@ class WaitingState extends AbstractState {
         if (remainingTime < 0) {
           waitCompleted = true;
           stopScheduler();
-          Logger.trace(dispatcher.getName() + " waittime of " + waitTime + " s " + (waitCompleted ? "completed" : "waiting") + "...");
+          Logger.tag(TAG).trace(dispatcher.getName() + " waittime of " + waitTime + " s " + (waitCompleted ? "completed" : "waiting") + "...");
           dispatcher.wakeup();
         }
       }, 0, 1, TimeUnit.SECONDS); // Initial delay 0, period 1 second
 
     } else {
       waitCompleted = true;
-      Logger.trace(dispatcher.getName() + " wakeup (2)...");
+      Logger.tag(TAG).trace(dispatcher.getName() + " wakeup (2)...");
       dispatcher.wakeup();
     }
   }
@@ -106,7 +107,7 @@ class WaitingState extends AbstractState {
   AbstractState execute() {
     // Just check the status - actual waiting happens in scheduler
     if (waitCompleted) {
-      Logger.trace("Wait completed for " + dispatcher.getName() + "...");
+      Logger.tag(TAG).trace("Wait completed for " + dispatcher.getName() + "...");
 
       return new PrepareRouteState();
     } else if (cancelled || !dispatcher.isLocomotiveStarted()) {

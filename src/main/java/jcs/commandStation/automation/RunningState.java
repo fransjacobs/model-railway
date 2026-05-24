@@ -16,6 +16,7 @@
 package jcs.commandStation.automation;
 
 import static jcs.commandStation.automation.AbstractState.State.RUNNING;
+import static jcs.commandStation.automation.RailController.TAG;
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.BlockBean;
 import org.tinylog.Logger;
@@ -47,12 +48,12 @@ class RunningState extends AbstractState implements SensorEventCallback {
     dispatcher.getSensorMonitor().subscribeWithoutCallback(occupancySensorId);
     dispatcher.getSensorMonitor().subscribeWithoutCallback(exitSensorId);
 
-    Logger.trace("Departure: " + departureBlock.getId() + " Ignoring Occupancy Sensor: " + occupancySensorId + " and Exit Sensor: " + exitSensorId);
+    Logger.tag(TAG).trace("Departure: " + departureBlock.getId() + " Ignoring Occupancy Sensor: " + occupancySensorId + " and Exit Sensor: " + exitSensorId);
 
     //Register the enter Sensor, which will trigger switch to the arrival state.
     enterSensorId = dispatcher.getEnterSensorId();
     dispatcher.getSensorMonitor().subscribe(enterSensorId, this);
-    Logger.debug("Waiting for Enter event from SensorId: " + enterSensorId + " Running: " + dispatcher.getName() + " Direction: " + dispatcher.getLocomotiveBean().getDirection().getDirection() + " Route: " + dispatcher.getRouteBean().getId() + " Speed: " + dispatcher.getLocomotiveBean().getVelocity());
+    Logger.tag(TAG).debug("Waiting for Enter event from SensorId: " + enterSensorId + " Running: " + dispatcher.getName() + " Direction: " + dispatcher.getLocomotiveBean().getDirection().getDirection() + " Route: " + dispatcher.getRouteBean().getId() + " Speed: " + dispatcher.getLocomotiveBean().getVelocity());
   }
 
   @Override
@@ -82,7 +83,7 @@ class RunningState extends AbstractState implements SensorEventCallback {
     if (enterSensorId.equals(event.getSensorId())) {
       if (event.isActive()) {
         enterSensorTriggered = true;
-        Logger.trace("Enter Event from Sensor " + event.getSensorId() + " for " + dispatcher.getName());
+        Logger.tag(TAG).trace("Enter Event from Sensor " + event.getSensorId() + " for " + dispatcher.getName());
         dispatcher.wakeup();
       }
     }

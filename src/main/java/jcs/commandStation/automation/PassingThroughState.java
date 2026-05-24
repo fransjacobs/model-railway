@@ -17,6 +17,7 @@ package jcs.commandStation.automation;
 
 import java.awt.Color;
 import static jcs.commandStation.automation.AbstractState.State.PASSTHROUGH;
+import static jcs.commandStation.automation.RailController.TAG;
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.BlockBean;
 import jcs.entities.RouteBean;
@@ -63,7 +64,7 @@ class PassingThroughState extends AbstractState implements SensorEventCallback {
     dispatcher.getRouteManager().showRoute(route, Color.magenta);
     dispatcher.showBlockState(destinationBlock);
 
-    Logger.debug("Locomotive: " + dispatcher.getName() + " in " + destinationBlock.getDescription() + " Current Route: " + dispatcher.getRouteBean().getId() + " Next Route: " + dispatcher.getNextRouteBean().getId() + " Speed: " + dispatcher.getLocomotiveBean().getVelocity() + " waiting for In SensorId: " + inSensorId + " InsensorTriggered: " + inSensorTriggered + " ...");
+    Logger.tag(TAG).debug("Locomotive: " + dispatcher.getName() + " in " + destinationBlock.getDescription() + " Current Route: " + dispatcher.getRouteBean().getId() + " Next Route: " + dispatcher.getNextRouteBean().getId() + " Speed: " + dispatcher.getLocomotiveBean().getVelocity() + " waiting for In SensorId: " + inSensorId + " InsensorTriggered: " + inSensorTriggered + " ...");
   }
 
   @Override
@@ -91,7 +92,7 @@ class PassingThroughState extends AbstractState implements SensorEventCallback {
     if (inSensorId.equals(event.getSensorId())) {
       if (event.isActive()) {
         inSensorTriggered = true;
-        Logger.trace("In Event from Sensor " + event.getSensorId() + " for " + dispatcher.getName());
+        Logger.tag(TAG).trace("In Event from Sensor " + event.getSensorId() + " for " + dispatcher.getName());
         dispatcher.wakeup();
       }
     }

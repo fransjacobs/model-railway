@@ -16,6 +16,7 @@
 package jcs.commandStation.automation;
 
 import static jcs.commandStation.automation.AbstractState.State.IDLE;
+import static jcs.commandStation.automation.RailController.TAG;
 import org.tinylog.Logger;
 
 /**
@@ -39,7 +40,7 @@ class IdleState extends AbstractState {
 
   @Override
   void onExit() {
-    Logger.trace("Exit " + getName() + " State");
+    Logger.tag(TAG).trace("Exit " + getName() + " State");
   }
 
   @Override

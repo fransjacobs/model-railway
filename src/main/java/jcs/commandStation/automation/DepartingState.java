@@ -16,6 +16,7 @@
 package jcs.commandStation.automation;
 
 import static jcs.commandStation.automation.AbstractState.State.DEPARTING;
+import static jcs.commandStation.automation.RailController.TAG;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.persistence.PersistenceFactory;
@@ -42,12 +43,12 @@ class DepartingState extends AbstractState {
     if (delay) {
       //delay the start a while
       long startDelayTime = Long.getLong("default.start-delaytime", 2000L);
-      Logger.debug("Delaying departure of {} by {}ms (signal)", locomotive.getName(), startDelayTime);
+      Logger.tag(TAG).debug("Delaying departure of {} by {}ms (signal)", locomotive.getName(), startDelayTime);
       try {
         Thread.sleep(startDelayTime);
       } catch (InterruptedException ie) {
         Thread.currentThread().interrupt();
-        Logger.warn("Departure delay interrupted for: {}", locomotive.getName());
+        Logger.tag(TAG).warn("Departure delay interrupted for: {}", locomotive.getName());
         return this;
       }
     }

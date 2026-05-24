@@ -21,6 +21,7 @@ import java.util.Objects;
 import jcs.JCS;
 import jcs.commandStation.automation.AbstractState.State;
 import static jcs.commandStation.automation.AbstractState.State.DEPARTING;
+import static jcs.commandStation.automation.RailController.TAG;
 import jcs.entities.AccessoryBean;
 import jcs.entities.AccessoryBean.SignalValue;
 import jcs.entities.BlockBean;
@@ -149,7 +150,7 @@ public class Dispatcher {
         locomotiveStarted = false;
         stateMachine = new StateMachine(this, new IdleState());
       } else {
-        Logger.debug("There is a running dispatcherRunner for " + getName());
+        Logger.tag(TAG).debug("There is a running dispatcherRunner for " + getName());
       }
     }
   }
@@ -160,7 +161,7 @@ public class Dispatcher {
         stateMachine.startStateMachineThread();
         locomotiveStarted = stateMachine.isRunning();
       } else {
-        Logger.debug("There is a running dispatcherRunner");
+        Logger.tag(TAG).debug("There is a running dispatcherRunner");
       }
     } else {
       Logger.trace("Can't start Locomotive " + getName() + " automode is not enabled");
@@ -245,7 +246,7 @@ public class Dispatcher {
     setNextRouteBean(null);
     setDestinationBlockId(null);
 
-    Logger.trace(getName() + " has been Reset");
+    Logger.tag(TAG).trace(getName() + " has been Reset");
 
     stateEventListeners.clear();
   }
@@ -423,13 +424,13 @@ public class Dispatcher {
     }
 
     if (signal != null && newValue != SignalValue.OFF) {
-      Logger.trace("Signal " + signal.getId() + " will be set to: " + newValue + "...");
+      Logger.tag(TAG).trace("Signal " + signal.getId() + " will be set to: " + newValue + "...");
 
       JCS.getJcsCommandStation().switchAccessory(signal, newValue);
       if (SignalValue.Hp0 == newValue) {
         setActiveSignal(null);
       }
-      Logger.debug("Signal " + signal.getId() + " set to: " + newValue + " " + (getActiveSignal() != null ? "active" : "not active") + "...");
+      Logger.tag(TAG).debug("Signal " + signal.getId() + " set to: " + newValue + " " + (getActiveSignal() != null ? "active" : "not active") + "...");
     }
     return delayStart;
   }
@@ -442,7 +443,7 @@ public class Dispatcher {
 
       JCS.getJcsCommandStation().changeLocomotiveSpeed(newVelocity, locomotive);
     } catch (Exception e) {
-      Logger.error("Error changing velocity of locomotive " + locomotiveId + " to " + velocity + " Cause: " + e.getMessage());
+      Logger.tag(TAG).error("Error changing velocity of locomotive " + locomotiveId + " to " + velocity + " Cause: " + e.getMessage());
     }
   }
 
@@ -451,7 +452,7 @@ public class Dispatcher {
       LocomotiveBean locomotive = getLocomotiveBean();
       JCS.getJcsCommandStation().changeLocomotiveDirection(newDirection, locomotive);
     } catch (Exception e) {
-      Logger.error("Error changing direction of locomotive " + locomotiveId + " to " + newDirection + " Cause: " + e.getMessage());
+      Logger.tag(TAG).error("Error changing direction of locomotive " + locomotiveId + " to " + newDirection + " Cause: " + e.getMessage());
     }
   }
 
