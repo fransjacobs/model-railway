@@ -87,7 +87,10 @@ class EcosManager implements PowerEventListener {
       this.control = values.get(Ecos.CONTROL).toString();
     }
     if (values.containsKey(Ecos.LIST)) {
-      this.list = values.get(Ecos.LIST).toString();
+      Object o = values.get(Ecos.LIST);
+      if (o != null) {
+        list = o.toString();
+      }
     }
     if (values.containsKey(Ecos.SIZE)) {
       String vsize = values.get(Ecos.SIZE).toString();
@@ -545,3 +548,6 @@ class EcosManager implements PowerEventListener {
   }
 
 }
+
+
+//<EVENT 1>1 shutdownreason[SHORTCIRCUIT]<END 0 (OK)>

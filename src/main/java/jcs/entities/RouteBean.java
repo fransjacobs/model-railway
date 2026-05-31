@@ -46,6 +46,7 @@ public class RouteBean implements Serializable {
   private String color;
   private boolean locked;
   private String status;
+  private String departureSignalValue;
 
   private List<RouteElementBean> routeElements;
 
@@ -183,6 +184,15 @@ public class RouteBean implements Serializable {
     this.status = status;
   }
 
+  @Column(name = "departure_signal_value", length = 255)
+  public String getDepartureSignalValue() {
+    return departureSignalValue;
+  }
+
+  public void setDepartureSignalValue(String departureSignalValue) {
+    this.departureSignalValue = departureSignalValue;
+  }
+
   @Transient
   @ColumnPosition(position = 6)
   public RouteState getRouteState() {
@@ -213,13 +223,15 @@ public class RouteBean implements Serializable {
   @Override
   public int hashCode() {
     int hash = 7;
-    hash = 79 * hash + Objects.hashCode(this.id);
-    hash = 79 * hash + Objects.hashCode(this.fromTileId);
-    hash = 79 * hash + Objects.hashCode(this.fromSuffix);
-    hash = 79 * hash + Objects.hashCode(this.toTileId);
-    hash = 79 * hash + Objects.hashCode(this.toSuffix);
-    hash = 79 * hash + Objects.hashCode(this.color);
-    hash = 79 * hash + Objects.hashCode(this.locked);
+    hash = 97 * hash + Objects.hashCode(this.id);
+    hash = 97 * hash + Objects.hashCode(this.fromTileId);
+    hash = 97 * hash + Objects.hashCode(this.fromSuffix);
+    hash = 97 * hash + Objects.hashCode(this.toTileId);
+    hash = 97 * hash + Objects.hashCode(this.toSuffix);
+    hash = 97 * hash + Objects.hashCode(this.color);
+    hash = 97 * hash + (this.locked ? 1 : 0);
+    hash = 97 * hash + Objects.hashCode(this.status);
+    hash = 97 * hash + Objects.hashCode(this.departureSignalValue);
     return hash;
   }
 
@@ -235,6 +247,9 @@ public class RouteBean implements Serializable {
       return false;
     }
     final RouteBean other = (RouteBean) obj;
+    if (this.locked != other.locked) {
+      return false;
+    }
     if (!Objects.equals(this.id, other.id)) {
       return false;
     }
@@ -253,7 +268,10 @@ public class RouteBean implements Serializable {
     if (!Objects.equals(this.color, other.color)) {
       return false;
     }
-    return (Objects.equals(this.locked, other.locked));
+    if (!Objects.equals(this.status, other.status)) {
+      return false;
+    }
+    return Objects.equals(this.departureSignalValue, other.departureSignalValue);
   }
 
   @Override

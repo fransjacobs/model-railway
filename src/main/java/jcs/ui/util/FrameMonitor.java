@@ -30,6 +30,8 @@ import org.tinylog.Logger;
  */
 public class FrameMonitor {
 
+  private static final boolean PREFS_DISABLED = Boolean.getBoolean("disable.ui.pref.storage");
+
   /**
    * Align the frame default in the middle of the screen using then "packed" sizes
    *
@@ -80,7 +82,7 @@ public class FrameMonitor {
    * @param dialog the Dialog to show
    * @param dialogUniqueId the id of the the dialog
    */
-  public static void registerFrame(JDialog dialog, String dialogUniqueId) {
+  public static void registerDialogFrame(JDialog dialog, String dialogUniqueId) {
     dialog.pack();
     dialog.setLocationRelativeTo(null);
     Point location = dialog.getLocation();
@@ -94,7 +96,7 @@ public class FrameMonitor {
   }
 
   public static void registerDialog(JDialog dialog, String dialogUniqueId, int defaultX, int defaultY, int defaultW, int defaultH) {
-    if (System.getProperty("disable.ui.pref.storage", "false").equalsIgnoreCase("true")) {
+    if (PREFS_DISABLED) {
       return;
     }
 
@@ -119,7 +121,7 @@ public class FrameMonitor {
   }
 
   private static void updatePref(JFrame frame, Preferences prefs) {
-    if (System.getProperty("disable.ui.pref.storage", "false").equalsIgnoreCase("true")) {
+    if (PREFS_DISABLED) {
       return;
     }
 
@@ -133,7 +135,7 @@ public class FrameMonitor {
   }
 
   private static void updatePref(JDialog dialog, Preferences prefs) {
-    if (System.getProperty("disable.ui.pref.storage", "false").equalsIgnoreCase("true")) {
+    if (PREFS_DISABLED) {
       return;
     }
 

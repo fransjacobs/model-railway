@@ -158,9 +158,7 @@ public class AccessoryKeyPanel16 extends JPanel {
     tb16 = new javax.swing.JToggleButton();
 
     setBorder(javax.swing.BorderFactory.createTitledBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true), "1 - 16"));
-    setMinimumSize(new java.awt.Dimension(890, 75));
-    setPreferredSize(new java.awt.Dimension(890, 75));
-    java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 5, 1);
+    java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 5, 0);
     flowLayout1.setAlignOnBaseline(true);
     setLayout(flowLayout1);
 
@@ -168,6 +166,7 @@ public class AccessoryKeyPanel16 extends JPanel {
     tb1.setText("1");
     tb1.setDoubleBuffered(true);
     tb1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    tb1.setIconTextGap(3);
     tb1.setMargin(new java.awt.Insets(1, 1, 1, 1));
     tb1.setMaximumSize(new java.awt.Dimension(50, 50));
     tb1.setMinimumSize(new java.awt.Dimension(50, 50));
@@ -185,6 +184,7 @@ public class AccessoryKeyPanel16 extends JPanel {
     tb2.setText("2");
     tb2.setDoubleBuffered(true);
     tb2.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    tb2.setIconTextGap(3);
     tb2.setMargin(new java.awt.Insets(1, 1, 1, 1));
     tb2.setMaximumSize(new java.awt.Dimension(50, 50));
     tb2.setMinimumSize(new java.awt.Dimension(50, 50));
@@ -202,6 +202,7 @@ public class AccessoryKeyPanel16 extends JPanel {
     tb3.setText("3");
     tb3.setDoubleBuffered(true);
     tb3.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    tb3.setIconTextGap(3);
     tb3.setMargin(new java.awt.Insets(1, 1, 1, 1));
     tb3.setMaximumSize(new java.awt.Dimension(50, 50));
     tb3.setMinimumSize(new java.awt.Dimension(50, 50));
@@ -219,6 +220,7 @@ public class AccessoryKeyPanel16 extends JPanel {
     tb4.setText("4");
     tb4.setDoubleBuffered(true);
     tb4.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    tb4.setIconTextGap(3);
     tb4.setMargin(new java.awt.Insets(1, 1, 1, 1));
     tb4.setMaximumSize(new java.awt.Dimension(50, 50));
     tb4.setMinimumSize(new java.awt.Dimension(50, 50));
@@ -236,6 +238,7 @@ public class AccessoryKeyPanel16 extends JPanel {
     tb5.setText("5");
     tb5.setDoubleBuffered(true);
     tb5.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    tb5.setIconTextGap(3);
     tb5.setMargin(new java.awt.Insets(1, 1, 1, 1));
     tb5.setMaximumSize(new java.awt.Dimension(50, 50));
     tb5.setMinimumSize(new java.awt.Dimension(50, 50));
@@ -253,6 +256,7 @@ public class AccessoryKeyPanel16 extends JPanel {
     tb6.setText("6");
     tb6.setDoubleBuffered(true);
     tb6.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    tb6.setIconTextGap(3);
     tb6.setMargin(new java.awt.Insets(1, 1, 1, 1));
     tb6.setMaximumSize(new java.awt.Dimension(50, 50));
     tb6.setMinimumSize(new java.awt.Dimension(50, 50));
@@ -270,6 +274,7 @@ public class AccessoryKeyPanel16 extends JPanel {
     tb7.setText("7");
     tb7.setDoubleBuffered(true);
     tb7.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    tb7.setIconTextGap(3);
     tb7.setMargin(new java.awt.Insets(1, 1, 1, 1));
     tb7.setMaximumSize(new java.awt.Dimension(50, 50));
     tb7.setMinimumSize(new java.awt.Dimension(50, 50));
@@ -287,6 +292,7 @@ public class AccessoryKeyPanel16 extends JPanel {
     tb8.setText("8");
     tb8.setDoubleBuffered(true);
     tb8.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    tb8.setIconTextGap(3);
     tb8.setMargin(new java.awt.Insets(1, 1, 1, 1));
     tb8.setMaximumSize(new java.awt.Dimension(50, 50));
     tb8.setMinimumSize(new java.awt.Dimension(50, 50));
@@ -304,6 +310,7 @@ public class AccessoryKeyPanel16 extends JPanel {
     tb9.setText("9");
     tb9.setDoubleBuffered(true);
     tb9.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    tb9.setIconTextGap(3);
     tb9.setMargin(new java.awt.Insets(1, 1, 1, 1));
     tb9.setMaximumSize(new java.awt.Dimension(50, 50));
     tb9.setMinimumSize(new java.awt.Dimension(50, 50));
@@ -321,6 +328,7 @@ public class AccessoryKeyPanel16 extends JPanel {
     tb10.setText("10");
     tb10.setDoubleBuffered(true);
     tb10.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    tb10.setIconTextGap(3);
     tb10.setMargin(new java.awt.Insets(1, 1, 1, 1));
     tb10.setMaximumSize(new java.awt.Dimension(50, 50));
     tb10.setMinimumSize(new java.awt.Dimension(50, 50));
@@ -338,6 +346,7 @@ public class AccessoryKeyPanel16 extends JPanel {
     tb11.setText("11");
     tb11.setDoubleBuffered(true);
     tb11.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    tb11.setIconTextGap(3);
     tb11.setMargin(new java.awt.Insets(1, 1, 1, 1));
     tb11.setMaximumSize(new java.awt.Dimension(50, 50));
     tb11.setMinimumSize(new java.awt.Dimension(50, 50));
@@ -355,6 +364,7 @@ public class AccessoryKeyPanel16 extends JPanel {
     tb12.setText("12");
     tb12.setDoubleBuffered(true);
     tb12.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    tb12.setIconTextGap(3);
     tb12.setMargin(new java.awt.Insets(1, 1, 1, 1));
     tb12.setMaximumSize(new java.awt.Dimension(50, 50));
     tb12.setMinimumSize(new java.awt.Dimension(50, 50));
@@ -372,6 +382,7 @@ public class AccessoryKeyPanel16 extends JPanel {
     tb13.setText("13");
     tb13.setDoubleBuffered(true);
     tb13.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    tb13.setIconTextGap(3);
     tb13.setMargin(new java.awt.Insets(1, 1, 1, 1));
     tb13.setMaximumSize(new java.awt.Dimension(50, 50));
     tb13.setMinimumSize(new java.awt.Dimension(50, 50));
@@ -389,6 +400,7 @@ public class AccessoryKeyPanel16 extends JPanel {
     tb14.setText("14");
     tb14.setDoubleBuffered(true);
     tb14.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    tb14.setIconTextGap(3);
     tb14.setMargin(new java.awt.Insets(1, 1, 1, 1));
     tb14.setMaximumSize(new java.awt.Dimension(50, 50));
     tb14.setMinimumSize(new java.awt.Dimension(50, 50));
@@ -406,6 +418,7 @@ public class AccessoryKeyPanel16 extends JPanel {
     tb15.setText("15");
     tb15.setDoubleBuffered(true);
     tb15.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    tb15.setIconTextGap(3);
     tb15.setMargin(new java.awt.Insets(1, 1, 1, 1));
     tb15.setMaximumSize(new java.awt.Dimension(50, 50));
     tb15.setMinimumSize(new java.awt.Dimension(50, 50));
@@ -423,6 +436,7 @@ public class AccessoryKeyPanel16 extends JPanel {
     tb16.setText("16");
     tb16.setDoubleBuffered(true);
     tb16.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    tb16.setIconTextGap(3);
     tb16.setMargin(new java.awt.Insets(1, 1, 1, 1));
     tb16.setMaximumSize(new java.awt.Dimension(50, 50));
     tb16.setMinimumSize(new java.awt.Dimension(50, 50));
@@ -444,9 +458,27 @@ public class AccessoryKeyPanel16 extends JPanel {
     Logger.trace("ID: " + id + " Value: " + value);
 
     if (JCS.getJcsCommandStation() != null) {
-      AccessoryBean a = new AccessoryBean(id, address, null, (name != null ? name : actionCommand), null, (selected ? 1 : 0), null, null, null, commandStationId);
+      AccessoryBean a = JCS.getPersistenceService().getAccessoryByAddressAndCommandStationId(address, commandStationId);
+      if (a == null) {
+        //Try address2
+        a = JCS.getPersistenceService().getAccessoryByAddress2AndCommandStationId(address, commandStationId);
+
+        if (a == null) {
+          Logger.trace("Accessory with address/ address2 " + address + " not found in database");
+          a = new AccessoryBean(id, address, null, (name != null ? name : actionCommand), null, (selected ? 1 : 0), 200, "mm", null, commandStationId);
+        }
+      }
+
+      if (a.isBiAddress() && address.equals(a.getAddress2())) {
+        if (AccessoryValue.GREEN == value) {
+          value = AccessoryValue.GREEN2;
+        } else {
+          value = AccessoryValue.RED2;
+        }
+      }
 
       JCS.getJcsCommandStation().switchAccessory(a, value);
+
     }
   }
 

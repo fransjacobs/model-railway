@@ -82,7 +82,6 @@ public class EcosMessage implements Ecos {
         idEnd = response.indexOf(")");
       }
       int idLen = idEnd - idStart;
-
       String id = response.substring(idStart, idLen + idStart);
       return id;
     } else if (response != null && response.toString().startsWith(EVENT)) {
@@ -94,6 +93,7 @@ public class EcosMessage implements Ecos {
       int idLen = idEnd - idStart;
 
       String id = content.substring(idStart, idLen + idStart);
+      id = id.strip();
       return id;
     } else {
       //Logger.trace(response);
@@ -119,6 +119,8 @@ public class EcosMessage implements Ecos {
 
   public int getObjectId() {
     String s = getId();
+    s = s.strip();
+    s = s.replace("\n", "").replace("\r", "");
     return Integer.parseInt(s);
   }
 
@@ -225,12 +227,16 @@ public class EcosMessage implements Ecos {
 
   public Map<String, Object> getValueMap() {
     String content = getResponseContent();
-    Logger.trace(content);
+
+    //Logger.trace(content);
     if (content != null) {
+      //content = content.strip();
       if (valueMap == null) {
         valueMap = new HashMap<>();
         String id = getId();
         int idLen = getIdLength(id);
+        //valueMap.put(Ecos.ID, id);
+
         if (!content.contains(" ") && !content.contains("]")) {
           //List with ID's only. The ObjectIddetermines the individual ID length
           for (int i = 0; i < content.length(); i = i + idLen) {
@@ -244,17 +250,22 @@ public class EcosMessage implements Ecos {
           //Format is id<sp>attribute1[attibute1 value]id<sp>attribute2[attribute2 value].....
           String replacement = "]";
           content = content.replace(replacement, "]\n");
+          //Logger.info("C->" + content);
+
           String[] lines = content.split("\n");
           String dId = null;
 
           for (String line : lines) {
+            //line = line.strip();
             int idStart = 0;
             int idEnd = line.indexOf(" ");
             //boolean mapInMap = false;
             if (idEnd - idStart > 0) {
               //There is a ID
               dId = line.substring(idStart, idEnd);
-              if (dId.equals(getId())) {
+              String iid = getId();
+
+              if (dId.equals(iid)) {
                 valueMap.put("id", dId);
               } else {
                 //Multiple ID's in reply, add a map
@@ -270,7 +281,7 @@ public class EcosMessage implements Ecos {
             int valKeyLen = valStart - valKeyStart;
             int valLen = valEnd - valStart;
 
-            if (valStart >= 0 && valEnd > 0) {
+            if (valStart >= 0 && valEnd > 0 && !"".equals(line)) {
               String valKey = line.substring(valKeyStart, valKeyLen + valKeyStart);
               String value = line.substring(valStart + 1, valLen + valStart);
               //replace \"
@@ -298,7 +309,9 @@ public class EcosMessage implements Ecos {
               }
             } else {
               String key = line.substring(valKeyStart);
-              valueMap.put(key, null);
+              if (!"".equals(key)) {
+                valueMap.put(key, null);
+              }
             }
           }
         }

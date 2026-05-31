@@ -464,13 +464,6 @@ class CSTCPConnection implements CSConnection {
     return messageReceiver != null && messageReceiver.isRunning();
   }
 
-//  private void pause10Millis() {
-//    try {
-//      Thread.sleep(10);
-//    } catch (InterruptedException ex) {
-//      Thread.currentThread().interrupt();
-//    }
-//  }
   private class ClientMessageReceiver extends Thread {
 
     private volatile boolean running = false;

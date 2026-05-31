@@ -120,7 +120,6 @@ public class AboutDialog extends javax.swing.JDialog {
     northPanel.add(iconPanel);
 
     textPanel.setPreferredSize(new java.awt.Dimension(300, 100));
-    textPanel.setLayout(new jcs.ui.swing.layout.VLayout());
 
     titlePanel.setPreferredSize(new java.awt.Dimension(300, 50));
     java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 5, 10);

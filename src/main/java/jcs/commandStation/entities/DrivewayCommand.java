@@ -29,9 +29,13 @@ public class DrivewayCommand {
   private String tileId;
   private String accessoryId;
   private Integer address;
+  private Integer address2;
   private String protocol;
   private String name;
   private AccessoryBean.AccessoryValue accessoryValue;
+  private AccessoryBean.SignalType signalType;
+  private AccessoryBean.SignalValue signalValue;
+
   private Integer sortOrder;
 
   public DrivewayCommand() {
@@ -39,13 +43,24 @@ public class DrivewayCommand {
   }
 
   public DrivewayCommand(Long id, String routeId, String tileId, String accessoryId, Integer address, String protocol, String name, AccessoryBean.AccessoryValue accessoryValue, Integer sortOrder) {
+    this(id, routeId, tileId, accessoryId, address, null, protocol, name, accessoryValue, null, null, sortOrder);
+  }
+
+  public DrivewayCommand(Long id, String routeId, String tileId, String accessoryId, Integer address, Integer address2, String protocol, String name, AccessoryBean.AccessoryValue accessoryValue, Integer sortOrder) {
+    this(id, routeId, tileId, accessoryId, address, address2, protocol, name, accessoryValue, null, null, sortOrder);
+  }
+
+  public DrivewayCommand(Long id, String routeId, String tileId, String accessoryId, Integer address, Integer address2, String protocol, String name, AccessoryBean.AccessoryValue accessoryValue, AccessoryBean.SignalType signalType, AccessoryBean.SignalValue signalValue, Integer sortOrder) {
     this.routeId = routeId;
     this.tileId = tileId;
     this.accessoryId = accessoryId;
     this.address = address;
+    this.address2 = address2;
     this.protocol = protocol;
     this.name = name;
     this.accessoryValue = accessoryValue;
+    this.signalType = signalType;
+    this.signalValue = signalValue;
     this.sortOrder = sortOrder;
   }
 
@@ -89,6 +104,14 @@ public class DrivewayCommand {
     this.address = address;
   }
 
+  public Integer getAddress2() {
+    return address2;
+  }
+
+  public void setAddress2(Integer address2) {
+    this.address2 = address2;
+  }
+
   public String getProtocol() {
     return protocol;
   }
@@ -113,6 +136,22 @@ public class DrivewayCommand {
     this.accessoryValue = accessoryValue;
   }
 
+  public AccessoryBean.SignalType getSignalType() {
+    return signalType;
+  }
+
+  public void setSignalType(AccessoryBean.SignalType signalType) {
+    this.signalType = signalType;
+  }
+
+  public AccessoryBean.SignalValue getSignalValue() {
+    return signalValue;
+  }
+
+  public void setSignalValue(AccessoryBean.SignalValue signalValue) {
+    this.signalValue = signalValue;
+  }
+
   public Integer getSortOrder() {
     return sortOrder;
   }
@@ -123,15 +162,19 @@ public class DrivewayCommand {
 
   @Override
   public int hashCode() {
-    int hash = 5;
-    hash = 79 * hash + Objects.hashCode(this.id);
-    hash = 79 * hash + Objects.hashCode(this.routeId);
-    hash = 79 * hash + Objects.hashCode(this.accessoryId);
-    hash = 79 * hash + Objects.hashCode(this.address);
-    hash = 79 * hash + Objects.hashCode(this.protocol);
-    hash = 79 * hash + Objects.hashCode(this.name);
-    hash = 79 * hash + Objects.hashCode(this.accessoryValue);
-    hash = 79 * hash + Objects.hashCode(this.sortOrder);
+    int hash = 7;
+    hash = 97 * hash + Objects.hashCode(this.id);
+    hash = 97 * hash + Objects.hashCode(this.routeId);
+    hash = 97 * hash + Objects.hashCode(this.tileId);
+    hash = 97 * hash + Objects.hashCode(this.accessoryId);
+    hash = 97 * hash + Objects.hashCode(this.address);
+    hash = 97 * hash + Objects.hashCode(this.address2);
+    hash = 97 * hash + Objects.hashCode(this.protocol);
+    hash = 97 * hash + Objects.hashCode(this.name);
+    hash = 97 * hash + Objects.hashCode(this.accessoryValue);
+    hash = 97 * hash + Objects.hashCode(this.signalType);
+    hash = 97 * hash + Objects.hashCode(this.signalValue);
+    hash = 97 * hash + Objects.hashCode(this.sortOrder);
     return hash;
   }
 
@@ -147,9 +190,6 @@ public class DrivewayCommand {
       return false;
     }
     final DrivewayCommand other = (DrivewayCommand) obj;
-    if (!Objects.equals(this.id, other.id)) {
-      return false;
-    }
     if (!Objects.equals(this.routeId, other.routeId)) {
       return false;
     }
@@ -165,10 +205,22 @@ public class DrivewayCommand {
     if (!Objects.equals(this.name, other.name)) {
       return false;
     }
+    if (!Objects.equals(this.id, other.id)) {
+      return false;
+    }
     if (!Objects.equals(this.address, other.address)) {
       return false;
     }
+    if (!Objects.equals(this.address2, other.address2)) {
+      return false;
+    }
     if (this.accessoryValue != other.accessoryValue) {
+      return false;
+    }
+    if (this.signalType != other.signalType) {
+      return false;
+    }
+    if (this.signalValue != other.signalValue) {
       return false;
     }
     return Objects.equals(this.sortOrder, other.sortOrder);

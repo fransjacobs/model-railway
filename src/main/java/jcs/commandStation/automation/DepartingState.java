@@ -15,6 +15,8 @@
  */
 package jcs.commandStation.automation;
 
+import static jcs.commandStation.automation.AbstractState.State.DEPARTING;
+import static jcs.commandStation.automation.RailController.TAG;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.persistence.PersistenceFactory;
@@ -29,18 +31,35 @@ import org.tinylog.Logger;
 class DepartingState extends AbstractState {
 
   DepartingState() {
-    super("Departing");
+    super(DEPARTING);
   }
 
   @Override
   AbstractState execute() {
     LocomotiveBean locomotive = PersistenceFactory.getService().getLocomotive(dispatcher.getLocomotiveId());
+
+    boolean delay = dispatcher.handleSignal(state);
+
+    if (delay) {
+      //delay the start a while
+      long startDelayTime = Long.getLong("default.start-delaytime", 2000L);
+      Logger.tag(TAG).debug("Delaying departure of {} by {}ms (signal)", locomotive.getName(), startDelayTime);
+      try {
+        Thread.sleep(startDelayTime);
+      } catch (InterruptedException ie) {
+        Thread.currentThread().interrupt();
+        Logger.tag(TAG).warn("Departure delay interrupted for: {}", locomotive.getName());
+        return this;
+      }
+    }
+
     BlockBean departureBlock = dispatcher.getDepartureBlock();
     BlockBean destinationBlock = dispatcher.getDestinationBlock();
     departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
     destinationBlock.setBlockState(BlockBean.BlockState.LOCKED);
 
-    Logger.debug("Starting: " + locomotive.getName() + " Direction: " + locomotive.getDirection()+" Route: "+dispatcher.getRouteBean().getId());
+    Logger.debug("Starting: {} Direction: {} Route: {}",
+            locomotive.getName(), locomotive.getDirection(), dispatcher.getRouteBean().getId());
 
     //Speed to ~75% or speed 3
     Integer speed3 = locomotive.getSpeedThree();

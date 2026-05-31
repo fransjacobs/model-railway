@@ -26,10 +26,16 @@ import java.awt.KeyboardFocusManager;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.HierarchyBoundsListener;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.InputMethodEvent;
+import java.awt.event.InputMethodListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +55,9 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTextArea;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
@@ -125,10 +133,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
       if (SystemInfo.isMacFullWindowContentSupported) {
         getRootPane().putClientProperty("apple.awt.transparentTitleBar", false);
         getRootPane().putClientProperty("apple.awt.fullWindowContent", false);
-
-        //getRootPane().putClientProperty("apple.awt.windowTitleVisible", false);
-        //avoid overlap of the red/orange/green buttons and the window title
-        //jcsToolBar.add(Box.createHorizontalStrut(70), 0);
       }
     }
     initJCS();
@@ -160,6 +164,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
 
   private void initKeyStrokes() {
     KeyStroke keySpace = KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0);
+    KeyStroke keyPower = KeyStroke.getKeyStroke(KeyEvent.VK_P, 0);
     KeyStroke keyQuit = KeyStroke.getKeyStroke(KeyEvent.VK_Q, KeyEvent.CTRL_DOWN_MASK);
 
     KeyStroke keySensorMonitor = KeyStroke.getKeyStroke(KeyEvent.VK_M, KeyEvent.ALT_DOWN_MASK);
@@ -175,13 +180,12 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     KeyStroke keyFlipHorizontal = KeyStroke.getKeyStroke(KeyEvent.VK_H, KeyEvent.ALT_DOWN_MASK);
     KeyStroke keyFlipVertical = KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.ALT_DOWN_MASK);
 
-    actionMap.put(keySpace, new PowerAction());
+    actionMap.put(keySpace, new HaltAction());
+    actionMap.put(keyPower, new PowerAction());
     actionMap.put(keyQuit, new QuitAction());
     actionMap.put(keySensorMonitor, new ShowMonitorAction());
     actionMap.put(keyHome, new HomeAction());
     actionMap.put(keyEdit, new EditAction());
-
-    actionMap.put(keyHome, new HomeAction());
 
     actionMap.put(keyModeSelect, new SelectModeKeyAction());
     actionMap.put(keyModeAdd, new AddModeKeyAction());
@@ -341,7 +345,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     if (feedbackMonitor == null) {
       Logger.trace("Creating a Monitor UI");
       feedbackMonitor = new FeedbackSensorDialog(this, false);
-      FrameMonitor.registerFrame(feedbackMonitor, FeedbackSensorDialog.class.getName());
+      FrameMonitor.registerDialogFrame(feedbackMonitor, FeedbackSensorDialog.class.getName());
     }
     feedbackMonitor.showMonitor();
   }
@@ -390,8 +394,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     keyboardSensorMessagePanel = new KeyboardSensorPanel();
     layoutPanel = new LayoutPanel();
     overviewPanel = new LayoutPanel(true);
-    settingsPanel = new JPanel();
-    commandStationPanel = new CommandStationPanel();
     vncPanel = new VNCPanel();
     leftPanel = new JPanel();
     locoSplitPane = new JSplitPane();
@@ -401,6 +403,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     fileMenu = new JMenu();
     backupMI = new JMenuItem();
     restoreMI = new JMenuItem();
+    newMI = new JMenuItem();
     quitMI = new JMenuItem();
     editMenu = new JMenu();
     rotateTileMI = new JMenuItem();
@@ -438,8 +441,8 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
     setTitle("Java Central Station");
     setBounds(new Rectangle(0, 0, 1400, 900));
-    setMinimumSize(new Dimension(1350, 850));
     setName("JCSFrame"); // NOI18N
+    setPreferredSize(new Dimension(1350, 1024));
     setSize(new Dimension(1350, 870));
     addWindowListener(new WindowAdapter() {
       public void windowClosing(WindowEvent evt) {
@@ -657,70 +660,57 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
 
     statusPanel.setMinimumSize(new Dimension(1227, 45));
     statusPanel.setName("statusPanel"); // NOI18N
-    statusPanel.setPreferredSize(new Dimension(1227, 48));
+    statusPanel.setPreferredSize(new Dimension(1227, 45));
     getContentPane().add(statusPanel, BorderLayout.SOUTH);
 
-    mainPanel.setMinimumSize(new Dimension(1232, 770));
     mainPanel.setName("mainPanel"); // NOI18N
     mainPanel.setPreferredSize(new Dimension(1232, 770));
     mainPanel.setLayout(new BorderLayout());
 
-    locoDisplaySP.setDividerLocation(302);
-    locoDisplaySP.setMinimumSize(new Dimension(1050, 900));
+    locoDisplaySP.setDividerLocation(320);
+    locoDisplaySP.setDividerSize(10);
+    locoDisplaySP.setContinuousLayout(false);
     locoDisplaySP.setName("locoDisplaySP"); // NOI18N
     locoDisplaySP.setPreferredSize(new Dimension(1050, 850));
 
-    centerPanel.setMinimumSize(new Dimension(1002, 772));
+    centerPanel.setMinimumSize(new Dimension(10, 10));
     centerPanel.setName("centerPanel"); // NOI18N
-    centerPanel.setPreferredSize(new Dimension(1002, 772));
     centerPanel.setLayout(new CardLayout());
 
-    keyboardSensorMessagePanel.setMinimumSize(new Dimension(1002, 772));
+    keyboardSensorMessagePanel.setMinimumSize(new Dimension(10, 10));
     keyboardSensorMessagePanel.setName("keyboardSensorMessagePanel"); // NOI18N
-    keyboardSensorMessagePanel.setPreferredSize(new Dimension(1002, 772));
     centerPanel.add(keyboardSensorMessagePanel, "diagnosticPanel");
 
-    layoutPanel.setMinimumSize(new Dimension(885, 160));
+    layoutPanel.setMinimumSize(new Dimension(10, 10));
     layoutPanel.setName("layoutPanel"); // NOI18N
     centerPanel.add(layoutPanel, "designPanel");
     layoutPanel.getAccessibleContext().setAccessibleName("designPanel");
 
+    overviewPanel.setMinimumSize(new Dimension(10, 10));
     overviewPanel.setName("overviewPanel"); // NOI18N
     centerPanel.add(overviewPanel, "overviewPanel");
     overviewPanel.getAccessibleContext().setAccessibleName("overviewPanel");
 
-    settingsPanel.setName("settingsPanel"); // NOI18N
-    FlowLayout flowLayout1 = new FlowLayout(FlowLayout.LEFT);
-    flowLayout1.setAlignOnBaseline(true);
-    settingsPanel.setLayout(flowLayout1);
-
-    commandStationPanel.setName("commandStationPanel"); // NOI18N
-    settingsPanel.add(commandStationPanel);
-
-    centerPanel.add(settingsPanel, "settingsPanel");
-
-    vncPanel.setMinimumSize(new Dimension(1002, 772));
     vncPanel.setName("vncPanel"); // NOI18N
-    vncPanel.setPreferredSize(new Dimension(1002, 772));
     centerPanel.add(vncPanel, "vncPanel");
 
     locoDisplaySP.setRightComponent(centerPanel);
 
-    leftPanel.setMinimumSize(new Dimension(225, 772));
+    leftPanel.setMinimumSize(new Dimension(100, 100));
     leftPanel.setName("leftPanel"); // NOI18N
     leftPanel.setPreferredSize(new Dimension(225, 772));
     leftPanel.setLayout(new BorderLayout(1, 1));
 
-    locoSplitPane.setDividerLocation(500);
+    locoSplitPane.setDividerLocation(350);
     locoSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
     locoSplitPane.setToolTipText("");
     locoSplitPane.setName("locoSplitPane"); // NOI18N
 
     dispatcherStatusPanel.setName("dispatcherStatusPanel"); // NOI18N
-    locoSplitPane.setLeftComponent(dispatcherStatusPanel);
+    locoSplitPane.setTopComponent(dispatcherStatusPanel);
 
     smallDriverCabPanel.setName("smallDriverCabPanel"); // NOI18N
-    locoSplitPane.setRightComponent(smallDriverCabPanel);
+    locoSplitPane.setBottomComponent(smallDriverCabPanel);
 
     leftPanel.add(locoSplitPane, BorderLayout.CENTER);
 
@@ -752,6 +742,16 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
       }
     });
     fileMenu.add(restoreMI);
+
+    newMI.setText("New");
+    newMI.setToolTipText("Create a new Configuration");
+    newMI.setName("newMI"); // NOI18N
+    newMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        newMIActionPerformed(evt);
+      }
+    });
+    fileMenu.add(newMI);
 
     quitMI.setText("Quit");
     quitMI.setName("quitMI"); // NOI18N
@@ -1060,15 +1060,19 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     int result = JOptionPane.showConfirmDialog(this, "Are you sure you want to exit JCS?", "Exit JCS", JOptionPane.YES_NO_OPTION);
     if (result == JOptionPane.YES_OPTION) {
       setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+      try {
 
-      boolean powerOnWhenQuit = Boolean.parseBoolean("keep.power.on.when.quit");
+        boolean powerOnWhenQuit = Boolean.parseBoolean("keep.power.on.when.quit");
+        if (!powerOnWhenQuit) {
+          JCS.getJcsCommandStation().switchPower(false);
+          //Give the communication time to switchoff
+          JCS.getJcsCommandStation().pause(5);
+        }
+        JCS.getJcsCommandStation().disconnect();
 
-      if (!powerOnWhenQuit) {
-        JCS.getJcsCommandStation().switchPower(false);
-        //Give the communication time to switchoff
-        JCS.getJcsCommandStation().pause(5);
+      } catch (Exception e) {
+        Logger.error("Error closinbg resources! " + e.getMessage());
       }
-      JCS.getJcsCommandStation().disconnect();
 
       setVisible(false);
       dispose();
@@ -1086,18 +1090,21 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     boolean connected = false;
     if (JCS.getJcsCommandStation() != null) {
       if (connect) {
+
         String ip = JCS.getJcsCommandStation().getCommandStationBean().getIpAddress();
         String name = JCS.getJcsCommandStation().getCommandStationBean().getDescription();
-        if (Ping.IsReachable(ip)) {
-          if ("AWT-EventQueue-0".equals(Thread.currentThread().getName())) {
+
+        executor.execute(() -> {
+          boolean reachable = Ping.IsReachable(ip);
+          SwingUtilities.invokeLater(() -> {
+            if (!reachable) {
+              Logger.debug("Can't reach ip " + ip + "...");
+              JOptionPane.showMessageDialog(this, "Can't connect to " + name + ", " + ip + " is not reachable.", "Can't Connect", JOptionPane.ERROR_MESSAGE, null);
+              return;
+            }
             JCS.getJcsCommandStation().connectInBackground();
-          } else {
-            JCS.getJcsCommandStation().connect();
-          }
-        } else {
-          Logger.debug("Can't reach ip " + ip + "...");
-          JOptionPane.showMessageDialog(this, "Can't connect to " + name + ", " + ip + " is not reachable.", "Can't Connect", JOptionPane.ERROR_MESSAGE, null);
-        }
+          });
+        });
 
         InfoBean info = JCS.getJcsCommandStation().getCommandStationInfo();
         connected = JCS.getJcsCommandStation().isConnected();
@@ -1248,7 +1255,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
 
   private void flipTileVerticallyMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_flipTileVerticallyMIActionPerformed
     if (editMode) {
-      layoutPanel.flipSelectedTileVerical();
+      layoutPanel.flipSelectedTileVertical();
     }
   }//GEN-LAST:event_flipTileVerticallyMIActionPerformed
 
@@ -1326,6 +1333,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
 
         java.awt.EventQueue.invokeLater(() -> {
           JOptionPane.showMessageDialog(this, "Restored JCS database.\nPlease Restart JCS!", "RESTART JCS!", JOptionPane.WARNING_MESSAGE);
+          QuitApp();
         });
       });
     } else {
@@ -1340,6 +1348,36 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   private void showStationsMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showStationsMIActionPerformed
     showStations();
   }//GEN-LAST:event_showStationsMIActionPerformed
+
+  private void newMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_newMIActionPerformed
+    createNewConfig();
+  }//GEN-LAST:event_newMIActionPerformed
+
+  private void createNewConfig() {
+    int result = JOptionPane.showConfirmDialog(this, "Are you sure you want to create a new configuration?\nAll current settings will be removed.\nDid you create a backup?", "New Configuration", JOptionPane.YES_NO_OPTION);
+    if (result == JOptionPane.YES_OPTION) {
+      try {
+        URL url = getClass().getResource("/empty-jcs.sql");
+        if (url == null) {
+          throw new IllegalStateException("Resource not found on classpath: /empty-jcs.sql");
+        }
+        File emptyJcsFile = new File(url.toURI());
+
+        executor.execute(() -> {
+          Logger.trace("Clear JCS database from file " + emptyJcsFile.getAbsolutePath());
+          Backup.restore(emptyJcsFile);
+
+          java.awt.EventQueue.invokeLater(() -> {
+            JOptionPane.showMessageDialog(this, "Cleared JCS database.\nPlease Restart JCS!", "RESTART JCS!", JOptionPane.WARNING_MESSAGE);
+            QuitApp();
+          });
+        });
+      } catch (IllegalStateException | URISyntaxException e) {
+        Logger.error("Can't clear the database! " + e.getMessage());
+      }
+    }
+
+  }
 
   private void startAllLocomotives() {
     int result = JOptionPane.showConfirmDialog(this, "Are you sure you want to start All Locomotives?", "Start ALL Locomotives", JOptionPane.YES_NO_OPTION);
@@ -1358,7 +1396,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     } else {
       return "JCS " + jcsVersion + " - NOT Connected!";
     }
-    //return "JCS " + jcsVersion;
   }
 
   @Override
@@ -1431,12 +1468,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     settingsDialog.setVisible(true);
   }
 
-//  public void powerChanged(PowerEvent event) {
-//    powerButton.setSelected(event.isPower());
-//
-//    
-//
-//  }
   public void refreshData() {
     Logger.trace("Refresh data due to settings change...");
   }
@@ -1444,7 +1475,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   public void refreshLocomotives() {
     this.dispatcherStatusPanel.refresh();
   }
-
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private JMenuItem aboutMI;
@@ -1454,7 +1484,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   private JFileChooser backupRestoreFileDialog;
   private JPanel centerPanel;
   private JMenu commandStationMenu;
-  private CommandStationPanel commandStationPanel;
   private JToggleButton connectButton;
   private JMenuItem connectMI;
   private JMenuItem deleteTileMI;
@@ -1479,6 +1508,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   private JSplitPane locoDisplaySP;
   private JSplitPane locoSplitPane;
   private JPanel mainPanel;
+  private JMenuItem newMI;
   private LayoutPanel overviewPanel;
   private JToggleButton powerButton;
   private JMenuItem quitMI;
@@ -1487,7 +1517,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   private JMenuItem restoreMI;
   private JMenuItem rotateTileMI;
   private JMenu settingsMenu;
-  private JPanel settingsPanel;
   private JMenuItem showAccessoryMI;
   private JMenuItem showCommandStationsMI;
   private JMenuItem showDrivewaysMI;
@@ -1521,6 +1550,16 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     @Override
     public void actionPerformed(ActionEvent e) {
       powerButton.doClick(50);
+    }
+  }
+
+  private class HaltAction extends AbstractAction {
+
+    private static final long serialVersionUID = 5265575175764625850L;
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      JCS.getJcsCommandStation().haltAllOnTrackLocomotives();
     }
   }
 
@@ -1628,7 +1667,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
 
     @Override
     public void actionPerformed(ActionEvent e) {
-      layoutPanel.flipSelectedTileVerical();
+      layoutPanel.flipSelectedTileVertical();
     }
   }
 

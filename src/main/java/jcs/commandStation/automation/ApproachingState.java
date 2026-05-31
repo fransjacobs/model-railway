@@ -16,8 +16,9 @@
 package jcs.commandStation.automation;
 
 import java.awt.Color;
+import static jcs.commandStation.automation.AbstractState.State.APPROACH;
+import static jcs.commandStation.automation.RailController.TAG;
 import jcs.entities.BlockBean;
-import jcs.entities.LocomotiveBean;
 import jcs.entities.RouteBean;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
@@ -36,14 +37,12 @@ import org.tinylog.Logger;
 class ApproachingState extends AbstractState {
 
   ApproachingState() {
-    super("Approaching");
+    super(APPROACH);
   }
 
   @Override
   void onEnter(Dispatcher dispatcher) {
     super.onEnter(dispatcher);
-
-    LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
 
     BlockBean departureBlock = dispatcher.getDepartureBlock();
     BlockBean destinationBlock = dispatcher.getDestinationBlock();
@@ -59,7 +58,7 @@ class ApproachingState extends AbstractState {
     dispatcher.getRouteManager().showRoute(route, Color.magenta);
     dispatcher.showBlockState(destinationBlock);
 
-    Logger.debug("Locomotive " + dispatcher.getName() + " enters destination: " + destinationBlock.getDescription() + " Route: " + dispatcher.getRouteBean().getId() + " and " + (destinationBlock.isAlwaysStop() ? " will stop" : " can continue") + "...");
+    Logger.tag(TAG).debug("Locomotive " + dispatcher.getName() + " enters destination: " + destinationBlock.getDescription() + " Route: " + dispatcher.getRouteBean().getId() + " and " + (destinationBlock.isAlwaysStop() ? " will stop" : " can continue") + "...");
   }
 
   @Override
@@ -67,8 +66,10 @@ class ApproachingState extends AbstractState {
     BlockBean destinationBlock = dispatcher.getDestinationBlock();
     boolean alwaysStop = destinationBlock.isAlwaysStop();
 
-    boolean automodeInActive = !dispatcher.getRailwayController().isAutoModeActive();
+    boolean automodeInActive = !dispatcher.getRailController().isAutoModeActive();
     automodeInActive = automodeInActive && !dispatcher.isLocomotiveStarted();
+    
+    dispatcher.handleSignal(state);
 
     if (alwaysStop || automodeInActive) {
       return new BrakingState(false);

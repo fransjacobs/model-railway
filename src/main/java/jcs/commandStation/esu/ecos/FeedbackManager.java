@@ -146,7 +146,7 @@ class FeedbackManager {
   }
 
   public int getSize() {
-    return this.modules.size();
+    return modules.size();
   }
 
   void updatePorts(String state, FeedbackModule s88) {

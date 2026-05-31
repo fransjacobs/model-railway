@@ -15,6 +15,7 @@
  */
 package jcs.commandStation.automation;
 
+import static jcs.commandStation.automation.RailController.TAG;
 import jcs.entities.BlockBean;
 import jcs.entities.RouteBean;
 import jcs.persistence.PersistenceFactory;
@@ -59,12 +60,12 @@ class StateMachine {
       stateMachineRunner = new StateMachineRunner(this);
       stateMachineRunner.start();
     } else if (stateMachineRunner != null && !stateMachineRunner.isAlive()) {
-      Logger.trace("Thread for " + dispatcher.getName() + " has stopped creating new one...");
+      Logger.tag(TAG).trace("Thread for " + dispatcher.getName() + " has stopped creating new one...");
       requestStop = false;
       stateMachineRunner = new StateMachineRunner(this);
       stateMachineRunner.start();
     } else {
-      Logger.trace("Thread for " + dispatcher.getName() + " is already running...");
+      Logger.tag(TAG).trace("Thread for " + dispatcher.getName() + " is already running...");
     }
   }
 
@@ -110,7 +111,7 @@ class StateMachine {
 
   //Reset the statemachine
   void reset() {
-    Logger.trace("Resetting in state " + currentState.getName());
+    Logger.tag(TAG).trace("Resetting in state " + currentState.getName());
     dispatcher.changeLocomotiveVelocity(0);
 
     // Stop runner FIRST and wait for it
@@ -124,7 +125,7 @@ class StateMachine {
         Thread.currentThread().interrupt();
       }
     }
-    Logger.trace(dispatcher.getName() + " StateMachineRunner stopped in state " + currentState.getName());
+    Logger.tag(TAG).trace(dispatcher.getName() + " StateMachineRunner stopped in state " + currentState.getName());
     stateMachineRunner = null;
 
     currentState.onExit();
@@ -136,7 +137,7 @@ class StateMachine {
     Integer exitSensorId = dispatcher.getExitSensorId();
 
     if (enterSensorId != null && dispatcher.getSensorMonitor().isSensorRegisteredWithCallback(enterSensorId)) {
-      Logger.trace(dispatcher.getName() + " Unsubscribe enterSensorId " + enterSensorId);
+      Logger.tag(TAG).trace(dispatcher.getName() + " Unsubscribe enterSensorId " + enterSensorId);
       if (currentState instanceof SensorEventCallback sensorEventCallback) {
         dispatcher.getSensorMonitor().unsubscribe(enterSensorId, sensorEventCallback);
       } else {
@@ -145,7 +146,7 @@ class StateMachine {
     }
 
     if (inSensorId != null && dispatcher.getSensorMonitor().isSensorRegisteredWithCallback(inSensorId)) {
-      Logger.trace(dispatcher.getName() + " Unsubscribe inSensorId " + inSensorId);
+      Logger.tag(TAG).trace(dispatcher.getName() + " Unsubscribe inSensorId " + inSensorId);
       if (currentState instanceof SensorEventCallback sensorEventCallback) {
         dispatcher.getSensorMonitor().unsubscribe(inSensorId, sensorEventCallback);
       } else {
@@ -155,12 +156,12 @@ class StateMachine {
 
     //The occupationSensorId and exitSensorId might be subscribe
     if (occupationSensorId != null && dispatcher.getSensorMonitor().isSensorRegisteredWithoutCallback(occupationSensorId)) {
-      Logger.trace(dispatcher.getName() + " Unsubscribe occupationSensorId " + occupationSensorId);
+      Logger.tag(TAG).trace(dispatcher.getName() + " Unsubscribe occupationSensorId " + occupationSensorId);
       dispatcher.getSensorMonitor().unsubscribe(occupationSensorId, null);
     }
 
     if (exitSensorId != null && dispatcher.getSensorMonitor().isSensorRegisteredWithoutCallback(exitSensorId)) {
-      Logger.trace(dispatcher.getName() + " Unsubscribe exitSensorId " + exitSensorId);
+      Logger.tag(TAG).trace(dispatcher.getName() + " Unsubscribe exitSensorId " + exitSensorId);
       dispatcher.getSensorMonitor().unsubscribe(exitSensorId, null);
     }
 
@@ -321,7 +322,7 @@ class StateMachine {
 
       stateMachine.requestStop = false;
       dispatcher.locomotiveStarted = false;
-      Logger.debug("StateMachineTread " + stateMachine.getDispatcher().getName() + " finished...");
+      Logger.tag(TAG).debug("StateMachineTread " + stateMachine.getDispatcher().getName() + " finished...");
     }
 
     void wakeUp() {

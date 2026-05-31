@@ -16,6 +16,8 @@
 package jcs.commandStation.automation;
 
 import java.awt.Color;
+import static jcs.commandStation.automation.AbstractState.State.PREPROUTE;
+import static jcs.commandStation.automation.RailController.TAG;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.StationBean;
@@ -30,14 +32,14 @@ class PrepareRouteState extends AbstractState {
   private volatile boolean canDepart;
 
   PrepareRouteState() {
-    super("PrepareRoute");
+    super(PREPROUTE);
   }
 
   @Override
   void onEnter(Dispatcher dispatcher) {
     super.onEnter(dispatcher);
 
-    //Check if we can reallt depart. Departure could be determined when the departure block is part of a Station.
+    //Check if we can depart. Departure could be determined when the departure block is part of a Station.
     //If the is the case, should the Station act as a FIFO, or can we just leave based on the numbers?    
     BlockBean departureBlock = dispatcher.getDepartureBlock();
     StationBean station = dispatcher.getStation(departureBlock);
@@ -51,7 +53,7 @@ class PrepareRouteState extends AbstractState {
             Long firstToLeaveLocomotiveId = PersistenceFactory.getService().getFirstLocomotiveId(station);
             canDepart = dispatcher.getLocomotiveId().equals(firstToLeaveLocomotiveId);
             if (!canDepart) {
-              Logger.trace("Locomotive " + dispatcher.getName() + " is not the first to leave Station " + station.getName() + "...");
+              Logger.tag(TAG).trace("Locomotive " + dispatcher.getName() + " is not the first to leave Station " + station.getName() + "...");
             }
           } else {
             canDepart = true;
@@ -69,29 +71,30 @@ class PrepareRouteState extends AbstractState {
   AbstractState execute() {
     boolean canAdvanceToNextState = false;
     if (canDepart) {
-      BlockBean blockBean = dispatcher.getDepartureBlock();
+      BlockBean departureBlock = dispatcher.getDepartureBlock();
       LocomotiveBean locomotiveBean = dispatcher.getLocomotiveBean();
-      Logger.debug("Locomotive " + locomotiveBean.getName() + " Direction: " + locomotiveBean.getDirection().getDirection() + " search for route from block " + blockBean.getId() + " logicalDir: " + blockBean.getLogicalDirection() + " Arrived at " + blockBean.getArrivalSuffix());
+      Logger.tag(TAG).debug("Locomotive " + locomotiveBean.getName() + " Direction: " + locomotiveBean.getDirection().getDirection() + " search for route from block " + departureBlock.getId() + " logicalDir: " + departureBlock.getLogicalDirection() + " Arrived at " + departureBlock.getArrivalSuffix());
 
       int permits = RailController.avialablePermits();
       Logger.trace("Obtaining a lock. There is currently " + permits + " available permits...");
 
       if (RailController.tryAquireLock()) {
         try {
-          Logger.trace("##### Locked ####");
+          Logger.tag(TAG).trace("##### Locked ####");
           canAdvanceToNextState = dispatcher.getRouteManager().searchAndReserveRoute();
         } finally {
           //Make sure the lock is released
           RailController.releaseLock();
-          Logger.trace("##### Released ####");
+          Logger.tag(TAG).trace("##### Released ####");
         }
       } else {
-        Logger.trace("No Semaphore available");
+        Logger.tag(TAG).trace("No Semaphore available");
       }
     }
 
     if (canAdvanceToNextState) {
       dispatcher.getRouteManager().showRoute(dispatcher.getRouteBean(), Color.magenta);
+      dispatcher.handleSignal(state);
 
       return new DepartingState();
     } else {
@@ -102,8 +105,6 @@ class PrepareRouteState extends AbstractState {
 
   @Override
   void onExit() {
-    // Make sure the locomotive is stopped
-    //dispatcher.changeLocomotiveVelocity(0); 
   }
 
   @Override

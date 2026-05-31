@@ -166,6 +166,12 @@ public interface PersistenceService {
   boolean isOnTrack(LocomotiveBean locomotive);
 
   /**
+   *
+   * @return a list with LocomotiveBean which are on the track
+   */
+  List<LocomotiveBean> getOnTrackLocomotives();
+
+  /**
    * Retrieves all LocomotiveBeans.
    *
    * @return A List of all LocomotiveBeans.
@@ -335,6 +341,15 @@ public interface PersistenceService {
    * @return The AccessoryBean, or null if not found.
    */
   AccessoryBean getAccessoryByAddressAndCommandStationId(Integer address, String commandStationId);
+
+  /**
+   * Retrieves an AccessoryBean by it second address and command station ID.
+   *
+   * @param address2 The address.
+   * @param commandStationId The command station ID.
+   * @return The AccessoryBean, or null if not found.
+   */
+  AccessoryBean getAccessoryByAddress2AndCommandStationId(Integer address2, String commandStationId);
 
   /**
    * Retrieves an AccessoryBean by ID.

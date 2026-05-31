@@ -65,8 +65,13 @@ public interface Ecos {
   public static final String RAILCOMPLUS_MODE = "railcomplus-mode";
   public static final String ALLOWLOCOTAKEOVER = "allowlocotakeover";
   public static final String STOPONLASTCONNECT = "stoponlastdisconnect";
+  //booster
+  public static final String VOLTAGE = "voltage";
+  public static final String CURRENT = "current";
+  public static final String TEMPERATURE = "temperature";
+  public static final String LIMIT = "limit";
 
-  public static final String GO = "GO";
+  static final String GO = "GO";
   public static final String STOP = "STOP";
   public static final String ALL = "ALL";
   public static final String NONE = "NONE";
@@ -97,5 +102,4 @@ public interface Ecos {
   public static final String VARIANT = "variant";
   public static final String MSG = "msg";
 
-  
 }

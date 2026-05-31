@@ -475,20 +475,28 @@ public class TileCache {
   }
 
   public static void persistTile(final Tile tile) {
-    if (tile == null) {
-      throw new IllegalArgumentException("Tile cannot be null");
+    try {
+      if (tile == null) {
+        throw new IllegalArgumentException("Tile cannot be null");
+      }
+      TileBean tb = tile.getTileBean();
+      PersistenceFactory.getService().persist(tb);
+    } catch (IllegalArgumentException e) {
+      Logger.error("Can't persist Tile! " + e.getMessage());
     }
-    TileBean tb = tile.getTileBean();
-    PersistenceFactory.getService().persist(tb);
   }
 
   public static void persistBlock(final BlockBean block) {
-    if (block == null) {
-      throw new IllegalArgumentException("block cannot be null");
+    try {
+      if (block == null) {
+        throw new IllegalArgumentException("block cannot be null");
+      }
+      Tile tile = idMap.get(block.getTileId());
+      TileBean tb = tile.getTileBean();
+      PersistenceFactory.getService().persist(tb);
+    } catch (IllegalArgumentException e) {
+      Logger.error("Can't persist Block! " + e.getMessage());
     }
-    Tile tile = idMap.get(block.getTileId());
-    TileBean tb = tile.getTileBean();
-    PersistenceFactory.getService().persist(tb);
   }
 
   public static void persistAllTiles() {

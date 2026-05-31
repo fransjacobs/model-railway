@@ -22,6 +22,7 @@ alter table station_blocks add constraint stat_stbl_fk foreign key (station_id) 
 
 alter table station_blocks add constraint blck_stbl_fk foreign key (block_id) references blocks(id);
 
+alter table routes add departure_signal_value varchar(255);
 
 update jcs_version set db_version = '0.0.4', app_version = '0.0.4';
 commit;

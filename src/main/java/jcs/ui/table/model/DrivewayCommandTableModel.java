@@ -130,16 +130,7 @@ public class DrivewayCommandTableModel extends BeanTableModel<DrivewayCommand> {
         this.beans.clear();
       }
 
-//      if (PersistenceFactory.getService() != null) {
-//        List<RouteBean> routes = PersistenceFactory.getService().getRoutes();
-//        List<DrivewayCommand> drivewayCommands = new ArrayList<>();
-//        for (RouteBean rb : routes) {
-//          drivewayCommands.addAll(getTurnoutsInRoute(rb));
-//        }
-//        return drivewayCommands;
-//      } else {
       return Collections.emptyList();
-//      }
     }
   }
 
@@ -148,8 +139,6 @@ public class DrivewayCommandTableModel extends BeanTableModel<DrivewayCommand> {
     List<DrivewayCommand> drivewayCommands = new ArrayList<>();
     for (RouteElementBean reb : rel) {
       if (reb.isTurnout()) {
-
-        AccessoryBean.AccessoryValue av = reb.getAccessoryValue();
         AccessoryBean turnout = reb.getTileBean().getAccessoryBean();
 
         DrivewayCommand dc = new DrivewayCommand(reb.getId(), reb.getRouteId(), reb.getTileId(), turnout.getId(), turnout.getAddress(), turnout.getProtocol().toString(), turnout.getName(), reb.getAccessoryValue(), reb.getElementOrder());

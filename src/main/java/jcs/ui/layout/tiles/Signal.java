@@ -32,6 +32,8 @@ import jcs.ui.layout.tiles.ui.TileUI;
  */
 public class Signal extends Straight implements AccessoryEventListener {
 
+  private static final long serialVersionUID = 3083631037511848459L;
+
   Signal(TileBean tileBean) {
     super(tileBean);
   }
@@ -63,7 +65,6 @@ public class Signal extends Straight implements AccessoryEventListener {
     invalidate();
   }
 
-  //TODO move to UI delegate
   @Override
   public void onAccessoryChange(AccessoryEvent event) {
     if (getAccessoryBean() != null && event.isEventFor(accessoryBean)) {

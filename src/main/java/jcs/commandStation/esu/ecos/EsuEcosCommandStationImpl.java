@@ -16,14 +16,13 @@
 package jcs.commandStation.esu.ecos;
 
 import java.awt.Image;
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TransferQueue;
+import java.util.concurrent.TimeUnit;
 import jcs.JCS;
 import jcs.commandStation.AbstractController;
 import jcs.commandStation.AccessoryController;
@@ -51,11 +50,16 @@ import jcs.commandStation.automation.DriveSimulator;
 import jcs.commandStation.VirtualConnection;
 import jcs.commandStation.automation.RailController;
 import jcs.commandStation.entities.Device;
+import jcs.commandStation.esu.ecos.entities.EcosBooster;
 import jcs.commandStation.events.AllSensorEventsListener;
 import jcs.commandStation.events.ConnectionEvent;
 import jcs.commandStation.events.ConnectionEventListener;
+import jcs.commandStation.events.MeasurementEventListener;
 import static jcs.entities.AccessoryBean.AccessoryValue.GREEN;
 import static jcs.entities.AccessoryBean.AccessoryValue.RED;
+import static jcs.entities.AccessoryBean.AccessoryValue.RED2;
+import static jcs.entities.AccessoryBean.AccessoryValue.WHITE;
+import static jcs.entities.AccessoryBean.AccessoryValue.YELLOW;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.SensorBean;
 import jcs.util.Ping;
@@ -63,13 +67,14 @@ import org.tinylog.Logger;
 
 public class EsuEcosCommandStationImpl extends AbstractController implements DecoderController, AccessoryController, FeedbackController, ConnectionEventListener {
 
-  private EcosConnection connection;
+  EcosConnection connection;
   private EventHandler eventMessageHandler;
 
   private EcosManager ecosManager;
   private LocomotiveManager locomotiveManager;
   private AccessoryManager accessoryManager;
   private FeedbackManager feedbackManager;
+  private BoosterManager boosterManager;
 
   private DriveSimulator simulator;
 
@@ -162,20 +167,23 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
         if (connected) {
           //Start the EventHandler
-          eventMessageHandler = new EventHandler(this.connection);
+          eventMessageHandler = new EventHandler(connection);
           eventMessageHandler.start();
 
           //Obtain some info about the ECoS
           initBaseObject();
 
           initLocomotiveManager();
-          Logger.trace("There are " + this.locomotiveManager.getSize() + " locomotives");
+          Logger.trace("There are " + locomotiveManager.getSize() + " locomotives");
 
           initAccessoryManager();
-          Logger.trace("There are " + this.accessoryManager.getSize() + " accessories");
+          Logger.trace("There are " + accessoryManager.getSize() + " accessories");
 
           initFeedbackManager();
-          Logger.trace("There are " + this.feedbackManager.getSize() + " feedback modules");
+          Logger.trace("There are " + feedbackManager.getSize() + " feedback modules");
+
+          initBoosterManager();
+          Logger.trace("There are " + boosterManager.getSize() + " boosters");
 
           if (isVirtual()) {
             simulator = new DriveSimulator();
@@ -209,7 +217,7 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
     connection.sendMessage(EcosMessageFactory.subscribeLokManager());
 
-    for (LocomotiveBean loc : this.locomotiveManager.getLocomotives().values()) {
+    for (LocomotiveBean loc : locomotiveManager.getLocomotives().values()) {
       EcosMessage detailsReply = connection.sendMessage(EcosMessageFactory.getLocomotiveDetails(loc.getId()));
       locomotiveManager.update(detailsReply);
 
@@ -224,9 +232,11 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
   private void initAccessoryManager() {
     EcosMessage reply = connection.sendMessage(EcosMessageFactory.getAccessories());
+    Logger.info(reply.getResponse());
+
     accessoryManager = new AccessoryManager(this, reply);
 
-    for (AccessoryBean accessory : this.accessoryManager.getAccessories().values()) {
+    for (AccessoryBean accessory : accessoryManager.getAccessories().values()) {
       EcosMessage detailsReply = connection.sendMessage(EcosMessageFactory.getAccessoryDetails(accessory.getId()));
       accessoryManager.update(detailsReply);
       //Subscribe
@@ -250,6 +260,19 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     }
   }
 
+  private void initBoosterManager() {
+    EcosMessage reply = connection.sendMessage(EcosMessageFactory.getBoosters());
+    boosterManager = new BoosterManager(this, reply);
+    connection.sendMessage(EcosMessageFactory.subscribeBoosterManager());
+
+    for (EcosBooster eb : boosterManager.getBoosters()) {
+      EcosMessage detailsReply = connection.sendMessage(EcosMessageFactory.getBoosterDetails(eb.getId()));
+      boosterManager.update(detailsReply);
+      connection.sendMessage(EcosMessageFactory.subscribeBooster(eb.getId()));
+    }
+
+  }
+
   @Override
   public SensorBean getSensorStatus(SensorBean sensorBean) {
     Integer sensorId = sensorBean.getId();
@@ -262,19 +285,24 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
       if (connected) {
         power(false);
 
+        Logger.trace("Unsubsribe from " + boosterManager.getSize() + " Boosters...");
+        for (EcosBooster b : boosterManager.getBoosters()) {
+          connection.sendMessage(EcosMessageFactory.unSubscribeBooster(b.getId()));
+        }
         Logger.trace("Unsubsribe from " + feedbackManager.getSize() + " feedback modules...");
         for (FeedbackModule fm : feedbackManager.getModules().values()) {
           connection.sendMessage(EcosMessageFactory.unSubscribeFeedbackModule(fm.getId()));
         }
         Logger.trace("Unsubscribe from " + accessoryManager.getSize() + " accessories...");
-        for (AccessoryBean a : this.accessoryManager.getAccessories().values()) {
+        for (AccessoryBean a : accessoryManager.getAccessories().values()) {
           connection.sendMessage(EcosMessageFactory.unSubscribeAccessory(a.getId()));
         }
         Logger.trace("Unsubscribe from " + locomotiveManager.getSize() + " locomotives...");
-        for (LocomotiveBean l : this.locomotiveManager.getLocomotives().values()) {
+        for (LocomotiveBean l : locomotiveManager.getLocomotives().values()) {
           connection.sendMessage(EcosMessageFactory.unSubscribeLocomotive(l.getId()));
         }
 
+        connection.sendMessage(EcosMessageFactory.unSubscribeBoosterManager());
         connection.sendMessage(EcosMessageFactory.unSubscribeAccessoryManager());
         connection.sendMessage(EcosMessageFactory.unSubscribeLokManager());
         connection.sendMessage(EcosMessageFactory.unSubscribeFeedbackManager());
@@ -365,6 +393,12 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     fbm.setChannels(feedbackManager.getModules().size());
     fbm.setFeedback(true);
     devices.add(fbm);
+
+    Device bm = new Device();
+    bm.setId(BoosterManager.ID + "");
+    bm.setName("BoosterManager");
+    bm.setSize(boosterManager.getSize());
+    devices.add(bm);
 
     return devices;
   }
@@ -532,7 +566,17 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
   @Override
   public boolean isSupportTrackMeasurements() {
-    return false;
+    return boosterManager.isSupportMeasurements();
+  }
+
+  @Override
+  public void addMeasurementEventListener(MeasurementEventListener listener) {
+    this.boosterManager.addMeasurementEventListener(listener);
+  }
+
+  @Override
+  public void removeMeasurementEventListener(MeasurementEventListener listener) {
+    this.boosterManager.removeMeasurementEventListener(listener);
   }
 
   @Override
@@ -548,35 +592,47 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
   void switchAccessory(String id, AccessoryBean.AccessoryValue value) {
     Logger.trace("Changing Accessory " + id + " to " + value);
+
+    AccessoryBean accessory;
+    Integer switchTime = null;
+    if (accessoryManager.getAccessories().containsKey(id)) {
+      accessory = accessoryManager.getAccessories().get(id);
+      switchTime = accessory.getSwitchTime();
+    } else {
+      accessory = new AccessoryBean();
+      accessory.setId(id);
+      accessory.setCommandStationId(commandStationBean.getId());
+      accessory.setSwitchTime(defaultSwitchTime);
+    }
+    if (switchTime == null) {
+      switchTime = this.defaultSwitchTime;
+    }
+
+    //State depend on type of accessory
     int state;
     switch (value) {
       case GREEN ->
         state = 0;
-      case RED ->
-        state = 1;
-      case RED2 ->
-        state = 2;
+      case RED -> {
+        if (accessory.is3WaySwitch()) {
+          state = 2;
+        } else {
+          state = 1;
+        }
+      }
+      case RED2 -> {
+        if (accessory.is3WaySwitch()) {
+          state = 1;
+        } else {
+          state = 2;
+        }
+      }
       case WHITE ->
         state = 2;
       case YELLOW ->
         state = 3;
       default ->
         state = 0;
-    }
-
-    AccessoryBean accessory;
-    Integer switchTime = null;
-    if (this.accessoryManager.getAccessories().containsKey(id)) {
-      accessory = this.accessoryManager.getAccessories().get(id);
-      switchTime = accessory.getSwitchTime();
-    } else {
-      accessory = new AccessoryBean();
-      accessory.setId(id);
-      accessory.setCommandStationId(this.commandStationBean.getId());
-      accessory.setSwitchTime(defaultSwitchTime);
-    }
-    if (switchTime == null) {
-      switchTime = this.defaultSwitchTime;
     }
 
     EcosMessage reply = connection.sendMessage(EcosMessageFactory.setAccessory(id, state, switchTime));
@@ -663,72 +719,71 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
   //Communication from Ecos reply messages to JCS
   private class EventHandler extends Thread {
 
-    private boolean quit = true;
-    private BufferedReader reader;
-
-    private final TransferQueue<EcosMessage> eventQueue;
+    private volatile boolean running = false;
+    private final BlockingQueue<EcosMessage> eventQueue;
 
     public EventHandler(EcosConnection connection) {
+      super("ECoS-EVENT-HANDLER");
       eventQueue = connection.getEventQueue();
     }
 
-    synchronized void quit() {
-      this.quit = true;
-      interrupt();
+    void quit() {
+      running = false;
     }
 
     @Override
     public void run() {
-      this.quit = false;
-      this.setName("ESU-ECOS-EVENT-HANDLER");
+      running = true;
 
       Logger.trace("Event Handler Started...");
 
-      while (!quit) {
+      while (running) {
         try {
-          EcosMessage eventMessage = eventQueue.take();
-          Logger.trace("# " + (eventMessage.isEvent() ? "-> " + eventMessage.getResponse() : eventMessage.getMessage() + " -> " + eventMessage.getResponse()));
+          EcosMessage eventMessage = eventQueue.poll(100, TimeUnit.MILLISECONDS);
+          if (eventMessage != null) {
+            //Logger.trace("# " + (eventMessage.isEvent() ? "-> " + eventMessage.getResponse() : eventMessage.getMessage() + " -> " + eventMessage.getResponse()));
 
-          int id = eventMessage.getObjectId();
-          switch (id) {
-            case 1 -> {
-              ecosManager.update(eventMessage);
-            }
-            case 10 -> {
-              //Locomotive list changed
-            }
-            case 11 -> {
-              //Accessory Manager change
-              accessoryManager.updateManager(eventMessage);
-            }
-            default -> {
-              //Events
-              if (id >= 100 && id < 1000) {
-                //Feedback event
-                feedbackManager.update(eventMessage);
-              } else if (id >= 1000 && id < 9999) {
+            int id = eventMessage.getObjectId();
+            switch (id) {
+              case 1 -> {
+                ecosManager.update(eventMessage);
+              }
+              case 10 -> {
+                //Locomotive list changed
                 locomotiveManager.update(eventMessage);
-              } else if (id >= 20000 && id < 29999) {
-                accessoryManager.update(eventMessage);
-              } else {
-                Logger.trace(eventMessage.getMessage() + " " + eventMessage.getResponse());
+              }
+              case 11 -> {
+                //Accessory Manager change
+                accessoryManager.updateManager(eventMessage);
+              }
+              case 27 -> {
+                //Booster manager change
+                boosterManager.update(eventMessage);
+              }
+              default -> {
+                //Events for individual devices like accessory, locomotive, sensor etc.
+                if (id >= 100 && id <= 1000) {
+                  //Feedback event
+                  feedbackManager.update(eventMessage);
+                } else if (id >= 1000 && id <= 9999) {
+                  locomotiveManager.update(eventMessage);
+                } else if (id >= 20000 && id <= 29999) {
+                  accessoryManager.update(eventMessage);
+                } else if (id >= 65000 && id <= 65999) {
+                  boosterManager.update(eventMessage);
+                } else {
+                  Logger.trace(eventMessage.getMessage() + " " + eventMessage.getResponse());
+                }
               }
             }
           }
         } catch (InterruptedException ex) {
-          if (!quit) {
+          if (!running) {
             Logger.error(ex);
           }
         }
       }
 
-      try {
-        if (reader != null) {
-          reader.close();
-        }
-      } catch (IOException ex) {
-        Logger.error(ex);
-      }
       Logger.debug("Stop receiving");
     }
   }

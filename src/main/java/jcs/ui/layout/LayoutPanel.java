@@ -61,6 +61,8 @@ public class LayoutPanel extends JPanel {
 
   private int gridType;
 
+  private Powerlistener powerlistener;
+
   private static final String GRID_0 = "/media/square-grid-24.png";
   private static final String GRID_1 = "/media/grid-2-24.png";
   private static final String GRID_2 = "/media/grid-dot-24.png";
@@ -103,13 +105,14 @@ public class LayoutPanel extends JPanel {
 
       toolBar.remove(autoPilotBtn);
       toolBar.remove(startAllLocomotivesBtn);
-
-      if (readonly) {
-        loadLayoutInBackground();
-        Powerlistener powerlistener = new Powerlistener();
-        JCS.getJcsCommandStation().addPowerEventListener(powerlistener);
-      }
     }
+
+    if (readonly) {
+      loadLayoutInBackground();
+      powerlistener = new Powerlistener();
+      JCS.getJcsCommandStation().addPowerEventListener(powerlistener);
+    }
+
   }
 
   public void loadLayoutInBackground() {
@@ -117,7 +120,6 @@ public class LayoutPanel extends JPanel {
   }
 
   public void loadLayout() {
-    //canvas.loadLayout();
     canvas.loadLayoutInBackground();
   }
 
@@ -129,7 +131,7 @@ public class LayoutPanel extends JPanel {
     canvas.flipSelectedTileHorizontal();
   }
 
-  public void flipSelectedTileVerical() {
+  public void flipSelectedTileVertical() {
     canvas.flipSelectedTileVertical();
   }
 
@@ -158,9 +160,7 @@ public class LayoutPanel extends JPanel {
     canvasScrollPane = new JScrollPane();
     canvas = new LayoutCanvas(this.readonly);
 
-    setMinimumSize(new Dimension(1002, 772));
     setOpaque(false);
-    setPreferredSize(new Dimension(1002, 772));
     addComponentListener(new ComponentAdapter() {
       public void componentHidden(ComponentEvent evt) {
         formComponentHidden(evt);
@@ -172,14 +172,11 @@ public class LayoutPanel extends JPanel {
     setLayout(new BorderLayout());
 
     topPanel.setMaximumSize(new Dimension(32767, 50));
-    topPanel.setMinimumSize(new Dimension(1000, 50));
-    topPanel.setPreferredSize(new Dimension(1000, 50));
     FlowLayout flowLayout1 = new FlowLayout(FlowLayout.LEFT);
     flowLayout1.setAlignOnBaseline(true);
     topPanel.setLayout(flowLayout1);
 
     toolBar.setMaximumSize(new Dimension(1200, 42));
-    toolBar.setMinimumSize(new Dimension(1150, 42));
     toolBar.setName(""); // NOI18N
     toolBar.setPreferredSize(new Dimension(980, 42));
 
@@ -272,13 +269,9 @@ public class LayoutPanel extends JPanel {
 
     add(topPanel, BorderLayout.NORTH);
 
-    canvasScrollPane.setMinimumSize(new Dimension(1000, 740));
-    canvasScrollPane.setPreferredSize(new Dimension(980, 700));
     canvasScrollPane.setViewportView(canvas);
 
-    canvas.setMinimumSize(new Dimension(1000, 720));
     canvas.setName(""); // NOI18N
-    canvas.setPreferredSize(new Dimension(1000, 720));
     canvasScrollPane.setViewportView(canvas);
 
     add(canvasScrollPane, BorderLayout.CENTER);
@@ -296,6 +289,9 @@ public class LayoutPanel extends JPanel {
     private void formComponentHidden(ComponentEvent evt) {//GEN-FIRST:event_formComponentHidden
       if (JCS.getParentFrame() != null) {
         JCS.getParentFrame().hideExtraToolbar(this.toolBar);
+      }
+      if (powerlistener != null) {
+        JCS.getJcsCommandStation().removePowerEventListener(powerlistener);
       }
     }//GEN-LAST:event_formComponentHidden
 

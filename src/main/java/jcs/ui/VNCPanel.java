@@ -237,6 +237,7 @@ public class VNCPanel extends JPanel {
     connectBtn = new javax.swing.JToggleButton();
     viewerPanel = new javax.swing.JPanel();
 
+    setMinimumSize(new java.awt.Dimension(10, 10));
     setPreferredSize(new java.awt.Dimension(1024, 700));
     addComponentListener(new java.awt.event.ComponentAdapter() {
       public void componentHidden(java.awt.event.ComponentEvent evt) {

@@ -17,6 +17,8 @@ package jcs.commandStation.automation;
 
 import java.awt.Color;
 import java.util.Date;
+import static jcs.commandStation.automation.AbstractState.State.ARRIVED;
+import static jcs.commandStation.automation.RailController.TAG;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.RouteBean;
@@ -33,7 +35,7 @@ class ArrivedState extends AbstractState {
   boolean alwaysStop = true;
 
   public ArrivedState() {
-    super("Arrived");
+    super(ARRIVED);
   }
 
   /**
@@ -49,7 +51,7 @@ class ArrivedState extends AbstractState {
     BlockBean destinationBlock = dispatcher.getDestinationBlock();
     alwaysStop = destinationBlock.isAlwaysStop();
 
-    Logger.trace("Locomotive " + dispatcher.getName() + " has arrived in " + destinationBlock.getDescription() + " and " + (alwaysStop ? "must stop" : "may continue"));
+    Logger.tag(TAG).trace("Locomotive " + dispatcher.getName() + " has arrived in " + destinationBlock.getDescription() + " and " + (alwaysStop ? "must stop" : "may continue"));
 
     if (alwaysStop || dispatcher.getNextRouteBean() == null) {
       //Stop the locomotive
@@ -71,7 +73,7 @@ class ArrivedState extends AbstractState {
     dispatcher.setOccupationSensorId(null);
     dispatcher.setExitSensorId(null);
 
-    Logger.trace("Clearing departureBlock " + departureBlock.getId());
+    Logger.tag(TAG).trace("Clearing departureBlock " + departureBlock.getId());
     departureBlock.setBlockState(BlockBean.BlockState.FREE);
     departureBlock.setLocomotive(null);
     departureBlock.setArrivalSuffix(null);
@@ -88,7 +90,7 @@ class ArrivedState extends AbstractState {
     dispatcher.showBlockState(departureBlock);
     dispatcher.showBlockState(destinationBlock);
 
-    Logger.trace("Arrived in: " + destinationBlock.getId());
+    Logger.tag(TAG).trace("Arrived in: " + destinationBlock.getId());
 
     //Is the block where we just arrived part of a station?
     StationBean station = dispatcher.getStation(destinationBlock);
@@ -101,14 +103,14 @@ class ArrivedState extends AbstractState {
 
     //Now Clear the route as we have arrived
     RouteBean route = dispatcher.getRouteBean();
-    Logger.trace("resetting old route " + route.getId());
+    Logger.tag(TAG).trace("resetting old route " + route.getId());
     route.setLocked(false);
     PersistenceFactory.getService().persist(route);
     dispatcher.resetRoute(route);
     dispatcher.setRouteBean(null);
 
     if (dispatcher.getNextRouteBean() != null && dispatcher.getNextRouteBean().isLocked()) {
-      Logger.trace("Setting the next found route: " + dispatcher.getNextRouteBean().getId());
+      Logger.tag(TAG).trace("Setting the next found route: " + dispatcher.getNextRouteBean().getId());
 
       //Now setup the next route
       route = dispatcher.getNextRouteBean();
@@ -117,7 +119,7 @@ class ArrivedState extends AbstractState {
       departureBlock = dispatcher.getDepartureBlock();
       destinationBlock = dispatcher.getDestinationBlock();
 
-      Logger.trace("New departure: " + departureBlock.getId() + " new destination: " + destinationBlock.getId());
+      Logger.tag(TAG).trace("New departure: " + departureBlock.getId() + " new destination: " + destinationBlock.getId());
 
       String arrivalSuffix = route.getToSuffix();
       String departureSuffix = route.getFromSuffix();
@@ -150,8 +152,8 @@ class ArrivedState extends AbstractState {
       dispatcher.setEnterSensorId(enterSensorId);
       dispatcher.setInSensorId(inSensorId);
 
-      Logger.trace("Departure: " + departureBlock.getId() + " Occupancy Sensor: " + occupancySensorId + " Exit Sensor: " + exitSensorId);
-      Logger.trace("Destination: " + destinationBlock.getId() + " Enter Sensor: " + enterSensorId + " In Sensor: " + inSensorId);
+      Logger.tag(TAG).trace("Departure: " + departureBlock.getId() + " Occupancy Sensor: " + occupancySensorId + " Exit Sensor: " + exitSensorId);
+      Logger.tag(TAG).trace("Destination: " + destinationBlock.getId() + " Enter Sensor: " + enterSensorId + " In Sensor: " + inSensorId);
 
       PersistenceFactory.getService().persist(departureBlock);
       PersistenceFactory.getService().persist(destinationBlock);
@@ -167,12 +169,12 @@ class ArrivedState extends AbstractState {
     }
 
     //Check to which next state we can switch
-    boolean automodeInActive = !dispatcher.getRailwayController().isAutoModeActive();
+    boolean automodeInActive = !dispatcher.getRailController().isAutoModeActive();
     automodeInActive = automodeInActive && !dispatcher.isLocomotiveStarted();
 
     //refresh
     locomotive = dispatcher.getLocomotiveBean();
-    Logger.debug("Locomotive: " + locomotive.getName() + " Arrived in " + destinationBlock.getDescription() + " next Route " + (nextRoutePrepared ? "is" : "is not") + " prepared. Direction: " + locomotive.getDirection() + (dispatcher.getRouteBean() != null ? " Route: " + dispatcher.getRouteBean().getId() : "") + " Speed: " + locomotive.getVelocity() + "...");
+    Logger.tag(TAG).debug("Locomotive: " + locomotive.getName() + " Arrived in " + destinationBlock.getDescription() + " next Route " + (nextRoutePrepared ? "is" : "is not") + " prepared. Direction: " + locomotive.getDirection() + (dispatcher.getRouteBean() != null ? " Route: " + dispatcher.getRouteBean().getId() : "") + " Speed: " + locomotive.getVelocity() + "...");
 
     if (alwaysStop || automodeInActive || !nextRoutePrepared) {
       return new WaitingState();

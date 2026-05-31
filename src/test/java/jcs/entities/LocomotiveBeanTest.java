@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 fransjacobs.
+ * Copyright 2025 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,17 +22,16 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
- * @author fransjacobs
  */
 public class LocomotiveBeanTest {
-  
+
   public LocomotiveBeanTest() {
   }
-  
+
   @BeforeEach
   public void setUp() {
   }
-  
+
   @AfterEach
   public void tearDown() {
   }
@@ -49,7 +48,7 @@ public class LocomotiveBeanTest {
     assertNull(result);
 
     instance.setDecoderTypeString("mm");
-    
+
     LocomotiveBean.DecoderType expResult = LocomotiveBean.DecoderType.MM;
     result = instance.getDecoderType();
     assertEquals(expResult, result);
@@ -65,13 +64,12 @@ public class LocomotiveBeanTest {
     instance.setDecoderTypeString("mm28");
     result = instance.getDecoderType();
     assertEquals(expResult, result);
-    
-    
+
     expResult = LocomotiveBean.DecoderType.MFX;
     instance.setDecoderTypeString("mfx");
     result = instance.getDecoderType();
     assertEquals(expResult, result);
-    
+
     instance.setDecoderTypeString("mfx+");
     result = instance.getDecoderType();
     assertEquals(expResult, result);
@@ -92,32 +90,16 @@ public class LocomotiveBeanTest {
     instance.setDecoderTypeString("dcc128");
     result = instance.getDecoderType();
     assertEquals(expResult, result);
-    
+
     expResult = LocomotiveBean.DecoderType.SX1;
     instance.setDecoderTypeString("sx1");
     result = instance.getDecoderType();
     assertEquals(expResult, result);
-    
+
     instance.setDecoderTypeString("sx");
     result = instance.getDecoderType();
     assertEquals(expResult, result);
-    
+
   }
 
-
-  /**
-   * Test of getDirection method, of class LocomotiveBean.
-   */
-  //@Test
-  public void testGetDirection() {
-    System.out.println("getDirection");
-    LocomotiveBean instance = new LocomotiveBean();
-    LocomotiveBean.Direction expResult = null;
-    LocomotiveBean.Direction result = instance.getDirection();
-    assertEquals(expResult, result);
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
-  }
-
-  
 }

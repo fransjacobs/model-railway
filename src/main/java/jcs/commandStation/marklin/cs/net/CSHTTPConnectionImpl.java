@@ -51,6 +51,9 @@ public class CSHTTPConnectionImpl implements CSHTTPConnection {
   private final static String IMAGE_FOLDER_CS3 = "/app/assets/lok/";
   private final static String IMAGE_FOLDER_CS2 = "/icons/";
   private final static String FUNCTION_IMAGE_FOLDER = "/fcticons/";
+  
+  //    letter = 'a' if active else 'i'
+  //--/app/assets/fct/fkticon_' + letter + '_' + icon_index + '.svg'
 
   private final static String FUNCTION_SVG_URL = "/images/svgSprites/fcticons.json";
   private final static String ACCESSORIES_SVG_URL = "/images/svgSprites/magicons.json";

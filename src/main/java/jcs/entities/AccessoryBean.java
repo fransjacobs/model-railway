@@ -49,7 +49,11 @@ public class AccessoryBean {
   private boolean locked;
 
   public AccessoryBean() {
-    this(null, null, null, null, null, null, null, null, null, null);
+    this(null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+  }
+
+  public AccessoryBean(String id, Integer address, Integer address2, String name, String type, Integer state, Integer states, Integer switchTime, String protocol, String commandStationId) {
+    this(id, address, address2, name, type, state, states, switchTime, protocol, null, null, null, null, commandStationId);
   }
 
   public AccessoryBean(String id, Integer address, Integer address2, String name, String type, Integer state, Integer switchTime, String protocol, String decoder, String commandStationId) {
@@ -159,7 +163,7 @@ public class AccessoryBean {
       states = 2;
     }
     if (state == null) {
-      this.state = 0;
+      state = 0;
     }
 
     if (states == 3 && isTurnout()) {
@@ -182,13 +186,20 @@ public class AccessoryBean {
           state = 0;
         }
       }
+    } else if (isSignal() && states > 2) {
+      state++;
+      if (state == 2 && states == 3) {
+        state = 3;
+      } else if (state == 4 && states == 3) {
+        state = 0;
+      } else if (state >= states) {
+        state = 0;
+      }
+
     } else {
       int s = states;
-      if (s == 0) {
-        s = 2;
-      }
       s = s - 1;
-      state = state + 1;
+      state++;
       if (state > s) {
         state = 0;
       }
@@ -197,10 +208,14 @@ public class AccessoryBean {
 
   @Transient
   public AccessoryValue getAccessoryValue() {
-    if (state != null) {
-      return AccessoryValue.get(state);
-    } else {
+    if (state == null) {
       return AccessoryValue.OFF;
+    } else {
+      if (isSignal()) {
+        return AccessoryValue.get(state, states);
+      } else {
+        return AccessoryValue.get(state);
+      }
     }
   }
 
@@ -209,11 +224,48 @@ public class AccessoryBean {
   }
 
   @Transient
+  public AccessoryValue getAccessoryValue2() {
+    if (this.states > 2) {
+      if (state < 2) {
+        return AccessoryValue.get(state + 2);
+      } else {
+        return AccessoryValue.get(state);
+      }
+    } else {
+      return AccessoryValue.OFF;
+    }
+  }
+
+  public void setAccessoryValue2(AccessoryValue accessoryValue2) {
+    if (this.states > 2) {
+      int s = accessoryValue2.getState();
+      if (s < 2) {
+        if (is3WaySwitch() && s == 1) {
+          this.state = s;
+        } else {
+          this.state = s + 2;
+        }
+      } else {
+        this.state = s;
+      }
+    }
+  }
+
+  @Transient
   public SignalValue getSignalValue() {
     if (state != null) {
       return SignalValue.csGet(state);
     } else {
       return SignalValue.OFF;
+    }
+  }
+
+  @Transient
+  public SignalType getSignalType() {
+    if (this.type != null) {
+      return SignalType.get(type);
+    } else {
+      return null;
     }
   }
 
@@ -337,16 +389,17 @@ public class AccessoryBean {
 
   @Transient
   public boolean isSignal() {
-    //if (group != null) {
-    //  return "lichtsignale".equals(this.group);
-    //} else {
     return type != null && type.contains("lichtsignal");
-    //}
   }
 
   @Transient
   public boolean isTurnout() {
     return type != null && type.contains("weiche");
+  }
+
+  @Transient
+  public boolean is3WaySwitch() {
+    return "dreiwegweiche".equals(type);
   }
 
   @Transient
@@ -465,7 +518,7 @@ public class AccessoryBean {
   }
 
   public enum AccessoryValue {
-    RED("Red"), RED2("Red2"), GREEN("Green"), WHITE("White"), YELLOW("Yellow"), OFF("Off");
+    RED("Red"), RED2("Red2"), GREEN("Green"), GREEN2("Green2"), WHITE("White"), YELLOW("Yellow"), OFF("Off");
 
     private final String value;
     private static final Map<String, AccessoryValue> ENUM_MAP;
@@ -536,20 +589,17 @@ public class AccessoryBean {
     public Integer getState() {
       AccessoryValue av = get(value);
       return switch (av) {
-        case GREEN ->
-          1;
         case RED ->
           0;
+        case GREEN ->
+          1;
         case RED2 ->
           2;
+        case GREEN2 ->
+          3;
         default ->
           1;
       };
-      //return AccessoryValue.GREEN.getValue().equals(value) ? 1 : 0;
-    }
-
-    public static AccessoryValue get1(Integer state) {
-      return 1 == state ? GREEN : RED;
     }
 
     public static AccessoryValue get(Integer state) {
@@ -559,12 +609,41 @@ public class AccessoryBean {
         return switch (state) {
           case 0 ->
             RED;
+          case 1 ->
+            GREEN;
           case 2 ->
             RED2;
+          case 3 ->
+            GREEN2;
           default ->
-            GREEN;
+            RED;
         };
-        //return 1 == state ? GREEN : RED;
+      }
+    }
+
+    public static AccessoryValue get(Integer state, int states) {
+      if (state == null) {
+        return RED;
+      } else {
+        AccessoryValue value;
+        switch (state) {
+          case 0 ->
+            value = AccessoryValue.RED;
+          case 1 ->
+            value = AccessoryValue.GREEN;
+          case 2 -> {
+            if (states == 4) {
+              value = AccessoryValue.WHITE;
+            } else {
+              value = AccessoryValue.RED2;
+            }
+          }
+          case 3 ->
+            value = AccessoryValue.YELLOW;
+          default ->
+            value = RED;
+        }
+        return value;
       }
     }
   }
@@ -661,7 +740,12 @@ public class AccessoryBean {
 
     public static SignalType get(String signalType) {
       if (signalType != null) {
-        return ENUM_MAP.get(signalType);
+        if (ENUM_MAP.containsKey(signalType)) {
+          return ENUM_MAP.get(signalType);
+        } else {
+          String sts = translateSignalString(signalType);
+          return ENUM_MAP.get(sts);
+        }
       } else {
         return null;
       }

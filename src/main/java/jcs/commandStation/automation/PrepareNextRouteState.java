@@ -16,6 +16,8 @@
 package jcs.commandStation.automation;
 
 import java.awt.Color;
+import static jcs.commandStation.automation.AbstractState.State.PREPNEXTROUTE;
+import static jcs.commandStation.automation.RailController.TAG;
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.BlockBean;
 import jcs.entities.RouteBean;
@@ -35,7 +37,7 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
   private boolean nextRouteAvaliable = false;
 
   PrepareNextRouteState() {
-    super("PrepareNextRoute");
+    super(PREPNEXTROUTE);
   }
 
   @Override
@@ -54,7 +56,7 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
     BlockBean destinationBlock = dispatcher.getDestinationBlock();
     RouteBean route = dispatcher.getRouteBean();
 
-    Logger.trace("Destination block " + destinationBlock.getId() + " In SensorId: " + inSensorId);
+    Logger.tag(TAG).trace("Destination block " + destinationBlock.getId() + " In SensorId: " + inSensorId);
 
     departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
     destinationBlock.setBlockState(BlockBean.BlockState.INBOUND);
@@ -81,7 +83,7 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
         }
 
         dispatcher.changeLocomotiveVelocity(speed1);
-        Logger.trace("Reducing speed while reserving the next route. Est. switch time: (" + estimatedSwitchTime + "ms)...");
+        Logger.tag(TAG).trace("Reducing speed while reserving the next route. Est. switch time: (" + estimatedSwitchTime + "ms)...");
       }
     }
   }
@@ -101,7 +103,7 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
       dispatcher.showBlockState(nextDestinationBlock);
       dispatcher.resetRoute(nextRoute);
 
-      Logger.trace("Rolled back next route for " + dispatcher.getName());
+      Logger.tag(TAG).trace("Rolled back next route for " + dispatcher.getName());
     }
   }
 
@@ -118,12 +120,12 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
       if (permits > 0) {
         if (RailController.tryAquireLock()) {
           try {
-            Logger.trace("##### Locked ####");
+            Logger.tag(TAG).trace("##### Locked ####");
             nextRouteAvaliable = dispatcher.getRouteManager().searchAndReserveNextRoute();
           } finally {
             //Make sure the lock is released
             RailController.releaseLock();
-            Logger.trace("##### Released ####");
+            Logger.tag(TAG).trace("##### Released ####");
           }
         } else {
           Logger.trace("No Semaphore available");
@@ -132,10 +134,10 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
         }
       } else {
         nextRouteFound = false;
-        Logger.trace("No lock permits available");
+        Logger.tag(TAG).trace("No lock permits available");
       }
 
-      boolean automodeInActive = !dispatcher.getRailwayController().isAutoModeActive();
+      boolean automodeInActive = !dispatcher.getRailController().isAutoModeActive();
 
       //Check for a stop request
       if (dispatcher.getStateMachine().isRequestStop() || !dispatcher.isLocomotiveStarted() || automodeInActive) {
@@ -144,11 +146,12 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
       }
     }
 
-    Logger.debug("Locomotive: " + dispatcher.getName() + " in " + destinationBlock.getDescription() + " and " + (nextRouteAvaliable ? "will continue" : "starts braking") + " Current Route: " + dispatcher.getRouteBean().getId() + " Speed: " + dispatcher.getLocomotiveBean().getVelocity() + "...");
+    Logger.tag(TAG).debug("Locomotive: " + dispatcher.getName() + " in " + destinationBlock.getDescription() + " and " + (nextRouteAvaliable ? "will continue" : "starts braking") + " Current Route: " + dispatcher.getRouteBean().getId() + " Speed: " + dispatcher.getLocomotiveBean().getVelocity() + "...");
 
     if (inSensorTriggered) {
       return new ArrivedState();
     } else if (nextRouteAvaliable) {
+      dispatcher.handleSignal(state);
       return new PassingThroughState(inSensorTriggered);
     } else {
       return new BrakingState(inSensorTriggered);
@@ -173,12 +176,12 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
         //Stop the locomotive!
         dispatcher.changeLocomotiveVelocity(0);
 
-        Logger.debug("In Event from Sensor " + event.getSensorId() + " for " + dispatcher.getName() + " during route preparation!");
+        Logger.tag(TAG).debug("In Event from Sensor " + event.getSensorId() + " for " + dispatcher.getName() + " during route preparation!");
         nextRouteFound = false;
         dispatcher.wakeup();
       }
     } else {
-      Logger.trace("Event for " + event.getSensorId() + " not for this state...");
+      Logger.tag(TAG).trace("Event for " + event.getSensorId() + " not for this state...");
     }
   }
 }

@@ -17,7 +17,6 @@ package jcs.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.net.URL;
@@ -27,8 +26,8 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import jcs.ui.swing.layout.VerticalFlowLayout;
 import jcs.ui.widgets.KeyboardPanelWide;
+import jcs.ui.widgets.MessagesPanel;
 import jcs.ui.widgets.SensorPanelWide;
 import org.tinylog.Logger;
 
@@ -47,9 +46,9 @@ public class KeyboardSensorPanel extends JPanel {
     initComponents();
     //For now this feedback screen is disabled
     if ("true".equals(System.getProperty("show.sensor.panels", "false"))) {
-      widgetPanel.remove(feedbackPanel);
-      feedbackPanel.setVisible(false);
-      widgetPanel.setVisible(false);
+      //widgetPanel.remove(feedbackPanel);
+      //feedbackPanel.setVisible(false);
+      //widgetPanel.setVisible(false);
     }
   }
 
@@ -60,14 +59,10 @@ public class KeyboardSensorPanel extends JPanel {
   // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
   private void initComponents() {
 
-    widgetPanel = new JPanel();
-    accessoryPanel = new JPanel();
     accessoryKeyboardPanel = new KeyboardPanelWide();
-    feedbackPanel = new JPanel();
+    messagesPanel = new MessagesPanel();
     sensorModulePanel = new SensorPanelWide();
-    messagesPanel = new JPanel();
 
-    setMinimumSize(new Dimension(1010, 850));
     setName("Form"); // NOI18N
     setPreferredSize(new Dimension(1010, 850));
     addComponentListener(new ComponentAdapter() {
@@ -78,45 +73,20 @@ public class KeyboardSensorPanel extends JPanel {
         formComponentShown(evt);
       }
     });
-    FlowLayout flowLayout1 = new FlowLayout(FlowLayout.LEFT);
-    flowLayout1.setAlignOnBaseline(true);
-    setLayout(flowLayout1);
+    setLayout(new BorderLayout());
 
-    widgetPanel.setName("widgetPanel"); // NOI18N
-    VerticalFlowLayout verticalFlowLayout1 = new VerticalFlowLayout();
-    verticalFlowLayout1.sethGap(0);
-    verticalFlowLayout1.sethAlignment(0);
-    widgetPanel.setLayout(verticalFlowLayout1);
-
-    accessoryPanel.setBorder(BorderFactory.createTitledBorder("Accessories"));
-    accessoryPanel.setMinimumSize(new Dimension(975, 335));
-    accessoryPanel.setName("accessoryPanel"); // NOI18N
-    accessoryPanel.setPreferredSize(new Dimension(985, 340));
-    accessoryPanel.setLayout(new BorderLayout());
-
+    accessoryKeyboardPanel.setBorder(BorderFactory.createTitledBorder("Keyboard"));
     accessoryKeyboardPanel.setName("accessoryKeyboardPanel"); // NOI18N
-    accessoryPanel.add(accessoryKeyboardPanel, BorderLayout.CENTER);
+    add(accessoryKeyboardPanel, BorderLayout.NORTH);
 
-    widgetPanel.add(accessoryPanel);
+    messagesPanel.setBorder(BorderFactory.createTitledBorder("Log"));
+    messagesPanel.setName("messagesPanel"); // NOI18N
+    add(messagesPanel, BorderLayout.CENTER);
 
-    feedbackPanel.setBorder(BorderFactory.createTitledBorder("Feedback Modules"));
-    feedbackPanel.setName("feedbackPanel"); // NOI18N
-    feedbackPanel.setPreferredSize(new Dimension(985, 180));
-    feedbackPanel.setLayout(new BorderLayout());
-
+    sensorModulePanel.setBorder(BorderFactory.createTitledBorder("Sensors"));
     sensorModulePanel.setName("sensorModulePanel"); // NOI18N
     sensorModulePanel.setPreferredSize(new Dimension(895, 150));
-    feedbackPanel.add(sensorModulePanel, BorderLayout.CENTER);
-
-    widgetPanel.add(feedbackPanel);
-
-    messagesPanel.setBorder(BorderFactory.createTitledBorder("Command Station Messages"));
-    messagesPanel.setName("messagesPanel"); // NOI18N
-    messagesPanel.setPreferredSize(new Dimension(985, 300));
-    messagesPanel.setLayout(new BorderLayout());
-    widgetPanel.add(messagesPanel);
-
-    add(widgetPanel);
+    add(sensorModulePanel, BorderLayout.SOUTH);
   }// </editor-fold>//GEN-END:initComponents
 
     private void formComponentShown(ComponentEvent evt) {//GEN-FIRST:event_formComponentShown
@@ -129,11 +99,8 @@ public class KeyboardSensorPanel extends JPanel {
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private KeyboardPanelWide accessoryKeyboardPanel;
-  private JPanel accessoryPanel;
-  private JPanel feedbackPanel;
-  private JPanel messagesPanel;
+  private MessagesPanel messagesPanel;
   private SensorPanelWide sensorModulePanel;
-  private JPanel widgetPanel;
   // End of variables declaration//GEN-END:variables
 
   //Testing

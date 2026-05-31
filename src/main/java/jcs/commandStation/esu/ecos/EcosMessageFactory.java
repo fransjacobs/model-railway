@@ -36,6 +36,13 @@ public class EcosMessageFactory implements Ecos {
 
   public static final String FEEDBACK_MODULES_SIZE = "get(" + FEEDBACK_MANAGER_ID + ", size)";
 
+  public final static String QUERY_BOOSTERS = "queryObjects(" + BOOSTER_ID + ",name)";
+
+  public final static String BOOSTER_MANAGER_SUBSCRIBE_VIEW = "request(" + BOOSTER_ID + ",view)";
+  public final static String BOOSTER_MANAGER_RELEASE_VIEW = "release(" + BOOSTER_ID + ",view)";
+
+  public static final String BOOSTERS_SIZE = "get(" + BOOSTER_ID + ", size)";
+
   public static EcosMessage getBaseObject() {
     return new EcosMessage(BASE_OBJECT);
   }
@@ -156,11 +163,28 @@ public class EcosMessageFactory implements Ecos {
     return new EcosMessage("set(" + accessoryId + ",state[" + state + "],duration[" + duration + "])");
   }
 
-//  Ecos commands
-//  queryObjects
-//  set        
-//  get  
-//  create  
-// delete  
-// request
+  public static EcosMessage getBoosters() {
+    return new EcosMessage(QUERY_BOOSTERS);
+  }
+
+  public static EcosMessage subscribeBoosterManager() {
+    return new EcosMessage(BOOSTER_MANAGER_SUBSCRIBE_VIEW);
+  }
+
+  public static EcosMessage unSubscribeBoosterManager() {
+    return new EcosMessage(BOOSTER_MANAGER_RELEASE_VIEW);
+  }
+
+  public static EcosMessage getBoosterDetails(String boosterId) {
+    return new EcosMessage("get(" + boosterId + ",name,status,voltage,current,temperature,limit)");
+  }
+
+  public static EcosMessage subscribeBooster(String boosterId) {
+    return new EcosMessage("request(" + boosterId + ",view)");
+  }
+
+  public static EcosMessage unSubscribeBooster(String boosterId) {
+    return new EcosMessage("release(" + boosterId + ",view)");
+  }
+
 }
