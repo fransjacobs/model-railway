@@ -92,7 +92,7 @@ class PassingThroughState extends AbstractState implements SensorEventCallback {
     if (inSensorId.equals(event.getSensorId())) {
       if (event.isActive()) {
         inSensorTriggered = true;
-        Logger.tag(TAG).trace("In Event from Sensor " + event.getSensorId() + " for " + dispatcher.getName());
+        Logger.tag(TAG).debug("Dispatcher " + dispatcher.getName() + " Occupied (in) event from Sensor " + event.getSensorId() + " Value " + (event.isActive() ? "On" : "Off"));
         dispatcher.wakeup();
       }
     }

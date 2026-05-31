@@ -40,7 +40,7 @@ class IdleState extends AbstractState {
 
   @Override
   void onExit() {
-    Logger.tag(TAG).trace("Exit " + getName() + " State");
+    Logger.tag(TAG).debug("Dispatcher " + dispatcher.getName() + " is exiting " + getName() + " State");
   }
 
   @Override

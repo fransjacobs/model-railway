@@ -83,7 +83,7 @@ class RunningState extends AbstractState implements SensorEventCallback {
     if (enterSensorId.equals(event.getSensorId())) {
       if (event.isActive()) {
         enterSensorTriggered = true;
-        Logger.tag(TAG).trace("Enter Event from Sensor " + event.getSensorId() + " for " + dispatcher.getName());
+        Logger.tag(TAG).debug("Dispatcher " + dispatcher.getName() + " Enter event from Sensor " + event.getSensorId() + " Value " + (event.isActive() ? "On" : "Off"));
         dispatcher.wakeup();
       }
     }

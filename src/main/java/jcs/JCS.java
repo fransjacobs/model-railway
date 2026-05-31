@@ -54,6 +54,7 @@ import jcs.ui.splash.JCSSplash;
 import jcs.ui.util.FrameMonitor;
 import jcs.ui.util.ProcessFactory;
 import jcs.ui.util.UICallback;
+import jcs.ui.widgets.LogPanelTester;
 import jcs.util.RunUtil;
 import jcs.util.VersionInfo;
 import org.tinylog.Logger;
@@ -182,7 +183,6 @@ public class JCS {
         System.setProperty("apple.awt.application.appearance", "system");
       }
 
-      //splashScreen = new JCSSplash();
       CountDownLatch splashReady = new CountDownLatch(1);
       EventQueue.invokeLater(() -> {
         splashScreen = new JCSSplash();
@@ -201,6 +201,11 @@ public class JCS {
       splashScreen.setProgressMax(25);
 
       logProgress("JCS is Starting...");
+
+      /////////
+    /////Testing
+    ///
+    LogPanelTester.showLogPanel();
 
       //Check the persistent properties, prepare environment
       if (!H2DatabaseUtil.databaseFileExists()) {

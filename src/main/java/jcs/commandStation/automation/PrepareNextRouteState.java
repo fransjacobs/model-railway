@@ -175,13 +175,13 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
         inSensorTriggered = true;
         //Stop the locomotive!
         dispatcher.changeLocomotiveVelocity(0);
+        Logger.tag(TAG).debug("Dispatcher " + dispatcher.getName() + " Occupied (in) event during route preparation! Sensor " + event.getSensorId() + " Value " + (event.isActive() ? "On" : "Off"));
 
-        Logger.tag(TAG).debug("In Event from Sensor " + event.getSensorId() + " for " + dispatcher.getName() + " during route preparation!");
         nextRouteFound = false;
         dispatcher.wakeup();
       }
     } else {
-      Logger.tag(TAG).trace("Event for " + event.getSensorId() + " not for this state...");
+      Logger.trace("Event for " + event.getSensorId() + " not for this state...");
     }
   }
 }
