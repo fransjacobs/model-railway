@@ -16,6 +16,7 @@
 package jcs.ui.util;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.Map;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
@@ -61,7 +62,7 @@ public class JcsLogDocumentWriter extends PlainDocument implements Writer {
 
   @Override
   public Collection<LogEntryValue> getRequiredLogEntryValues() {
-    throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    return EnumSet.of(LogEntryValue.LEVEL, LogEntryValue.MESSAGE);
   }
 
   @Override
@@ -73,7 +74,6 @@ public class JcsLogDocumentWriter extends PlainDocument implements Writer {
         Logger.error(ex.getMessage());
       }
     });
-
   }
 
   private String render(final LogEntry logEntry) {

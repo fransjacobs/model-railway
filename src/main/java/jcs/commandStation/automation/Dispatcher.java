@@ -424,13 +424,14 @@ public class Dispatcher {
     }
 
     if (signal != null && newValue != SignalValue.OFF) {
-      Logger.tag(TAG).trace("Signal " + signal.getId() + " will be set to: " + newValue + "...");
+      Logger.trace("Setting Signal " + signal.getId() + " set to: " + newValue + "...");
 
       JCS.getJcsCommandStation().switchAccessory(signal, newValue);
       if (SignalValue.Hp0 == newValue) {
         setActiveSignal(null);
+        Logger.trace("Signal " + signal.getId() + " set to: " + newValue + " Sinal is marked " + (getActiveSignal() != null ? "active" : "not active"));
       }
-      Logger.tag(TAG).debug("Signal " + signal.getId() + " set to: " + newValue + " " + (getActiveSignal() != null ? "active" : "not active") + "...");
+      Logger.tag(TAG).debug("Dispatcher " + getName() + " Signal " + signal.getId() + " set to: " + newValue);
     }
     return delayStart;
   }

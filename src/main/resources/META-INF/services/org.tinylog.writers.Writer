@@ -1,2 +1,1 @@
-jcs.ui.widgets.JcsLogPanelWriter
-jcs.ui.util.JcsLogPanelWriter
+jcs.ui.util.JcsLogDocumentWriter

@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 frans.
+ * Copyright 2026 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,52 @@
  */
 package jcs.ui.widgets;
 
+import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import jcs.ui.util.JcsLogDocumentWriter;
+
 /**
  *
- * @author frans
  */
 public class MessagesPanel extends javax.swing.JPanel {
+
+  private JcsLogDocumentWriter logDocumentWriter;
 
   /**
    * Creates new form MessagesPanel
    */
   public MessagesPanel() {
     initComponents();
+    postInitComponents();
+  }
+
+  private void postInitComponents() {
+    logDocumentWriter = JcsLogDocumentWriter.getInstance();
+
+    if (logDocumentWriter != null) {
+
+      railControlTA.setDocument(logDocumentWriter);
+
+      railControlTA.getDocument().addDocumentListener(new DocumentListener() {
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+          SwingUtilities.invokeLater(()
+                  -> railControlTA.setCaretPosition(0)
+          );
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+        }
+
+      });
+    }
   }
 
   /**
@@ -37,11 +72,8 @@ public class MessagesPanel extends javax.swing.JPanel {
 
     railControllerLbl = new javax.swing.JLabel();
     systemLbl = new javax.swing.JLabel();
-    logSP = new javax.swing.JSplitPane();
-    commandStationLogSP = new javax.swing.JScrollPane();
-    commandStationLogTA = new javax.swing.JTextArea();
     railControlSP = new javax.swing.JScrollPane();
-    raiControlTA = new javax.swing.JTextArea();
+    railControlTA = new javax.swing.JTextArea();
 
     railControllerLbl.setText("Rail Controller Messages");
 
@@ -49,36 +81,19 @@ public class MessagesPanel extends javax.swing.JPanel {
 
     setLayout(new java.awt.BorderLayout());
 
-    logSP.setDividerLocation(420);
-    logSP.setDividerSize(10);
-
-    commandStationLogSP.setColumnHeaderView(systemLbl);
-    commandStationLogSP.setRowHeaderView(null);
-
-    commandStationLogTA.setColumns(20);
-    commandStationLogTA.setRows(5);
-    commandStationLogSP.setViewportView(commandStationLogTA);
-
-    logSP.setLeftComponent(commandStationLogSP);
-
     railControlSP.setColumnHeaderView(railControllerLbl);
 
-    raiControlTA.setColumns(20);
-    raiControlTA.setRows(5);
-    railControlSP.setViewportView(raiControlTA);
+    railControlTA.setColumns(20);
+    railControlTA.setRows(5);
+    railControlSP.setViewportView(railControlTA);
 
-    logSP.setRightComponent(railControlSP);
-
-    add(logSP, java.awt.BorderLayout.CENTER);
+    add(railControlSP, java.awt.BorderLayout.CENTER);
   }// </editor-fold>//GEN-END:initComponents
 
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
-  private javax.swing.JScrollPane commandStationLogSP;
-  private javax.swing.JTextArea commandStationLogTA;
-  private javax.swing.JSplitPane logSP;
-  private javax.swing.JTextArea raiControlTA;
   private javax.swing.JScrollPane railControlSP;
+  private javax.swing.JTextArea railControlTA;
   private javax.swing.JLabel railControllerLbl;
   private javax.swing.JLabel systemLbl;
   // End of variables declaration//GEN-END:variables

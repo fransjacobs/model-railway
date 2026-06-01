@@ -275,7 +275,7 @@ class RouteManager {
   }
 
   boolean searchNextRoute() {
-    Logger.tag(TAG).trace("Search a free next route for " + dispatcher.getLocomotiveBean().getName() + "...");
+    Logger.trace("Search a free next route for " + dispatcher.getLocomotiveBean().getName() + "...");
 
     // In this state the we are checking whether there is a valid nextRoute from the destination to the next block.
     BlockBean departureBlock = dispatcher.getDestinationBlock();
@@ -291,14 +291,11 @@ class RouteManager {
       departureSuffix = Block.getDepartureSuffix(blockOrientation, nextLogicalDirection);
     }
 
-    Logger.tag(TAG).trace("Loco " + dispatcher.getLocomotiveBean().getName() + " is entering block " + departureBlock.getId() + ". Direction " + nextLogicalDirection.getDirection() + ". DepartureSuffix " + departureSuffix + "...");
+    Logger.tag(TAG).debug("Dispatcher " + dispatcher.getName() + " is entering block " + departureBlock.getId() + ". Direction " + nextLogicalDirection.getDirection() + ". DepartureSuffix " + departureSuffix + " searching next route...");
 
     //Search for the possible routes
-    //List<RouteBean> routes = Collections.emptyList();
-    //Is the departure block part of a station.
-    //Search for the possible routes
     List<RouteBean> routes = PersistenceFactory.getService().getRoutes(departureBlock.getId(), departureSuffix);
-    Logger.tag(TAG).trace("There " + (routes.size() == 1 ? "is" : "are") + " " + routes.size() + " possible route(s)...");
+    Logger.trace("There " + (routes.size() == 1 ? "is" : "are") + " " + routes.size() + " possible route(s)...");
 
     List<RouteBean> checkedRoutes = new ArrayList<>();
     //Found possible routes check on the destination for the sensors and permissions
@@ -314,7 +311,7 @@ class RouteManager {
 
       boolean allowed = isAllowed(allowCommuter, allowNonCommuter, dispatcher.getLocomotiveBean().isCommuter());
 
-      Logger.tag(TAG).trace("Next Destination " + nextDestinationBlock.getId() + " Train type commuter: " + dispatcher.getLocomotiveBean().isCommuter() + " Permission " + allowed + " sensor: " + (plusInActive ? "Free" : "Occupied") + " - sensor: " + (minInActive ? "Free" : "Occupied"));
+      Logger.trace("Next Destination " + nextDestinationBlock.getId() + " Train type commuter: " + dispatcher.getLocomotiveBean().isCommuter() + " Permission " + allowed + " sensor: " + (plusInActive ? "Free" : "Occupied") + " - sensor: " + (minInActive ? "Free" : "Occupied"));
 
       if (plusInActive && minInActive && allowed && turnoutsNotLocked(nextRoute)) {
         checkedRoutes.add(nextRoute);
@@ -336,7 +333,9 @@ class RouteManager {
     RouteBean nextRoute = null;
     if (!checkedRoutes.isEmpty()) {
       nextRoute = checkedRoutes.get(rIdx);
-      Logger.tag(TAG).trace("Choosen route " + nextRoute.toLogString());
+      Logger.tag(TAG).debug("Dispatcher " + dispatcher.getName() + " found next route " + nextRoute.toLogString());
+    } else {
+      Logger.tag(TAG).debug("Dispatcher " + dispatcher.getName() + " no next route available...");
     }
     dispatcher.setNextRouteBean(nextRoute);
     return nextRoute != null;
@@ -349,7 +348,7 @@ class RouteManager {
     if (nextRoute == null) {
       return false;
     }
-    Logger.tag(TAG).debug("Reserving next route " + nextRoute);
+    Logger.trace("Reserving next route " + nextRoute);
     nextRoute.setLocked(true);
 
     //Reserve the destination
@@ -367,7 +366,7 @@ class RouteManager {
 
     // Set Turnouts in the right state
     List<RouteElementBean> turnouts = getTurnouts(nextRoute);
-    Logger.tag(TAG).trace("There are " + turnouts.size() + " turnouts in the next route");
+    Logger.trace("There are " + turnouts.size() + " turnouts in the next route");
 
     //Now start to persist and perform critical thinks
     if (turnoutsNotLocked(nextRoute)) {
@@ -387,14 +386,14 @@ class RouteManager {
           pause(100);
         }
       }
-      Logger.tag(TAG).trace("Turnouts set for " + nextRoute);
+      Logger.trace("Dispatcher " + dispatcher.getName() + " Turnouts set for " + nextRoute);
 
       PersistenceFactory.getService().persist(nextDestinationBlock);
       PersistenceFactory.getService().persist(nextRoute);
       dispatcher.setNextRouteBean(nextRoute);
 
       showRoute(nextRoute, Color.yellow);
-      Logger.tag(TAG).trace(nextRoute + " Locked");
+      Logger.tag(TAG).debug("Dispatcher " + dispatcher.getName() + " next route: " + nextRoute.getId() + " is Locked");
 
       dispatcher.showBlockState(nextDestinationBlock);
 
