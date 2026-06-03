@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Frans Jacobs.
+ * Copyright 2026 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package jcs.ui.layout.tiles;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -24,10 +23,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.UIManager;
-import jcs.commandStation.events.AccessoryEventListener;
-import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.TileBean;
-import jcs.entities.TileBean.Direction;
 import jcs.entities.TileBean.Orientation;
 import static jcs.entities.TileBean.Orientation.NORTH;
 import static jcs.entities.TileBean.Orientation.SOUTH;
@@ -42,38 +38,39 @@ import jcs.ui.layout.tiles.ui.CrossUI;
 import jcs.ui.layout.tiles.ui.TileUI;
 
 /**
- * Representation of a Cross switch on the layout
+ * Representation of a passive Cross (X) the layout
  */
-public class Cross extends Switch implements AccessoryEventListener {
+public class Cross extends Tile {
 
   public static final int CROSS_WIDTH = DEFAULT_WIDTH * 2;
   public static final int CROSS_HEIGHT = DEFAULT_HEIGHT * 2;
 
-  public static final Color VERY_LIGHT_RED = new Color(255, 102, 102);
-  public static final Color LIGHT_RED = new Color(255, 51, 51);
-  public static final Color DARK_RED = new Color(204, 0, 0);
-
-  public static final Color VERY_LIGHT_GREEN = new Color(102, 255, 102);
-  public static final Color LIGHT_GREEN = new Color(0, 255, 51);
-  public static final Color DARK_GREEN = new Color(0, 153, 0);
-  private static final long serialVersionUID = 471193107877761707L;
-
-  public Cross(Orientation orientation, Direction direction, Point center) {
-    this(orientation, direction, center.x, center.y);
+  public Cross(Orientation orientation, Point center) {
+    this(orientation, center.x, center.y);
   }
 
-  public Cross(Orientation orientation, Direction direction, int x, int y) {
-    this(orientation, direction, x, y, tileWidth(orientation, TileType.CROSS), tileHeight(orientation, TileType.CROSS));
+  public Cross(Orientation orientation, int x, int y) {
+    this(orientation, x, y, tileWidth(orientation, TileType.CROSS), tileHeight(orientation, TileType.CROSS));
   }
 
-  public Cross(Orientation orientation, Direction direction, int x, int y, int width, int height) {
-    super(TileType.CROSS, orientation, direction, x, y, width, height);
+  public Cross(Orientation orientation, int x, int y, int width, int height) {
+    super(TileType.CROSS, orientation, x, y, width, height);
+    setModel(new DefaultTileModel(orientation));
+
     changeRenderSizeAndOffsets();
+    initUI();
   }
 
   public Cross(TileBean tileBean) {
     super(tileBean, tileWidth(tileBean.getOrientation(), TileType.CROSS), tileHeight(tileBean.getOrientation(), TileType.CROSS));
+    setModel(new DefaultTileModel(tileBean.getOrientation()));
+
     changeRenderSizeAndOffsets();
+    initUI();
+  }
+
+  private void initUI() {
+    updateUI();
   }
 
   @Override
@@ -89,7 +86,7 @@ public class Cross extends Switch implements AccessoryEventListener {
   }
 
   /**
-   * A Cross has a width in horizontal position of 2 tiles and a height of 1 tile in Vertical position.<br>
+   * A CrossSwitch has a width in horizontal position of 2 tiles and a height of 1 tile in Vertical position.<br>
    *
    * @return the Set of points which mark the position of the Cross
    */
@@ -139,59 +136,35 @@ public class Cross extends Switch implements AccessoryEventListener {
   public Map<Orientation, Point> getNeighborPoints() {
     Map<Orientation, Point> neighbors = new HashMap<>();
     Orientation orientation = this.getOrientation();
-    Direction direction = this.getDirection();
     int cx = this.getCenterX();
     int cy = this.getCenterY();
 
     switch (orientation) {
       case SOUTH -> {
-        neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
-        neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 4));
-
-        if (Direction.LEFT == direction) {
-          neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy + Tile.GRID * 2));
-          neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
-        } else {
-          neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
-          neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy + Tile.GRID * 2));
-        }
+        neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
+        neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
+        neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy + Tile.GRID * 2));
+        neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy + Tile.GRID * 2));
       }
       case WEST -> {
-        neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
-        neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 4, cy));
-
-        if (Direction.LEFT == direction) {
-          neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
-          neighbors.put(Orientation.SOUTH, new Point(cx - Tile.GRID * 2, cy + Tile.GRID * 2));
-        } else {
-          neighbors.put(Orientation.NORTH, new Point(cx - Tile.GRID * 2, cy - Tile.GRID * 2));
-          neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
-        }
+        neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
+        neighbors.put(Orientation.SOUTH, new Point(cx, cy - Tile.GRID * 2));
+        neighbors.put(Orientation.NORTH, new Point(cx + Tile.GRID * 2, cy - Tile.GRID * 2));
+        neighbors.put(Orientation.SOUTH, new Point(cx + Tile.GRID * 2, cy + Tile.GRID * 2));
       }
       case NORTH -> {
-        neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 4));
-        neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
-
-        if (Direction.LEFT == direction) {
-          neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
-          neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy - Tile.GRID * 2));
-        } else {
-          neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy - Tile.GRID * 2));
-          neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
-        }
+        neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
+        neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
+        neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy + Tile.GRID * 2));
+        neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy + Tile.GRID * 2));
       }
       default -> {
         //EAST
-        neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 4, cy));
-        neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
-
-        if (Direction.LEFT == direction) {
-          neighbors.put(Orientation.NORTH, new Point(cx + Tile.GRID * 2, cy - Tile.GRID * 2));
-          neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
-        } else {
-          neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
-          neighbors.put(Orientation.SOUTH, new Point(cx + Tile.GRID * 2, cy + Tile.GRID * 2));
-        }
+        neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy - Tile.GRID * 2));
+        neighbors.put(Orientation.WEST, new Point(cx, cy + Tile.GRID * 2));
+        
+        neighbors.put(Orientation.NORTH, new Point(cx + Tile.GRID * 2, cy - Tile.GRID * 2));
+        neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
       }
     }
     return neighbors;
@@ -201,132 +174,102 @@ public class Cross extends Switch implements AccessoryEventListener {
   public Map<Orientation, Point> getEdgePoints() {
     Map<Orientation, Point> edgeConnections = new HashMap<>();
     Orientation orientation = getOrientation();
-    Direction direction = getDirection();
     int cx = this.getCenterX();
     int cy = this.getCenterY();
 
     switch (orientation) {
       case SOUTH -> {
-        edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
-        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 3));
-
-        if (Direction.LEFT == direction) {
-          edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy + Tile.GRID * 2));
-          edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
-        } else {
-          edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
-          edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy + Tile.GRID * 2));
-        }
+        //NW
+        edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
+        //NE
+        edgeConnections.put(Orientation.WEST, new Point(cx + Tile.GRID, cy));
+        //SW
+        edgeConnections.put(Orientation.EAST, new Point(cx - Tile.GRID, cy + Tile.GRID * 2));
+        //SE
+        edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy + Tile.GRID * 2));
       }
       case WEST -> {
-        edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
-        edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID * 3, cy));
-
-        if (Direction.LEFT == direction) {
-          edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
-          edgeConnections.put(Orientation.SOUTH, new Point(cx - Tile.GRID * 2, cy + Tile.GRID));
-        } else {
-          edgeConnections.put(Orientation.NORTH, new Point(cx - Tile.GRID * 2, cy - Tile.GRID));
-          edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
-        }
+        //NW
+        edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
+        //NE
+        edgeConnections.put(Orientation.NORTH, new Point(cx + Tile.GRID * 2, cy - Tile.GRID));
+        //SW
+        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
+        //SE
+        edgeConnections.put(Orientation.SOUTH, new Point(cx + Tile.GRID * 2, cy + Tile.GRID));
       }
       case NORTH -> {
-        edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 3));
-        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
-
-        if (Direction.LEFT == direction) {
-          edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
-          edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy - Tile.GRID * 2));
-        } else {
-          edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy - Tile.GRID * 2));
-          edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
-        }
+        //NW
+        edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
+        //NE
+        edgeConnections.put(Orientation.WEST, new Point(cx + Tile.GRID, cy));
+        //SW
+        edgeConnections.put(Orientation.EAST, new Point(cx - Tile.GRID, cy + Tile.GRID * 2));
+        //SE
+        edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy + Tile.GRID * 2));
       }
       default -> {
-        //EAST
-        edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID * 3, cy));
-        edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
+        //EASTd
+        //[ -X ] / \
+        //er is een south west naar north east
+        // en enn north west naar south east
+        // + is helder war nsew is nu is het x dus 45gr gedraai x  naar rechts.. dus
+        //als orientation east is is de east connect south
+        // south is west
+        // west is north
+        //north is east
+        //hoe zat dit ook alsweer?
+        edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy - Tile.GRID));
+        edgeConnections.put(Orientation.WEST, new Point(cx, cy + Tile.GRID));
+        
+        edgeConnections.put(Orientation.NORTH, new Point(cx + Tile.GRID * 2, cy - Tile.GRID));
+        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
+      }
+    }
+    return edgeConnections;
+  }
+  
+  
 
-        if (Direction.LEFT == direction) {
-          edgeConnections.put(Orientation.NORTH, new Point(cx + Tile.GRID * 2, cy - Tile.GRID));
-          edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
-        } else {
-          edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
-          edgeConnections.put(Orientation.SOUTH, new Point(cx + Tile.GRID * 2, cy + Tile.GRID));
-        }
+  public Map<Orientation, Point> getEdgePointsCurve() {
+    Map<Orientation, Point> edgeConnections = new HashMap<>();
+
+    Orientation orientation = this.getOrientation();
+    int cx = this.getCenterX();
+    int cy = this.getCenterY();
+
+    switch (orientation) {
+      case SOUTH -> {
+        //       |  |
+        // b  \  |\ |
+        edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
+        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
+      }
+      case WEST -> {
+        //       |/ |
+        // t /   |  |
+        edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
+        edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
+      }
+      case NORTH -> {
+        //  t \
+        edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
+        edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
+      }
+      default -> {
+        //EAST b /
+        edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
+        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
       }
     }
     return edgeConnections;
   }
 
-  @Override
-  public AccessoryValue accessoryValueForRoute(Orientation from, Orientation to) {
-    if (from != null && to != null && this.getDirection() != null) {
-      switch (this.getDirection()) {
-        case LEFT -> {
-          if (this.isHorizontal()) {
-            if ((from == Orientation.WEST && to == Orientation.EAST) || (from == Orientation.EAST && to == Orientation.WEST)) {
-              return AccessoryValue.GREEN;
-            } else if ((from == Orientation.NORTH && to == Orientation.SOUTH) || (from == Orientation.SOUTH && to == Orientation.NORTH)) {
-              return AccessoryValue.GREEN;
-            } else if ((from == Orientation.NORTH && to == Orientation.WEST) || (from == Orientation.WEST && to == Orientation.NORTH)) {
-              return AccessoryValue.RED;
-            } else if ((from == Orientation.EAST && to == Orientation.SOUTH) || (from == Orientation.SOUTH && to == Orientation.EAST)) {
-              return AccessoryValue.RED;
-            } else {
-              return AccessoryValue.OFF;
-            }
-          } else {
-            //Vertical
-            if ((from == Orientation.WEST && to == Orientation.EAST) || (from == Orientation.EAST && to == Orientation.WEST)) {
-              return AccessoryValue.GREEN;
-            } else if ((from == Orientation.NORTH && to == Orientation.SOUTH) || (from == Orientation.SOUTH && to == Orientation.NORTH)) {
-              return AccessoryValue.GREEN;
-            } else if ((from == Orientation.SOUTH && to == Orientation.WEST) || (from == Orientation.WEST && to == Orientation.SOUTH)) {
-              return AccessoryValue.RED;
-            } else if ((from == Orientation.EAST && to == Orientation.NORTH) || (from == Orientation.NORTH && to == Orientation.EAST)) {
-              return AccessoryValue.RED;
-            } else {
-              return AccessoryValue.OFF;
-            }
-          }
-        }
-        case RIGHT -> {
-          if (this.isHorizontal()) {
-            if ((from == Orientation.WEST && to == Orientation.EAST) || (from == Orientation.EAST && to == Orientation.WEST)) {
-              return AccessoryValue.GREEN;
-            } else if ((from == Orientation.NORTH && to == Orientation.SOUTH) || (from == Orientation.SOUTH && to == Orientation.NORTH)) {
-              return AccessoryValue.GREEN;
-            } else if ((from == Orientation.NORTH && to == Orientation.EAST) || (from == Orientation.EAST && to == Orientation.NORTH)) {
-              return AccessoryValue.RED;
-            } else if ((from == Orientation.WEST && to == Orientation.SOUTH) || (from == Orientation.SOUTH && to == Orientation.WEST)) {
-              return AccessoryValue.RED;
-            } else {
-              return AccessoryValue.OFF;
-            }
-          } else {
-            //Vertical
-            if ((from == Orientation.WEST && to == Orientation.EAST) || (from == Orientation.EAST && to == Orientation.WEST)) {
-              return AccessoryValue.GREEN;
-            } else if ((from == Orientation.NORTH && to == Orientation.SOUTH) || (from == Orientation.SOUTH && to == Orientation.NORTH)) {
-              return AccessoryValue.GREEN;
-            } else if ((from == Orientation.SOUTH && to == Orientation.EAST) || (from == Orientation.EAST && to == Orientation.SOUTH)) {
-              return AccessoryValue.RED;
-            } else if ((from == Orientation.WEST && to == Orientation.NORTH) || (from == Orientation.NORTH && to == Orientation.WEST)) {
-              return AccessoryValue.RED;
-            } else {
-              return AccessoryValue.OFF;
-            }
-          }
-        }
-        default -> {
-          return AccessoryValue.OFF;
-        }
-      }
-    } else {
-      return AccessoryValue.OFF;
-    }
-  }
+  
+  
+  
+  
+  
 
   @Override
   public Rectangle getTileBounds() {

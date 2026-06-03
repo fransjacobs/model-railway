@@ -36,7 +36,6 @@ import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.SensorBean;
 import static jcs.entities.TileBean.TileType.BLOCK;
-import static jcs.entities.TileBean.TileType.CROSS;
 import static jcs.entities.TileBean.TileType.CROSSING;
 import static jcs.entities.TileBean.TileType.CURVED;
 import static jcs.entities.TileBean.TileType.END;
@@ -48,6 +47,7 @@ import static jcs.entities.TileBean.TileType.SWITCH;
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.BlockBean;
 import static jcs.ui.layout.tiles.Tile.GRID;
+import static jcs.entities.TileBean.TileType.CROSS_SWITCH;
 
 /**
  * Factory object to create Tiles and cache pointMap
@@ -58,10 +58,11 @@ public class TileCache {
   // Keep the records of the used id sequence number
   private static final AtomicInteger straightIdSeq = new AtomicInteger(0);
   private static final AtomicInteger crossingIdSeq = new AtomicInteger(0);
+  private static final AtomicInteger crossIdSeq = new AtomicInteger(0);
   private static final AtomicInteger curvedIdSeq = new AtomicInteger(0);
   private static final AtomicInteger switchIdSeq = new AtomicInteger(0);
   private static final AtomicInteger threeWaySwitchIdSeq = new AtomicInteger(0);
-  private static final AtomicInteger crossIdSeq = new AtomicInteger(0);
+  private static final AtomicInteger crossSwitchIdSeq = new AtomicInteger(0);
   private static final AtomicInteger signalIdSeq = new AtomicInteger(0);
   private static final AtomicInteger sensorIdSeq = new AtomicInteger(0);
   private static final AtomicInteger blockIdSeq = new AtomicInteger(0);
@@ -106,6 +107,10 @@ public class TileCache {
         crossingIdSeq.incrementAndGet();
         return "cr-" + crossingIdSeq.get();
       }
+      case CROSS -> {
+        crossIdSeq.incrementAndGet();
+        return "cx-" + crossIdSeq.get();
+      }
       case CURVED -> {
         curvedIdSeq.incrementAndGet();
         return "ct-" + curvedIdSeq.get();
@@ -118,9 +123,9 @@ public class TileCache {
         threeWaySwitchIdSeq.incrementAndGet();
         return "tw-" + threeWaySwitchIdSeq.get();
       }
-      case CROSS -> {
-        crossIdSeq.incrementAndGet();
-        return "cs-" + crossIdSeq.get();
+      case CROSS_SWITCH -> {
+        crossSwitchIdSeq.incrementAndGet();
+        return "cs-" + crossSwitchIdSeq.get();
       }
       case SIGNAL -> {
         signalIdSeq.incrementAndGet();
@@ -173,7 +178,10 @@ public class TileCache {
       case CROSSING -> {
         tile = new Crossing(tileBean);
         crossingIdSeq.set(maxIdSeq(crossingIdSeq.get(), getIdSeq(tileBean.getId())));
-
+      }
+      case CROSS -> {
+        tile = new Cross(tileBean);
+        crossIdSeq.set(maxIdSeq(crossIdSeq.get(), getIdSeq(tileBean.getId())));
       }
       case CURVED -> {
         tile = new Curved(tileBean);
@@ -207,11 +215,11 @@ public class TileCache {
           Logger.trace("Can't add tile " + tile.getId() + " as an AccessorListener as the AccessoryId is null...");
         }
       }
-      case CROSS -> {
-        tile = new Cross(tileBean);
+      case CROSS_SWITCH -> {
+        tile = new CrossSwitch(tileBean);
         tile.setAccessoryBean(tileBean.getAccessoryBean());
 
-        crossIdSeq.set(maxIdSeq(crossIdSeq.get(), getIdSeq(tileBean.getId())));
+        crossSwitchIdSeq.set(maxIdSeq(crossSwitchIdSeq.get(), getIdSeq(tileBean.getId())));
         if (showValues && tileBean.getAccessoryBean() != null) {
           tile.setAccessoryValue((tileBean.getAccessoryBean()).getAccessoryValue());
         }
@@ -300,14 +308,16 @@ public class TileCache {
         tile = new Straight(orientation, center);
       case CROSSING ->
         tile = new Crossing(orientation, center);
+      case CROSS ->
+        tile = new Cross(orientation, center);
       case CURVED ->
         tile = new Curved(orientation, center);
       case SWITCH ->
         tile = new Switch(orientation, direction, center);
       case THREEWAY ->
         tile = new ThreeWaySwitch(orientation, direction, center);
-      case CROSS ->
-        tile = new Cross(orientation, direction, center);
+      case CROSS_SWITCH ->
+        tile = new CrossSwitch(orientation, direction, center);
       case SIGNAL ->
         tile = new Signal(orientation, center);
       case SENSOR ->
@@ -337,6 +347,9 @@ public class TileCache {
       case CROSSING -> {
         crossingIdSeq.decrementAndGet();
       }
+      case CROSS -> {
+        crossIdSeq.decrementAndGet();
+      }
       case CURVED -> {
         curvedIdSeq.decrementAndGet();
       }
@@ -346,8 +359,8 @@ public class TileCache {
       case THREEWAY -> {
         threeWaySwitchIdSeq.decrementAndGet();
       }
-      case CROSS -> {
-        crossIdSeq.decrementAndGet();
+      case CROSS_SWITCH -> {
+        crossSwitchIdSeq.decrementAndGet();
       }
       case SIGNAL -> {
         signalIdSeq.decrementAndGet();
@@ -383,6 +396,7 @@ public class TileCache {
     switchIdSeq.set(0);
     threeWaySwitchIdSeq.set(0);
     crossIdSeq.set(0);
+    crossSwitchIdSeq.set(0);
     signalIdSeq.set(0);
     sensorIdSeq.set(0);
     blockIdSeq.set(0);

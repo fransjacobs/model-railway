@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 Frans Jacobs.
+ * Copyright 2025 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,59 +23,86 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.TileBean;
-import jcs.ui.layout.tiles.Cross;
+import jcs.ui.layout.tiles.CrossSwitch;
 import jcs.ui.layout.tiles.Tile;
 import org.tinylog.Logger;
 
-public class CrossTileTester extends javax.swing.JFrame {
+public class CrossSwitchTileTester extends javax.swing.JFrame {
 
-  private Tile crossEast;
-  private Tile crossSouth;
-  private Tile crossWest;
-  private Tile crossNorth;
+  private Tile crossEastR;
+  private Tile crossSouthR;
+  private Tile crossWestR;
+  private Tile crossNorthR;
+
+  private Tile crossEastL;
+  private Tile crossSouthL;
+  private Tile crossWestL;
+  private Tile crossNorthL;
 
   /**
    * Creates new form TileTester
    *
    * @param title
    */
-  public CrossTileTester(String title) {
+  public CrossSwitchTileTester(String title) {
     super(title);
     initComponents();
 
     createTiles();
-    this.dotGridCanvas.setPaintGrid(false);
 
     this.setVisible(true);
   }
 
   private void createTiles() {
 
-    crossEast = new Cross(TileBean.Orientation.EAST, 60, 60);
-    crossEast.setId("east");
-    crossEast.setTrackRouteColor(Color.MAGENTA);
-    crossEast.setRouteValue(AccessoryValue.GREEN);
+    crossEastR = new CrossSwitch(TileBean.Orientation.EAST, TileBean.Direction.RIGHT, 60, 60);
+    crossEastR.setId("eastR");
+    crossEastR.setTrackRouteColor(Color.MAGENTA);
+    crossEastR.setRouteValue(AccessoryValue.GREEN);
 
-    crossSouth = new Cross(TileBean.Orientation.SOUTH, 180, 60);
-    crossSouth.setId("south");
-    crossSouth.setTrackRouteColor(Color.YELLOW);
-    crossSouth.setRouteValue(AccessoryValue.RED);
+    crossSouthR = new CrossSwitch(TileBean.Orientation.SOUTH, TileBean.Direction.RIGHT, 180, 60);
+    crossSouthR.setId("southR");
+    crossSouthR.setTrackRouteColor(Color.YELLOW);
+    crossSouthR.setRouteValue(AccessoryValue.RED);
 
-    crossNorth = new Cross(TileBean.Orientation.NORTH, 260, 100);
-    crossNorth.setId("north");
-    crossNorth.setTrackRouteColor(Color.blue);
-    crossNorth.setRouteValue(AccessoryValue.GREEN);
-    
-    
-    crossWest = new Cross(TileBean.Orientation.WEST, 380, 60);
-    crossWest.setId("west");
-    crossWest.setTrackRouteColor(Color.CYAN);
+    crossWestR = new CrossSwitch(TileBean.Orientation.WEST, TileBean.Direction.RIGHT, 380, 60);
+    crossWestR.setId("westR");
+    crossWestR.setTrackRouteColor(Color.CYAN);
 
+    crossNorthR = new CrossSwitch(TileBean.Orientation.NORTH, TileBean.Direction.RIGHT, 180, 220);
+    crossNorthR.setId("northR");
+    crossNorthR.setTrackRouteColor(Color.blue);
+    crossNorthR.setRouteValue(AccessoryValue.GREEN);
 
-    dotGridCanvas.add(crossEast);
-    dotGridCanvas.add(crossSouth);
-    dotGridCanvas.add(crossWest);
-    dotGridCanvas.add(crossNorth);
+    //
+    crossEastL = new CrossSwitch(TileBean.Orientation.EAST, TileBean.Direction.LEFT, 60, 140);
+    crossEastL.setId("eastR");
+    crossEastL.setTrackRouteColor(Color.MAGENTA);
+    crossEastL.setRouteValue(AccessoryValue.GREEN);
+
+    crossSouthL = new CrossSwitch(TileBean.Orientation.SOUTH, TileBean.Direction.LEFT, 260, 60);
+    crossSouthL.setId("southR");
+    crossSouthL.setTrackRouteColor(Color.YELLOW);
+    crossSouthL.setRouteValue(AccessoryValue.RED);
+
+    crossWestL = new CrossSwitch(TileBean.Orientation.WEST, TileBean.Direction.LEFT, 380, 140);
+    crossWestL.setId("westR");
+    crossWestL.setTrackRouteColor(Color.CYAN);
+
+    crossNorthL = new CrossSwitch(TileBean.Orientation.NORTH, TileBean.Direction.LEFT, 260, 220);
+    crossNorthL.setId("northR");
+    crossNorthL.setTrackRouteColor(Color.blue);
+    crossNorthL.setRouteValue(AccessoryValue.GREEN);
+
+    dotGridCanvas.add(crossEastR);
+    dotGridCanvas.add(crossSouthR);
+    dotGridCanvas.add(crossWestR);
+    dotGridCanvas.add(crossNorthR);
+
+    dotGridCanvas.add(crossEastL);
+    dotGridCanvas.add(crossSouthL);
+    dotGridCanvas.add(crossWestL);
+    dotGridCanvas.add(crossNorthL);
   }
 
   /**
@@ -93,6 +120,7 @@ public class CrossTileTester extends javax.swing.JFrame {
     northTileBtn = new javax.swing.JToggleButton();
     selectSouthTileBtn = new javax.swing.JToggleButton();
     drawCenterBtn = new javax.swing.JToggleButton();
+    greenRedBtn = new javax.swing.JToggleButton();
     dotGridCanvas = new jcs.ui.layout.tiles.ui.DotGridCanvas();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -169,6 +197,17 @@ public class CrossTileTester extends javax.swing.JFrame {
     });
     toolBar.add(drawCenterBtn);
 
+    greenRedBtn.setText("Red");
+    greenRedBtn.setFocusable(false);
+    greenRedBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    greenRedBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+    greenRedBtn.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        greenRedBtnActionPerformed(evt);
+      }
+    });
+    toolBar.add(greenRedBtn);
+
     toolbarPanel.add(toolBar);
 
     getContentPane().add(toolbarPanel, java.awt.BorderLayout.NORTH);
@@ -180,32 +219,70 @@ public class CrossTileTester extends javax.swing.JFrame {
   }// </editor-fold>//GEN-END:initComponents
 
   private void northTileBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_northTileBtnActionPerformed
-    Logger.trace(crossNorth.getId() + "...");
-    this.crossNorth.setShowRoute(this.northTileBtn.isSelected());
+    Logger.trace(crossNorthR.getId() + "...");
+    this.crossNorthR.setShowRoute(this.northTileBtn.isSelected());
+    this.crossNorthL.setShowRoute(this.northTileBtn.isSelected());
   }//GEN-LAST:event_northTileBtnActionPerformed
 
   private void eastTileBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_eastTileBtnActionPerformed
-    this.crossEast.setShowRoute(this.eastTileBtn.isSelected());
+    this.crossEastR.setShowRoute(this.eastTileBtn.isSelected());
+    this.crossEastL.setShowRoute(this.eastTileBtn.isSelected());
   }//GEN-LAST:event_eastTileBtnActionPerformed
 
   private void westTileBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_westTileBtnActionPerformed
-    this.crossWest.setShowRoute(this.westTileBtn.isSelected());
+    this.crossWestR.setShowRoute(this.westTileBtn.isSelected());
+    this.crossWestL.setShowRoute(this.westTileBtn.isSelected());
   }//GEN-LAST:event_westTileBtnActionPerformed
 
   private void southTileBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_southTileBtnActionPerformed
-    this.crossSouth.setShowRoute(this.southTileBtn.isSelected());
+    this.crossSouthR.setShowRoute(this.southTileBtn.isSelected());
+    this.crossSouthL.setShowRoute(this.southTileBtn.isSelected());
   }//GEN-LAST:event_southTileBtnActionPerformed
 
   private void selectSouthTileBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectSouthTileBtnActionPerformed
-    this.crossSouth.setSelected(this.selectSouthTileBtn.isSelected());
+    this.crossSouthR.setSelected(this.selectSouthTileBtn.isSelected());
+    this.crossSouthL.setSelected(this.selectSouthTileBtn.isSelected());
   }//GEN-LAST:event_selectSouthTileBtnActionPerformed
 
   private void drawCenterBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_drawCenterBtnActionPerformed
-    this.crossEast.setDrawCenterPoint(this.drawCenterBtn.isSelected());
-    this.crossSouth.setDrawCenterPoint(this.drawCenterBtn.isSelected());
-    this.crossWest.setDrawCenterPoint(this.drawCenterBtn.isSelected());
-    this.crossNorth.setDrawCenterPoint(this.drawCenterBtn.isSelected());
+    this.crossEastR.setDrawCenterPoint(this.drawCenterBtn.isSelected());
+    this.crossEastL.setDrawCenterPoint(this.drawCenterBtn.isSelected());
+    this.crossSouthR.setDrawCenterPoint(this.drawCenterBtn.isSelected());
+    this.crossSouthL.setDrawCenterPoint(this.drawCenterBtn.isSelected());
+    this.crossWestR.setDrawCenterPoint(this.drawCenterBtn.isSelected());
+    this.crossWestL.setDrawCenterPoint(this.drawCenterBtn.isSelected());
+    this.crossNorthR.setDrawCenterPoint(this.drawCenterBtn.isSelected());
+    this.crossNorthL.setDrawCenterPoint(this.drawCenterBtn.isSelected());
   }//GEN-LAST:event_drawCenterBtnActionPerformed
+
+  private void greenRedBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_greenRedBtnActionPerformed
+    boolean red = this.greenRedBtn.isSelected();
+    if (red) {
+      this.greenRedBtn.setText("Green");
+      if (this.westTileBtn.isSelected()) {
+        this.crossWestR.setAccessoryValue(AccessoryValue.OFF);
+        this.crossWestR.setRouteValue(AccessoryValue.GREEN);
+
+        this.crossWestL.setAccessoryValue(AccessoryValue.OFF);
+        this.crossWestL.setRouteValue(AccessoryValue.GREEN);
+      } else {
+        this.crossWestR.setAccessoryValue(AccessoryValue.GREEN);
+        this.crossWestL.setAccessoryValue(AccessoryValue.GREEN);
+      }
+    } else {
+      this.greenRedBtn.setText("Red");
+      if (this.westTileBtn.isSelected()) {
+        this.crossWestR.setAccessoryValue(AccessoryValue.OFF);
+        this.crossWestR.setRouteValue(AccessoryValue.RED);
+
+        this.crossWestL.setAccessoryValue(AccessoryValue.OFF);
+        this.crossWestL.setRouteValue(AccessoryValue.RED);
+      } else {
+        this.crossWestR.setAccessoryValue(AccessoryValue.RED);
+        this.crossWestL.setAccessoryValue(AccessoryValue.RED);
+      }
+    }
+  }//GEN-LAST:event_greenRedBtnActionPerformed
 
   /**
    * @param args the command line arguments
@@ -213,7 +290,7 @@ public class CrossTileTester extends javax.swing.JFrame {
   public static void main(String args[]) {
     try {
       UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
-      CrossTileTester.setDefaultLookAndFeelDecorated(true);
+      CrossSwitchTileTester.setDefaultLookAndFeelDecorated(true);
 
     } catch (ClassNotFoundException
             | InstantiationException
@@ -224,7 +301,7 @@ public class CrossTileTester extends javax.swing.JFrame {
 
     /* Create and display the form */
     java.awt.EventQueue.invokeLater(() -> {
-      CrossTileTester app = new CrossTileTester("Cross Tile Tester");
+      CrossSwitchTileTester app = new CrossSwitchTileTester("Switch Tile Tester");
       app.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
       Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
       app.setLocation(dim.width / 2 - app.getSize().width / 2, dim.height / 2 - app.getSize().height / 2);
@@ -236,6 +313,7 @@ public class CrossTileTester extends javax.swing.JFrame {
   private jcs.ui.layout.tiles.ui.DotGridCanvas dotGridCanvas;
   private javax.swing.JToggleButton drawCenterBtn;
   private javax.swing.JToggleButton eastTileBtn;
+  private javax.swing.JToggleButton greenRedBtn;
   private javax.swing.JToggleButton northTileBtn;
   private javax.swing.JToggleButton selectSouthTileBtn;
   private javax.swing.JToggleButton southTileBtn;

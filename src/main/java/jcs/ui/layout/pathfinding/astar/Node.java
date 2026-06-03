@@ -105,6 +105,10 @@ public class Node implements Comparable<Node> {
     return this.tile.isCrossing();
   }
 
+  public boolean isCross() {
+    return this.tile.isCross();
+  }
+
   public boolean isHorizontal() {
     return this.tile.isHorizontal();
   }
@@ -124,15 +128,15 @@ public class Node implements Comparable<Node> {
 
   public Point getIncomingPoint() {
     //Find the edge connection point between the previous and the from node
-    if (this.previousNode != null) {
-      return getIncomingPoint(this.previousNode.tile.getEdgePoints().values());
+    if (previousNode != null) {
+      return getIncomingPoint(previousNode.tile.getEdgePoints().values());
     }
 
     return null;
   }
 
   public Orientation getConnectingSide(Point connectingPoint) {
-    return this.tile.getEdgeOrientations().get(connectingPoint);
+    return tile.getEdgeOrientations().get(connectingPoint);
   }
 
   public Orientation getIncomingSide() {
@@ -158,7 +162,7 @@ public class Node implements Comparable<Node> {
   }
 
   public boolean isVertical() {
-    return this.tile.isVertical();
+    return tile.isVertical();
   }
 
   public double getG() {
@@ -249,7 +253,7 @@ public class Node implements Comparable<Node> {
 
     path.add(this);
     if (previousNode != null && previousNode.isJunction()) {
-      previousNode.accessoryState = this.getAccessoryStatus(previousNode, this);
+      previousNode.accessoryState = getAccessoryStatus(previousNode, this);
     }
   }
 
@@ -261,7 +265,7 @@ public class Node implements Comparable<Node> {
 
   @Override
   public String toString() {
-    return "Node id: " + getId() + " inComing: " + this.incomingSide + ", g: " + g + ", h: " + h + ", prevId: " + (previousNode != null ? previousNode.getId() : "") + (accessoryState != null ? " [" + accessoryState + "]" : "");
+    return "Node id: " + getId() + " inComing: " + incomingSide + ", g: " + g + ", h: " + h + ", prevId: " + (previousNode != null ? previousNode.getId() : "") + (accessoryState != null ? " [" + accessoryState + "]" : "");
   }
 
 }

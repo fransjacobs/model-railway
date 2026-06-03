@@ -48,6 +48,7 @@ import jcs.entities.TileBean;
 import jcs.entities.TileBean.Direction;
 import jcs.entities.TileBean.Orientation;
 import jcs.entities.TileBean.TileType;
+import static jcs.entities.TileBean.TileType.CROSS_SWITCH;
 import jcs.ui.layout.LayoutUtil;
 import static jcs.ui.layout.tiles.Block.BLOCK_HEIGHT;
 import static jcs.ui.layout.tiles.Block.BLOCK_WIDTH;
@@ -230,6 +231,8 @@ public abstract class Tile extends JComponent implements Serializable {
         return switch (tileType) {
           case BLOCK ->
             BLOCK_WIDTH;
+          case CROSS_SWITCH ->
+            DEFAULT_WIDTH * 2;
           case CROSS ->
             DEFAULT_WIDTH * 2;
           default ->
@@ -251,6 +254,8 @@ public abstract class Tile extends JComponent implements Serializable {
         return switch (tileType) {
           case BLOCK ->
             BLOCK_HEIGHT;
+          case CROSS_SWITCH ->
+            DEFAULT_HEIGHT * 2;
           case CROSS ->
             DEFAULT_HEIGHT * 2;
           default ->
@@ -261,11 +266,11 @@ public abstract class Tile extends JComponent implements Serializable {
   }
 
   protected void populateModel() {
-    if (this.blockBean != null) {
-      this.model.setBlockState(this.blockBean.getBlockState());
-      this.model.setLocomotive(this.blockBean.getLocomotive());
-      this.model.setArrivalSuffix(this.blockBean.getArrivalSuffix());
-      this.model.setLogicalDirection(LocomotiveBean.Direction.get(this.blockBean.getLogicalDirection()));
+    if (blockBean != null) {
+      model.setBlockState(blockBean.getBlockState());
+      model.setLocomotive(blockBean.getLocomotive());
+      model.setArrivalSuffix(blockBean.getArrivalSuffix());
+      model.setLogicalDirection(LocomotiveBean.Direction.get(blockBean.getLogicalDirection()));
     }
     if (accessoryBean != null) {
       setAccessoryBean(accessoryBean);
@@ -459,7 +464,6 @@ public abstract class Tile extends JComponent implements Serializable {
 //  public boolean isReverseArrival() {
 //    return model.isReverseArrival();
 //  }
-
   public void reverseArrival() {
     model.reverseArrival();
     if (blockBean != null) {
@@ -832,7 +836,7 @@ public abstract class Tile extends JComponent implements Serializable {
   }
 
   public boolean isJunction() {
-    return TileType.SWITCH == tileType || TileType.CROSS == tileType;
+    return TileType.SWITCH == tileType || TileType.CROSS_SWITCH == tileType;
   }
 
   public boolean isBlock() {
@@ -854,6 +858,10 @@ public abstract class Tile extends JComponent implements Serializable {
 
   public boolean isCrossing() {
     return TileType.CROSSING == tileType;
+  }
+
+  public boolean isCross() {
+    return TileType.CROSS == tileType;
   }
 
   public List<TileBean> getNeighbours() {

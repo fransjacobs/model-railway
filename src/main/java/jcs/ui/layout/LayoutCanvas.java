@@ -57,7 +57,6 @@ import jcs.entities.TileBean.Orientation;
 import static jcs.entities.TileBean.Orientation.SOUTH;
 import jcs.entities.TileBean.TileType;
 import static jcs.entities.TileBean.TileType.BLOCK;
-import static jcs.entities.TileBean.TileType.CROSS;
 import static jcs.entities.TileBean.TileType.CURVED;
 import static jcs.entities.TileBean.TileType.END;
 import static jcs.entities.TileBean.TileType.SENSOR;
@@ -79,6 +78,7 @@ import jcs.ui.layout.tiles.Switch;
 import jcs.ui.layout.tiles.Tile;
 import jcs.ui.layout.tiles.TileCache;
 import org.tinylog.Logger;
+import static jcs.entities.TileBean.TileType.CROSS_SWITCH;
 
 /**
  * This canvas / Panel is used to draw the layout
@@ -497,7 +497,7 @@ public class LayoutCanvas extends JPanel {
               curY = snapPoint.y - Tile.GRID - Tile.GRID * 2;
             }
           }
-          case CROSS -> {
+          case CROSS_SWITCH -> {
             switch (selectedTile.getOrientation()) {
               case SOUTH -> {
                 curX = snapPoint.x - Tile.GRID;
@@ -566,7 +566,7 @@ public class LayoutCanvas extends JPanel {
       case SWITCH -> {
         //this.executor.execute(() -> toggleSwitch((Switch) tile));
       }
-      case CROSS -> {
+      case CROSS_SWITCH -> {
         //this.executor.execute(() -> toggleSwitch((Switch) tile));
       }
       default -> {
@@ -628,7 +628,7 @@ public class LayoutCanvas extends JPanel {
           SwitchDialog td = new SwitchDialog(getParentFrame(), (Switch) selectedTile);
           td.setVisible(true);
         }
-        case CROSS -> {
+        case CROSS_SWITCH -> {
           SwitchDialog td = new SwitchDialog(getParentFrame(), (Switch) selectedTile);
           td.setVisible(true);
         }
@@ -725,7 +725,7 @@ public class LayoutCanvas extends JPanel {
         showRotate = true;
         showDelete = true;
       }
-      case CROSS -> {
+      case CROSS_SWITCH -> {
         showProperties = true;
         showFlip = true;
         showRotate = true;
@@ -1381,11 +1381,11 @@ public class LayoutCanvas extends JPanel {
   }//GEN-LAST:event_turnoutRightMIActionPerformed
 
   private void crossLeftMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_crossLeftMIActionPerformed
-    addTile(TileType.CROSS, Direction.LEFT);
+    addTile(TileType.CROSS_SWITCH, Direction.LEFT);
   }//GEN-LAST:event_crossLeftMIActionPerformed
 
   private void crossRightMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_crossRightMIActionPerformed
-    addTile(TileType.CROSS, Direction.RIGHT);
+    addTile(TileType.CROSS_SWITCH, Direction.RIGHT);
   }//GEN-LAST:event_crossRightMIActionPerformed
 
   private void signalMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_signalMIActionPerformed
