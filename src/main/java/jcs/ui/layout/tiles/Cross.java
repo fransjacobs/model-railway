@@ -25,6 +25,7 @@ import java.util.Set;
 import javax.swing.UIManager;
 import jcs.entities.TileBean;
 import jcs.entities.TileBean.Orientation;
+import static jcs.entities.TileBean.Orientation.EAST;
 import static jcs.entities.TileBean.Orientation.NORTH;
 import static jcs.entities.TileBean.Orientation.SOUTH;
 import static jcs.entities.TileBean.Orientation.WEST;
@@ -162,9 +163,9 @@ public class Cross extends Tile {
         //EAST
         neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy - Tile.GRID * 2));
         neighbors.put(Orientation.WEST, new Point(cx, cy + Tile.GRID * 2));
-        
-        neighbors.put(Orientation.NORTH, new Point(cx + Tile.GRID * 2, cy - Tile.GRID * 2));
-        neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
+
+        neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
+        neighbors.put(Orientation.SOUTH, new Point(cx + Tile.GRID * 2, cy + Tile.GRID * 2));
       }
     }
     return neighbors;
@@ -221,55 +222,22 @@ public class Cross extends Tile {
         //hoe zat dit ook alsweer?
         edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy - Tile.GRID));
         edgeConnections.put(Orientation.WEST, new Point(cx, cy + Tile.GRID));
-        
-        edgeConnections.put(Orientation.NORTH, new Point(cx + Tile.GRID * 2, cy - Tile.GRID));
-        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
-      }
-    }
-    return edgeConnections;
-  }
-  
-  
 
-  public Map<Orientation, Point> getEdgePointsCurve() {
-    Map<Orientation, Point> edgeConnections = new HashMap<>();
-
-    Orientation orientation = this.getOrientation();
-    int cx = this.getCenterX();
-    int cy = this.getCenterY();
-
-    switch (orientation) {
-      case SOUTH -> {
-        //       |  |
-        // b  \  |\ |
-        edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
-        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
-      }
-      case WEST -> {
-        //       |/ |
-        // t /   |  |
-        edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
         edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
-      }
-      case NORTH -> {
-        //  t \
-        edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
-        edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
-      }
-      default -> {
-        //EAST b /
-        edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
-        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
+        edgeConnections.put(Orientation.SOUTH, new Point(cx + Tile.GRID * 2, cy + Tile.GRID));
       }
     }
     return edgeConnections;
   }
 
-  
-  
-  
-  
-  
+  @Override
+  public boolean isDiagonalOpposite(Orientation from, Orientation to) {
+    if ((from == EAST && to == WEST) || (from == WEST && to == EAST)) {
+      return true;
+    } else {
+      return (from == NORTH && to == SOUTH) || (from == SOUTH && to == NORTH);
+    }
+  }
 
   @Override
   public Rectangle getTileBounds() {

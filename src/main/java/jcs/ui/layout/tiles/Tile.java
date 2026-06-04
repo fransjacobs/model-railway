@@ -931,6 +931,10 @@ public abstract class Tile extends JComponent implements Serializable {
     return AccessoryValue.OFF;
   }
 
+  public boolean isDiagonalOpposite(Orientation from, Orientation to) {
+    return false;
+  }
+
   protected ChangeListener createChangeListener() {
     return getHandler();
   }

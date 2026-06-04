@@ -58,16 +58,16 @@ public class Node implements Comparable<Node> {
   }
 
   public int getX() {
-    return this.tile.getCenterX();
+    return tile.getCenterX();
   }
 
   public int getY() {
-    return this.tile.getCenterY();
+    return tile.getCenterY();
   }
 
   public int getX(String suffix) {
     if (isBlock()) {
-      return ((Block) this.tile).getNeighborPoint(suffix).x;
+      return ((Block) tile).getNeighborPoint(suffix).x;
     } else {
       return getX();
     }
@@ -75,7 +75,7 @@ public class Node implements Comparable<Node> {
 
   public int getY(String suffix) {
     if (isBlock()) {
-      return ((Block) this.tile).getNeighborPoint(suffix).y;
+      return ((Block) tile).getNeighborPoint(suffix).y;
     } else {
       return getY();
     }
@@ -83,43 +83,47 @@ public class Node implements Comparable<Node> {
 
   public Point getAltPoint(String suffix) {
     if (isBlock()) {
-      return ((Block) this.tile).getAltPoint(suffix);
+      return ((Block) tile).getAltPoint(suffix);
     } else {
-      return this.tile.getCenter();
+      return tile.getCenter();
     }
   }
 
   public boolean isBlock() {
-    return this.tile.isBlock();
+    return tile.isBlock();
   }
 
   public boolean isJunction() {
-    return this.tile.isJunction();
+    return tile.isJunction();
   }
 
   public boolean isDirectional() {
-    return this.tile.isDirectional();
+    return tile.isDirectional();
   }
 
   public boolean isCrossing() {
-    return this.tile.isCrossing();
+    return tile.isCrossing();
   }
 
   public boolean isCross() {
-    return this.tile.isCross();
+    return tile.isCross();
   }
 
   public boolean isHorizontal() {
-    return this.tile.isHorizontal();
+    return tile.isHorizontal();
   }
 
   public AccessoryValue accessoryValueForRoute(Orientation from, Orientation to) {
-    return this.tile.accessoryValueForRoute(from, to);
+    return tile.accessoryValueForRoute(from, to);
+  }
+
+  public boolean isDiagonalOpposite(Orientation from, Orientation to) {
+    return tile.isDiagonalOpposite(from, to);
   }
 
   public Point getIncomingPoint(Collection<Point> fromPoints) {
     for (Point p : fromPoints) {
-      if (this.tile.getEdgePoints().containsValue(p)) {
+      if (tile.getEdgePoints().containsValue(p)) {
         return p;
       }
     }
@@ -243,6 +247,25 @@ public class Node implements Comparable<Node> {
       return routeValue;
     } else {
       return AccessoryValue.OFF;
+    }
+  }
+
+  boolean isDiagonalOpposite(Node from, Node to) {
+    if (from == null || to == null) {
+      return false;
+    }
+    if (from.getPreviousNode() != null && from.getTile().isCross()) {
+      Logger.trace("From: " + from.getPreviousNode().getId() + " via " + from.getId() + " to " + to.getId());
+      Point fromInComingPoint = from.getIncomingPoint();
+      Orientation fromInComingSide = from.getConnectingSide(fromInComingPoint);
+      Point toInComingPoint = to.getIncomingPoint(from.getTile().getEdgePoints().values());
+      Orientation fromExitSide = from.getConnectingSide(toInComingPoint);
+
+      boolean diagonal = from.isDiagonalOpposite(fromInComingSide, fromExitSide);
+      Logger.trace(from.getId() + " from " + fromInComingSide + " to " + fromExitSide + " id diagonal " + diagonal);
+      return diagonal;
+    } else {
+      return false;
     }
   }
 

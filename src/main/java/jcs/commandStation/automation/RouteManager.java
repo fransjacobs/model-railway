@@ -156,7 +156,7 @@ class RouteManager {
   }
 
   boolean reserveRoute() {
-    if (this.route == null) {
+    if (route == null) {
       return false;
     }
     Logger.trace("Reserving route " + route);

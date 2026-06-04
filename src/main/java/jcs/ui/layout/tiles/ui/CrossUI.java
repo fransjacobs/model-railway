@@ -58,7 +58,7 @@ public class CrossUI extends TileUI {
   }
 
   protected void renderRouteNorthWestSouthEast(Graphics2D g2, JComponent c) {
-    int[] xPoints = new int[]{165, 235, 635, 565};
+    int[] xPoints = new int[]{185, 215, 615, 585};
     int[] yPoints = new int[]{0, 0, 400, 400};
 
     g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
@@ -67,7 +67,7 @@ public class CrossUI extends TileUI {
   }
 
   protected void renderRouteNorthEastSouthWest(Graphics2D g2, JComponent c) {
-    int[] xPoints = new int[]{165, 235, 635, 565};
+    int[] xPoints = new int[]{185, 215, 615, 585};
     int[] yPoints = new int[]{400, 400, 0, 0};
 
     g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
