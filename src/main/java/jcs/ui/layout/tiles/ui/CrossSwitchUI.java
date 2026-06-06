@@ -178,6 +178,15 @@ public class CrossSwitchUI extends TileUI implements MouseListener, MouseMotionL
     g2.setPaint(Color.cyan);
     g2.fillPolygon(xPoints, yPoints, xPoints.length);
   }
+  
+//NOT working route drawings
+//
+//East  W -> N & N -> W
+//North W -> S & S -> W
+//West  W -> N & N -> W
+//South W -> S & S -> W
+  
+  
 
   @Override
   public void renderTile(Graphics2D g2, JComponent c) {
@@ -409,3 +418,13 @@ public class CrossSwitchUI extends TileUI implements MouseListener, MouseMotionL
   }
 
 }
+/*
+NOT working route drawings
+
+East  W -> N & N -> W
+North W -> S & S -> W
+West  W -> N & N -> W
+South W -> S & S -> W
+
+
+*/

@@ -49,13 +49,11 @@ import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
-import jcs.commandStation.entities.DrivewayCommand;
 import jcs.entities.AccessoryBean;
 import jcs.entities.AccessoryBean.SignalValue;
 import jcs.entities.BlockBean;
 import jcs.entities.RouteBean;
 import jcs.entities.RouteBean.RouteState;
-import jcs.entities.RouteElementBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.table.model.DrivewayCommandTableModel;
 import org.tinylog.Logger;
@@ -607,44 +605,77 @@ public class DrivewaySettingsPanel extends JPanel {
     drivewayCommandTable.getColumnModel().getColumn(4).setCellRenderer(centerRenderer);
   }
 
-  class RouteBeanByNameSorter implements Comparator<RouteBean> {
+  class RouteBeanByIdSorter implements Comparator<RouteBean> {
 
     @Override
     public int compare(RouteBean a, RouteBean b) {
-      //Avoid null pointers
-      String aa = a.getId();
-      if (aa == null) {
-        aa = "aaa";
+      return parseRouteKey(a.getId()).compareTo(parseRouteKey(b.getId()));
+    }
+
+    // Parses a full route id like "[bk-3-]->[bk-2+]" into a RouteKey
+    private RouteKey parseRouteKey(String id) {
+      if (id == null) {
+        return new RouteKey(new SortKey(0, 0), new SortKey(0, 0));
       }
-      String bb = b.getId();
-      if (bb == null) {
-        bb = "aaa";
+      String[] parts = id.split("->");
+      SortKey from = parts.length > 0 ? parseSortKey(parts[0]) : new SortKey(0, 0);
+      SortKey to = parts.length > 1 ? parseSortKey(parts[1]) : new SortKey(0, 0);
+      return new RouteKey(from, to);
+    }
+
+    // Parses a single side like "[bk-3-]" or "[bk-12+]" into a SortKey
+    private SortKey parseSortKey(String part) {
+      // Strip surrounding brackets and "bk-" prefix -> "3-" or "12+"
+      String stripped = part.replace("[", "").replace("]", "").replace("bk-", "").trim();
+      if (stripped.isEmpty()) {
+        return new SortKey(0, 0);
       }
 
-      return aa.compareTo(bb);
+      char suffix = stripped.charAt(stripped.length() - 1);
+      String numeric = stripped.substring(0, stripped.length() - 1);
+
+      int number;
+      try {
+        number = Integer.parseInt(numeric);
+      } catch (NumberFormatException e) {
+        number = 0;
+      }
+
+      // + sorts before - so map + -> 0, - -> 1
+      int suffixOrder = (suffix == '+') ? 0 : 1;
+      return new SortKey(number, suffixOrder);
+    }
+
+    private record SortKey(int number, int suffix) implements Comparable<SortKey> {
+
+      @Override
+      public int compareTo(SortKey other) {
+        int cmp = Integer.compare(this.number, other.number);
+        if (cmp != 0) {
+          return cmp;
+        }
+        return Integer.compare(this.suffix, other.suffix);
+      }
+    }
+
+    private record RouteKey(SortKey from, SortKey to) implements Comparable<RouteKey> {
+
+      @Override
+      public int compareTo(RouteKey other) {
+        int cmp = this.from.compareTo(other.from);
+        if (cmp != 0) {
+          return cmp;
+        }
+        return this.to.compareTo(other.to);
+      }
     }
   }
 
   class RouteBeanListModel extends AbstractListModel<RouteBean> {
-
-    private static final long serialVersionUID = 7283441416133755341L;
-
     private final List<RouteBean> all;
 
     public RouteBeanListModel() {
       all = new ArrayList<>();
-    }
-
-    public void showTurnoutsOnly(boolean flag) {
-      fireContentsChanged(this, 0, getSize());
-    }
-
-    public void showSignalsOnly(boolean flag) {
-      fireContentsChanged(this, 0, getSize());
-    }
-
-    public void resetFilters() {
-      fireContentsChanged(this, 0, getSize());
     }
 
     @Override
@@ -658,22 +689,21 @@ public class DrivewaySettingsPanel extends JPanel {
     }
 
     public void add(RouteBean element) {
-      if (all.add(element)) {
-        Collections.sort(all, new RouteBeanByNameSorter());
-        fireContentsChanged(this, 0, getSize());
-      }
+      all.add(element);
+      Collections.sort(all, new RouteBeanByIdSorter());
+      fireContentsChanged(this, 0, getSize());
     }
 
     public void addAll(RouteBean elements[]) {
       Collection<RouteBean> c = Arrays.asList(elements);
       all.addAll(c);
-      Collections.sort(all, new RouteBeanByNameSorter());
+      Collections.sort(all, new RouteBeanByIdSorter());
       fireContentsChanged(this, 0, getSize());
     }
 
     public void addAll(Collection<RouteBean> elements) {
       all.addAll(elements);
-      Collections.sort(all, new RouteBeanByNameSorter());
+      Collections.sort(all, new RouteBeanByIdSorter());
       fireContentsChanged(this, 0, getSize());
     }
 
@@ -708,12 +738,11 @@ public class DrivewaySettingsPanel extends JPanel {
 
     public boolean removeElement(RouteBean element) {
       boolean removed = all.remove(element);
-      if (removed) {
-        Collections.sort(all, new RouteBeanByNameSorter());
-        fireContentsChanged(this, 0, getSize());
-      }
+      Collections.sort(all, new RouteBeanByIdSorter());
+      fireContentsChanged(this, 0, getSize());
       return removed;
     }
+
   }
 
   private DefaultComboBoxModel<AccessoryBean.SignalValue> getSignalValueComboBoxModel(AccessoryBean signal) {

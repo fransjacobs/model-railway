@@ -21,10 +21,14 @@ import java.awt.Component;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.net.URL;
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import javax.swing.AbstractListModel;
 import javax.swing.ImageIcon;
 import jcs.JCS;
 import jcs.entities.AccessoryBean;
@@ -42,17 +46,15 @@ import org.tinylog.Logger;
  */
 public class RoutesDialog extends javax.swing.JDialog {
 
-  private static final long serialVersionUID = -7597770366968399204L;
+  private final RouteBeanListModel routeListModel;
 
+  @SuppressWarnings("unused")
   private final boolean readonly;
-  private final List<RouteBean> routes;
   private RouteBean selectedRoute;
 
   private final LayoutCanvas layoutCanvas;
 
   private Color defaultRouteColor;
-
-  private final ExecutorService executor;
 
   /**
    * Creates new form RoutesDialog
@@ -65,11 +67,13 @@ public class RoutesDialog extends javax.swing.JDialog {
   public RoutesDialog(java.awt.Frame parent, boolean modal, LayoutCanvas layoutCanvas, boolean readonly) {
     super(parent, modal);
     this.readonly = readonly;
-    this.routes = new LinkedList<>();
     this.layoutCanvas = layoutCanvas;
-    this.executor = Executors.newSingleThreadExecutor();
+    this.routeListModel = new RouteBeanListModel();
 
     initComponents();
+    this.routeList.setModel(routeListModel);
+
+    loadRoutes();
 
     URL iconUrl = JCS.class.getResource("/media/jcs-train-64.png");
     if (iconUrl != null) {
@@ -90,19 +94,9 @@ public class RoutesDialog extends javax.swing.JDialog {
   }
 
   void loadRoutes() {
-    this.routes.clear();
-    this.routes.addAll(PersistenceFactory.getService().getRoutes());
-    String[] listData = new String[routes.size()];
-
-    for (int i = 0; i < listData.length; i++) {
-      listData[i] = routes.get(i).getId() + "";
-    }
-    this.routeList.setListData(listData);
-  }
-
-  private void routeLayout() {
-    layoutCanvas.routeLayout();
-    loadRoutes();
+    routeListModel.clear();
+    List<RouteBean> routes = PersistenceFactory.getService().getRoutes();
+    routeListModel.addAll(routes);
   }
 
   private void setSelectedRoute(RouteBean route) {
@@ -112,7 +106,6 @@ public class RoutesDialog extends javax.swing.JDialog {
     selectedRoute = route;
 
     if (selectedRoute != null) {
-
       Logger.trace("Setting Selected " + selectedRoute.toLogString());
       showRoute(selectedRoute);
     }
@@ -242,16 +235,16 @@ public class RoutesDialog extends javax.swing.JDialog {
   }// </editor-fold>//GEN-END:initComponents
 
     private void routeListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_routeListValueChanged
-      if (!evt.getValueIsAdjusting() && !this.routes.isEmpty() && this.routeList.getSelectedIndex() >= 0) {
-        RouteBean selected = this.routes.get(this.routeList.getSelectedIndex());
+      if (!evt.getValueIsAdjusting() && routeList.getModel().getSize() > 0 && this.routeList.getSelectedIndex() >= 0) {
+        RouteBean selected = this.routeList.getSelectedValue();
         setSelectedRoute(selected);
       }
     }//GEN-LAST:event_routeListValueChanged
 
     private void routeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_routeBtnActionPerformed
       if (layoutCanvas != null) {
-        //executor.execute(() -> routeLayout());
-        routeLayout();
+        layoutCanvas.routeLayout();
+        loadRoutes();
       } else {
         Logger.warn("Can not perform routing as the LayoutPanel is null " + evt.paramString());
       }
@@ -316,10 +309,150 @@ public class RoutesDialog extends javax.swing.JDialog {
     super.dispose();
   }
 
+  class RouteBeanByIdSorter implements Comparator<RouteBean> {
+
+    @Override
+    public int compare(RouteBean a, RouteBean b) {
+      return parseRouteKey(a.getId()).compareTo(parseRouteKey(b.getId()));
+    }
+
+    // Parses a full route id like "[bk-3-]->[bk-2+]" into a RouteKey
+    private RouteKey parseRouteKey(String id) {
+      if (id == null) {
+        return new RouteKey(new SortKey(0, 0), new SortKey(0, 0));
+      }
+      String[] parts = id.split("->");
+      SortKey from = parts.length > 0 ? parseSortKey(parts[0]) : new SortKey(0, 0);
+      SortKey to = parts.length > 1 ? parseSortKey(parts[1]) : new SortKey(0, 0);
+      return new RouteKey(from, to);
+    }
+
+    // Parses a single side like "[bk-3-]" or "[bk-12+]" into a SortKey
+    private SortKey parseSortKey(String part) {
+      // Strip surrounding brackets and "bk-" prefix -> "3-" or "12+"
+      String stripped = part.replace("[", "").replace("]", "").replace("bk-", "").trim();
+      if (stripped.isEmpty()) {
+        return new SortKey(0, 0);
+      }
+
+      char suffix = stripped.charAt(stripped.length() - 1);
+      String numeric = stripped.substring(0, stripped.length() - 1);
+
+      int number;
+      try {
+        number = Integer.parseInt(numeric);
+      } catch (NumberFormatException e) {
+        number = 0;
+      }
+
+      // + sorts before - so map + -> 0, - -> 1
+      int suffixOrder = (suffix == '+') ? 0 : 1;
+      return new SortKey(number, suffixOrder);
+    }
+
+    private record SortKey(int number, int suffix) implements Comparable<SortKey> {
+
+      @Override
+      public int compareTo(SortKey other) {
+        int cmp = Integer.compare(this.number, other.number);
+        if (cmp != 0) {
+          return cmp;
+        }
+        return Integer.compare(this.suffix, other.suffix);
+      }
+    }
+
+    private record RouteKey(SortKey from, SortKey to) implements Comparable<RouteKey> {
+
+      @Override
+      public int compareTo(RouteKey other) {
+        int cmp = this.from.compareTo(other.from);
+        if (cmp != 0) {
+          return cmp;
+        }
+        return this.to.compareTo(other.to);
+      }
+    }
+  }
+
+  class RouteBeanListModel extends AbstractListModel<RouteBean> {
+
+    private final List<RouteBean> all;
+
+    public RouteBeanListModel() {
+      all = new ArrayList<>();
+    }
+
+    @Override
+    public int getSize() {
+      return all.size();
+    }
+
+    @Override
+    public RouteBean getElementAt(int index) {
+      return (RouteBean) all.toArray()[index];
+    }
+
+    public void add(RouteBean element) {
+      all.add(element);
+      Collections.sort(all, new RouteBeanByIdSorter());
+      fireContentsChanged(this, 0, getSize());
+    }
+
+    public void addAll(RouteBean elements[]) {
+      Collection<RouteBean> c = Arrays.asList(elements);
+      all.addAll(c);
+      Collections.sort(all, new RouteBeanByIdSorter());
+      fireContentsChanged(this, 0, getSize());
+    }
+
+    public void addAll(Collection<RouteBean> elements) {
+      all.addAll(elements);
+      Collections.sort(all, new RouteBeanByIdSorter());
+      fireContentsChanged(this, 0, getSize());
+    }
+
+    public void clear() {
+      all.clear();
+      fireContentsChanged(this, 0, getSize());
+    }
+
+    public boolean contains(RouteBean element) {
+      return all.contains(element);
+    }
+
+    public RouteBean firstElement() {
+      if (!all.isEmpty()) {
+        return all.get(0);
+      } else {
+        return null;
+      }
+    }
+
+    public Iterator<RouteBean> iterator() {
+      return all.iterator();
+    }
+
+    public RouteBean lastElement() {
+      if (!all.isEmpty()) {
+        return all.get(all.size() - 1);
+      } else {
+        return null;
+      }
+    }
+
+    public boolean removeElement(RouteBean element) {
+      boolean removed = all.remove(element);
+      Collections.sort(all, new RouteBeanByIdSorter());
+      fireContentsChanged(this, 0, getSize());
+      return removed;
+    }
+  }
+
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JButton deleteRoutesBtn;
   private javax.swing.JButton routeBtn;
-  private javax.swing.JList<String> routeList;
+  private javax.swing.JList<RouteBean> routeList;
   private javax.swing.JScrollPane routeListSP;
   private javax.swing.JToolBar routeToolBar;
   private javax.swing.JPanel toolbarPanel;
