@@ -329,6 +329,7 @@ public class LayoutCanvas extends JPanel {
     //Only show selected tile in edit mode
     if (selectedTile != null && Mode.CONTROL != mode) {
       selectedTile.setSelected(true);
+      repaint(selectedTile.getTileBounds());
     }
 
     if (previousSelected != null && selectedTile != null && previousSelected.getId().equals(selectedTile.getId())) {

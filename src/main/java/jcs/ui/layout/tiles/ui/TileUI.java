@@ -91,7 +91,6 @@ public abstract class TileUI extends ComponentUI {
           this.renderHeight = RENDER_GRID * 4;
         }
       }
-
       case BLOCK -> {
         if (tile.isHorizontal()) {
           this.renderWidth = RENDER_WIDTH * 3;

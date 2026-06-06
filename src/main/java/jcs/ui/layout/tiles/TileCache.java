@@ -70,7 +70,7 @@ public class TileCache {
   private static final AtomicInteger endIdSeq = new AtomicInteger(0);
 
   static final Map<String, Tile> idMap = new ConcurrentHashMap<>();
-  static final Map<Point, Tile> pointMap = new ConcurrentHashMap<>();
+  static final Map<Point, Tile> centerPointMap = new ConcurrentHashMap<>();
   static final Map<Point, Tile> altPointMap = new ConcurrentHashMap<>();
 
   private static final BlockingQueue<JCSActionEvent> eventsQueue = new LinkedBlockingQueue<>();
@@ -181,6 +181,7 @@ public class TileCache {
       }
       case CROSS -> {
         tile = new Cross(tileBean);
+        tile.getModel().setShowCenter(true);
         crossIdSeq.set(maxIdSeq(crossIdSeq.get(), getIdSeq(tileBean.getId())));
       }
       case CURVED -> {
@@ -217,6 +218,8 @@ public class TileCache {
       }
       case CROSS_SWITCH -> {
         tile = new CrossSwitch(tileBean);
+        tile.getModel().setShowCenter(true);
+
         tile.setAccessoryBean(tileBean.getAccessoryBean());
 
         crossSwitchIdSeq.set(maxIdSeq(crossSwitchIdSeq.get(), getIdSeq(tileBean.getId())));
@@ -387,8 +390,10 @@ public class TileCache {
   public static void flush() {
     deRegisterListeners();
     idMap.clear();
-    pointMap.clear();
+    centerPointMap.clear();
     altPointMap.clear();
+    maxX.set(0);
+    maxY.set(0);
 
     straightIdSeq.set(0);
     crossingIdSeq.set(0);
@@ -423,7 +428,7 @@ public class TileCache {
   public static List<Tile> loadTiles(boolean showvalues) {
     deRegisterListeners();
     altPointMap.clear();
-    pointMap.clear();
+    centerPointMap.clear();
     idMap.clear();
     maxX.set(0);
     maxY.set(0);
@@ -432,20 +437,40 @@ public class TileCache {
 
     for (TileBean tb : tileBeans) {
       Tile tile = createTile(tb, showvalues);
-      calculateMaxCoordinates(tile.tileX, tile.tileY);
-      idMap.put(tile.id, tile);
-      pointMap.put(tile.getCenter(), tile);
-      //Alternative point(s) to be able to find all pointIds
-      if (!tile.getAltPoints().isEmpty()) {
-        Set<Point> alt = tile.getAltPoints();
-        for (Point ap : alt) {
-          altPointMap.put(ap, tile);
-        }
-      }
+      
+      addTile(tile);
+      
+//      calculateMaxCoordinates(tile.tileX, tile.tileY);
+//      idMap.put(tile.id, tile);
+//      centerPointMap.put(tile.getCenter(), tile);
+//      //Alternative point(s) to be able to find all pointIds
+//      if (!tile.getAltPoints().isEmpty()) {
+//        Set<Point> alt = tile.getAltPoints();
+//        for (Point ap : alt) {
+//          altPointMap.put(ap, tile);
+//        }
+//      }
     }
 
     Logger.trace("Loaded " + idMap.size() + " Tiles. Max: (" + maxX + "," + maxY + ")");
     return idMap.values().stream().collect(Collectors.toList());
+  }
+
+  static void addTile(Tile tile) {
+    if (tile == null) {
+      return;
+    }
+    calculateMaxCoordinates(tile.tileX, tile.tileY);
+    idMap.put(tile.id, tile);
+    centerPointMap.put(tile.getCenter(), tile);
+    
+    //Alternative point(s) to be able to find all pointIds
+    if (!tile.getAltPoints().isEmpty()) {
+      Set<Point> alt = tile.getAltPoints();
+      for (Point ap : alt) {
+        altPointMap.put(ap, tile);
+      }
+    }
   }
 
   public static List<Tile> getTiles() {
@@ -472,7 +497,7 @@ public class TileCache {
       throw new IllegalArgumentException("Tile cannot be null");
     }
 
-    pointMap.put(tile.getCenter(), tile);
+    centerPointMap.put(tile.getCenter(), tile);
     idMap.put(tile.getId(), tile);
 
     //Alternative point(s) to be able to find all pointIds
@@ -538,7 +563,7 @@ public class TileCache {
       for (Point ap : rps) {
         altPointMap.remove(ap);
       }
-      pointMap.remove(tile.getCenter());
+      centerPointMap.remove(tile.getCenter());
       idMap.remove(tile.id);
       TileBean tb = tile.getTileBean();
       PersistenceFactory.getService().remove(tb);
@@ -549,7 +574,7 @@ public class TileCache {
   }
 
   public static Tile findTile(Point cp) {
-    Tile result = pointMap.get(cp);
+    Tile result = centerPointMap.get(cp);
     if (result == null) {
       result = altPointMap.get(cp);
     }
@@ -562,14 +587,14 @@ public class TileCache {
   }
 
   public static boolean contains(Point p) {
-    return pointMap.containsKey(p);
+    return centerPointMap.containsKey(p);
   }
 
   public static boolean canMoveTo(Tile tile, Point p) {
     //check if a tile exist with point p
     //Check if the cache contains a Cp of a tile on p
     //Logger.trace("Checking " + tile.id + " New Point (" + p.x + "," + p.y + ")");
-    if (pointMap.containsKey(p) && !tile.getCenter().equals(p) && !tile.getAltPoints().contains(p)) {
+    if (centerPointMap.containsKey(p) && !tile.getCenter().equals(p) && !tile.getAltPoints().contains(p)) {
       return false;
     }
     //Check if the cache contains a Cp on any of the Alt point is case of a Block or Cross
@@ -580,7 +605,7 @@ public class TileCache {
     //Check with the tile on the new Cp with the new alt pointIds if that is also free...
     Set<Point> altPoints = tile.getAltPoints(p);
     for (Point ap : altPoints) {
-      if (pointMap.containsKey(ap) && !tile.getCenter().equals(ap) && !tile.getAltPoints().contains(ap)) {
+      if (centerPointMap.containsKey(ap) && !tile.getCenter().equals(ap) && !tile.getAltPoints().contains(ap)) {
         return false;
       }
       if (altPointMap.containsKey(ap) && !tile.getAltPoints().contains(ap)) {
@@ -605,7 +630,7 @@ public class TileCache {
       }
       //pointIds.remove(tile.getId());
       idMap.remove(tile.id);
-      pointMap.remove(tile.getCenter());
+      centerPointMap.remove(tile.getCenter());
 
       tile.setCenter(p);
       addAndSaveTile(tile);
@@ -616,7 +641,7 @@ public class TileCache {
   }
 
   public static Tile rotateTile(Tile tile) {
-    if (!pointMap.containsKey(tile.getCenter())) {
+    if (!centerPointMap.containsKey(tile.getCenter())) {
       Logger.warn("Tile " + tile.getId() + " NOT in cache!");
     }
 
@@ -628,7 +653,7 @@ public class TileCache {
     tile.rotate();
 
     //update
-    pointMap.put(tile.getCenter(), tile);
+    centerPointMap.put(tile.getCenter(), tile);
     for (Point ep : tile.getAltPoints()) {
       altPointMap.put(ep, tile);
     }
@@ -647,7 +672,7 @@ public class TileCache {
   }
 
   private static Tile flipTile(Tile tile, boolean horizontal) {
-    if (!pointMap.containsKey(tile.getCenter())) {
+    if (!centerPointMap.containsKey(tile.getCenter())) {
       Logger.warn("Tile " + tile.getId() + " NOT in cache!");
     }
 
@@ -662,7 +687,7 @@ public class TileCache {
       tile.flipVertical();
     }
     //update
-    pointMap.put(tile.getCenter(), tile);
+    centerPointMap.put(tile.getCenter(), tile);
     for (Point ep : tile.getAltPoints()) {
       altPointMap.put(ep, tile);
     }

@@ -65,7 +65,11 @@ public class TileBean implements Comparable, Serializable {
   protected String name;
 
   public TileBean() {
-    this(null, TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 0, 0, null, null, null);
+    this(null, TileType.STRAIGHT, Orientation.EAST, 0, 0);
+  }
+
+  public TileBean(String id, TileType tileType, Orientation orientation, Integer x, Integer y) {
+    this(id, tileType, orientation, Direction.CENTER, x, y, null, null, null);
   }
 
   public TileBean(String id, TileType tileType, Orientation orientation, Direction direction, Integer x, Integer y) {

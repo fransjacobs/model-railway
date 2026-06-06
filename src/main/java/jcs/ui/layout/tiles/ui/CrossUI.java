@@ -39,16 +39,7 @@ public class CrossUI extends TileUI {
     return new CrossUI();
   }
 
-  protected void renderNorthWestSouthEast(Graphics2D g2, JComponent c) {
-    int[] xPoints = new int[]{165, 235, 635, 565};
-    int[] yPoints = new int[]{0, 0, 400, 400};
-
-    g2.setStroke(new BasicStroke(4, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-    g2.setPaint(trackColor);
-    g2.fillPolygon(xPoints, yPoints, xPoints.length);
-  }
-
-  protected void renderNorthEastSouthWest(Graphics2D g2, JComponent c) {
+  protected void renderEastWest(Graphics2D g2, JComponent c) {
     int[] xPoints = new int[]{165, 235, 635, 565};
     int[] yPoints = new int[]{400, 400, 0, 0};
 
@@ -57,18 +48,27 @@ public class CrossUI extends TileUI {
     g2.fillPolygon(xPoints, yPoints, xPoints.length);
   }
 
-  protected void renderRouteNorthWestSouthEast(Graphics2D g2, JComponent c) {
+  protected void renderRouteEastWest(Graphics2D g2, JComponent c) {
     int[] xPoints = new int[]{185, 215, 615, 585};
-    int[] yPoints = new int[]{0, 0, 400, 400};
+    int[] yPoints = new int[]{400, 400, 0, 0};
 
     g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
     g2.setPaint(trackRouteColor);
     g2.fillPolygon(xPoints, yPoints, xPoints.length);
   }
 
-  protected void renderRouteNorthEastSouthWest(Graphics2D g2, JComponent c) {
+  protected void renderNorthSouth(Graphics2D g2, JComponent c) {
+    int[] xPoints = new int[]{165, 235, 635, 565};
+    int[] yPoints = new int[]{0, 0, 400, 400};
+
+    g2.setStroke(new BasicStroke(4, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+    g2.setPaint(trackColor);
+    g2.fillPolygon(xPoints, yPoints, xPoints.length);
+  }
+
+  protected void renderRouteNorthSouth(Graphics2D g2, JComponent c) {
     int[] xPoints = new int[]{185, 215, 615, 585};
-    int[] yPoints = new int[]{400, 400, 0, 0};
+    int[] yPoints = new int[]{0, 0, 400, 400};
 
     g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
     g2.setPaint(trackRouteColor);
@@ -77,22 +77,44 @@ public class CrossUI extends TileUI {
 
   @Override
   public void renderTile(Graphics2D g2, JComponent c) {
-    renderNorthWestSouthEast(g2, c);
-    renderNorthEastSouthWest(g2, c);
+    renderEastWest(g2, c);
+    renderNorthSouth(g2, c);
   }
 
   @Override
   public void renderTileRoute(Graphics2D g2, JComponent c) {
     Tile tile = (Tile) c;
     Orientation incomingSide = tile.getIncomingSide();
-    if (tile.isHorizontal() && (Orientation.NORTH == incomingSide || Orientation.SOUTH == incomingSide)) {
-      renderRouteNorthWestSouthEast(g2, c);
-    } else if (tile.isHorizontal() && (Orientation.EAST == incomingSide || Orientation.WEST == incomingSide)) {
-      renderRouteNorthEastSouthWest(g2, c);
-    } else if (tile.isVertical() && (Orientation.WEST == incomingSide || Orientation.EAST == incomingSide)) {
-      renderRouteNorthEastSouthWest(g2, c);
-    } else {
-      renderRouteNorthWestSouthEast(g2, c);
+    switch (incomingSide) {
+      case NORTH -> {
+        if (tile.isHorizontal()) {
+          renderRouteNorthSouth(g2, c);
+        } else {
+          renderRouteEastWest(g2, c);
+        }
+      }
+      case WEST -> {
+        if (tile.isHorizontal()) {
+          renderRouteEastWest(g2, c);
+        } else {
+          renderRouteNorthSouth(g2, c);
+        }
+      }
+      case SOUTH -> {
+        if (tile.isHorizontal()) {
+          renderRouteNorthSouth(g2, c);
+        } else {
+          renderRouteEastWest(g2, c);
+        }
+      }
+      default -> {
+        //EAST
+        if (tile.isHorizontal()) {
+          renderRouteEastWest(g2, c);
+        } else {
+          renderRouteNorthSouth(g2, c);
+        }
+      }
     }
   }
 

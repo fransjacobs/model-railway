@@ -46,8 +46,8 @@ import jcs.ui.layout.tiles.ui.TileUI;
  */
 public class CrossSwitch extends Switch implements AccessoryEventListener {
 
-  public static final int CROSS_WIDTH = DEFAULT_WIDTH * 2;
-  public static final int CROSS_HEIGHT = DEFAULT_HEIGHT * 2;
+  public static final int CROSS_SWITCH_WIDTH = DEFAULT_WIDTH * 2;
+  public static final int CROSS_SWITCH_HEIGHT = DEFAULT_HEIGHT * 2;
 
   public static final Color VERY_LIGHT_RED = new Color(255, 102, 102);
   public static final Color LIGHT_RED = new Color(255, 51, 51);

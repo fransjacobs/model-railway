@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
@@ -86,9 +87,8 @@ public abstract class Tile extends JComponent implements Serializable {
   public static final Color DEFAULT_WARN_COLOR = Color.red;
 
   public static final String MODEL_CHANGED_PROPERTY = "model";
-//  public static final String CONTENT_AREA_FILLED_CHANGED_PROPERTY = "contentAreaFilled";
-  private static final long serialVersionUID = -8117888635518142366L;
 
+  //private static final long serialVersionUID = -8117888635518142366L;
   /**
    * The data model that determines the Tile state.
    */
@@ -461,9 +461,6 @@ public abstract class Tile extends JComponent implements Serializable {
     }
   }
 
-//  public boolean isReverseArrival() {
-//    return model.isReverseArrival();
-//  }
   public void reverseArrival() {
     model.reverseArrival();
     if (blockBean != null) {
@@ -1007,4 +1004,47 @@ public abstract class Tile extends JComponent implements Serializable {
       return new Rectangle(tileX - renderWidth / 2, tileY - renderHeight / 2, renderWidth, renderHeight);
     }
   }
+
+  @Override
+  public int hashCode() {
+    int hash = 7;
+    hash = 29 * hash + Objects.hashCode(this.id);
+    hash = 29 * hash + Objects.hashCode(this.tileX);
+    hash = 29 * hash + Objects.hashCode(this.tileY);
+    hash = 29 * hash + Objects.hashCode(this.model.getTileOrienation());
+    hash = 29 * hash + Objects.hashCode(this.tileDirection);
+    hash = 29 * hash + Objects.hashCode(this.tileType);
+    return hash;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    final Tile other = (Tile) obj;
+    if (!Objects.equals(this.id, other.id)) {
+      return false;
+    }
+    if (!Objects.equals(this.tileX, other.tileX)) {
+      return false;
+    }
+    if (!Objects.equals(this.tileY, other.tileY)) {
+      return false;
+    }
+    if (this.model.getTileOrienation() != other.model.getTileOrienation()) {
+      return false;
+    }
+    if (this.tileDirection != other.tileDirection) {
+      return false;
+    }
+    return this.tileType == other.tileType;
+  }
+
 }
