@@ -207,23 +207,6 @@ public class LayoutCanvas extends JPanel {
     return component;
   }
 
-  private void paintDotGridold(Graphics g) {
-    int width = getWidth();
-    int height = getHeight();
-    Graphics2D gc = (Graphics2D) g;
-    Paint p = gc.getPaint();
-    gc.setPaint(Color.black);
-
-    int xOffset = 0;
-    int yOffset = 0;
-    for (int r = 0; r < width; r++) {
-      for (int c = 0; c < height; c++) {
-        gc.drawOval((r * 20 * 2) + xOffset - 2, (c * 20 * 2) + yOffset - 2, 4, 4);
-      }
-    }
-    gc.setPaint(p);
-  }
-
   private void paintDotGrid(Graphics g) {
     Graphics2D gc = (Graphics2D) g;
     Paint p = gc.getPaint();
