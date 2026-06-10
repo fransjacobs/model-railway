@@ -278,7 +278,6 @@ public abstract class Tile extends JComponent implements Serializable {
     if (sensorBean != null) {
       setSensorBean(sensorBean);
     }
-
   }
 
   public TileBean getTileBean() {

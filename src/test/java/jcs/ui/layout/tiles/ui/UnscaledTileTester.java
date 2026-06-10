@@ -15,11 +15,13 @@
  */
 package jcs.ui.layout.tiles.ui;
 
+import java.awt.Color;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import jcs.entities.AccessoryBean;
 import jcs.entities.TileBean;
 import jcs.entities.TileBean.Orientation;
 import jcs.entities.TileBean.TileType;
@@ -34,7 +36,7 @@ import org.tinylog.Logger;
  */
 public class UnscaledTileTester extends JFrame {
 
-  private final Tile tile;
+  private Tile tile;
 
   public UnscaledTileTester() {
     initComponents();
@@ -43,10 +45,11 @@ public class UnscaledTileTester extends JFrame {
     this.tileCB.setModel(createTileTypeComboBoxModel());
 
     tile = TileCache.createTile(TileType.CROSS_SWITCH, Orientation.EAST, TileBean.Direction.RIGHT, 220, 100);
-    
+
     //canvas.setExpanded(this.scaleCB.isSelected());
     //tile.setScaleImage(this.scaleCB.isSelected());
-    
+    tile.setTrackRouteColor(Color.blue);
+
     canvas.add(tile);
     centerSP.getViewport().revalidate();
     pack();
@@ -85,7 +88,9 @@ public class UnscaledTileTester extends JFrame {
 
   private void changeOrientation() {
     Orientation orientation = (Orientation) this.orientationCB.getSelectedItem();
-    tile.setOrientation(orientation);
+    tile.setIncomingSide(orientation);
+    
+    //tile.setOrientation(orientation);
   }
 
   /**
@@ -98,11 +103,12 @@ public class UnscaledTileTester extends JFrame {
     accessoryBG = new javax.swing.ButtonGroup();
     nPanel = new javax.swing.JPanel();
     scaleCB = new javax.swing.JCheckBox();
+    tileLbl = new javax.swing.JLabel();
     tileCB = new javax.swing.JComboBox<>();
     rotateButton = new javax.swing.JButton();
     orientationLabel = new javax.swing.JLabel();
     orientationCB = new javax.swing.JComboBox<>();
-    incomingSuffix = new javax.swing.JLabel();
+    showRouteCB = new javax.swing.JCheckBox();
     showCenterCB = new javax.swing.JCheckBox();
     offButton = new javax.swing.JRadioButton();
     greenButton = new javax.swing.JRadioButton();
@@ -121,6 +127,10 @@ public class UnscaledTileTester extends JFrame {
       }
     });
     nPanel.add(scaleCB);
+
+    tileLbl.setText("Tile Type");
+    tileLbl.setToolTipText("");
+    nPanel.add(tileLbl);
 
     tileCB.setPreferredSize(new java.awt.Dimension(150, 22));
     tileCB.addActionListener(new java.awt.event.ActionListener() {
@@ -149,8 +159,13 @@ public class UnscaledTileTester extends JFrame {
     });
     nPanel.add(orientationCB);
 
-    incomingSuffix.setText("Arrival side");
-    nPanel.add(incomingSuffix);
+    showRouteCB.setText("Show Route");
+    showRouteCB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        showRouteCBActionPerformed(evt);
+      }
+    });
+    nPanel.add(showRouteCB);
 
     showCenterCB.setText("Show Center");
     showCenterCB.addActionListener(new java.awt.event.ActionListener() {
@@ -219,7 +234,18 @@ public class UnscaledTileTester extends JFrame {
   }//GEN-LAST:event_orientationCBActionPerformed
 
   private void tileCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tileCBActionPerformed
-    tile.setTileType((TileType) tileCB.getSelectedItem());
+
+    Tile newTile = TileCache.createTile((TileType) tileCB.getSelectedItem(), (Orientation) orientationCB.getSelectedItem(), TileBean.Direction.RIGHT, 220, 100);
+
+    if (tile.getTileType() != newTile.getTileType()) {
+      Logger.trace("Chaneg tile to " + newTile.getTileType());
+      canvas.remove(tile);
+      tile = newTile;
+      canvas.add(tile);
+      canvas.repaint();
+      centerSP.getViewport().revalidate();
+    }
+
   }//GEN-LAST:event_tileCBActionPerformed
 
   private void showCenterCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showCenterCBActionPerformed
@@ -247,16 +273,43 @@ public class UnscaledTileTester extends JFrame {
   }//GEN-LAST:event_centerSPComponentResized
 
   private void offButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_offButtonActionPerformed
-    // TODO add your handling code here:
+    if (showRouteCB.isSelected()) {
+      tile.setRouteValue(AccessoryBean.AccessoryValue.OFF);
+    } else {
+      tile.setAccessoryValue(AccessoryBean.AccessoryValue.OFF);
+    }
   }//GEN-LAST:event_offButtonActionPerformed
 
   private void greenButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_greenButtonActionPerformed
-    // TODO add your handling code here:
+    if (showRouteCB.isSelected()) {
+      tile.setRouteValue(AccessoryBean.AccessoryValue.GREEN);
+    } else {
+      tile.setAccessoryValue(AccessoryBean.AccessoryValue.GREEN);
+    }
   }//GEN-LAST:event_greenButtonActionPerformed
 
   private void redButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_redButtonActionPerformed
-    // TODO add your handling code here:
+    if (showRouteCB.isSelected()) {
+      tile.setRouteValue(AccessoryBean.AccessoryValue.RED);
+    } else {
+      tile.setAccessoryValue(AccessoryBean.AccessoryValue.RED);
+    }
   }//GEN-LAST:event_redButtonActionPerformed
+
+  private void showRouteCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showRouteCBActionPerformed
+
+    if (this.greenButton.isSelected()) {
+      tile.setRouteValue(AccessoryBean.AccessoryValue.GREEN);
+    } else if (this.redButton.isSelected()) {
+      tile.setRouteValue(AccessoryBean.AccessoryValue.RED);
+    } else {
+      tile.setRouteValue(AccessoryBean.AccessoryValue.OFF);
+    }
+
+    tile.setShowRoute(showRouteCB.isSelected());
+
+    //tile.repaint();
+  }//GEN-LAST:event_showRouteCBActionPerformed
 
   /**
    * @param args the command line arguments
@@ -283,7 +336,6 @@ public class UnscaledTileTester extends JFrame {
   private jcs.ui.layout.tiles.ui.UnscaledCanvas canvas;
   private javax.swing.JScrollPane centerSP;
   private javax.swing.JRadioButton greenButton;
-  private javax.swing.JLabel incomingSuffix;
   private javax.swing.JPanel nPanel;
   private javax.swing.JRadioButton offButton;
   private javax.swing.JComboBox<Orientation> orientationCB;
@@ -292,6 +344,8 @@ public class UnscaledTileTester extends JFrame {
   private javax.swing.JButton rotateButton;
   private javax.swing.JCheckBox scaleCB;
   private javax.swing.JCheckBox showCenterCB;
+  private javax.swing.JCheckBox showRouteCB;
   private javax.swing.JComboBox<TileType> tileCB;
+  private javax.swing.JLabel tileLbl;
   // End of variables declaration//GEN-END:variables
 }

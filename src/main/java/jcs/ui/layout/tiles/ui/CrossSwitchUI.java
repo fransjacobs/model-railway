@@ -112,11 +112,15 @@ public class CrossSwitchUI extends TileUI implements MouseListener, MouseMotionL
 
     int[] xPoints, yPoints;
     if (TileBean.Direction.RIGHT.equals(direction)) {
-      xPoints = new int[]{400, 400, 167, 230};
-      yPoints = new int[]{170, 230, 0, 0};
+      // \\
+      //  \
+      xPoints = new int[]{170, 230, 390, 330};
+      yPoints = new int[]{0, 0, 160, 160};
     } else {
-      xPoints = new int[]{400, 400, 170, 230};
-      yPoints = new int[]{230, 170, 400, 400};
+      //  //
+      //  /
+      xPoints = new int[]{570, 630, 470, 410};
+      yPoints = new int[]{0, 0, 160, 160};
     }
 
     g2.setStroke(new BasicStroke(4, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
@@ -130,11 +134,15 @@ public class CrossSwitchUI extends TileUI implements MouseListener, MouseMotionL
 
     int[] xPoints, yPoints;
     if (TileBean.Direction.RIGHT.equals(direction)) {
-      xPoints = new int[]{420, 400, 190, 210};
-      yPoints = new int[]{210, 210, 0, 0};
+      // \\
+      //  \
+      xPoints = new int[]{190, 210, 370, 350};
+      yPoints = new int[]{0, 0, 160, 160};
     } else {
-      xPoints = new int[]{400, 400, 190, 210};
-      yPoints = new int[]{210, 190, 400, 400};
+      //  //
+      //  /
+      xPoints = new int[]{570, 630, 470, 410};
+      yPoints = new int[]{0, 0, 160, 160};
     }
 
     g2.setStroke(new BasicStroke(4, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
@@ -148,11 +156,15 @@ public class CrossSwitchUI extends TileUI implements MouseListener, MouseMotionL
 
     int[] xPoints, yPoints;
     if (TileBean.Direction.RIGHT.equals(direction)) {
-      xPoints = new int[]{400, 400, 570, 630};
-      yPoints = new int[]{170, 230, 400, 400};
+      //  \
+      //  \\
+      xPoints = new int[]{400, 460, 630, 570};
+      yPoints = new int[]{240, 240, 400, 400};
     } else {
-      xPoints = new int[]{400, 400, 570, 630};
-      yPoints = new int[]{230, 170, 0, 0};
+      //   /
+      //  //
+      xPoints = new int[]{400, 340, 170, 230};
+      yPoints = new int[]{240, 240, 400, 400};
     }
 
     g2.setStroke(new BasicStroke(4, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
@@ -166,11 +178,15 @@ public class CrossSwitchUI extends TileUI implements MouseListener, MouseMotionL
 
     int[] xPoints, yPoints;
     if (TileBean.Direction.RIGHT.equals(direction)) {
-      xPoints = new int[]{400, 380, 590, 610};
-      yPoints = new int[]{190, 190, 400, 400};
+      //  \
+      //  \\
+      xPoints = new int[]{400, 460, 630, 570};
+      yPoints = new int[]{240, 240, 400, 400};
     } else {
-      xPoints = new int[]{400, 380, 590, 610};
-      yPoints = new int[]{210, 210, 0, 0};
+      //   /
+      //  //
+      xPoints = new int[]{400, 340, 170, 230};
+      yPoints = new int[]{240, 240, 400, 400};
     }
 
     g2.setStroke(new BasicStroke(4, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
@@ -178,16 +194,13 @@ public class CrossSwitchUI extends TileUI implements MouseListener, MouseMotionL
     g2.setPaint(Color.cyan);
     g2.fillPolygon(xPoints, yPoints, xPoints.length);
   }
-  
+
 //NOT working route drawings
 //
 //East  W -> N & N -> W
 //North W -> S & S -> W
 //West  W -> N & N -> W
 //South W -> S & S -> W
-  
-  
-
   @Override
   public void renderTile(Graphics2D g2, JComponent c) {
     Tile tile = (Tile) c;

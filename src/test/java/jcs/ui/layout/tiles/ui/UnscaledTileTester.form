@@ -49,6 +49,12 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="scaleCBActionPerformed"/>
           </Events>
         </Component>
+        <Component class="javax.swing.JLabel" name="tileLbl">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Tile Type"/>
+            <Property name="toolTipText" type="java.lang.String" value=""/>
+          </Properties>
+        </Component>
         <Component class="javax.swing.JComboBox" name="tileCB">
           <Properties>
             <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
@@ -94,10 +100,13 @@
             <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;Orientation&gt;"/>
           </AuxValues>
         </Component>
-        <Component class="javax.swing.JLabel" name="incomingSuffix">
+        <Component class="javax.swing.JCheckBox" name="showRouteCB">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Arrival side"/>
+            <Property name="text" type="java.lang.String" value="Show Route"/>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showRouteCBActionPerformed"/>
+          </Events>
         </Component>
         <Component class="javax.swing.JCheckBox" name="showCenterCB">
           <Properties>
