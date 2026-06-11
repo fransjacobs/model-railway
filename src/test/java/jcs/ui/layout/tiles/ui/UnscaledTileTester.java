@@ -23,6 +23,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import jcs.entities.AccessoryBean;
 import jcs.entities.TileBean;
+import jcs.entities.TileBean.Direction;
 import jcs.entities.TileBean.Orientation;
 import jcs.entities.TileBean.TileType;
 import jcs.ui.layout.tiles.Tile;
@@ -43,6 +44,7 @@ public class UnscaledTileTester extends JFrame {
 
     this.orientationCB.setModel(createOrientationComboBoxModel());
     this.tileCB.setModel(createTileTypeComboBoxModel());
+    this.directionCB.setModel(createDirectionComboBoxModel());
 
     tile = TileCache.createTile(TileType.CROSS_SWITCH, Orientation.EAST, TileBean.Direction.RIGHT, 220, 100);
 
@@ -64,8 +66,17 @@ public class UnscaledTileTester extends JFrame {
     orientationModel.addElement(Orientation.NORTH);
 
     orientationModel.setSelectedItem(Orientation.EAST);
-
     return orientationModel;
+  }
+
+  private ComboBoxModel<Direction> createDirectionComboBoxModel() {
+    DefaultComboBoxModel<Direction> directionModel = new DefaultComboBoxModel();
+    directionModel.addElement(Direction.CENTER);
+    directionModel.addElement(Direction.RIGHT);
+    directionModel.addElement(Direction.LEFT);
+
+    directionModel.setSelectedItem(Direction.CENTER);
+    return directionModel;
   }
 
   private ComboBoxModel<TileType> createTileTypeComboBoxModel() {
@@ -89,7 +100,9 @@ public class UnscaledTileTester extends JFrame {
   private void changeOrientation() {
     Orientation orientation = (Orientation) this.orientationCB.getSelectedItem();
     tile.setIncomingSide(orientation);
-    
+
+    tile.repaint();
+
     //tile.setOrientation(orientation);
   }
 
@@ -105,6 +118,8 @@ public class UnscaledTileTester extends JFrame {
     scaleCB = new javax.swing.JCheckBox();
     tileLbl = new javax.swing.JLabel();
     tileCB = new javax.swing.JComboBox<>();
+    directionLbl = new javax.swing.JLabel();
+    directionCB = new javax.swing.JComboBox<>();
     rotateButton = new javax.swing.JButton();
     orientationLabel = new javax.swing.JLabel();
     orientationCB = new javax.swing.JComboBox<>();
@@ -139,6 +154,16 @@ public class UnscaledTileTester extends JFrame {
       }
     });
     nPanel.add(tileCB);
+
+    directionLbl.setText("Direction");
+    nPanel.add(directionLbl);
+
+    directionCB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        directionCBActionPerformed(evt);
+      }
+    });
+    nPanel.add(directionCB);
 
     rotateButton.setText("Rotate");
     rotateButton.addActionListener(new java.awt.event.ActionListener() {
@@ -235,7 +260,7 @@ public class UnscaledTileTester extends JFrame {
 
   private void tileCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tileCBActionPerformed
 
-    Tile newTile = TileCache.createTile((TileType) tileCB.getSelectedItem(), (Orientation) orientationCB.getSelectedItem(), TileBean.Direction.RIGHT, 220, 100);
+    Tile newTile = TileCache.createTile((TileType) tileCB.getSelectedItem(), (Orientation) orientationCB.getSelectedItem(), (Direction) directionCB.getSelectedItem(), 220, 100);
 
     if (tile.getTileType() != newTile.getTileType()) {
       Logger.trace("Chaneg tile to " + newTile.getTileType());
@@ -311,6 +336,12 @@ public class UnscaledTileTester extends JFrame {
     //tile.repaint();
   }//GEN-LAST:event_showRouteCBActionPerformed
 
+  private void directionCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_directionCBActionPerformed
+    this.tile.setDirection((Direction) this.directionCB.getSelectedItem());
+
+    tile.repaint();
+  }//GEN-LAST:event_directionCBActionPerformed
+
   /**
    * @param args the command line arguments
    */
@@ -335,6 +366,8 @@ public class UnscaledTileTester extends JFrame {
   private javax.swing.ButtonGroup accessoryBG;
   private jcs.ui.layout.tiles.ui.UnscaledCanvas canvas;
   private javax.swing.JScrollPane centerSP;
+  private javax.swing.JComboBox<Direction> directionCB;
+  private javax.swing.JLabel directionLbl;
   private javax.swing.JRadioButton greenButton;
   private javax.swing.JPanel nPanel;
   private javax.swing.JRadioButton offButton;

@@ -71,6 +71,19 @@
             <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;TileType&gt;"/>
           </AuxValues>
         </Component>
+        <Component class="javax.swing.JLabel" name="directionLbl">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Direction"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JComboBox" name="directionCB">
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="directionCBActionPerformed"/>
+          </Events>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;Direction&gt;"/>
+          </AuxValues>
+        </Component>
         <Component class="javax.swing.JButton" name="rotateButton">
           <Properties>
             <Property name="text" type="java.lang.String" value="Rotate"/>
