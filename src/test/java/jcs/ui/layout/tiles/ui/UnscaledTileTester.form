@@ -41,12 +41,12 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
       <SubComponents>
-        <Component class="javax.swing.JCheckBox" name="scaleCB">
+        <Component class="javax.swing.JCheckBox" name="expandCB">
           <Properties>
             <Property name="text" type="java.lang.String" value="Expand"/>
           </Properties>
           <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="scaleCBActionPerformed"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="expandCBActionPerformed"/>
           </Events>
         </Component>
         <Component class="javax.swing.JLabel" name="tileLbl">
@@ -92,9 +92,14 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="rotateButtonActionPerformed"/>
           </Events>
         </Component>
+        <Component class="javax.swing.JLabel" name="tileOrientationLbl">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="East"/>
+          </Properties>
+        </Component>
         <Component class="javax.swing.JLabel" name="orientationLabel">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Orientation"/>
+            <Property name="text" type="java.lang.String" value="Incoming Orientation"/>
           </Properties>
         </Component>
         <Component class="javax.swing.JComboBox" name="orientationCB">

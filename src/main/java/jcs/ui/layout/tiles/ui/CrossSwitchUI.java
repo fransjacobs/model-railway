@@ -195,12 +195,6 @@ public class CrossSwitchUI extends TileUI implements MouseListener, MouseMotionL
     g2.fillPolygon(xPoints, yPoints, xPoints.length);
   }
 
-//NOT working route drawings
-//
-//East  W -> N & N -> W
-//North W -> S & S -> W
-//West  W -> N & N -> W
-//South W -> S & S -> W
   @Override
   public void renderTile(Graphics2D g2, JComponent c) {
     Tile tile = (Tile) c;
@@ -222,7 +216,7 @@ public class CrossSwitchUI extends TileUI implements MouseListener, MouseMotionL
         } else {
           renderStraight(g2, CrossSwitch.DARK_RED);
           renderDiagonal(g2, CrossSwitch.DARK_RED, c);
-          
+
           renderStraight2(g2, CrossSwitch.LIGHT_RED);
           renderDiagonal2(g2, CrossSwitch.LIGHT_RED, c);
         }
@@ -230,17 +224,18 @@ public class CrossSwitchUI extends TileUI implements MouseListener, MouseMotionL
       case GREEN -> {
         renderDiagonal(g2, CrossSwitch.VERY_LIGHT_GREEN, c);
         renderDiagonal2(g2, CrossSwitch.VERY_LIGHT_GREEN, c);
+
         renderStraight(g2, CrossSwitch.DARK_GREEN);
         renderStraight2(g2, CrossSwitch.DARK_GREEN);
       }
       default -> {
         renderStraight(g2, trackColor);
         renderStraight2(g2, trackColor);
+
         renderDiagonal(g2, trackColor, c);
         renderDiagonal2(g2, trackColor, c);
       }
     }
-
   }
 
   @Override
@@ -260,139 +255,79 @@ public class CrossSwitchUI extends TileUI implements MouseListener, MouseMotionL
       routeValue = AccessoryBean.AccessoryValue.OFF;
     }
 
-    renderRouteStraight(g2, trackRouteColor);
-    renderRouteStraight2(g2, trackRouteColor);
-    renderRouteDiagonal(g2, trackRouteColor, c);
-    renderRouteDiagonal2(g2, trackRouteColor, c);
-
-//    switch(incomingSide) {
-//      case NORTH -> {
-//        switch(routeValue) {
-//          case GREEN -> {
-//            
-//          }
-//          case RED -> {
-//            
-//          }
-//          default -> {
-//            
-//          }
-//        }
-//      }
-//      case WEST -> {
-//        switch(routeValue) {
-//          case GREEN -> {
-//            
-//          }
-//          case RED -> {
-//            
-//          }
-//          default -> {
-//            
-//          }
-//        }
-//      }
-//      case SOUTH -> {
-//        switch(routeValue) {
-//          case GREEN -> {
-//            
-//          }
-//          case RED -> {
-//            
-//          }
-//          default -> {
-//            
-//          }
-//        }
-//      }
-//      default -> {
-//        //EAST
-//        switch(routeValue) {
-//          case GREEN -> {
-//            
-//          }
-//          case RED -> {
-//            
-//          }
-//          default -> {
-//            
-//          }
-//        }
-//      }      
-//    }
-//    if (tile.isHorizontal()) {
-//      if (AccessoryBean.AccessoryValue.GREEN == routeValue && (TileBean.Orientation.NORTH == incomingSide || TileBean.Orientation.SOUTH == incomingSide)) {
-//        renderRouteDiagonal(g2, trackRouteColor, c);
-//        renderRouteDiagonal2(g2, trackRouteColor, c);
-//      } else if (AccessoryBean.AccessoryValue.GREEN == routeValue && (TileBean.Orientation.EAST == incomingSide || TileBean.Orientation.WEST == incomingSide)) {
-//        renderRouteStraight(g2, trackRouteColor);
-//        renderRouteStraight2(g2, trackRouteColor);
-//      } else if (AccessoryBean.AccessoryValue.RED == routeValue && TileBean.Orientation.EAST == orientation) {
-//        if (TileBean.Direction.RIGHT == direction && (TileBean.Orientation.EAST == incomingSide || TileBean.Orientation.NORTH == incomingSide)) {
-//          renderRouteStraight2(g2, trackRouteColor);
-//          renderRouteDiagonal(g2, trackRouteColor, c);
-//        } else if (TileBean.Direction.RIGHT == direction && (TileBean.Orientation.WEST == incomingSide || TileBean.Orientation.SOUTH == incomingSide)) {
-//          renderRouteDiagonal2(g2, trackRouteColor, c);
-//          renderRouteStraight(g2, trackRouteColor);
-//        } else if (TileBean.Direction.LEFT == direction && (TileBean.Orientation.EAST == incomingSide || TileBean.Orientation.SOUTH == incomingSide)) {
-//          renderRouteStraight2(g2, trackRouteColor);
-//          renderRouteDiagonal(g2, trackRouteColor, c);
-//        } else if (TileBean.Direction.LEFT == direction && (TileBean.Orientation.WEST == incomingSide || TileBean.Orientation.NORTH == incomingSide)) {
-//          renderRouteStraight(g2, trackColor);
-//          renderRouteDiagonal2(g2, trackColor, c);
-//        }
-//      } else if (AccessoryBean.AccessoryValue.RED == routeValue && TileBean.Orientation.WEST == orientation) {
-//        if (TileBean.Direction.RIGHT == direction && (TileBean.Orientation.EAST == incomingSide || TileBean.Orientation.NORTH == incomingSide)) {
-//          renderRouteStraight(g2, trackRouteColor);
-//          renderRouteDiagonal2(g2, trackRouteColor, c);
-//        } else if (TileBean.Direction.RIGHT == direction && (TileBean.Orientation.WEST == incomingSide || TileBean.Orientation.SOUTH == incomingSide)) {
-//          renderRouteDiagonal(g2, trackRouteColor, c);
-//          renderRouteStraight2(g2, trackRouteColor);
-//        } else if (TileBean.Direction.LEFT == direction && (TileBean.Orientation.EAST == incomingSide || TileBean.Orientation.SOUTH == incomingSide)) {
-//          renderRouteStraight(g2, trackRouteColor);
-//          renderRouteDiagonal2(g2, trackRouteColor, c);
-//        } else if (TileBean.Direction.LEFT == direction && (TileBean.Orientation.WEST == incomingSide || TileBean.Orientation.NORTH == incomingSide)) {
-//          renderRouteStraight2(g2, trackColor);
-//          renderRouteDiagonal(g2, trackColor, c);
-//        }
-//      }
-//    } else {
-//      if (AccessoryBean.AccessoryValue.GREEN == routeValue && (TileBean.Orientation.NORTH == incomingSide || TileBean.Orientation.SOUTH == incomingSide)) {
-//        renderRouteStraight(g2, trackRouteColor);
-//        renderRouteStraight2(g2, trackRouteColor);
-//      } else if (AccessoryBean.AccessoryValue.GREEN == routeValue && (TileBean.Orientation.EAST == incomingSide || TileBean.Orientation.WEST == incomingSide)) {
-//        renderRouteDiagonal(g2, trackRouteColor, c);
-//        renderRouteDiagonal2(g2, trackRouteColor, c);
-//      } else if (AccessoryBean.AccessoryValue.RED == routeValue && TileBean.Orientation.SOUTH == orientation) {
-//        if (TileBean.Direction.RIGHT == direction && (TileBean.Orientation.EAST == incomingSide || TileBean.Orientation.SOUTH == incomingSide)) {
-//          renderRouteStraight2(g2, trackRouteColor);
-//          renderRouteDiagonal(g2, trackRouteColor, c);
-//        } else if (TileBean.Direction.RIGHT == direction && (TileBean.Orientation.WEST == incomingSide || TileBean.Orientation.NORTH == incomingSide)) {
-//          renderRouteDiagonal2(g2, trackRouteColor, c);
-//          renderRouteStraight(g2, trackRouteColor);
-//        } else if (TileBean.Direction.LEFT == direction && (TileBean.Orientation.EAST == incomingSide || TileBean.Orientation.NORTH == incomingSide)) {
-//          renderRouteStraight(g2, trackRouteColor);
-//          renderRouteDiagonal2(g2, trackRouteColor, c);
-//        } else if (TileBean.Direction.LEFT == direction && (TileBean.Orientation.WEST == incomingSide || TileBean.Orientation.SOUTH == incomingSide)) {
-//          renderRouteStraight2(g2, trackColor);
-//          renderRouteDiagonal(g2, trackColor, c);
-//        }
-//      } else if (AccessoryBean.AccessoryValue.RED == routeValue && TileBean.Orientation.NORTH == orientation) {
-//        if (TileBean.Direction.RIGHT == direction && (TileBean.Orientation.EAST == incomingSide || TileBean.Orientation.SOUTH == incomingSide)) {
-//          renderRouteStraight(g2, trackRouteColor);
-//          renderRouteDiagonal2(g2, trackRouteColor, c);
-//        } else if (TileBean.Direction.RIGHT == direction && (TileBean.Orientation.WEST == incomingSide || TileBean.Orientation.NORTH == incomingSide)) {
-//          renderRouteDiagonal(g2, trackRouteColor, c);
-//          renderRouteStraight2(g2, trackRouteColor);
-//        } else if (TileBean.Direction.LEFT == direction && (TileBean.Orientation.EAST == incomingSide || TileBean.Orientation.NORTH == incomingSide)) {
-//          renderRouteStraight2(g2, trackRouteColor);
-//          renderRouteDiagonal(g2, trackRouteColor, c);
-//        } else if (TileBean.Direction.LEFT == direction && (TileBean.Orientation.WEST == incomingSide || TileBean.Orientation.SOUTH == incomingSide)) {
-//          renderRouteStraight(g2, trackColor);
-//          renderRouteDiagonal2(g2, trackColor, c);
-//        }
-//      }
-//    }
+    if (tile.isHorizontal()) {
+      if (AccessoryBean.AccessoryValue.GREEN == routeValue && (TileBean.Orientation.NORTH == incomingSide || TileBean.Orientation.SOUTH == incomingSide)) {
+        renderRouteDiagonal(g2, trackRouteColor, c);
+        renderRouteDiagonal2(g2, trackRouteColor, c);
+      } else if (AccessoryBean.AccessoryValue.GREEN == routeValue && (TileBean.Orientation.EAST == incomingSide || TileBean.Orientation.WEST == incomingSide)) {
+        renderRouteStraight(g2, trackRouteColor);
+        renderRouteStraight2(g2, trackRouteColor);
+      } else if (AccessoryBean.AccessoryValue.RED == routeValue && TileBean.Orientation.EAST == orientation) {
+        if (TileBean.Direction.RIGHT == direction && (TileBean.Orientation.EAST == incomingSide || TileBean.Orientation.NORTH == incomingSide)) {
+          renderRouteStraight2(g2, trackRouteColor);
+          renderRouteDiagonal(g2, trackRouteColor, c);
+        } else if (TileBean.Direction.RIGHT == direction && (TileBean.Orientation.WEST == incomingSide || TileBean.Orientation.SOUTH == incomingSide)) {
+          renderRouteDiagonal2(g2, trackRouteColor, c);
+          renderRouteStraight(g2, trackRouteColor);
+        } else if (TileBean.Direction.LEFT == direction && (TileBean.Orientation.EAST == incomingSide || TileBean.Orientation.SOUTH == incomingSide)) {
+          renderRouteStraight2(g2, trackRouteColor);
+          renderRouteDiagonal2(g2, trackRouteColor, c);
+        } else if (TileBean.Direction.LEFT == direction && (TileBean.Orientation.WEST == incomingSide || TileBean.Orientation.NORTH == incomingSide)) {
+          renderRouteStraight(g2, trackRouteColor);
+          renderRouteDiagonal(g2, trackRouteColor, c);
+        }
+      } else if (AccessoryBean.AccessoryValue.RED == routeValue && TileBean.Orientation.WEST == orientation) {
+        if (TileBean.Direction.RIGHT == direction && (TileBean.Orientation.EAST == incomingSide || TileBean.Orientation.NORTH == incomingSide)) {
+          renderRouteStraight(g2, trackRouteColor);
+          renderRouteDiagonal2(g2, trackRouteColor, c);
+        } else if (TileBean.Direction.RIGHT == direction && (TileBean.Orientation.WEST == incomingSide || TileBean.Orientation.SOUTH == incomingSide)) {
+          renderRouteDiagonal(g2, trackRouteColor, c);
+          renderRouteStraight2(g2, trackRouteColor);
+        } else if (TileBean.Direction.LEFT == direction && (TileBean.Orientation.EAST == incomingSide || TileBean.Orientation.SOUTH == incomingSide)) {
+          renderRouteStraight(g2, trackRouteColor);
+          renderRouteDiagonal(g2, trackRouteColor, c);
+        } else if (TileBean.Direction.LEFT == direction && (TileBean.Orientation.WEST == incomingSide || TileBean.Orientation.NORTH == incomingSide)) {
+          renderRouteStraight2(g2, trackRouteColor);
+          renderRouteDiagonal2(g2, trackRouteColor, c);
+        }
+      }
+    } else {
+      if (AccessoryBean.AccessoryValue.GREEN == routeValue && (TileBean.Orientation.NORTH == incomingSide || TileBean.Orientation.SOUTH == incomingSide)) {
+        renderRouteStraight(g2, trackRouteColor);
+        renderRouteStraight2(g2, trackRouteColor);
+      } else if (AccessoryBean.AccessoryValue.GREEN == routeValue && (TileBean.Orientation.EAST == incomingSide || TileBean.Orientation.WEST == incomingSide)) {
+        renderRouteDiagonal(g2, trackRouteColor, c);
+        renderRouteDiagonal2(g2, trackRouteColor, c);
+      } else if (AccessoryBean.AccessoryValue.RED == routeValue && TileBean.Orientation.SOUTH == orientation) {
+        if (TileBean.Direction.RIGHT == direction && (TileBean.Orientation.EAST == incomingSide || TileBean.Orientation.SOUTH == incomingSide)) {
+          renderRouteStraight2(g2, trackRouteColor);
+          renderRouteDiagonal(g2, trackRouteColor, c);
+        } else if (TileBean.Direction.RIGHT == direction && (TileBean.Orientation.WEST == incomingSide || TileBean.Orientation.NORTH == incomingSide)) {
+          renderRouteDiagonal2(g2, trackRouteColor, c);
+          renderRouteStraight(g2, trackRouteColor);
+        } else if (TileBean.Direction.LEFT == direction && (TileBean.Orientation.EAST == incomingSide || TileBean.Orientation.NORTH == incomingSide)) {
+          renderRouteStraight(g2, trackRouteColor);
+          renderRouteDiagonal(g2, trackRouteColor, c);
+        } else if (TileBean.Direction.LEFT == direction && (TileBean.Orientation.WEST == incomingSide || TileBean.Orientation.SOUTH == incomingSide)) {
+          renderRouteStraight2(g2, trackRouteColor);
+          renderRouteDiagonal2(g2, trackRouteColor, c);
+        }
+      } else if (AccessoryBean.AccessoryValue.RED == routeValue && TileBean.Orientation.NORTH == orientation) {
+        if (TileBean.Direction.RIGHT == direction && (TileBean.Orientation.EAST == incomingSide || TileBean.Orientation.SOUTH == incomingSide)) {
+          renderRouteStraight(g2, trackRouteColor);
+          renderRouteDiagonal2(g2, trackRouteColor, c);
+        } else if (TileBean.Direction.RIGHT == direction && (TileBean.Orientation.WEST == incomingSide || TileBean.Orientation.NORTH == incomingSide)) {
+          renderRouteDiagonal(g2, trackRouteColor, c);
+          renderRouteStraight2(g2, trackRouteColor);
+        } else if (TileBean.Direction.LEFT == direction && (TileBean.Orientation.EAST == incomingSide || TileBean.Orientation.NORTH == incomingSide)) {
+          renderRouteStraight2(g2, trackRouteColor);
+          renderRouteDiagonal2(g2, trackRouteColor, c);
+        } else if (TileBean.Direction.LEFT == direction && (TileBean.Orientation.WEST == incomingSide || TileBean.Orientation.SOUTH == incomingSide)) {
+          renderRouteStraight(g2, trackRouteColor);
+          renderRouteDiagonal(g2, trackRouteColor, c);
+        }
+      }
+    }
   }
 
   @Override
@@ -499,15 +434,4 @@ public class CrossSwitchUI extends TileUI implements MouseListener, MouseMotionL
     //Logger.trace("Mouse button " + e.getButton() + " @ (" + e.getXOnScreen() + "," + e.getYOnScreen());
     redispatchToParent(e);
   }
-
 }
-/*
-NOT working route drawings
-
-East  W -> N & N -> W
-North W -> S & S -> W
-West  W -> N & N -> W
-South W -> S & S -> W
-
-
- */
