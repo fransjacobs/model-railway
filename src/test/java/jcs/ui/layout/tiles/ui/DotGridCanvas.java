@@ -24,12 +24,11 @@ import javax.swing.JPanel;
 import jcs.ui.layout.tiles.Tile;
 import org.tinylog.Logger;
 
-
 //  jcs.ui.layout.tiles.DotGridCanvas
-
 public class DotGridCanvas extends JPanel {
 
   private boolean expanded;
+  private boolean paintGrid = true;
 
   public DotGridCanvas() {
     super(null, false);
@@ -42,9 +41,19 @@ public class DotGridCanvas extends JPanel {
     long started = System.currentTimeMillis();
     super.paint(g);
 
-    paintDotGrid(g);
+    if (paintGrid) {
+      paintDotGrid(g);
+    }
     long now = System.currentTimeMillis();
     Logger.trace("Duration: " + (now - started) + " ms.");
+  }
+
+  public boolean isPaintGrid() {
+    return paintGrid;
+  }
+
+  public void setPaintGrid(boolean paintGrid) {
+    this.paintGrid = paintGrid;
   }
 
   @Override

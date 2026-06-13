@@ -53,7 +53,7 @@ class PrepareRouteState extends AbstractState {
             Long firstToLeaveLocomotiveId = PersistenceFactory.getService().getFirstLocomotiveId(station);
             canDepart = dispatcher.getLocomotiveId().equals(firstToLeaveLocomotiveId);
             if (!canDepart) {
-              Logger.tag(TAG).trace("Locomotive " + dispatcher.getName() + " is not the first to leave Station " + station.getName() + "...");
+              Logger.tag(TAG).debug("Dispatcher " + dispatcher.getName() + " is not the first to leave Station " + station.getName() + "...");
             }
           } else {
             canDepart = true;
@@ -73,22 +73,22 @@ class PrepareRouteState extends AbstractState {
     if (canDepart) {
       BlockBean departureBlock = dispatcher.getDepartureBlock();
       LocomotiveBean locomotiveBean = dispatcher.getLocomotiveBean();
-      Logger.tag(TAG).debug("Locomotive " + locomotiveBean.getName() + " Direction: " + locomotiveBean.getDirection().getDirection() + " search for route from block " + departureBlock.getId() + " logicalDir: " + departureBlock.getLogicalDirection() + " Arrived at " + departureBlock.getArrivalSuffix());
+      Logger.tag(TAG).debug("Dispatcher " + dispatcher.getName() + " in state " + getName() + " Locomotive Dir.: " + locomotiveBean.getDirection().getDirection() + ". Will search for route from block " + departureBlock.getId() + " in  logical Dir.: " + departureBlock.getLogicalDirection() + " Arrival side is " + departureBlock.getArrivalSuffix());
 
       int permits = RailController.avialablePermits();
       Logger.trace("Obtaining a lock. There is currently " + permits + " available permits...");
 
       if (RailController.tryAquireLock()) {
         try {
-          Logger.tag(TAG).trace("##### Locked ####");
+          Logger.trace("##### Locked ####");
           canAdvanceToNextState = dispatcher.getRouteManager().searchAndReserveRoute();
         } finally {
           //Make sure the lock is released
           RailController.releaseLock();
-          Logger.tag(TAG).trace("##### Released ####");
+          Logger.trace("##### Released ####");
         }
       } else {
-        Logger.tag(TAG).trace("No Semaphore available");
+        Logger.tag(TAG).debug("Dispatcher " + dispatcher.getName() + " in state " + getName() + " can't obtain a Semaphore");
       }
     }
 

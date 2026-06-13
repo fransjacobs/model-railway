@@ -32,6 +32,7 @@ import jcs.entities.TileBean;
 import static jcs.entities.TileBean.Orientation.NORTH;
 import static jcs.entities.TileBean.Orientation.SOUTH;
 import static jcs.entities.TileBean.Orientation.WEST;
+import static jcs.entities.TileBean.TileType.CROSS_SWITCH;
 import jcs.ui.layout.LayoutCanvas;
 import jcs.ui.layout.tiles.Tile;
 import static jcs.ui.layout.tiles.Tile.DEFAULT_BACKGROUND_COLOR;
@@ -49,7 +50,7 @@ public abstract class TileUI extends ComponentUI {
   protected static final int RENDER_GRID = GRID * 10;
   protected static final int RENDER_WIDTH = RENDER_GRID * 2;
   protected static final int RENDER_HEIGHT = RENDER_GRID * 2;
-  
+
   protected static final int LOC_IMAGE_WIDTH = 45;
 
   public static final String UI_CLASS_ID = "jcs.ui.layout.tiles.ui.TileUI";
@@ -72,6 +73,15 @@ public abstract class TileUI extends ComponentUI {
     Tile tile = (Tile) c;
 
     switch (tile.getTileType()) {
+      case CROSS_SWITCH -> {
+        if (tile.isHorizontal()) {
+          this.renderWidth = RENDER_GRID * 4;
+          this.renderHeight = RENDER_GRID * 2;
+        } else {
+          this.renderWidth = RENDER_GRID * 2;
+          this.renderHeight = RENDER_GRID * 4;
+        }
+      }
       case CROSS -> {
         if (tile.isHorizontal()) {
           this.renderWidth = RENDER_GRID * 4;
@@ -100,8 +110,8 @@ public abstract class TileUI extends ComponentUI {
   abstract void renderTile(Graphics2D g2d, JComponent c);
 
   abstract void renderTileRoute(Graphics2D g2d, JComponent c);
-  
-   public int getRenderWidth() {
+
+  public int getRenderWidth() {
     return renderWidth;
   }
 
@@ -215,7 +225,7 @@ public abstract class TileUI extends ComponentUI {
     } else {
       tileImage = bf;
     }
-    
+
     g2di.dispose();
   }
 

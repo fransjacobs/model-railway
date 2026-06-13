@@ -46,8 +46,7 @@ public class AccessoryBean {
   private String commandStationId;
   private boolean synchronize;
 
-  private boolean locked;
-
+  //private boolean locked;
   public AccessoryBean() {
     this(null, null, null, null, null, null, null, null, null, null, null, null, null, null);
   }
@@ -384,7 +383,7 @@ public class AccessoryBean {
     this.source = other.source;
     this.commandStationId = other.commandStationId;
     this.synchronize = other.synchronize;
-    this.locked = other.locked;
+    //this.locked = other.locked;
   }
 
   @Transient

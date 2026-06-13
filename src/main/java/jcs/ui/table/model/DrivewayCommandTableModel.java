@@ -140,9 +140,11 @@ public class DrivewayCommandTableModel extends BeanTableModel<DrivewayCommand> {
     for (RouteElementBean reb : rel) {
       if (reb.isTurnout()) {
         AccessoryBean turnout = reb.getTileBean().getAccessoryBean();
+        if (turnout != null) {
 
-        DrivewayCommand dc = new DrivewayCommand(reb.getId(), reb.getRouteId(), reb.getTileId(), turnout.getId(), turnout.getAddress(), turnout.getProtocol().toString(), turnout.getName(), reb.getAccessoryValue(), reb.getElementOrder());
-        drivewayCommands.add(dc);
+          DrivewayCommand dc = new DrivewayCommand(reb.getId(), reb.getRouteId(), reb.getTileId(), turnout.getId(), turnout.getAddress(), turnout.getProtocol().toString(), turnout.getName(), reb.getAccessoryValue(), reb.getElementOrder());
+          drivewayCommands.add(dc);
+        }
       }
     }
     Collections.sort(drivewayCommands, new DrivewayCommandBySortOrderSorter());

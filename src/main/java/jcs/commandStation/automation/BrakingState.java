@@ -75,7 +75,9 @@ class BrakingState extends AbstractState implements SensorEventCallback {
     dispatcher.getRouteManager().showRoute(route, Color.magenta);
     dispatcher.showBlockState(destinationBlock);
 
-    Logger.tag(TAG).debug("Slowdown: " + dispatcher.getName() + " in " + destinationBlock.getDescription() + " Direction: " + dispatcher.getLocomotiveBean().getDirection().getDirection() + " Route: " + dispatcher.getRouteBean().getId() + " Speed: " + dispatcher.getLocomotiveBean().getVelocity() + " Now waiting for In sensorId: " + inSensorId + "...");
+    Logger.tag(TAG).debug("Dispatcher {} braking. Power: {}% direction: {} Route: {} Destnation block: {} now waiting for Occupancy (in) sensor Id: {} ...",
+            dispatcher.getName(), speed1, locomotive.getDirection(), dispatcher.getRouteBean().getId(),
+            destinationBlock.getDescription(), inSensorId);
   }
 
   @Override
@@ -103,7 +105,7 @@ class BrakingState extends AbstractState implements SensorEventCallback {
     if (inSensorId.equals(event.getSensorId())) {
       if (event.isActive()) {
         inSensorTriggerred = true;
-        Logger.tag(TAG).trace("In Event from Sensor " + event.getSensorId() + " for " + dispatcher.getName());
+        Logger.tag(TAG).debug("Dispatcher " + dispatcher.getName() + " Occupied (in) event from Sensor " + event.getSensorId() + " Value " + (event.isActive() ? "On" : "Off"));
         dispatcher.wakeup();
       }
     }

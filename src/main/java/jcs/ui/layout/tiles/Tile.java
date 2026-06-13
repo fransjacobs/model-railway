@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
@@ -48,6 +49,7 @@ import jcs.entities.TileBean;
 import jcs.entities.TileBean.Direction;
 import jcs.entities.TileBean.Orientation;
 import jcs.entities.TileBean.TileType;
+import static jcs.entities.TileBean.TileType.CROSS_SWITCH;
 import jcs.ui.layout.LayoutUtil;
 import static jcs.ui.layout.tiles.Block.BLOCK_HEIGHT;
 import static jcs.ui.layout.tiles.Block.BLOCK_WIDTH;
@@ -85,9 +87,8 @@ public abstract class Tile extends JComponent implements Serializable {
   public static final Color DEFAULT_WARN_COLOR = Color.red;
 
   public static final String MODEL_CHANGED_PROPERTY = "model";
-//  public static final String CONTENT_AREA_FILLED_CHANGED_PROPERTY = "contentAreaFilled";
-  private static final long serialVersionUID = -8117888635518142366L;
 
+  //private static final long serialVersionUID = -8117888635518142366L;
   /**
    * The data model that determines the Tile state.
    */
@@ -230,6 +231,8 @@ public abstract class Tile extends JComponent implements Serializable {
         return switch (tileType) {
           case BLOCK ->
             BLOCK_WIDTH;
+          case CROSS_SWITCH ->
+            DEFAULT_WIDTH * 2;
           case CROSS ->
             DEFAULT_WIDTH * 2;
           default ->
@@ -251,6 +254,8 @@ public abstract class Tile extends JComponent implements Serializable {
         return switch (tileType) {
           case BLOCK ->
             BLOCK_HEIGHT;
+          case CROSS_SWITCH ->
+            DEFAULT_HEIGHT * 2;
           case CROSS ->
             DEFAULT_HEIGHT * 2;
           default ->
@@ -261,11 +266,11 @@ public abstract class Tile extends JComponent implements Serializable {
   }
 
   protected void populateModel() {
-    if (this.blockBean != null) {
-      this.model.setBlockState(this.blockBean.getBlockState());
-      this.model.setLocomotive(this.blockBean.getLocomotive());
-      this.model.setArrivalSuffix(this.blockBean.getArrivalSuffix());
-      this.model.setLogicalDirection(LocomotiveBean.Direction.get(this.blockBean.getLogicalDirection()));
+    if (blockBean != null) {
+      model.setBlockState(blockBean.getBlockState());
+      model.setLocomotive(blockBean.getLocomotive());
+      model.setArrivalSuffix(blockBean.getArrivalSuffix());
+      model.setLogicalDirection(LocomotiveBean.Direction.get(blockBean.getLogicalDirection()));
     }
     if (accessoryBean != null) {
       setAccessoryBean(accessoryBean);
@@ -273,7 +278,6 @@ public abstract class Tile extends JComponent implements Serializable {
     if (sensorBean != null) {
       setSensorBean(sensorBean);
     }
-
   }
 
   public TileBean getTileBean() {
@@ -455,10 +459,6 @@ public abstract class Tile extends JComponent implements Serializable {
       Logger.warn("Blockbean for " + id + " is NOT set!");
     }
   }
-
-//  public boolean isReverseArrival() {
-//    return model.isReverseArrival();
-//  }
 
   public void reverseArrival() {
     model.reverseArrival();
@@ -832,7 +832,7 @@ public abstract class Tile extends JComponent implements Serializable {
   }
 
   public boolean isJunction() {
-    return TileType.SWITCH == tileType || TileType.CROSS == tileType;
+    return TileType.SWITCH == tileType || TileType.CROSS_SWITCH == tileType;
   }
 
   public boolean isBlock() {
@@ -854,6 +854,10 @@ public abstract class Tile extends JComponent implements Serializable {
 
   public boolean isCrossing() {
     return TileType.CROSSING == tileType;
+  }
+
+  public boolean isCross() {
+    return TileType.CROSS == tileType;
   }
 
   public List<TileBean> getNeighbours() {
@@ -921,6 +925,10 @@ public abstract class Tile extends JComponent implements Serializable {
 
   public AccessoryValue accessoryValueForRoute(Orientation from, Orientation to) {
     return AccessoryValue.OFF;
+  }
+
+  public boolean isDiagonalOpposite(Orientation from, Orientation to) {
+    return false;
   }
 
   protected ChangeListener createChangeListener() {
@@ -995,4 +1003,47 @@ public abstract class Tile extends JComponent implements Serializable {
       return new Rectangle(tileX - renderWidth / 2, tileY - renderHeight / 2, renderWidth, renderHeight);
     }
   }
+
+  @Override
+  public int hashCode() {
+    int hash = 7;
+    hash = 29 * hash + Objects.hashCode(this.id);
+    hash = 29 * hash + Objects.hashCode(this.tileX);
+    hash = 29 * hash + Objects.hashCode(this.tileY);
+    hash = 29 * hash + Objects.hashCode(this.model.getTileOrienation());
+    hash = 29 * hash + Objects.hashCode(this.tileDirection);
+    hash = 29 * hash + Objects.hashCode(this.tileType);
+    return hash;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    final Tile other = (Tile) obj;
+    if (!Objects.equals(this.id, other.id)) {
+      return false;
+    }
+    if (!Objects.equals(this.tileX, other.tileX)) {
+      return false;
+    }
+    if (!Objects.equals(this.tileY, other.tileY)) {
+      return false;
+    }
+    if (this.model.getTileOrienation() != other.model.getTileOrienation()) {
+      return false;
+    }
+    if (this.tileDirection != other.tileDirection) {
+      return false;
+    }
+    return this.tileType == other.tileType;
+  }
+
 }

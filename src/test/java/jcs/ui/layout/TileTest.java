@@ -126,16 +126,13 @@ public class TileTest {
   @Test
   public void testGetAltPointsCross() {
     System.out.println("getAltPointsCross");
-    Tile instanceE = TileCache.createTile(TileBean.TileType.CROSS, Orientation.EAST, Direction.CENTER, 220, 220);
+    Tile instanceE = TileCache.createTile(TileBean.TileType.CROSS_SWITCH, Orientation.EAST, Direction.CENTER, 220, 220);
     Tile instanceS
-            = TileCache.createTile(
-                    TileBean.TileType.CROSS, Orientation.SOUTH, Direction.CENTER, 220, 220);
+            = TileCache.createTile(TileBean.TileType.CROSS_SWITCH, Orientation.SOUTH, Direction.CENTER, 220, 220);
     Tile instanceW
-            = TileCache.createTile(
-                    TileBean.TileType.CROSS, Orientation.WEST, Direction.CENTER, 220, 220);
+            = TileCache.createTile(TileBean.TileType.CROSS_SWITCH, Orientation.WEST, Direction.CENTER, 220, 220);
     Tile instanceN
-            = TileCache.createTile(
-                    TileBean.TileType.CROSS, Orientation.NORTH, Direction.CENTER, 220, 220);
+            = TileCache.createTile(TileBean.TileType.CROSS_SWITCH, Orientation.NORTH, Direction.CENTER, 220, 220);
 
     Set<Point> expResultE = new HashSet<>();
     expResultE.add(new Point(260, 220));
@@ -171,32 +168,24 @@ public class TileTest {
   public void testGetNeighborPointsCross() {
     System.out.println("getNeighborPointsCross");
     Tile instanceEL
-            = TileCache.createTile(
-                    TileBean.TileType.CROSS, Orientation.EAST, Direction.LEFT, 220, 220);
+            = TileCache.createTile(TileBean.TileType.CROSS_SWITCH, Orientation.EAST, Direction.LEFT, 220, 220);
     Tile instanceER
-            = TileCache.createTile(
-                    TileBean.TileType.CROSS, Orientation.EAST, Direction.RIGHT, 220, 220);
+            = TileCache.createTile(TileBean.TileType.CROSS_SWITCH, Orientation.EAST, Direction.RIGHT, 220, 220);
 
     Tile instanceWL
-            = TileCache.createTile(
-                    TileBean.TileType.CROSS, Orientation.WEST, Direction.LEFT, 220, 220);
+            = TileCache.createTile(TileBean.TileType.CROSS_SWITCH, Orientation.WEST, Direction.LEFT, 220, 220);
     Tile instanceWR
-            = TileCache.createTile(
-                    TileBean.TileType.CROSS, Orientation.WEST, Direction.RIGHT, 220, 220);
+            = TileCache.createTile(TileBean.TileType.CROSS_SWITCH, Orientation.WEST, Direction.RIGHT, 220, 220);
 
     Tile instanceSL
-            = TileCache.createTile(
-                    TileBean.TileType.CROSS, Orientation.SOUTH, Direction.LEFT, 220, 220);
+            = TileCache.createTile(TileBean.TileType.CROSS_SWITCH, Orientation.SOUTH, Direction.LEFT, 220, 220);
     Tile instanceSR
-            = TileCache.createTile(
-                    TileBean.TileType.CROSS, Orientation.SOUTH, Direction.RIGHT, 220, 220);
+            = TileCache.createTile(TileBean.TileType.CROSS_SWITCH, Orientation.SOUTH, Direction.RIGHT, 220, 220);
 
     Tile instanceNL
-            = TileCache.createTile(
-                    TileBean.TileType.CROSS, Orientation.NORTH, Direction.LEFT, 220, 220);
+            = TileCache.createTile(TileBean.TileType.CROSS_SWITCH, Orientation.NORTH, Direction.LEFT, 220, 220);
     Tile instanceNR
-            = TileCache.createTile(
-                    TileBean.TileType.CROSS, Orientation.NORTH, Direction.RIGHT, 220, 220);
+            = TileCache.createTile(TileBean.TileType.CROSS_SWITCH, Orientation.NORTH, Direction.RIGHT, 220, 220);
 
     Map<TileBean.Orientation, Point> expResultEL = new HashMap<>();
     expResultEL.put(Orientation.EAST, new Point(300, 220));
@@ -734,17 +723,13 @@ public class TileTest {
   public void testIsAdjacentCrossL() {
     System.out.println("iIsAdjacentCrossL");
     Tile instanceE
-            = TileCache.createTile(
-                    TileBean.TileType.CROSS, Orientation.EAST, Direction.LEFT, 860, 100);
+            = TileCache.createTile(TileBean.TileType.CROSS_SWITCH, Orientation.EAST, Direction.LEFT, 860, 100);
     Tile instanceS
-            = TileCache.createTile(
-                    TileBean.TileType.CROSS, Orientation.SOUTH, Direction.LEFT, 860, 100);
+            = TileCache.createTile(TileBean.TileType.CROSS_SWITCH, Orientation.SOUTH, Direction.LEFT, 860, 100);
     Tile instanceW
-            = TileCache.createTile(
-                    TileBean.TileType.CROSS, Orientation.WEST, Direction.LEFT, 860, 100);
+            = TileCache.createTile(TileBean.TileType.CROSS_SWITCH, Orientation.WEST, Direction.LEFT, 860, 100);
     Tile instanceN
-            = TileCache.createTile(
-                    TileBean.TileType.CROSS, Orientation.NORTH, Direction.LEFT, 860, 100);
+            = TileCache.createTile(TileBean.TileType.CROSS_SWITCH, Orientation.NORTH, Direction.LEFT, 860, 100);
 
     Tile north
             = TileCache.createTile(
@@ -808,17 +793,13 @@ public class TileTest {
   public void testIsAdjacentCrossR() {
     System.out.println("iIsAdjacentCrossR");
     Tile instanceE
-            = TileCache.createTile(
-                    TileBean.TileType.CROSS, Orientation.EAST, Direction.RIGHT, 860, 100);
+            = TileCache.createTile(TileBean.TileType.CROSS_SWITCH, Orientation.EAST, Direction.RIGHT, 860, 100);
     Tile instanceS
-            = TileCache.createTile(
-                    TileBean.TileType.CROSS, Orientation.SOUTH, Direction.RIGHT, 860, 100);
+            = TileCache.createTile(TileBean.TileType.CROSS_SWITCH, Orientation.SOUTH, Direction.RIGHT, 860, 100);
     Tile instanceW
-            = TileCache.createTile(
-                    TileBean.TileType.CROSS, Orientation.WEST, Direction.RIGHT, 860, 100);
+            = TileCache.createTile(TileBean.TileType.CROSS_SWITCH, Orientation.WEST, Direction.RIGHT, 860, 100);
     Tile instanceN
-            = TileCache.createTile(
-                    TileBean.TileType.CROSS, Orientation.NORTH, Direction.RIGHT, 860, 100);
+            = TileCache.createTile(TileBean.TileType.CROSS_SWITCH, Orientation.NORTH, Direction.RIGHT, 860, 100);
 
     Tile north
             = TileCache.createTile(

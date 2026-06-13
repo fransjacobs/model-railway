@@ -65,7 +65,11 @@ public class TileBean implements Comparable, Serializable {
   protected String name;
 
   public TileBean() {
-    this(null, TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 0, 0, null, null, null);
+    this(null, TileType.STRAIGHT, Orientation.EAST, 0, 0);
+  }
+
+  public TileBean(String id, TileType tileType, Orientation orientation, Integer x, Integer y) {
+    this(id, tileType, orientation, Direction.CENTER, x, y, null, null, null);
   }
 
   public TileBean(String id, TileType tileType, Orientation orientation, Direction direction, Integer x, Integer y) {
@@ -371,9 +375,9 @@ public class TileBean implements Comparable, Serializable {
     sb.append(", center=[(x=").append(x);
     sb.append(",y=").append(y);
     sb.append(")]");
-    sb.append(", signalType=").append(this.signalAccessoryType);
-    sb.append(", accessoryId=").append(this.accessoryId);
-    sb.append(", sensorId=").append(this.sensorId);
+    sb.append(", signalType=").append(signalAccessoryType);
+    sb.append(", accessoryId=").append(accessoryId);
+    sb.append(", sensorId=").append(sensorId);
 
     sb.append('}');
     return sb.toString();
@@ -389,12 +393,13 @@ public class TileBean implements Comparable, Serializable {
     CROSSING("Crossing"),
     CURVED("Curved"),
     SWITCH("Switch"),
-    CROSS("Cross"),
+    CROSS_SWITCH("CrossSwitch"),
     THREEWAY("ThreeWay"),
     SIGNAL("Signal"),
     SENSOR("Sensor"),
     BLOCK("Block"),
-    END("End");
+    END("End"),
+    CROSS("Cross");
 
     private final String tileType;
 

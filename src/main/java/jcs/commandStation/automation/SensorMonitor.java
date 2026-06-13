@@ -168,7 +168,7 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
     for (SensorBean sb : sensors) {
       JCS.getJcsCommandStation().getSensorStatus(sb);
     }
-    Logger.tag(TAG).trace("Refreshed " + sensors.size() + " sensor values");
+    Logger.tag(TAG).debug("Refreshed " + sensors.size() + " sensor values");
   }
 
   void registerAllSensors() {
@@ -180,7 +180,7 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
     for (SensorBean sb : sensors) {
       sensorBeans.put(sb.getId(), sb);
     }
-    Logger.tag(TAG).trace("Registered " + sensorBeans.size() + " sensors");
+    Logger.trace("Registered " + sensorBeans.size() + " sensors");
   }
 
   void handleGhost(SensorEvent event) {
@@ -195,6 +195,9 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
         if (event.getSensorBean().isActive() && block.getBlockState() != BlockBean.BlockState.GHOST && block.getBlockState() != BlockBean.BlockState.OUT_OF_ORDER) {
           block.setBlockState(BlockBean.BlockState.GHOST);
 
+          //Switch power OFF!
+          JCS.getJcsCommandStation().switchPower(false);
+
           if (tile != null) {
             tile.setBlockState(BlockBean.BlockState.GHOST);
           } else {
@@ -202,9 +205,7 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
           }
           //Also persist
           PersistenceFactory.getService().persist(block);
-          Logger.tag(TAG).warn("##### Ghost Detected! @ Sensor " + sensorId + " in block " + block.getId() + " #####");
-          //Switch power OFF!
-          JCS.getJcsCommandStation().switchPower(false);
+          Logger.tag(TAG).warn("Ghost Detected! Sensor " + sensorId + " Value " + (event.isActive() ? "On" : "Off") + " in block " + block.getId() + " ...");
         }
         break;
       }
@@ -216,16 +217,17 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
   }
 
   void handleSensorEvent(SensorEvent event) {
-    Logger.tag(TAG).trace("Event for Sensor " + event.getSensorId() + " " + (event.isActive() ? "On" : "Off") + " isChanged " + event.isChanged());
+    Logger.trace("Event from Sensor " + event.getSensorId() + " " + (event.isActive() ? "On" : "Off") + " isChanged " + event.isChanged());
 
     if (event.isChanged()) {
+      //Logger.tag(TAG).debug("Event from Sensor " + event.getSensorId() + " Value " + (event.isActive() ? "On" : "Off"));
       if (subscribersWithoutCallback.contains(event.getSensorId())) {
-        //Logger.trace(event.getSensorId() + " is subscribed in ignore list...");
+        Logger.tag(TAG).debug("Event from Sensor " + event.getSensorId() + " Value " + (event.isActive() ? "On" : "Off") + " will be ignored");
       } else if (subscribers.containsKey(event.getSensorId())) {
         //Logger.trace(event.getSensorId() + " is subscribed in callback list...");
         notifySubscribers(event);
       } else {
-        //Logger.trace(event.getSensorId() + " is NOT subscribed...");
+        Logger.tag(TAG).debug("Event from Sensor " + event.getSensorId() + " Value " + (event.isActive() ? "On" : "Off") + " ...");
         handleGhost(event);
       }
     }
@@ -238,7 +240,7 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
         try {
           callback.onEvent(event);
         } catch (Exception e) {
-          Logger.tag(TAG).error("Error in event callback: " + e.getMessage());
+          Logger.tag(TAG).error("Error processing event from Sensor " + event.getSensorId() + " " + (event.isActive() ? "On" : "Off") + ": " + e.getMessage());
         }
       }
     }
@@ -267,7 +269,7 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
     //Subsribe to the command station as SensorEventListener 
     JCS.getJcsCommandStation().addAllSensorEventsListener(this);
 
-    Logger.tag(TAG).trace("SensorMonitor is watching " + sensorBeans.size());
+    Logger.trace("SensorMonitor is watching " + sensorBeans.size());
 
     running = true;
     while (running) {

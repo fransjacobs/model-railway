@@ -75,6 +75,10 @@ public class Graph {
 
       //Check if the to has this edgepoint
       return to.getTile().getEdgePoints().containsValue(toInComingPoint);
+    } else if (from.getPreviousNode() != null && from.isCross()) {
+      //A cross can only connect to diagonal opposite sides
+      boolean diagonal = from.isDiagonalOpposite(from, to);
+      return diagonal;
     } else {
       return from.getTile().isAdjacent(to.getTile());
     }

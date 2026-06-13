@@ -63,7 +63,7 @@ public class SwitchDialog extends javax.swing.JDialog {
       List<AccessoryBean> accessoryBeans = PersistenceFactory.getService().getTurnouts();
 
       List<TileBean> turnoutTiles = PersistenceFactory.getService().getTileBeansByTileType(TileBean.TileType.SWITCH);
-      turnoutTiles.addAll(PersistenceFactory.getService().getTileBeansByTileType(TileBean.TileType.CROSS));
+      turnoutTiles.addAll(PersistenceFactory.getService().getTileBeansByTileType(TileBean.TileType.CROSS_SWITCH));
 
       Set<String> usedAccessoryIds = new HashSet<>();
       for (TileBean tb : turnoutTiles) {

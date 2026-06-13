@@ -134,7 +134,7 @@ public final class RailController {
 
   void restoreLocomotiveFunctions() {
     List<LocomotiveBean> onTrackLocomotives = getOnTrackLocomotives();
-    Logger.tag(TAG).trace("Restoring functions for " + onTrackLocomotives.size() + " locomotives");
+    Logger.tag(TAG).debug("Restoring functions for " + onTrackLocomotives.size() + " locomotives");
 
     for (LocomotiveBean locomotive : onTrackLocomotives) {
       List<FunctionBean> functions = new LinkedList<>(locomotive.getFunctions().values());
@@ -195,14 +195,14 @@ public final class RailController {
           now = System.currentTimeMillis();
         }
 
-        Logger.tag(TAG).trace("SensorMonitor Initialized in " + (now - start) + " ms...");
+        Logger.trace("SensorMonitor Initialized in " + (now - start) + " ms...");
         automodeOn = true;
 
         //TODO: Do this every time the Automode is started or just once?
         //restoreLocomotiveFunctions();
         prepareAllDispatchers();
 
-        Logger.tag(TAG).trace("RailwayController Automode initialized. There are " + dispatchers.size() + " Dispatchers...");
+        Logger.tag(TAG).debug("Railway Controller Auto Drive initialized with " + dispatchers.size() + " Dispatchers");
         fireStatusListeners(STARTED);
       }
 
@@ -297,10 +297,10 @@ public final class RailController {
     if (isOnTrack(locomotiveBean)) {
       if (dispatchers.containsKey(locomotiveBean.getName())) {
         dispatcher = dispatchers.get(locomotiveBean.getName());
-        Logger.tag(TAG).trace("Reuse dispatcher for " + locomotiveBean.getName() + "...");
+        Logger.tag(TAG).debug("Reusing dispatcher " + locomotiveBean.getName());
       } else {
         dispatcher = new Dispatcher(this, locomotiveBean);
-        Logger.tag(TAG).trace("Created new dispatcher for " + locomotiveBean.getName() + "...");
+        Logger.tag(TAG).debug("Created dispatcher " + locomotiveBean.getName());
       }
     }
     return dispatcher;
@@ -324,7 +324,7 @@ public final class RailController {
         dispatcher = snapshot.get(loc.getName());
         dispatcher.enable();
         dispatchers.put(loc.getName(), dispatcher);
-        Logger.tag(TAG).trace("Re use dispatcher " + loc.getName() + "...");
+        Logger.trace("Re use dispatcher " + loc.getName() + "...");
       } else {
         dispatcher = createDispatcher(loc);
         dispatcher.enable();
@@ -436,7 +436,7 @@ public final class RailController {
   }
 
   synchronized void startDispatcher(LocomotiveBean locomotiveBean) {
-    Logger.tag(TAG).trace("Starting locomotive for " + locomotiveBean.getName());
+    Logger.trace("Starting locomotive " + locomotiveBean.getName() + " ...");
     String key = locomotiveBean.getName();
 
     Dispatcher dispatcher;
@@ -445,25 +445,25 @@ public final class RailController {
       //Logger.trace("Dispatcher " + key + " exists");
     } else {
       dispatcher = createDispatcher(locomotiveBean);
-      Logger.tag(TAG).trace("Dispatcher " + key + " created");
+      Logger.trace("Dispatcher " + key + " created");
     }
 
     if (!dispatcher.isLocomotiveStarted()) {
-      Logger.tag(TAG).trace("Starting dispatcher thread " + key);
+      Logger.trace("Starting dispatcher thread for " + key + " ...");
       dispatcher.startLocomotive();
     }
 
-    Logger.tag(TAG).trace("Started locomotive " + key + "...");
+    Logger.tag(TAG).debug("Started locomotive " + key);
   }
 
   synchronized void stopDispatcher(LocomotiveBean locomotiveBean) {
-    Logger.tag(TAG).trace("Stopping locomotive " + locomotiveBean.getName());
+    Logger.trace("Stopping locomotive " + locomotiveBean.getName() + " ...");
     String key = locomotiveBean.getName();
 
     Dispatcher dispatcher = dispatchers.get(key);
     if (dispatcher != null && dispatcher.isLocomotiveStarted()) {
       dispatcher.stopLocomotive();
-      Logger.tag(TAG).trace("Stopped locomotive " + key + "...");
+      Logger.tag(TAG).debug("Stopped locomotive " + key);
     }
   }
 
@@ -475,14 +475,15 @@ public final class RailController {
   }
 
   public void resetDispatcher(LocomotiveBean locomotiveBean) {
-    Logger.tag(TAG).trace("Resetting dispatcher for " + locomotiveBean.getName());
+    Logger.trace("Resetting dispatcher for " + locomotiveBean.getName() + "...");
     Dispatcher dispatcher;
     String key = locomotiveBean.getName();
     if (dispatchers.containsKey(key)) {
       dispatcher = dispatchers.get(key);
       dispatcher.reset();
+      Logger.tag(TAG).debug("Dispatcher " + locomotiveBean.getName() + " has been reset");
     } else {
-      Logger.tag(TAG).warn("Dispatcher for " + locomotiveBean.getName() + " not found!");
+      Logger.tag(TAG).warn("Dispatcher for " + locomotiveBean.getName() + " is not found!");
     }
   }
 
@@ -704,7 +705,7 @@ public final class RailController {
     @Override
     public void run() {
       running = true;
-      Logger.tag(TAG).trace("RailwayController Command executer Started...");
+      Logger.trace("RailwayController Command Executer Thread Started...");
       fireStatusListeners(PENDING);
 
       while (isRunning()) {
@@ -718,7 +719,7 @@ public final class RailController {
         }
       }
 
-      Logger.tag(TAG).trace("CommandExecuter Stopped...");
+      Logger.trace("CommandExecuter Stopped...");
     }
 
   }

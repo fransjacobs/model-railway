@@ -26,7 +26,8 @@ import jcs.ui.layout.tiles.ui.CrossingUI;
 import jcs.ui.layout.tiles.ui.TileUI;
 
 /**
- * Representation of a (passive) Crossing the layout
+ * Representation of a (passive) Crossing the layout.<br>
+ * The Track pass each other without colliding, so one is above the other or vice versa ;)<br>
  */
 public class Crossing extends Straight {
 
@@ -94,57 +95,4 @@ public class Crossing extends Straight {
     edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
     return edgeConnections;
   }
-
-//  protected void renderVerticalAndDividers(Graphics2D g2) {
-//    int xxn, yyn, xxs, yys, w, h;
-//    xxn = 175;
-//    yyn = 0;
-//    xxs = 175;
-//    yys = 325;
-//    w = 50;
-//    h = 75;
-//
-//    g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
-//    g2.setPaint(trackColor);
-//
-//    //North
-//    g2.fillRect(xxn, yyn, w, h);
-//    //South
-//    g2.fillRect(xxs, yys, w, h);
-//
-//    //Dividers
-//    int[] xNorthPoly = new int[]{85, 115, 285, 315};
-//    int[] yNorthPoly = new int[]{85, 125, 125, 85};
-//
-//    int[] xSouthPoly = new int[]{85, 115, 285, 315};
-//    int[] ySouthPoly = new int[]{315, 275, 275, 315};
-//
-//    g2.setPaint(Color.darkGray);
-//    g2.setStroke(new BasicStroke(8, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-//
-//    g2.drawPolyline(xNorthPoly, yNorthPoly, xNorthPoly.length);
-//    g2.drawPolyline(xSouthPoly, ySouthPoly, xSouthPoly.length);
-//  }
-//  @Override
-//  public void renderTile(Graphics2D g2) {
-//    renderStraight(g2);
-//    renderVerticalAndDividers(g2);
-//  }
-//  protected void renderRouteVertical(Graphics2D g2) {
-//    int xxn, yyn, xxs, yys, w, h;
-//    xxn = 190;
-//    yyn = 0;
-//    xxs = 190;
-//    yys = 325;
-//    w = 20;
-//    h = 75;
-//
-//    g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
-//    g2.setPaint(this.trackRouteColor);
-//
-//    //North
-//    g2.fillRect(xxn, yyn, w, h);
-//    //South
-//    g2.fillRect(xxs, yys, w, h);
-//  }
 }

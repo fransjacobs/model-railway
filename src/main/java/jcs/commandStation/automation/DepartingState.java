@@ -43,12 +43,12 @@ class DepartingState extends AbstractState {
     if (delay) {
       //delay the start a while
       long startDelayTime = Long.getLong("default.start-delaytime", 2000L);
-      Logger.tag(TAG).debug("Delaying departure of {} by {}ms (signal)", locomotive.getName(), startDelayTime);
+      Logger.tag(TAG).debug("Dispatcher " + dispatcher.getName() + " Delaying departure by " + startDelayTime + "ms due to signal proccessing...");
       try {
         Thread.sleep(startDelayTime);
       } catch (InterruptedException ie) {
         Thread.currentThread().interrupt();
-        Logger.tag(TAG).warn("Departure delay interrupted for: {}", locomotive.getName());
+        Logger.tag(TAG).warn("Dispatcher {} departure delay interrupted!", dispatcher.getName());
         return this;
       }
     }
@@ -57,9 +57,6 @@ class DepartingState extends AbstractState {
     BlockBean destinationBlock = dispatcher.getDestinationBlock();
     departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
     destinationBlock.setBlockState(BlockBean.BlockState.LOCKED);
-
-    Logger.debug("Starting: {} Direction: {} Route: {}",
-            locomotive.getName(), locomotive.getDirection(), dispatcher.getRouteBean().getId());
 
     //Speed to ~75% or speed 3
     Integer speed3 = locomotive.getSpeedThree();
@@ -78,6 +75,9 @@ class DepartingState extends AbstractState {
 
     dispatcher.showBlockState(departureBlock);
     dispatcher.showBlockState(destinationBlock);
+
+    Logger.tag(TAG).debug("Dispatcher {} departing in direction: {} Route: {} power: {}%",
+            dispatcher.getName(), locomotive.getDirection(), dispatcher.getRouteBean().getId(), speed3);
 
     return new RunningState();
   }

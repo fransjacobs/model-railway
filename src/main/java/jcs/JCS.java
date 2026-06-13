@@ -182,7 +182,6 @@ public class JCS {
         System.setProperty("apple.awt.application.appearance", "system");
       }
 
-      //splashScreen = new JCSSplash();
       CountDownLatch splashReady = new CountDownLatch(1);
       EventQueue.invokeLater(() -> {
         splashScreen = new JCSSplash();

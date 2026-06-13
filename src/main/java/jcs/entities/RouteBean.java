@@ -169,7 +169,7 @@ public class RouteBean implements Serializable {
 
     //also lock unlock the routeselements
     if (routeElements != null && !routeElements.isEmpty()) {
-      for (RouteElementBean reb : this.routeElements) {
+      for (RouteElementBean reb : routeElements) {
         reb.setLocked(locked);
       }
     }
