@@ -27,6 +27,8 @@ import org.tinylog.Logger;
 
 public class UnscaledCanvas extends JPanel {
 
+  private static final long serialVersionUID = -6011606131297336781L;
+
   private boolean expanded;
   static final int DOT_GRID = 0;
   static final int LINE_GRID = 1;
@@ -101,32 +103,6 @@ public class UnscaledCanvas extends JPanel {
     long now = System.currentTimeMillis();
     Logger.trace("Duration: " + (now - started) + " ms.");
   }
-
-//  private void paintGrid(Graphics g) {
-//    int width = this.getWidth();
-//    int height = this.getHeight();
-//
-//    int xOffset = 0;
-//    int yOffset = 0;
-//
-//    Graphics2D gc = (Graphics2D) g;
-//    Paint p = gc.getPaint();
-//    gc.setPaint(Color.black);
-//
-//    int grid;
-//    if (expanded) {
-//      grid = 20;
-//    } else {
-//      grid = 20;
-//    }
-//
-//    for (int r = 0; r < width; r++) {
-//      for (int c = 0; c < height; c++) {
-//        gc.drawOval((r * grid * 2) + xOffset - 2, (c * grid * 2) + yOffset - 2, 4, 4);
-//      }
-//    }
-//    gc.setPaint(p);
-//  }
 
   public boolean isExpanded() {
     return expanded;

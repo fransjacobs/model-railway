@@ -181,7 +181,6 @@ public class TileCache {
       }
       case CROSS -> {
         tile = new Cross(tileBean);
-        tile.getModel().setShowCenter(true);
         crossIdSeq.set(maxIdSeq(crossIdSeq.get(), getIdSeq(tileBean.getId())));
       }
       case CURVED -> {
@@ -218,8 +217,6 @@ public class TileCache {
       }
       case CROSS_SWITCH -> {
         tile = new CrossSwitch(tileBean);
-        tile.getModel().setShowCenter(true);
-
         tile.setAccessoryBean(tileBean.getAccessoryBean());
 
         crossSwitchIdSeq.set(maxIdSeq(crossSwitchIdSeq.get(), getIdSeq(tileBean.getId())));
