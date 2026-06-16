@@ -393,7 +393,7 @@ public class AccessoryBean {
 
   @Transient
   public boolean isTurnout() {
-    return type != null && type.contains("weiche");
+    return type != null && (type.contains("weiche") || type.contains("dkw_1antrieb"));
   }
 
   @Transient

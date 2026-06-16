@@ -991,6 +991,7 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
     kvl.add(new KeyValuePair("rechtsweiche", "Turnout Right"));
     kvl.add(new KeyValuePair("linksweiche", "Turnout Left"));
     kvl.add(new KeyValuePair("y_weiche", "Cross"));
+    kvl.add(new KeyValuePair("dkw_1antrieb", "Cross"));
     kvl.add(new KeyValuePair("dreiwegweiche", "3 way Turnout"));
     kvl.add(new KeyValuePair("entkupplungsgleis", "Decoupler"));
     kvl.add(new KeyValuePair("entkupplungsgleis_1", "Decoupler 1"));
