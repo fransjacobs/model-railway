@@ -25,6 +25,9 @@ import static jcs.entities.TileBean.Orientation.NORTH;
 import static jcs.entities.TileBean.Orientation.SOUTH;
 import static jcs.entities.TileBean.Orientation.WEST;
 import jcs.entities.TileBean.TileType;
+import static jcs.ui.layout.tiles.LayoutScale.DEFAULT_HEIGHT;
+import static jcs.ui.layout.tiles.LayoutScale.DEFAULT_WIDTH;
+import static jcs.ui.layout.tiles.LayoutScale.GRID;
 import jcs.ui.layout.tiles.ui.CurvedUI;
 import jcs.ui.layout.tiles.ui.TileUI;
 
@@ -78,21 +81,21 @@ public class Curved extends Tile {
 
     switch (orientation) {
       case SOUTH -> {
-        neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
-        neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
+        neighbors.put(Orientation.WEST, new Point(cx - GRID * 2, cy));
+        neighbors.put(Orientation.SOUTH, new Point(cx, cy + GRID * 2));
       }
       case WEST -> {
-        neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
-        neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
+        neighbors.put(Orientation.WEST, new Point(cx - GRID * 2, cy));
+        neighbors.put(Orientation.NORTH, new Point(cx, cy - GRID * 2));
       }
       case NORTH -> {
-        neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
-        neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
+        neighbors.put(Orientation.NORTH, new Point(cx, cy - GRID * 2));
+        neighbors.put(Orientation.EAST, new Point(cx + GRID * 2, cy));
       }
       default -> {
         //EAST
-        neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
-        neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
+        neighbors.put(Orientation.EAST, new Point(cx + GRID * 2, cy));
+        neighbors.put(Orientation.SOUTH, new Point(cx, cy + GRID * 2));
       }
     }
     return neighbors;
@@ -110,24 +113,24 @@ public class Curved extends Tile {
       case SOUTH -> {
         //       |  |
         // b  \  |\ |
-        edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
-        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
+        edgeConnections.put(Orientation.WEST, new Point(cx - GRID, cy));
+        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + GRID));
       }
       case WEST -> {
         //       |/ |
         // t /   |  |
-        edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
-        edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
+        edgeConnections.put(Orientation.WEST, new Point(cx - GRID, cy));
+        edgeConnections.put(Orientation.NORTH, new Point(cx, cy - GRID));
       }
       case NORTH -> {
         //  t \
-        edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
-        edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
+        edgeConnections.put(Orientation.NORTH, new Point(cx, cy - GRID));
+        edgeConnections.put(Orientation.EAST, new Point(cx + GRID, cy));
       }
       default -> {
         //EAST b /
-        edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
-        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
+        edgeConnections.put(Orientation.EAST, new Point(cx + GRID, cy));
+        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + GRID));
       }
     }
     return edgeConnections;

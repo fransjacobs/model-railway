@@ -34,10 +34,10 @@ import static jcs.entities.TileBean.Orientation.SOUTH;
 import static jcs.entities.TileBean.Orientation.WEST;
 import static jcs.entities.TileBean.TileType.CROSS_SWITCH;
 import jcs.ui.layout.LayoutCanvas;
+import static jcs.ui.layout.tiles.LayoutScale.GRID;
 import jcs.ui.layout.tiles.Tile;
 import static jcs.ui.layout.tiles.Tile.DEFAULT_BACKGROUND_COLOR;
 import static jcs.ui.layout.tiles.Tile.DEFAULT_TRACK_COLOR;
-import static jcs.ui.layout.tiles.Tile.GRID;
 import jcs.ui.layout.tiles.TileModel;
 import org.imgscalr.Scalr;
 import org.tinylog.Logger;
@@ -63,6 +63,7 @@ public abstract class TileUI extends ComponentUI {
   protected Color trackRouteColor;
 
   protected BufferedImage tileImage;
+  protected boolean imageDirty = true;
 
   protected TileUI() {
     this.backgroundColor = DEFAULT_BACKGROUND_COLOR;
@@ -157,6 +158,19 @@ public abstract class TileUI extends ComponentUI {
 
   public BufferedImage getTileImage() {
     return tileImage;
+  }
+
+  public void markImageDirty() {
+    this.imageDirty = true;
+    //repaint();
+  }
+
+  public boolean isImageDirty() {
+    return imageDirty;
+  }
+
+  public void clearImageDirty() {
+    imageDirty = false;
   }
 
   public void drawTile(Graphics2D g2d, JComponent c) {

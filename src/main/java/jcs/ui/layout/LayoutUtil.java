@@ -15,15 +15,15 @@
  */
 package jcs.ui.layout;
 
-import jcs.ui.layout.tiles.Tile;
 import java.awt.Point;
+import jcs.ui.layout.tiles.LayoutScale;
 
 public class LayoutUtil {
 
   private LayoutUtil() {
   }
 
-  public static final Point snapToGrid(Point p) {
+  public static Point snapToGrid(Point p) {
     return snapToGrid(p.x, p.y);
   }
 
@@ -34,28 +34,41 @@ public class LayoutUtil {
    * @param y the Y
    * @return Coordinates which are the X en Y wrapped
    */
-  public static final Point snapToGrid(int x, int y) {
-    int steps = x / Tile.DEFAULT_WIDTH;
-    int sx = steps;
-    sx = sx * Tile.DEFAULT_WIDTH + Tile.GRID;
+  public static Point snapToGrid(int x, int y) {
+    LayoutScale scale = LayoutScale.getInstance();
+    int grid = scale.scaledGrid();
+    int scaledTileWidth = grid * 2;
+    int scaledTileHeight = grid * 2;
 
-    steps = y / Tile.DEFAULT_HEIGHT;
+    int steps = x / scaledTileWidth;
+    int sx = steps;
+    sx = sx * scaledTileWidth + grid;
+
+    steps = y / scaledTileHeight;
     int sy = steps;
-    sy = sy * Tile.DEFAULT_HEIGHT + Tile.GRID;
+    sy = sy * scaledTileHeight + grid;
 
     return new Point(sx, sy);
   }
 
   public static int getGridX(int x) {
-    int steps = x / Tile.DEFAULT_WIDTH;
-    int sx = steps * Tile.DEFAULT_WIDTH + Tile.GRID;
-    return (sx - Tile.GRID) / (Tile.GRID * 2);
+    LayoutScale scale = LayoutScale.getInstance();
+    int grid = scale.scaledGrid();
+    int scaledTileWidth = grid * 2;
+
+    int steps = x / scaledTileWidth;
+    int sx = steps * scaledTileWidth + grid;
+    return (sx - grid) / (grid * 2);
   }
 
   public static int getGridY(int y) {
-    int steps = y / Tile.DEFAULT_HEIGHT;
-    int sy = steps * Tile.DEFAULT_HEIGHT + Tile.GRID;
-    return (sy - Tile.GRID) / (Tile.GRID * 2);
+    LayoutScale scale = LayoutScale.getInstance();
+    int grid = scale.scaledGrid();
+    int scaledTileHeight = grid * 2;
+
+    int steps = y / scaledTileHeight;
+    int sy = steps * scaledTileHeight + grid;
+    return (sy - grid) / (grid * 2);
   }
 
   /**

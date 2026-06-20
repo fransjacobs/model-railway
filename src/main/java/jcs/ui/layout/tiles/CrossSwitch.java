@@ -33,9 +33,9 @@ import static jcs.entities.TileBean.Orientation.NORTH;
 import static jcs.entities.TileBean.Orientation.SOUTH;
 import static jcs.entities.TileBean.Orientation.WEST;
 import jcs.entities.TileBean.TileType;
-import static jcs.ui.layout.tiles.Tile.DEFAULT_HEIGHT;
-import static jcs.ui.layout.tiles.Tile.DEFAULT_WIDTH;
-import static jcs.ui.layout.tiles.Tile.GRID;
+import static jcs.ui.layout.tiles.LayoutScale.DEFAULT_HEIGHT;
+import static jcs.ui.layout.tiles.LayoutScale.DEFAULT_WIDTH;
+import static jcs.ui.layout.tiles.LayoutScale.GRID;
 import static jcs.ui.layout.tiles.Tile.tileHeight;
 import static jcs.ui.layout.tiles.Tile.tileWidth;
 import jcs.ui.layout.tiles.ui.CrossSwitchUI;
@@ -46,8 +46,8 @@ import jcs.ui.layout.tiles.ui.TileUI;
  */
 public class CrossSwitch extends Switch implements AccessoryEventListener {
 
-  public static final int CROSS_SWITCH_WIDTH = DEFAULT_WIDTH * 2;
-  public static final int CROSS_SWITCH_HEIGHT = DEFAULT_HEIGHT * 2;
+  //public static final int CROSS_SWITCH_WIDTH = DEFAULT_WIDTH * 2;
+  //public static final int CROSS_SWITCH_HEIGHT = DEFAULT_HEIGHT * 2;
 
   public static final Color VERY_LIGHT_RED = new Color(255, 102, 102);
   public static final Color LIGHT_RED = new Color(255, 51, 51);
@@ -145,52 +145,52 @@ public class CrossSwitch extends Switch implements AccessoryEventListener {
 
     switch (orientation) {
       case SOUTH -> {
-        neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
-        neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 4));
+        neighbors.put(Orientation.NORTH, new Point(cx, cy - GRID * 2));
+        neighbors.put(Orientation.SOUTH, new Point(cx, cy + GRID * 4));
 
         if (Direction.LEFT == direction) {
-          neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy + Tile.GRID * 2));
-          neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
+          neighbors.put(Orientation.EAST, new Point(cx + GRID * 2, cy + GRID * 2));
+          neighbors.put(Orientation.WEST, new Point(cx - GRID * 2, cy));
         } else {
-          neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
-          neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy + Tile.GRID * 2));
+          neighbors.put(Orientation.EAST, new Point(cx + GRID * 2, cy));
+          neighbors.put(Orientation.WEST, new Point(cx - GRID * 2, cy + GRID * 2));
         }
       }
       case WEST -> {
-        neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
-        neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 4, cy));
+        neighbors.put(Orientation.EAST, new Point(cx + GRID * 2, cy));
+        neighbors.put(Orientation.WEST, new Point(cx - GRID * 4, cy));
 
         if (Direction.LEFT == direction) {
-          neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
-          neighbors.put(Orientation.SOUTH, new Point(cx - Tile.GRID * 2, cy + Tile.GRID * 2));
+          neighbors.put(Orientation.NORTH, new Point(cx, cy - GRID * 2));
+          neighbors.put(Orientation.SOUTH, new Point(cx - GRID * 2, cy + GRID * 2));
         } else {
-          neighbors.put(Orientation.NORTH, new Point(cx - Tile.GRID * 2, cy - Tile.GRID * 2));
-          neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
+          neighbors.put(Orientation.NORTH, new Point(cx - GRID * 2, cy - GRID * 2));
+          neighbors.put(Orientation.SOUTH, new Point(cx, cy + GRID * 2));
         }
       }
       case NORTH -> {
-        neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 4));
-        neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
+        neighbors.put(Orientation.NORTH, new Point(cx, cy - GRID * 4));
+        neighbors.put(Orientation.SOUTH, new Point(cx, cy + GRID * 2));
 
         if (Direction.LEFT == direction) {
-          neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
-          neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy - Tile.GRID * 2));
+          neighbors.put(Orientation.EAST, new Point(cx + GRID * 2, cy));
+          neighbors.put(Orientation.WEST, new Point(cx - GRID * 2, cy - GRID * 2));
         } else {
-          neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy - Tile.GRID * 2));
-          neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
+          neighbors.put(Orientation.EAST, new Point(cx + GRID * 2, cy - GRID * 2));
+          neighbors.put(Orientation.WEST, new Point(cx - GRID * 2, cy));
         }
       }
       default -> {
         //EAST
-        neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 4, cy));
-        neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
+        neighbors.put(Orientation.EAST, new Point(cx + GRID * 4, cy));
+        neighbors.put(Orientation.WEST, new Point(cx - GRID * 2, cy));
 
         if (Direction.LEFT == direction) {
-          neighbors.put(Orientation.NORTH, new Point(cx + Tile.GRID * 2, cy - Tile.GRID * 2));
-          neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
+          neighbors.put(Orientation.NORTH, new Point(cx + GRID * 2, cy - GRID * 2));
+          neighbors.put(Orientation.SOUTH, new Point(cx, cy + GRID * 2));
         } else {
-          neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
-          neighbors.put(Orientation.SOUTH, new Point(cx + Tile.GRID * 2, cy + Tile.GRID * 2));
+          neighbors.put(Orientation.NORTH, new Point(cx, cy - GRID * 2));
+          neighbors.put(Orientation.SOUTH, new Point(cx + GRID * 2, cy + GRID * 2));
         }
       }
     }
@@ -207,52 +207,52 @@ public class CrossSwitch extends Switch implements AccessoryEventListener {
 
     switch (orientation) {
       case SOUTH -> {
-        edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
-        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 3));
+        edgeConnections.put(Orientation.NORTH, new Point(cx, cy - GRID));
+        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + GRID * 3));
 
         if (Direction.LEFT == direction) {
-          edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy + Tile.GRID * 2));
-          edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
+          edgeConnections.put(Orientation.EAST, new Point(cx + GRID, cy + GRID * 2));
+          edgeConnections.put(Orientation.WEST, new Point(cx - GRID, cy));
         } else {
-          edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
-          edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy + Tile.GRID * 2));
+          edgeConnections.put(Orientation.EAST, new Point(cx + GRID, cy));
+          edgeConnections.put(Orientation.WEST, new Point(cx - GRID, cy + GRID * 2));
         }
       }
       case WEST -> {
-        edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
-        edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID * 3, cy));
+        edgeConnections.put(Orientation.EAST, new Point(cx + GRID, cy));
+        edgeConnections.put(Orientation.WEST, new Point(cx - GRID * 3, cy));
 
         if (Direction.LEFT == direction) {
-          edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
-          edgeConnections.put(Orientation.SOUTH, new Point(cx - Tile.GRID * 2, cy + Tile.GRID));
+          edgeConnections.put(Orientation.NORTH, new Point(cx, cy - GRID));
+          edgeConnections.put(Orientation.SOUTH, new Point(cx - GRID * 2, cy + GRID));
         } else {
-          edgeConnections.put(Orientation.NORTH, new Point(cx - Tile.GRID * 2, cy - Tile.GRID));
-          edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
+          edgeConnections.put(Orientation.NORTH, new Point(cx - GRID * 2, cy - GRID));
+          edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + GRID));
         }
       }
       case NORTH -> {
-        edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 3));
-        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
+        edgeConnections.put(Orientation.NORTH, new Point(cx, cy - GRID * 3));
+        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + GRID));
 
         if (Direction.LEFT == direction) {
-          edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
-          edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy - Tile.GRID * 2));
+          edgeConnections.put(Orientation.EAST, new Point(cx + GRID, cy));
+          edgeConnections.put(Orientation.WEST, new Point(cx - GRID, cy - GRID * 2));
         } else {
-          edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy - Tile.GRID * 2));
-          edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
+          edgeConnections.put(Orientation.EAST, new Point(cx + GRID, cy - GRID * 2));
+          edgeConnections.put(Orientation.WEST, new Point(cx - GRID, cy));
         }
       }
       default -> {
         //EAST
-        edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID * 3, cy));
-        edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
+        edgeConnections.put(Orientation.EAST, new Point(cx + GRID * 3, cy));
+        edgeConnections.put(Orientation.WEST, new Point(cx - GRID, cy));
 
         if (Direction.LEFT == direction) {
-          edgeConnections.put(Orientation.NORTH, new Point(cx + Tile.GRID * 2, cy - Tile.GRID));
-          edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
+          edgeConnections.put(Orientation.NORTH, new Point(cx + GRID * 2, cy - GRID));
+          edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + GRID));
         } else {
-          edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
-          edgeConnections.put(Orientation.SOUTH, new Point(cx + Tile.GRID * 2, cy + Tile.GRID));
+          edgeConnections.put(Orientation.NORTH, new Point(cx, cy - GRID));
+          edgeConnections.put(Orientation.SOUTH, new Point(cx + GRID * 2, cy + GRID));
         }
       }
     }
@@ -330,8 +330,11 @@ public class CrossSwitch extends Switch implements AccessoryEventListener {
 
   @Override
   public Rectangle getTileBounds() {
+    LayoutScale scale = LayoutScale.getInstance();
+    int s = scale.scaledGrid();
     Orientation tileOrientation = model.getTileOrienation();
     int xx, yy, w, h, multiplier;
+
     if (model.isScaleImage()) {
       w = tileWidth(tileOrientation, TileType.CROSS_SWITCH);
       h = tileHeight(tileOrientation, TileType.CROSS_SWITCH);

@@ -26,6 +26,7 @@ import java.awt.event.ComponentEvent;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToggleButton;
@@ -36,6 +37,7 @@ import jcs.commandStation.automation.RailController;
 import jcs.commandStation.events.PowerEvent;
 import jcs.commandStation.events.PowerEventListener;
 import jcs.entities.TileBean.TileType;
+import jcs.ui.layout.tiles.LayoutScale;
 import jcs.util.RunUtil;
 import org.tinylog.Logger;
 
@@ -148,13 +150,16 @@ public class LayoutPanel extends JPanel {
 
     topPanel = new JPanel();
     toolBar = new JToolBar();
-    loadBtn = new JButton();
+    zoomMinBtn = new JButton();
+    zoomPercLbl = new JLabel();
+    zoomPlusBtn = new JButton();
+    gridBtn = new JButton();
     routeBtn = new JButton();
     autoPilotBtn = new JToggleButton();
     startAllLocomotivesBtn = new JToggleButton();
     filler1 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
-    gridBtn = new JButton();
     filler2 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
+    loadBtn = new JButton();
     filler3 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
     filler4 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
     canvasScrollPane = new JScrollPane();
@@ -180,20 +185,47 @@ public class LayoutPanel extends JPanel {
     toolBar.setName(""); // NOI18N
     toolBar.setPreferredSize(new Dimension(980, 42));
 
-    loadBtn.setIcon(new ImageIcon(getClass().getResource("/media/load-24.png"))); // NOI18N
-    loadBtn.setToolTipText("Load");
-    loadBtn.setFocusable(false);
-    loadBtn.setHorizontalTextPosition(SwingConstants.CENTER);
-    loadBtn.setMaximumSize(new Dimension(38, 38));
-    loadBtn.setMinimumSize(new Dimension(38, 38));
-    loadBtn.setPreferredSize(new Dimension(38, 38));
-    loadBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
-    loadBtn.addActionListener(new ActionListener() {
+    zoomMinBtn.setIcon(new ImageIcon(getClass().getResource("/media/zoom-out.png"))); // NOI18N
+    zoomMinBtn.setFocusable(false);
+    zoomMinBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    zoomMinBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    zoomMinBtn.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
-        loadBtnActionPerformed(evt);
+        zoomMinBtnActionPerformed(evt);
       }
     });
-    toolBar.add(loadBtn);
+    toolBar.add(zoomMinBtn);
+
+    zoomPercLbl.setText("100 %");
+    zoomPercLbl.setMinimumSize(new Dimension(40, 17));
+    zoomPercLbl.setPreferredSize(new Dimension(40, 17));
+    toolBar.add(zoomPercLbl);
+
+    zoomPlusBtn.setIcon(new ImageIcon(getClass().getResource("/media/zoom-in.png"))); // NOI18N
+    zoomPlusBtn.setFocusable(false);
+    zoomPlusBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    zoomPlusBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    zoomPlusBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        zoomPlusBtnActionPerformed(evt);
+      }
+    });
+    toolBar.add(zoomPlusBtn);
+
+    gridBtn.setIcon(new ImageIcon(getClass().getResource("/media/square-grid-24.png"))); // NOI18N
+    gridBtn.setFocusable(false);
+    gridBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    gridBtn.setMargin(new Insets(2, 2, 2, 2));
+    gridBtn.setMaximumSize(new Dimension(38, 38));
+    gridBtn.setMinimumSize(new Dimension(38, 38));
+    gridBtn.setPreferredSize(new Dimension(38, 38));
+    gridBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    gridBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        gridBtnActionPerformed(evt);
+      }
+    });
+    toolBar.add(gridBtn);
 
     routeBtn.setIcon(new ImageIcon(getClass().getResource("/media/river-black.png"))); // NOI18N
     routeBtn.setToolTipText("Route");
@@ -246,22 +278,22 @@ public class LayoutPanel extends JPanel {
     });
     toolBar.add(startAllLocomotivesBtn);
     toolBar.add(filler1);
+    toolBar.add(filler2);
 
-    gridBtn.setIcon(new ImageIcon(getClass().getResource("/media/square-grid-24.png"))); // NOI18N
-    gridBtn.setFocusable(false);
-    gridBtn.setHorizontalTextPosition(SwingConstants.CENTER);
-    gridBtn.setMargin(new Insets(2, 2, 2, 2));
-    gridBtn.setMaximumSize(new Dimension(38, 38));
-    gridBtn.setMinimumSize(new Dimension(38, 38));
-    gridBtn.setPreferredSize(new Dimension(38, 38));
-    gridBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
-    gridBtn.addActionListener(new ActionListener() {
+    loadBtn.setIcon(new ImageIcon(getClass().getResource("/media/load-24.png"))); // NOI18N
+    loadBtn.setToolTipText("Load");
+    loadBtn.setFocusable(false);
+    loadBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    loadBtn.setMaximumSize(new Dimension(38, 38));
+    loadBtn.setMinimumSize(new Dimension(38, 38));
+    loadBtn.setPreferredSize(new Dimension(38, 38));
+    loadBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    loadBtn.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
-        gridBtnActionPerformed(evt);
+        loadBtnActionPerformed(evt);
       }
     });
-    toolBar.add(gridBtn);
-    toolBar.add(filler2);
+    toolBar.add(loadBtn);
     toolBar.add(filler3);
     toolBar.add(filler4);
 
@@ -342,6 +374,18 @@ public class LayoutPanel extends JPanel {
     canvas.setGridType(gridType);
   }//GEN-LAST:event_gridBtnActionPerformed
 
+  private void zoomMinBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_zoomMinBtnActionPerformed
+    LayoutScale.getInstance().zoomIn();
+    zoomPercLbl.setText(LayoutScale.getInstance().getScalePercent()+" %");
+    canvas.setScale(LayoutScale.getInstance().getScalePercent());
+  }//GEN-LAST:event_zoomMinBtnActionPerformed
+
+  private void zoomPlusBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_zoomPlusBtnActionPerformed
+    LayoutScale.getInstance().zoomOut();
+    zoomPercLbl.setText(LayoutScale.getInstance().getScalePercent()+" %");
+    canvas.setScale(LayoutScale.getInstance().getScalePercent());
+  }//GEN-LAST:event_zoomPlusBtnActionPerformed
+
   public void showRoutes() {
     canvas.showRoutesDialog();
   }
@@ -371,5 +415,8 @@ public class LayoutPanel extends JPanel {
   private JToggleButton startAllLocomotivesBtn;
   private JToolBar toolBar;
   private JPanel topPanel;
+  private JButton zoomMinBtn;
+  private JLabel zoomPercLbl;
+  private JButton zoomPlusBtn;
   // End of variables declaration//GEN-END:variables
 }

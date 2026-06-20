@@ -23,6 +23,7 @@ import java.util.Set;
 import jcs.entities.TileBean;
 import jcs.entities.TileBean.Direction;
 import jcs.entities.TileBean.Orientation;
+import static jcs.ui.layout.tiles.LayoutScale.GRID;
 import jcs.ui.layout.tiles.Tile;
 import jcs.ui.layout.tiles.TileCache;
 import static org.junit.Assert.*;
@@ -60,14 +61,14 @@ public class TileTest {
     System.out.println("getGridX");
     Tile instance = TileCache.createTile(TileBean.TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 100, 100);
     int expResult = 2;
-    int result = (instance.getTileX() - Tile.GRID) / (Tile.GRID * 2);
+    int result = (instance.getTileX() - GRID) / (GRID * 2);
 
     assertEquals(expResult, result);
 
     instance = TileCache.createTile(TileBean.TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 220, 220);
 
     expResult = 5;
-    result = (instance.getTileX() - Tile.GRID) / (Tile.GRID * 2);
+    result = (instance.getTileX() - GRID) / (GRID * 2);
     assertEquals(expResult, result);
   }
 
@@ -94,7 +95,7 @@ public class TileTest {
     System.out.println("getGridY");
     Tile instance = TileCache.createTile(TileBean.TileType.STRAIGHT, Orientation.WEST, Direction.CENTER, 100, 140);
     int expResult = 3;
-    int result = (instance.getTileY() - Tile.GRID) / (Tile.GRID * 2);
+    int result = (instance.getTileY() - GRID) / (GRID * 2);
     assertEquals(expResult, result);
   }
 

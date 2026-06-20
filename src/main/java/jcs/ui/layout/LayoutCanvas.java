@@ -79,6 +79,7 @@ import jcs.ui.layout.tiles.Tile;
 import jcs.ui.layout.tiles.TileCache;
 import org.tinylog.Logger;
 import static jcs.entities.TileBean.TileType.CROSS_SWITCH;
+import jcs.ui.layout.tiles.LayoutScale;
 
 /**
  * This canvas / Panel is used to draw the layout
@@ -153,9 +154,6 @@ public class LayoutCanvas extends JPanel {
     postInit();
   }
 
-  /**
-   * Initialize Dialogs
-   */
   private void postInit() {
     routesDialog = new RoutesDialog(getParentFrame(), false, this, readonly);
 
@@ -207,35 +205,65 @@ public class LayoutCanvas extends JPanel {
     return component;
   }
 
-  private void paintDotGrid(Graphics g) {
-    Graphics2D gc = (Graphics2D) g;
-    Paint p = gc.getPaint();
-    gc.setPaint(Color.BLACK);
-    int w = getWidth(), h = getHeight();
-    for (int x = 0; x < w; x += 40) {
-      for (int y = 0; y < h; y += 40) {
-        gc.fillOval(x - 2, y - 2, 4, 4);
-      }
-    }
-    gc.setPaint(p);
-  }
-
+//  private void paintDotGrid(Graphics g) {
+//    Graphics2D gc = (Graphics2D) g;
+//    Paint p = gc.getPaint();
+//    gc.setPaint(Color.BLACK);
+//    int w = getWidth(), h = getHeight();
+//    for (int x = 0; x < w; x += 40) {
+//      for (int y = 0; y < h; y += 40) {
+//        gc.fillOval(x - 2, y - 2, 4, 4);
+//      }
+//    }
+//    gc.setPaint(p);
+//  }
+//  private void paintLineGrid(Graphics g) {
+//    int width = getWidth();
+//    int height = getHeight();
+//    Graphics2D gc = (Graphics2D) g;
+//    Paint p = gc.getPaint();
+//    gc.setPaint(Color.lightGray);
+//
+//    gc.setStroke(GRID_STROKE);
+//
+//    for (int x = 0; x < width; x += 40) {
+//      gc.drawLine(x, 0, x, height);
+//    }
+//    for (int y = 0; y < height; y += 40) {
+//      gc.drawLine(0, y, width, y);
+//    }
+//    gc.setPaint(p);
+//  }
   private void paintLineGrid(Graphics g) {
     int width = getWidth();
     int height = getHeight();
+
     Graphics2D gc = (Graphics2D) g;
     Paint p = gc.getPaint();
     gc.setPaint(Color.lightGray);
-
     gc.setStroke(GRID_STROKE);
 
-    for (int x = 0; x < width; x += 40) {
+    int grid = LayoutScale.getInstance().scaledGrid() * 2;
+
+    for (int x = 0; x < width; x += grid) {
       gc.drawLine(x, 0, x, height);
     }
-    for (int y = 0; y < height; y += 40) {
+
+    for (int y = 0; y < height; y += grid) {
       gc.drawLine(0, y, width, y);
     }
-    gc.setPaint(p);
+  }
+
+  private void paintDotGrid(Graphics g) {
+    int step = LayoutScale.getInstance().scaledTileSize();  // was: 40
+    int width = getWidth();
+    int height = getHeight();
+    Graphics2D gc = (Graphics2D) g;
+    for (int x = 0; x < width; x += step) {
+      for (int y = 0; y < height; y += step) {
+        gc.fillOval(x - 2, y - 2, 4, 4);
+      }
+    }
   }
 
   void setGridType(int gridType) {
@@ -246,6 +274,29 @@ public class LayoutCanvas extends JPanel {
   void setTileType(TileBean.TileType tileType) {
     this.tileType = tileType;
     Logger.trace("TileType: " + tileType + " Current mode: " + mode);
+  }
+
+  public void setScale(int scalePercent) {
+    LayoutScale.getInstance().setScalePercent(scalePercent);
+
+    // Resize and reposition every tile on the canvas
+    for (Component c : getComponents()) {
+      if (c instanceof Tile tile) {
+        tile.setScaleImage(true);              // recalculates size
+        tile.setBounds(tile.getTileBounds());  // recalculates position
+      }
+    }
+
+    // Update canvas preferred size (TileCache uses canonical, so scale it)
+    Dimension canonicalSize = TileCache.getMinCanvasSize();
+    LayoutScale scale = LayoutScale.getInstance();
+    setPreferredSize(new Dimension(
+            scale.toDisplay(canonicalSize.width),
+            scale.toDisplay(canonicalSize.height)
+    ));
+
+    revalidate();
+    repaint();
   }
 
   @SuppressWarnings("unused")
@@ -471,40 +522,41 @@ public class LayoutCanvas extends JPanel {
         }
 
         int curX, curY;
+        int grid = LayoutScale.getInstance().scaledGrid();
         switch (selectedTile.getTileType()) {
           case BLOCK -> {
             if (selectedTile.isHorizontal()) {
-              curX = snapPoint.x - Tile.GRID - Tile.GRID * 2;
-              curY = snapPoint.y - Tile.GRID;
+              curX = snapPoint.x - grid - grid * 2;
+              curY = snapPoint.y - grid;
             } else {
-              curX = snapPoint.x - Tile.GRID;
-              curY = snapPoint.y - Tile.GRID - Tile.GRID * 2;
+              curX = snapPoint.x - grid;
+              curY = snapPoint.y - grid - grid * 2;
             }
           }
           case CROSS_SWITCH -> {
             switch (selectedTile.getOrientation()) {
               case SOUTH -> {
-                curX = snapPoint.x - Tile.GRID;
-                curY = snapPoint.y - Tile.GRID;
+                curX = snapPoint.x - grid;
+                curY = snapPoint.y - grid;
               }
               case WEST -> {
-                curX = snapPoint.x - Tile.GRID - Tile.GRID * 2;
-                curY = snapPoint.y - Tile.GRID;
+                curX = snapPoint.x - grid - grid * 2;
+                curY = snapPoint.y - grid;
               }
               case NORTH -> {
-                curX = snapPoint.x - Tile.GRID;
-                curY = snapPoint.y - Tile.GRID - Tile.GRID * 2;
+                curX = snapPoint.x - grid;
+                curY = snapPoint.y - grid - grid * 2;
               }
               default -> {
                 //East
-                curX = snapPoint.x - Tile.GRID;
-                curY = snapPoint.y - Tile.GRID;
+                curX = snapPoint.x - grid;
+                curY = snapPoint.y - grid;
               }
             }
           }
           default -> {
-            curX = snapPoint.x - Tile.GRID;
-            curY = snapPoint.y - Tile.GRID;
+            curX = snapPoint.x - grid;
+            curY = snapPoint.y - grid;
           }
         }
         selectedTile.setBounds(curX, curY, selectedTile.getWidth(), selectedTile.getHeight());

@@ -94,9 +94,11 @@ public class RoutesDialog extends javax.swing.JDialog {
   }
 
   void loadRoutes() {
-    routeListModel.clear();
-    List<RouteBean> routes = PersistenceFactory.getService().getRoutes();
-    routeListModel.addAll(routes);
+    if (PersistenceFactory.getService() != null) {
+      routeListModel.clear();
+      List<RouteBean> routes = PersistenceFactory.getService().getRoutes();
+      routeListModel.addAll(routes);
+    }
   }
 
   private void setSelectedRoute(RouteBean route) {

@@ -22,6 +22,8 @@ import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.TileBean;
 import jcs.entities.TileBean.Orientation;
 import jcs.entities.TileBean.TileType;
+import static jcs.ui.layout.tiles.LayoutScale.DEFAULT_HEIGHT;
+import static jcs.ui.layout.tiles.LayoutScale.DEFAULT_WIDTH;
 import jcs.ui.layout.tiles.ui.SensorUI;
 import jcs.ui.layout.tiles.ui.TileUI;
 

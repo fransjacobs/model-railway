@@ -46,8 +46,8 @@ import static jcs.entities.TileBean.TileType.STRAIGHT_DIR;
 import static jcs.entities.TileBean.TileType.SWITCH;
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.BlockBean;
-import static jcs.ui.layout.tiles.Tile.GRID;
 import static jcs.entities.TileBean.TileType.CROSS_SWITCH;
+import static jcs.ui.layout.tiles.LayoutScale.GRID;
 
 /**
  * Factory object to create Tiles and cache pointMap

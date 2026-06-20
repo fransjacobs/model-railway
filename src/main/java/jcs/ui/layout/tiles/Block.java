@@ -17,7 +17,6 @@ package jcs.ui.layout.tiles;
 
 import java.awt.Dimension;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
@@ -39,9 +38,9 @@ import static jcs.entities.TileBean.Orientation.WEST;
 import jcs.entities.TileBean.TileType;
 import jcs.ui.layout.LayoutCanvas;
 import jcs.ui.layout.LayoutUtil;
-import static jcs.ui.layout.tiles.Tile.DEFAULT_HEIGHT;
-import static jcs.ui.layout.tiles.Tile.DEFAULT_WIDTH;
-import static jcs.ui.layout.tiles.Tile.GRID;
+import static jcs.ui.layout.tiles.LayoutScale.DEFAULT_HEIGHT;
+import static jcs.ui.layout.tiles.LayoutScale.DEFAULT_WIDTH;
+import static jcs.ui.layout.tiles.LayoutScale.GRID;
 import jcs.ui.layout.tiles.ui.StraightUI;
 import jcs.ui.layout.tiles.ui.TileUI;
 import org.tinylog.Logger;
@@ -179,24 +178,24 @@ public class Block extends Tile {
     if ("+".equals(suffix)) {
       return switch (this.getOrientation()) {
         case WEST ->
-          new Point(cx - Tile.GRID * 2, cy);
+          new Point(cx - GRID * 2, cy);
         case NORTH ->
-          new Point(cx, cy - Tile.GRID * 2);
+          new Point(cx, cy - GRID * 2);
         case SOUTH ->
-          new Point(cx, cy + Tile.GRID * 2);
+          new Point(cx, cy + GRID * 2);
         default ->
-          new Point(cx + Tile.GRID * 2, cy);
+          new Point(cx + GRID * 2, cy);
       };
     } else {
       return switch (this.getOrientation()) {
         case EAST ->
-          new Point(cx - Tile.GRID * 2, cy);
+          new Point(cx - GRID * 2, cy);
         case SOUTH ->
-          new Point(cx, cy - Tile.GRID * 2);
+          new Point(cx, cy - GRID * 2);
         case NORTH ->
-          new Point(cx, cy + Tile.GRID * 2);
+          new Point(cx, cy + GRID * 2);
         default ->
-          new Point(cx + Tile.GRID * 2, cy);
+          new Point(cx + GRID * 2, cy);
       };
     }
   }
@@ -215,12 +214,12 @@ public class Block extends Tile {
 
     // Horizontal
     if (Orientation.EAST == orientation || Orientation.WEST == orientation) {
-      neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 4, cy));
-      neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 4, cy));
+      neighbors.put(Orientation.EAST, new Point(cx + GRID * 4, cy));
+      neighbors.put(Orientation.WEST, new Point(cx - GRID * 4, cy));
     } else {
       // Vertical
-      neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 4));
-      neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 4));
+      neighbors.put(Orientation.NORTH, new Point(cx, cy - GRID * 4));
+      neighbors.put(Orientation.SOUTH, new Point(cx, cy + GRID * 4));
     }
     return neighbors;
   }
@@ -234,12 +233,12 @@ public class Block extends Tile {
 
     // Horizontal
     if (Orientation.EAST == orientation || Orientation.WEST == orientation) {
-      edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID * 3, cy));
-      edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID * 3, cy));
+      edgeConnections.put(Orientation.EAST, new Point(cx + GRID * 3, cy));
+      edgeConnections.put(Orientation.WEST, new Point(cx - GRID * 3, cy));
     } else {
       // Vertical
-      edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 3));
-      edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 3));
+      edgeConnections.put(Orientation.NORTH, new Point(cx, cy - GRID * 3));
+      edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + GRID * 3));
     }
     return edgeConnections;
   }
@@ -250,24 +249,24 @@ public class Block extends Tile {
     if ("+".equals(suffix)) {
       return switch (getOrientation()) {
         case WEST ->
-          new Point(cx - Tile.GRID * 4, cy);
+          new Point(cx - GRID * 4, cy);
         case NORTH ->
-          new Point(cx, cy - Tile.GRID * 4);
+          new Point(cx, cy - GRID * 4);
         case SOUTH ->
-          new Point(cx, cy + Tile.GRID * 4);
+          new Point(cx, cy + GRID * 4);
         default ->
-          new Point(cx + Tile.GRID * 4, cy);
+          new Point(cx + GRID * 4, cy);
       };
     } else {
       return switch (getOrientation()) {
         case EAST ->
-          new Point(cx - Tile.GRID * 4, cy);
+          new Point(cx - GRID * 4, cy);
         case SOUTH ->
-          new Point(cx, cy - Tile.GRID * 4);
+          new Point(cx, cy - GRID * 4);
         case NORTH ->
-          new Point(cx, cy + Tile.GRID * 4);
+          new Point(cx, cy + GRID * 4);
         default ->
-          new Point(cx + Tile.GRID * 4, cy);
+          new Point(cx + GRID * 4, cy);
       };
     }
   }
@@ -451,32 +450,28 @@ public class Block extends Tile {
     }
   }
 
-  
-  
-  
-  @Override
-  public Rectangle getTileBounds() {
-    int multiplier = (model.isScaleImage() ? 1 : 10);
-    Orientation tileOrientation = model.getTileOrienation();
-
-    int xx, yy;
-    if (tileOrientation == Orientation.EAST || tileOrientation == Orientation.WEST) {
-      xx = tileX - GRID * multiplier - GRID * multiplier * 2;
-      yy = tileY - GRID * multiplier;
-    } else {
-      xx = tileX - GRID * multiplier;
-      yy = tileY - GRID * multiplier - GRID * multiplier * 2;
-    }
-
-    if (model.isScaleImage()) {
-      return new Rectangle(xx, yy, tileWidth(tileOrientation, TileType.BLOCK), tileHeight(tileOrientation, TileType.BLOCK));
-    } else {
-      int renderWidth = getUI().getRenderWidth();
-      int renderHeight = getUI().getRenderHeight();
-      return new Rectangle(xx, yy, renderWidth, renderHeight);
-    }
-  }
-
+//  @Override
+//  public Rectangle getTileBounds() {
+//    int multiplier = (model.isScaleImage() ? 1 : 10);
+//    Orientation tileOrientation = model.getTileOrienation();
+//
+//    int xx, yy;
+//    if (tileOrientation == Orientation.EAST || tileOrientation == Orientation.WEST) {
+//      xx = tileX - GRID * multiplier - GRID * multiplier * 2;
+//      yy = tileY - GRID * multiplier;
+//    } else {
+//      xx = tileX - GRID * multiplier;
+//      yy = tileY - GRID * multiplier - GRID * multiplier * 2;
+//    }
+//
+//    if (model.isScaleImage()) {
+//      return new Rectangle(xx, yy, tileWidth(tileOrientation, TileType.BLOCK), tileHeight(tileOrientation, TileType.BLOCK));
+//    } else {
+//      int renderWidth = getUI().getRenderWidth();
+//      int renderHeight = getUI().getRenderHeight();
+//      return new Rectangle(xx, yy, renderWidth, renderHeight);
+//    }
+//  }
   private class LocomotiveBeanDropHandler extends TransferHandler {
 
     private static final long serialVersionUID = -1556738612609648531L;

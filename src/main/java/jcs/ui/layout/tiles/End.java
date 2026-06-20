@@ -25,6 +25,9 @@ import static jcs.entities.TileBean.Orientation.NORTH;
 import static jcs.entities.TileBean.Orientation.SOUTH;
 import static jcs.entities.TileBean.Orientation.WEST;
 import jcs.entities.TileBean.TileType;
+import static jcs.ui.layout.tiles.LayoutScale.DEFAULT_HEIGHT;
+import static jcs.ui.layout.tiles.LayoutScale.DEFAULT_WIDTH;
+import static jcs.ui.layout.tiles.LayoutScale.GRID;
 import jcs.ui.layout.tiles.ui.EndUI;
 import jcs.ui.layout.tiles.ui.TileUI;
 
@@ -32,6 +35,8 @@ import jcs.ui.layout.tiles.ui.TileUI;
  * Representation of a End track on the layout
  */
 public class End extends Tile {
+
+  private static final long serialVersionUID = 8478025766416433453L;
 
   public End(TileBean tileBean) {
     super(tileBean, DEFAULT_WIDTH, DEFAULT_HEIGHT);
@@ -78,13 +83,13 @@ public class End extends Tile {
 
     switch (orientation) {
       case SOUTH ->
-        neighbors.put(Orientation.SOUTH, new Point(cx, cy - Tile.GRID * 2));
+        neighbors.put(Orientation.SOUTH, new Point(cx, cy - GRID * 2));
       case WEST ->
-        neighbors.put(Orientation.WEST, new Point(cx + Tile.GRID * 2, cy));
+        neighbors.put(Orientation.WEST, new Point(cx + GRID * 2, cy));
       case NORTH ->
-        neighbors.put(Orientation.NORTH, new Point(cx, cy + Tile.GRID * 2));
+        neighbors.put(Orientation.NORTH, new Point(cx, cy + GRID * 2));
       default -> //EAST
-        neighbors.put(Orientation.EAST, new Point(cx - Tile.GRID * 2, cy));
+        neighbors.put(Orientation.EAST, new Point(cx - GRID * 2, cy));
     }
     return neighbors;
   }
@@ -98,13 +103,13 @@ public class End extends Tile {
 
     switch (orientation) {
       case SOUTH ->
-        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy - Tile.GRID));
+        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy - GRID));
       case WEST ->
-        edgeConnections.put(Orientation.WEST, new Point(cx + Tile.GRID, cy));
+        edgeConnections.put(Orientation.WEST, new Point(cx + GRID, cy));
       case NORTH ->
-        edgeConnections.put(Orientation.NORTH, new Point(cx, cy + Tile.GRID));
+        edgeConnections.put(Orientation.NORTH, new Point(cx, cy + GRID));
       default -> //EAST
-        edgeConnections.put(Orientation.EAST, new Point(cx - Tile.GRID, cy));
+        edgeConnections.put(Orientation.EAST, new Point(cx - GRID, cy));
     }
     return edgeConnections;
   }

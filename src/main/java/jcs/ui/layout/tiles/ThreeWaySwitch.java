@@ -29,6 +29,9 @@ import static jcs.entities.TileBean.Orientation.NORTH;
 import static jcs.entities.TileBean.Orientation.SOUTH;
 import static jcs.entities.TileBean.Orientation.WEST;
 import jcs.entities.TileBean.TileType;
+import static jcs.ui.layout.tiles.LayoutScale.DEFAULT_HEIGHT;
+import static jcs.ui.layout.tiles.LayoutScale.DEFAULT_WIDTH;
+import static jcs.ui.layout.tiles.LayoutScale.GRID;
 import jcs.ui.layout.tiles.ui.ThreeWaySwitchUI;
 import jcs.ui.layout.tiles.ui.TileUI;
 import org.tinylog.Logger;
@@ -92,29 +95,29 @@ public class ThreeWaySwitch extends Switch implements AccessoryEventListener {
 
     switch (orientation) {
       case SOUTH -> {
-        neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
-        neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
-        neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
-        neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
+        neighbors.put(Orientation.NORTH, new Point(cx, cy - GRID * 2));
+        neighbors.put(Orientation.SOUTH, new Point(cx, cy + GRID * 2));
+        neighbors.put(Orientation.WEST, new Point(cx - GRID * 2, cy));
+        neighbors.put(Orientation.EAST, new Point(cx + GRID * 2, cy));
       }
       case WEST -> {
-        neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
-        neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
-        neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
-        neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
+        neighbors.put(Orientation.EAST, new Point(cx + GRID * 2, cy));
+        neighbors.put(Orientation.WEST, new Point(cx - GRID * 2, cy));
+        neighbors.put(Orientation.NORTH, new Point(cx, cy - GRID * 2));
+        neighbors.put(Orientation.SOUTH, new Point(cx, cy + GRID * 2));
       }
       case NORTH -> {
-        neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
-        neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
-        neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
-        neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
+        neighbors.put(Orientation.NORTH, new Point(cx, cy - GRID * 2));
+        neighbors.put(Orientation.SOUTH, new Point(cx, cy + GRID * 2));
+        neighbors.put(Orientation.EAST, new Point(cx + GRID * 2, cy));
+        neighbors.put(Orientation.WEST, new Point(cx - GRID * 2, cy));
       }
       default -> {
         //EAST
-        neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
-        neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
-        neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
-        neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
+        neighbors.put(Orientation.EAST, new Point(cx + GRID * 2, cy));
+        neighbors.put(Orientation.WEST, new Point(cx - GRID * 2, cy));
+        neighbors.put(Orientation.SOUTH, new Point(cx, cy + GRID * 2));
+        neighbors.put(Orientation.NORTH, new Point(cx, cy - GRID * 2));
       }
     }
     return neighbors;
@@ -130,29 +133,29 @@ public class ThreeWaySwitch extends Switch implements AccessoryEventListener {
 
     switch (orientation) {
       case SOUTH -> {
-        edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
-        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
-        edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
-        edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
+        edgeConnections.put(Orientation.NORTH, new Point(cx, cy - GRID));
+        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + GRID));
+        edgeConnections.put(Orientation.WEST, new Point(cx - GRID, cy));
+        edgeConnections.put(Orientation.EAST, new Point(cx + GRID, cy));
       }
       case WEST -> {
-        edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
-        edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
-        edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
-        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
+        edgeConnections.put(Orientation.EAST, new Point(cx + GRID, cy));
+        edgeConnections.put(Orientation.WEST, new Point(cx - GRID, cy));
+        edgeConnections.put(Orientation.NORTH, new Point(cx, cy - GRID));
+        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + GRID));
       }
       case NORTH -> {
-        edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
-        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
-        edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
-        edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
+        edgeConnections.put(Orientation.NORTH, new Point(cx, cy - GRID));
+        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + GRID));
+        edgeConnections.put(Orientation.EAST, new Point(cx + GRID, cy));
+        edgeConnections.put(Orientation.WEST, new Point(cx - GRID, cy));
       }
       default -> {
         //EAST
-        edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
-        edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
-        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
-        edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
+        edgeConnections.put(Orientation.EAST, new Point(cx + GRID, cy));
+        edgeConnections.put(Orientation.WEST, new Point(cx - GRID, cy));
+        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + GRID));
+        edgeConnections.put(Orientation.NORTH, new Point(cx, cy - GRID));
       }
     }
     return edgeConnections;

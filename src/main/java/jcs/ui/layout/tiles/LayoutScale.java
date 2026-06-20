@@ -13,11 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.ui.layout.tiles.ui;
+package jcs.ui.layout.tiles;
 
-import jcs.ui.layout.tiles.Tile;
-
+/**
+ * Utility Class to handle the screen scaling in steps
+ *
+ */
 public class LayoutScale {
+
+  public static final int GRID = 20;
+  public static final int DEFAULT_WIDTH = GRID * 2;
+  public static final int DEFAULT_HEIGHT = GRID * 2;
+
+  private int scaleStep = 0;
 
   private static final LayoutScale INSTANCE = new LayoutScale();
 
@@ -29,7 +37,30 @@ public class LayoutScale {
   public static final int[] SCALE_STEPS = {100, 90, 80, 70, 60, 50};
   private static final int DEFAULT_SCALE = 100;
 
+  private int grid = GRID;
   private int scalePercent = DEFAULT_SCALE;
+
+  public int getGrid() {
+    return grid;
+  }
+
+  public void zoomOut() {
+    //-
+    scaleStep--;
+    if (scaleStep <= 0) {
+      scaleStep = 0;
+    }
+    scalePercent = SCALE_STEPS[scaleStep];
+  }
+
+  public void zoomIn() {
+    //+
+    scaleStep++;
+    if (scaleStep > SCALE_STEPS.length - 1) {
+      scaleStep = SCALE_STEPS.length - 1;
+    }
+    scalePercent = SCALE_STEPS[scaleStep];
+  }
 
   public int getScalePercent() {
     return scalePercent;
@@ -43,7 +74,7 @@ public class LayoutScale {
    * Pixel size of one tile at current scale. At 100% = 40.
    */
   public int scaledTileSize() {
-    return Tile.DEFAULT_WIDTH * scalePercent / 100;
+    return DEFAULT_WIDTH * scalePercent / 100;
   }
 
   /**

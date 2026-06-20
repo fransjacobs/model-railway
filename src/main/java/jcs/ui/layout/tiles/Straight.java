@@ -24,6 +24,9 @@ import javax.swing.UIManager;
 import jcs.entities.TileBean;
 import jcs.entities.TileBean.Orientation;
 import jcs.entities.TileBean.TileType;
+import static jcs.ui.layout.tiles.LayoutScale.GRID;
+import static jcs.ui.layout.tiles.LayoutScale.DEFAULT_HEIGHT;
+import static jcs.ui.layout.tiles.LayoutScale.DEFAULT_WIDTH;
 
 /**
  * Representation of a Straight track on the layout
@@ -75,12 +78,12 @@ public class Straight extends Tile {
 
     if (Orientation.EAST == orientation || Orientation.WEST == orientation) {
       // Horizontal
-      neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
-      neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
+      neighbors.put(Orientation.EAST, new Point(cx + GRID * 2, cy));
+      neighbors.put(Orientation.WEST, new Point(cx - GRID * 2, cy));
     } else {
       // Vertical
-      neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
-      neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
+      neighbors.put(Orientation.NORTH, new Point(cx, cy - GRID * 2));
+      neighbors.put(Orientation.SOUTH, new Point(cx, cy + GRID * 2));
     }
     return neighbors;
   }
@@ -94,12 +97,12 @@ public class Straight extends Tile {
 
     if (Orientation.EAST == orientation || Orientation.WEST == orientation) {
       // Horizontal
-      edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
-      edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
+      edgeConnections.put(Orientation.EAST, new Point(cx + GRID, cy));
+      edgeConnections.put(Orientation.WEST, new Point(cx - GRID, cy));
     } else {
       // Vertical
-      edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
-      edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
+      edgeConnections.put(Orientation.NORTH, new Point(cx, cy - GRID));
+      edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + GRID));
     }
     return edgeConnections;
   }

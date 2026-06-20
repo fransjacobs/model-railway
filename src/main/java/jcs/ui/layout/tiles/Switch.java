@@ -31,6 +31,9 @@ import static jcs.entities.TileBean.Orientation.NORTH;
 import static jcs.entities.TileBean.Orientation.SOUTH;
 import static jcs.entities.TileBean.Orientation.WEST;
 import jcs.entities.TileBean.TileType;
+import static jcs.ui.layout.tiles.LayoutScale.DEFAULT_HEIGHT;
+import static jcs.ui.layout.tiles.LayoutScale.DEFAULT_WIDTH;
+import static jcs.ui.layout.tiles.LayoutScale.GRID;
 import jcs.ui.layout.tiles.ui.SwitchUI;
 import jcs.ui.layout.tiles.ui.TileUI;
 import org.tinylog.Logger;
@@ -96,40 +99,40 @@ public class Switch extends Tile implements AccessoryEventListener {
 
     switch (orientation) {
       case SOUTH -> {
-        neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
-        neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
+        neighbors.put(Orientation.NORTH, new Point(cx, cy - GRID * 2));
+        neighbors.put(Orientation.SOUTH, new Point(cx, cy + GRID * 2));
         if (Direction.LEFT == direction) {
-          neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
+          neighbors.put(Orientation.WEST, new Point(cx - GRID * 2, cy));
         } else {
-          neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
+          neighbors.put(Orientation.EAST, new Point(cx + GRID * 2, cy));
         }
       }
       case WEST -> {
-        neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
-        neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
+        neighbors.put(Orientation.EAST, new Point(cx + GRID * 2, cy));
+        neighbors.put(Orientation.WEST, new Point(cx - GRID * 2, cy));
         if (Direction.LEFT == direction) {
-          neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
+          neighbors.put(Orientation.NORTH, new Point(cx, cy - GRID * 2));
         } else {
-          neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
+          neighbors.put(Orientation.SOUTH, new Point(cx, cy + GRID * 2));
         }
       }
       case NORTH -> {
-        neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
-        neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
+        neighbors.put(Orientation.NORTH, new Point(cx, cy - GRID * 2));
+        neighbors.put(Orientation.SOUTH, new Point(cx, cy + GRID * 2));
         if (Direction.LEFT == direction) {
-          neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
+          neighbors.put(Orientation.EAST, new Point(cx + GRID * 2, cy));
         } else {
-          neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
+          neighbors.put(Orientation.WEST, new Point(cx - GRID * 2, cy));
         }
       }
       default -> {
         //EAST
-        neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
-        neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
+        neighbors.put(Orientation.EAST, new Point(cx + GRID * 2, cy));
+        neighbors.put(Orientation.WEST, new Point(cx - GRID * 2, cy));
         if (Direction.LEFT == direction) {
-          neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
+          neighbors.put(Orientation.SOUTH, new Point(cx, cy + GRID * 2));
         } else {
-          neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
+          neighbors.put(Orientation.NORTH, new Point(cx, cy - GRID * 2));
         }
       }
     }
@@ -146,40 +149,40 @@ public class Switch extends Tile implements AccessoryEventListener {
 
     switch (orientation) {
       case SOUTH -> {
-        edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
-        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
+        edgeConnections.put(Orientation.NORTH, new Point(cx, cy - GRID));
+        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + GRID));
         if (Direction.LEFT == direction) {
-          edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
+          edgeConnections.put(Orientation.WEST, new Point(cx - GRID, cy));
         } else {
-          edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
+          edgeConnections.put(Orientation.EAST, new Point(cx + GRID, cy));
         }
       }
       case WEST -> {
-        edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
-        edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
+        edgeConnections.put(Orientation.EAST, new Point(cx + GRID, cy));
+        edgeConnections.put(Orientation.WEST, new Point(cx - GRID, cy));
         if (Direction.LEFT == direction) {
-          edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
+          edgeConnections.put(Orientation.NORTH, new Point(cx, cy - GRID));
         } else {
-          edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
+          edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + GRID));
         }
       }
       case NORTH -> {
-        edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
-        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
+        edgeConnections.put(Orientation.NORTH, new Point(cx, cy - GRID));
+        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + GRID));
         if (Direction.LEFT == direction) {
-          edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
+          edgeConnections.put(Orientation.EAST, new Point(cx + GRID, cy));
         } else {
-          edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
+          edgeConnections.put(Orientation.WEST, new Point(cx - GRID, cy));
         }
       }
       default -> {
         //EAST
-        edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
-        edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
+        edgeConnections.put(Orientation.EAST, new Point(cx + GRID, cy));
+        edgeConnections.put(Orientation.WEST, new Point(cx - GRID, cy));
         if (Direction.LEFT == direction) {
-          edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
+          edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + GRID));
         } else {
-          edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
+          edgeConnections.put(Orientation.NORTH, new Point(cx, cy - GRID));
         }
       }
     }
@@ -188,7 +191,7 @@ public class Switch extends Tile implements AccessoryEventListener {
 
   @Override
   public void onAccessoryChange(AccessoryEvent event) {
-    Logger.trace("Event "+event.getId()+" Value "+event.getValue());
+    Logger.trace("Event " + event.getId() + " Value " + event.getValue());
     if (getAccessoryBean() != null && event.isEventFor(accessoryBean)) {
       setAccessoryValue(event.getValue());
     }
