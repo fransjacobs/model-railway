@@ -31,9 +31,6 @@ import static jcs.entities.AccessoryBean.AccessoryValue.GREEN;
 import static jcs.entities.AccessoryBean.AccessoryValue.RED;
 import jcs.entities.TileBean;
 import jcs.entities.TileBean.Direction;
-import static jcs.entities.TileBean.Orientation.NORTH;
-import static jcs.entities.TileBean.Orientation.SOUTH;
-import static jcs.entities.TileBean.Orientation.WEST;
 import jcs.ui.layout.tiles.CrossSwitch;
 import jcs.ui.layout.tiles.Tile;
 import jcs.ui.layout.tiles.TileCache;
@@ -330,47 +327,60 @@ public class CrossSwitchUI extends TileUI implements MouseListener, MouseMotionL
     }
   }
 
+//  @Override
+//  protected void drawCenterPoint(Graphics2D g2d, Color color, double size, JComponent c) {
+//    Tile tile = (Tile) c;
+//    TileModel model = tile.getModel();
+//    TileBean.Orientation tileOrientation = model.getTileOrienation();
+//
+//    //A CrossSwitch has 1 alternate point
+//    //1st square holds the centerpoint
+//    //2nd square 
+//    double dX1, dX2, dY1, dY2;
+//    switch (tileOrientation) {
+//      case SOUTH -> {
+//        dX1 = renderWidth / 2 - size / 2;
+//        dY1 = renderHeight / 2 - renderHeight / 4 - size / 2;
+//        dX2 = renderWidth / 2 + renderWidth - size / 4;
+//        dY2 = renderHeight / 2 - renderHeight / 4 - size / 4;
+//      }
+//      case WEST -> {
+//        dX1 = renderWidth / 2 - renderWidth / 4 - size / 2;
+//        dY1 = renderHeight / 2 - size / 2;
+//        dX2 = renderWidth / 2 + renderWidth / 4 - size / 4;
+//        dY2 = renderHeight / 2 - size / 4;
+//      }
+//      case NORTH -> {
+//        dX1 = renderWidth / 2 - size / 2;
+//        dY1 = renderHeight / 2 - renderHeight / 4 - size / 2;
+//        dX2 = renderWidth / 2 + renderWidth - size / 4;
+//        dY2 = renderHeight / 2 - renderHeight / 4 - size / 4;
+//      }
+//      default -> {
+//        //East
+//        dX1 = renderWidth / 2 - renderWidth / 4 - size / 2;
+//        dY1 = renderHeight / 2 - size / 2;
+//        dX2 = renderWidth / 2 + renderWidth / 4 - size / 4;
+//        dY2 = renderHeight / 2 - size / 4;
+//      }
+//    }
+//
+//    g2d.setColor(color);
+//    g2d.fill(new Ellipse2D.Double(dX1, dY1, size, size));
+//    g2d.fill(new Ellipse2D.Double(dX2, dY2, size / 2, size / 2));
+//  }
   @Override
   protected void drawCenterPoint(Graphics2D g2d, Color color, double size, JComponent c) {
-    Tile tile = (Tile) c;
-    TileModel model = tile.getModel();
-    TileBean.Orientation tileOrientation = model.getTileOrienation();
-
-    //A CrossSwitch has 1 alternate point
-    //1st square holds the centerpoint
-    //2nd square 
-    double dX1, dX2, dY1, dY2;
-    switch (tileOrientation) {
-      case SOUTH -> {
-        dX1 = renderWidth / 2 - size / 2;
-        dY1 = renderHeight / 2 - renderHeight / 4 - size / 2;
-        dX2 = renderWidth / 2 + renderWidth - size / 4;
-        dY2 = renderHeight / 2 - renderHeight / 4 - size / 4;
-      }
-      case WEST -> {
-        dX1 = renderWidth / 2 - renderWidth / 4 - size / 2;
-        dY1 = renderHeight / 2 - size / 2;
-        dX2 = renderWidth / 2 + renderWidth / 4 - size / 4;
-        dY2 = renderHeight / 2 - size / 4;
-      }
-      case NORTH -> {
-        dX1 = renderWidth / 2 - size / 2;
-        dY1 = renderHeight / 2 - renderHeight / 4 - size / 2;
-        dX2 = renderWidth / 2 + renderWidth - size / 4;
-        dY2 = renderHeight / 2 - renderHeight / 4 - size / 4;
-      }
-      default -> {
-        //East
-        dX1 = renderWidth / 2 - renderWidth / 4 - size / 2;
-        dY1 = renderHeight / 2 - size / 2;
-        dX2 = renderWidth / 2 + renderWidth / 4 - size / 4;
-        dY2 = renderHeight / 2 - size / 4;
-      }
-    }
+    // For a standard tile renderWidth == renderHeight == RENDER_GRID*2, so
+    // renderWidth/2 == RENDER_GRID. For CrossSwitch renderWidth == RENDER_GRID*4,
+    // so the default would draw at 2*RENDER_GRID — wrong.
+    // The anchor (tileX,tileY) always maps to (RENDER_GRID, RENDER_GRID) in
+    // the canonical EAST render space. The rotation transform handles the rest.
+    double dX = RENDER_GRID - size / 2;
+    double dY = RENDER_GRID - size / 2;
 
     g2d.setColor(color);
-    g2d.fill(new Ellipse2D.Double(dX1, dY1, size, size));
-    g2d.fill(new Ellipse2D.Double(dX2, dY2, size / 2, size / 2));
+    g2d.fill(new Ellipse2D.Double(dX, dY, size, size));
   }
 
   @Override

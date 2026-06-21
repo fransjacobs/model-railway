@@ -28,7 +28,7 @@ INSERT INTO jcs.tiles (id,tile_type,orientation,direction,x,y,signal_type,access
 	 ('bk-2','Block','East','Center',740,340,NULL,NULL,NULL),
 	 ('et-2','End','East','Center',860,340,NULL,NULL,NULL),
 	 ('st-2','Straight','East','Center',500,340,NULL,NULL,NULL),
-	 ('cs-3','Cross','East','Left',540,340,NULL,NULL,NULL),
+	 ('cs-3','CrossSwitch','East','Left',540,340,NULL,NULL,NULL),
 	 ('et-3','End','South','Center',540,620,NULL,NULL,NULL);
 INSERT INTO jcs.tiles (id,tile_type,orientation,direction,x,y,signal_type,accessory_id,sensor_id) VALUES
 	 ('st-25','Straight','South','Center',540,380,NULL,NULL,NULL);

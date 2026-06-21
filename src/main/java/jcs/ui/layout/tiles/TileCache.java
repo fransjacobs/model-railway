@@ -181,6 +181,7 @@ public class TileCache {
       }
       case CROSS -> {
         tile = new Cross(tileBean);
+        tile.setDrawCenterPoint(true);
         crossIdSeq.set(maxIdSeq(crossIdSeq.get(), getIdSeq(tileBean.getId())));
       }
       case CURVED -> {
@@ -494,6 +495,8 @@ public class TileCache {
       throw new IllegalArgumentException("Tile cannot be null");
     }
 
+    persistTile(tile);
+
     centerPointMap.put(tile.getCenter(), tile);
     idMap.put(tile.getId(), tile);
 
@@ -505,7 +508,6 @@ public class TileCache {
       }
     }
 
-    persistTile(tile);
     //Logger.trace("Added " + tile + " There are now " + pointMap.size() + " pointMap...");
     return tile;
   }
@@ -629,7 +631,11 @@ public class TileCache {
       idMap.remove(tile.id);
       centerPointMap.remove(tile.getCenter());
 
+      Logger.info("Moving {} from ({},{}) to ({},{})",tile.getId(), tile.getCenterX(), tile.getCenterY(),p.x,p.y);
+      
       tile.setCenter(p);
+      tile.getTileBean().setCenter(p);
+      
       addAndSaveTile(tile);
     } else {
       Tile occ = findTile(p);

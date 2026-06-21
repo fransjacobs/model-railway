@@ -17,6 +17,7 @@ package jcs.ui.layout.tiles;
 
 import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
@@ -450,28 +451,81 @@ public class Block extends Tile {
     }
   }
 
-//  @Override
-//  public Rectangle getTileBounds() {
-//    int multiplier = (model.isScaleImage() ? 1 : 10);
-//    Orientation tileOrientation = model.getTileOrienation();
-//
-//    int xx, yy;
-//    if (tileOrientation == Orientation.EAST || tileOrientation == Orientation.WEST) {
-//      xx = tileX - GRID * multiplier - GRID * multiplier * 2;
-//      yy = tileY - GRID * multiplier;
-//    } else {
-//      xx = tileX - GRID * multiplier;
-//      yy = tileY - GRID * multiplier - GRID * multiplier * 2;
-//    }
-//
-//    if (model.isScaleImage()) {
-//      return new Rectangle(xx, yy, tileWidth(tileOrientation, TileType.BLOCK), tileHeight(tileOrientation, TileType.BLOCK));
-//    } else {
-//      int renderWidth = getUI().getRenderWidth();
-//      int renderHeight = getUI().getRenderHeight();
-//      return new Rectangle(xx, yy, renderWidth, renderHeight);
-//    }
-//  }
+  @Override
+  public Rectangle getTileBounds() {
+    LayoutScale scale = LayoutScale.getInstance();
+    int grid = scale.scaledGrid();
+
+    int dispX = scale.toDisplay(tileX);
+    int dispY = scale.toDisplay(tileY);
+
+    Orientation orientation = model.getTileOrienation();
+    int w, h;
+
+    int multiplier = (model.isScaleImage() ? 1 : 10);
+    Orientation tileOrientation = model.getTileOrienation();
+
+    int xx, yy;
+    if (tileOrientation == Orientation.EAST || tileOrientation == Orientation.WEST) {
+      xx = dispX - grid * multiplier - grid * 2;
+      yy = dispY - grid * multiplier;
+    } else {
+      xx = dispX - grid * multiplier;
+      yy = dispY - grid * multiplier - grid * 2;
+    }
+
+    if (model.isScaleImage()) {
+      w = scale.toDisplay(tileWidth(orientation, TileType.BLOCK));
+      h = scale.toDisplay(tileHeight(orientation, TileType.BLOCK));
+    } else {
+      w = getUI().getRenderWidth();
+      h = getUI().getRenderHeight();
+    }
+    return new Rectangle(xx, yy, w, h);
+  }
+
+  public Rectangle getTileBounds1() {
+    LayoutScale scale = LayoutScale.getInstance();
+    int s = scale.scaledGrid();  // = GRID at 100%, proportionally less at lower scales
+
+    int dispX = scale.toDisplay(tileX);
+    int dispY = scale.toDisplay(tileY);
+
+    Orientation orientation = model.getTileOrienation();
+    int w, h;
+
+    if (model.isScaleImage()) {
+      w = scale.toDisplay(tileWidth(orientation, TileType.CROSS_SWITCH));
+      h = scale.toDisplay(tileHeight(orientation, TileType.CROSS_SWITCH));
+    } else {
+      // unscaled: full render size
+      w = getUI().getRenderWidth();
+      h = getUI().getRenderHeight();
+      // in unscaled mode coordinates are render-space, s must also be render-space
+      s = GRID * 10;
+      dispX = tileX * 10;
+      dispY = tileY * 10;
+    }
+
+    int xx, yy;
+    switch (orientation) {
+      case WEST -> {
+        xx = dispX - 3 * s;
+        yy = dispY - s;
+      }
+      case NORTH -> {
+        xx = dispX - s;
+        yy = dispY - 3 * s;
+      }
+      default -> {
+        xx = dispX - s;
+        yy = dispY - s;
+      }  // EAST and SOUTH
+    }
+
+    return new Rectangle(xx, yy, w, h);
+  }
+
   private class LocomotiveBeanDropHandler extends TransferHandler {
 
     private static final long serialVersionUID = -1556738612609648531L;

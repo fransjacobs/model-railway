@@ -24,5 +24,7 @@ alter table station_blocks add constraint blck_stbl_fk foreign key (block_id) re
 
 alter table routes add departure_signal_value varchar(255);
 
+update tiles set tile_type = 'CrossSwitch' where tile_type = 'Cross';
+
 update jcs_version set db_version = '0.0.4', app_version = '0.0.4';
 commit;

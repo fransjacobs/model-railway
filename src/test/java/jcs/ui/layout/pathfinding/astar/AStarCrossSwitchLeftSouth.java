@@ -28,18 +28,18 @@ import org.junit.Test;
 /**
  * Test for the Crossing
  */
-public class AStarCrossRightEast {
+public class AStarCrossSwitchLeftSouth {
 
   private final PersistenceTestHelper testHelper;
 
-  public AStarCrossRightEast() {
+  public AStarCrossSwitchLeftSouth() {
     System.setProperty("persistenceService", "jcs.persistence.TestH2PersistenceService");
     testHelper = PersistenceTestHelper.getInstance();
   }
 
   @Before
   public void setUp() {
-    testHelper.runTestDataInsertScript("layout_cross_right_east.sql");
+    testHelper.runTestDataInsertScript("layout_cross_switch_left_south.sql");
   }
 
   @After
@@ -87,7 +87,7 @@ public class AStarCrossRightEast {
     List<Tile> tiles = jcs.ui.layout.tiles.TileCache.loadTiles(false);
     instance.buildGraph(tiles);
 
-    String expPath = "[bk-1+]->[bk-2-]: bk-1+[bk-1] -> st-1 -> st-2 -> cs-2[GREEN] -> st-5 -> st-6 -> bk-2-[bk-2]";
+    String expPath = "[bk-1+]->[bk-2-]: bk-1+[bk-1] -> st-1 -> st-2 -> cs-3[GREEN] -> st-5 -> st-6 -> bk-2-[bk-2]";
 
     List<Node> path = instance.findPath(fromNodeId, fromSuffix, toNodeId, toSuffix);
     String result = instance.pathToString(path);
@@ -107,7 +107,7 @@ public class AStarCrossRightEast {
     AStar instance = new AStar();
     List<Tile> tiles = jcs.ui.layout.tiles.TileCache.loadTiles(false);
     instance.buildGraph(tiles);
-    String expPath = "[bk-4-]->[bk-3+]: bk-4-[bk-4] -> st-29 -> st-30 -> cs-2[GREEN] -> st-25 -> st-26 -> bk-3+[bk-3]";
+    String expPath = "[bk-4-]->[bk-3+]: bk-4-[bk-4] -> st-29 -> st-30 -> cs-3[GREEN] -> st-25 -> st-26 -> bk-3+[bk-3]";
 
     List<Node> path = instance.findPath(fromNodeId, fromSuffix, toNodeId, toSuffix);
     String result = instance.pathToString(path);
@@ -124,7 +124,7 @@ public class AStarCrossRightEast {
     AStar instance = new AStar();
     List<Tile> tiles = jcs.ui.layout.tiles.TileCache.loadTiles(false);
     instance.buildGraph(tiles);
-    String expPath = "[bk-2-]->[bk-4-]: bk-2-[bk-2] -> st-6 -> st-5 -> cs-2[RED] -> st-30 -> st-29 -> bk-4-[bk-4]";
+    String expPath = "[bk-2-]->[bk-4-]: bk-2-[bk-2] -> st-6 -> st-5 -> cs-3[RED] -> st-30 -> st-29 -> bk-4-[bk-4]";
 
     List<Node> path = instance.findPath(fromNodeId, fromSuffix, toNodeId, toSuffix);
     String result = instance.pathToString(path);
@@ -158,14 +158,14 @@ public class AStarCrossRightEast {
 
     List<String> expRouteDesc = new ArrayList<>();
 
-    String r1 = "Route: [bk-2-]->[bk-4-]: bk-2 -> bk-2-[bk-2] -> st-6 -> st-5 -> cs-2[RED] -> st-30 -> st-29 -> bk-4-[bk-4]";
-    String r2 = "Route: [bk-2-]->[bk-1+]: bk-2 -> bk-2-[bk-2] -> st-6 -> st-5 -> cs-2[GREEN] -> st-2 -> st-1 -> bk-1+[bk-1]";
-    String r3 = "Route: [bk-3+]->[bk-4-]: bk-3 -> bk-3+[bk-3] -> st-26 -> st-25 -> cs-2[GREEN] -> st-30 -> st-29 -> bk-4-[bk-4]";
-    String r4 = "Route: [bk-3+]->[bk-1+]: bk-3 -> bk-3+[bk-3] -> st-26 -> st-25 -> cs-2[RED] -> st-2 -> st-1 -> bk-1+[bk-1]";
-    String r5 = "Route: [bk-1+]->[bk-2-]: bk-1 -> bk-1+[bk-1] -> st-1 -> st-2 -> cs-2[GREEN] -> st-5 -> st-6 -> bk-2-[bk-2]";
-    String r6 = "Route: [bk-4-]->[bk-3+]: bk-4 -> bk-4-[bk-4] -> st-29 -> st-30 -> cs-2[GREEN] -> st-25 -> st-26 -> bk-3+[bk-3]";
-    String r7 = "Route: [bk-1+]->[bk-3+]: bk-1 -> bk-1+[bk-1] -> st-1 -> st-2 -> cs-2[RED] -> st-25 -> st-26 -> bk-3+[bk-3]";
-    String r8 = "Route: [bk-4-]->[bk-2-]: bk-4 -> bk-4-[bk-4] -> st-29 -> st-30 -> cs-2[RED] -> st-5 -> st-6 -> bk-2-[bk-2]";
+    String r1 = "Route: [bk-2-]->[bk-4-]: bk-2 -> bk-2-[bk-2] -> st-6 -> st-5 -> cs-3[RED] -> st-30 -> st-29 -> bk-4-[bk-4]";
+    String r2 = "Route: [bk-2-]->[bk-1+]: bk-2 -> bk-2-[bk-2] -> st-6 -> st-5 -> cs-3[GREEN] -> st-2 -> st-1 -> bk-1+[bk-1]";
+    String r3 = "Route: [bk-3+]->[bk-4-]: bk-3 -> bk-3+[bk-3] -> st-26 -> st-25 -> cs-3[GREEN] -> st-30 -> st-29 -> bk-4-[bk-4]";
+    String r4 = "Route: [bk-3+]->[bk-1+]: bk-3 -> bk-3+[bk-3] -> st-26 -> st-25 -> cs-3[RED] -> st-2 -> st-1 -> bk-1+[bk-1]";
+    String r5 = "Route: [bk-1+]->[bk-2-]: bk-1 -> bk-1+[bk-1] -> st-1 -> st-2 -> cs-3[GREEN] -> st-5 -> st-6 -> bk-2-[bk-2]";
+    String r6 = "Route: [bk-4-]->[bk-3+]: bk-4 -> bk-4-[bk-4] -> st-29 -> st-30 -> cs-3[GREEN] -> st-25 -> st-26 -> bk-3+[bk-3]";
+    String r7 = "Route: [bk-1+]->[bk-3+]: bk-1 -> bk-1+[bk-1] -> st-1 -> st-2 -> cs-3[RED] -> st-25 -> st-26 -> bk-3+[bk-3]";
+    String r8 = "Route: [bk-4-]->[bk-2-]: bk-4 -> bk-4-[bk-4] -> st-29 -> st-30 -> cs-3[RED] -> st-5 -> st-6 -> bk-2-[bk-2]";
 
     expRouteDesc.add(r1);
     expRouteDesc.add(r2);

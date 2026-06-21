@@ -48,7 +48,6 @@ public class CrossSwitch extends Switch implements AccessoryEventListener {
 
   //public static final int CROSS_SWITCH_WIDTH = DEFAULT_WIDTH * 2;
   //public static final int CROSS_SWITCH_HEIGHT = DEFAULT_HEIGHT * 2;
-
   public static final Color VERY_LIGHT_RED = new Color(255, 102, 102);
   public static final Color LIGHT_RED = new Color(255, 51, 51);
   public static final Color DARK_RED = new Color(204, 0, 0);
@@ -331,51 +330,44 @@ public class CrossSwitch extends Switch implements AccessoryEventListener {
   @Override
   public Rectangle getTileBounds() {
     LayoutScale scale = LayoutScale.getInstance();
-    int s = scale.scaledGrid();
-    Orientation tileOrientation = model.getTileOrienation();
-    int xx, yy, w, h, multiplier;
+    int s = scale.scaledGrid();  // = GRID at 100%, proportionally less at lower scales
+
+    int dispX = scale.toDisplay(tileX);
+    int dispY = scale.toDisplay(tileY);
+
+    Orientation orientation = model.getTileOrienation();
+    int w, h;
 
     if (model.isScaleImage()) {
-      w = tileWidth(tileOrientation, TileType.CROSS_SWITCH);
-      h = tileHeight(tileOrientation, TileType.CROSS_SWITCH);
-      multiplier = 1;
+      w = scale.toDisplay(tileWidth(orientation, TileType.CROSS_SWITCH));
+      h = scale.toDisplay(tileHeight(orientation, TileType.CROSS_SWITCH));
     } else {
-      int renderWidth = getUI().getRenderWidth();
-      int renderHeight = getUI().getRenderHeight();
-
-      w = renderWidth;
-      h = renderHeight;
-      multiplier = 10;
+      // unscaled: full render size
+      w = getUI().getRenderWidth();
+      h = getUI().getRenderHeight();
+      // in unscaled mode coordinates are render-space, s must also be render-space
+      s = GRID * 10;
+      dispX = tileX * 10;
+      dispY = tileY * 10;
     }
 
-    switch (tileOrientation) {
-      case SOUTH -> {
-        xx = tileX - GRID * multiplier;
-        yy = tileY - GRID * multiplier;
-      }
+    int xx, yy;
+    switch (orientation) {
       case WEST -> {
-        xx = tileX - GRID * multiplier - GRID * 2 * multiplier;
-        yy = tileY - GRID * multiplier;
+        xx = dispX - 3 * s;
+        yy = dispY - s;
       }
       case NORTH -> {
-        xx = tileX - GRID * multiplier;
-        yy = tileY - GRID * multiplier - GRID * 2 * multiplier;
+        xx = dispX - s;
+        yy = dispY - 3 * s;
       }
       default -> {
-        //East
-        xx = tileX - GRID * multiplier;
-        yy = tileY - GRID * multiplier;
-      }
+        xx = dispX - s;
+        yy = dispY - s;
+      }  // EAST and SOUTH
     }
 
-    if (model.isScaleImage()) {
-      return new Rectangle(xx, yy, w, h);
-    } else {
-      int renderWidth = getUI().getRenderWidth();
-      int renderHeight = getUI().getRenderHeight();
-
-      return new Rectangle(xx, yy, renderWidth, renderHeight);
-    }
+    return new Rectangle(xx, yy, w, h);
   }
 
   private void changeRenderSizeAndOffsets() {
@@ -393,8 +385,10 @@ public class CrossSwitch extends Switch implements AccessoryEventListener {
     super.rotate();
 
     Orientation tileOrientation = model.getTileOrienation();
-    int w = tileWidth(tileOrientation, TileType.CROSS_SWITCH);
-    int h = tileHeight(tileOrientation, TileType.CROSS_SWITCH);
+    LayoutScale scale = LayoutScale.getInstance();
+
+    int w = scale.toDisplay(tileWidth(tileOrientation, TileType.CROSS_SWITCH));
+    int h = scale.toDisplay(tileHeight(tileOrientation, TileType.CROSS_SWITCH));
 
     Dimension d = new Dimension(w, h);
     setPreferredSize(d);

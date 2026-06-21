@@ -49,8 +49,10 @@ import jcs.entities.TileBean;
 import jcs.entities.TileBean.Direction;
 import jcs.entities.TileBean.Orientation;
 import jcs.entities.TileBean.TileType;
+import static jcs.entities.TileBean.TileType.CROSS;
 import static jcs.entities.TileBean.TileType.CROSS_SWITCH;
 import jcs.ui.layout.LayoutUtil;
+import static jcs.ui.layout.tiles.LayoutScale.GRID;
 import org.tinylog.Logger;
 
 /**
@@ -74,9 +76,6 @@ import org.tinylog.Logger;
  */
 public abstract class Tile extends JComponent implements Serializable {
 
-  //public static final int GRID = 20;
-  //public static final int DEFAULT_WIDTH = GRID * 2;
-  //public static final int DEFAULT_HEIGHT = GRID * 2;
   public static final Color DEFAULT_BACKGROUND_COLOR = Color.white;
   public static final Color DEFAULT_TRACK_COLOR = Color.lightGray;
   public static final Color DEFAULT_ROUTE_TRACK_COLOR = Color.darkGray;
@@ -84,14 +83,9 @@ public abstract class Tile extends JComponent implements Serializable {
   public static final Color DEFAULT_WARN_COLOR = Color.red;
 
   public static final String MODEL_CHANGED_PROPERTY = "model";
+  private static final long serialVersionUID = 3436194644435997L;
 
-  private static final long serialVersionUID = -3527982002204697652L;
-
-  /**
-   * The data model that determines the Tile state.
-   */
   protected TileModel model = null;
-
   protected String id;
   protected Integer tileX;
   protected Integer tileY;
@@ -118,7 +112,6 @@ public abstract class Tile extends JComponent implements Serializable {
 
   protected boolean drawName = true;
 
-  //protected BufferedImage tileImage;
   protected PropertyChangeListener propertyChangeListener;
 
   protected ChangeListener changeListener = null;
@@ -221,51 +214,38 @@ public abstract class Tile extends JComponent implements Serializable {
   }
 
   protected static int tileWidth(Orientation orientation, TileType tileType) {
-    LayoutScale scale = LayoutScale.getInstance();
-    int s = scale.scaledGrid();
-
     if (Orientation.EAST == orientation || Orientation.WEST == orientation) {
       if (null == tileType) {
-        return s * 2; // DEFAULT_WIDTH;
+        return GRID * 2; // DEFAULT_WIDTH;
       } else {
         return switch (tileType) {
           case BLOCK ->
-            //BLOCK_WIDTH;
-            s * 2 * 3;
-          case CROSS_SWITCH ->
-            //DEFAULT_WIDTH * 2;
-            s * 4;
-          case CROSS ->
-            //DEFAULT_WIDTH * 2;
-            s * 4;
+            GRID * 2 * 3;
+          case CROSS_SWITCH, CROSS ->
+            GRID * 4;
           default ->
-            s * 2; //DEFAULT_WIDTH;
+            GRID * 2;
         };
       }
     } else {
-      return s * 2; //DEFAULT_WIDTH;
+      return GRID * 2;
     }
   }
 
   protected static int tileHeight(Orientation orientation, TileType tileType) {
-    LayoutScale scale = LayoutScale.getInstance();
-    int s = scale.scaledGrid();
-
     if (Orientation.EAST == orientation || Orientation.WEST == orientation) {
-      return s * 2; //DEFAULT_HEIGHT;
+      return GRID * 2;
     } else {
       if (null == tileType) {
-        return s * 2; //DEFAULT_HEIGHT;
+        return GRID * 2;
       } else {
         return switch (tileType) {
           case BLOCK ->
-            s * 2 * 3; //BLOCK_HEIGHT;
-          case CROSS_SWITCH ->
-            s * 4; //DEFAULT_HEIGHT * 2;
-          case CROSS ->
-            s * 4; //DEFAULT_HEIGHT * 2;
+            GRID * 2 * 3;
+          case CROSS_SWITCH, CROSS ->
+            GRID * 4;
           default ->
-            s * 2; //DEFAULT_HEIGHT;
+            GRID * 2;
         };
       }
     }
@@ -801,14 +781,6 @@ public abstract class Tile extends JComponent implements Serializable {
   public void setScaleImage(boolean scaleImage) {
     LayoutScale scale = LayoutScale.getInstance();
     Dimension d;
-//    if (scaleImage) {
-//      d = new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT);
-//    } else {
-//      int renderWidth = getUI().getRenderWidth();
-//      int renderHeight = getUI().getRenderHeight();
-//
-//      d = new Dimension(renderWidth, renderHeight);
-//    }
 
     if (scaleImage) {
       int s = scale.scaledTileSize();
@@ -1038,51 +1010,23 @@ public abstract class Tile extends JComponent implements Serializable {
     }
   }
 
-//  public Rectangle getTileBounds() {
-//    if (model.isScaleImage()) {
-//      return new Rectangle(tileX - GRID, tileY - GRID, DEFAULT_WIDTH, DEFAULT_HEIGHT);
-//    } else {
-//      int renderWidth = getUI().getRenderWidth();
-//      int renderHeight = getUI().getRenderHeight();
-//
-//      return new Rectangle(tileX - renderWidth / 2, tileY - renderHeight / 2, renderWidth, renderHeight);
-//    }
-//  }
+  /**
+   * Default Tile bounds.<br>
+   * This method <b>must</b> be overwritten when the dimensions of the tile are different
+   *
+   * @return the (default) tile bounds
+   */
   public Rectangle getTileBounds() {
     LayoutScale scale = LayoutScale.getInstance();
-    int s = scale.scaledGrid();  // half tile in display px
+    int grid = scale.scaledGrid();  // half tile in display px
 
-    // Convert canonical center to display px
     int dispX = scale.toDisplay(tileX);
     int dispY = scale.toDisplay(tileY);
 
-    int w, h;
-    switch (tileType) {
-      case CROSS_SWITCH, CROSS -> {
-        if (isHorizontal()) {
-          w = s * 4;
-          h = s * 2;
-        } else {
-          w = s * 2;
-          h = s * 4;
-        }
-      }
-      case BLOCK -> {
-        if (isHorizontal()) {
-          w = s * 6;
-          h = s * 2;
-        } // 3 tiles wide
-        else {
-          w = s * 2;
-          h = s * 6;
-        }
-      }
-      default -> {
-        w = s * 2;
-        h = s * 2;
-      }
-    }
-    return new Rectangle(dispX - w / 2, dispY - h / 2, w, h);
+    int w = scale.toDisplay(tileWidth(getOrientation(), tileType));
+    int h = scale.toDisplay(tileHeight(getOrientation(), tileType));
+
+    return new Rectangle(dispX - grid, dispY - grid, w, h);
   }
 
   @Override

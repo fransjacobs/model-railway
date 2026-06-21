@@ -395,7 +395,7 @@ public class LayoutCanvas extends JPanel {
           }
         } else {
           if (selectedTile != null) {
-            Logger.debug("A tile exists at the selected position: " + selectedTile.getTileType() + " @ (" + snapPoint.x + ", " + snapPoint.y + ") id: " + selectedTile.getId());
+            Logger.trace("A tile exists: " + selectedTile.getTileType() + " @ (" + snapPoint.x + ", " + snapPoint.y + ") id: " + selectedTile.getId());
           } else {
             // In Add mode position is free show the menu option to place a Track Component
             //remember the mouse location

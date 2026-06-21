@@ -9,7 +9,7 @@ delete from stations;
 commit;
 
 INSERT INTO jcs.tiles (id,tile_type,orientation,direction,x,y,signal_type,accessory_id,sensor_id) VALUES
-	 ('cs-2','Cross','East','Right',540,300,NULL,NULL,NULL),
+	 ('cs-2','CrossSwitch','East','Right',540,300,NULL,NULL,NULL),
 	 ('bk-1','Block','East','Center',380,300,NULL,NULL,NULL),
 	 ('st-6','Straight','East','Center',660,300,NULL,NULL,NULL),
 	 ('st-2','Straight','East','Center',500,300,NULL,NULL,NULL),

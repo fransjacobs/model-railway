@@ -11,7 +11,7 @@ commit;
 INSERT INTO jcs.tiles (id,tile_type,orientation,direction,x,y,signal_type,accessory_id,sensor_id) VALUES
 	 ('st-11','Straight','West','Center',300,340,NULL,NULL,NULL),
 	 ('st-6','Straight','East','Center',620,300,NULL,NULL,NULL),
-	 ('cs-2','Cross','South','Right',540,300,NULL,NULL,NULL),
+	 ('cs-2','CrossSwitch','South','Right',540,300,NULL,NULL,NULL),
 	 ('st-1','Straight','East','Center',460,340,NULL,NULL,NULL),
 	 ('et-1','End','West','Center',260,340,NULL,NULL,NULL),
 	 ('bk-1','Block','East','Center',380,340,NULL,NULL,NULL),

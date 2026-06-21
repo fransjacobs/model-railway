@@ -27,6 +27,7 @@ import jcs.entities.TileBean;
 import jcs.entities.TileBean.Direction;
 import jcs.entities.TileBean.Orientation;
 import jcs.entities.TileBean.TileType;
+import jcs.ui.layout.tiles.LayoutScale;
 import jcs.ui.layout.tiles.Tile;
 import jcs.ui.layout.tiles.TileCache;
 import org.tinylog.Logger;
@@ -115,6 +116,9 @@ public class UnscaledTileTester extends JFrame {
 
     accessoryBG = new javax.swing.ButtonGroup();
     nPanel = new javax.swing.JPanel();
+    zoomMinBtn = new javax.swing.JButton();
+    zoomLbl = new javax.swing.JLabel();
+    zoomPlusBtn = new javax.swing.JButton();
     expandCB = new javax.swing.JCheckBox();
     tileLbl = new javax.swing.JLabel();
     tileCB = new javax.swing.JComboBox<>();
@@ -136,6 +140,26 @@ public class UnscaledTileTester extends JFrame {
 
     nPanel.setPreferredSize(new java.awt.Dimension(1250, 50));
 
+    zoomMinBtn.setText("-");
+    zoomMinBtn.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        zoomMinBtnActionPerformed(evt);
+      }
+    });
+    nPanel.add(zoomMinBtn);
+
+    zoomLbl.setText("100");
+    nPanel.add(zoomLbl);
+
+    zoomPlusBtn.setText("+");
+    zoomPlusBtn.setToolTipText("");
+    zoomPlusBtn.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        zoomPlusBtnActionPerformed(evt);
+      }
+    });
+    nPanel.add(zoomPlusBtn);
+
     expandCB.setText("Expand");
     expandCB.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -148,7 +172,7 @@ public class UnscaledTileTester extends JFrame {
     tileLbl.setToolTipText("");
     nPanel.add(tileLbl);
 
-    tileCB.setPreferredSize(new java.awt.Dimension(150, 22));
+    tileCB.setPreferredSize(new java.awt.Dimension(130, 22));
     tileCB.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         tileCBActionPerformed(evt);
@@ -180,7 +204,7 @@ public class UnscaledTileTester extends JFrame {
     orientationLabel.setText("Incoming Orientation");
     nPanel.add(orientationLabel);
 
-    orientationCB.setPreferredSize(new java.awt.Dimension(150, 22));
+    orientationCB.setPreferredSize(new java.awt.Dimension(130, 22));
     orientationCB.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         orientationCBActionPerformed(evt);
@@ -369,6 +393,18 @@ public class UnscaledTileTester extends JFrame {
     tile.repaint();
   }//GEN-LAST:event_directionCBActionPerformed
 
+  private void zoomMinBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_zoomMinBtnActionPerformed
+    LayoutScale.getInstance().zoomIn();
+    zoomLbl.setText(LayoutScale.getInstance().getScalePercent()+" %");
+    canvas.changeScale(LayoutScale.getInstance().getScalePercent());
+  }//GEN-LAST:event_zoomMinBtnActionPerformed
+
+  private void zoomPlusBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_zoomPlusBtnActionPerformed
+     LayoutScale.getInstance().zoomOut();
+    zoomLbl.setText(LayoutScale.getInstance().getScalePercent()+" %");
+    canvas.changeScale(LayoutScale.getInstance().getScalePercent());
+  }//GEN-LAST:event_zoomPlusBtnActionPerformed
+
   /**
    * @param args the command line arguments
    */
@@ -408,5 +444,8 @@ public class UnscaledTileTester extends JFrame {
   private javax.swing.JComboBox<TileType> tileCB;
   private javax.swing.JLabel tileLbl;
   private javax.swing.JLabel tileOrientationLbl;
+  private javax.swing.JLabel zoomLbl;
+  private javax.swing.JButton zoomMinBtn;
+  private javax.swing.JButton zoomPlusBtn;
   // End of variables declaration//GEN-END:variables
 }
