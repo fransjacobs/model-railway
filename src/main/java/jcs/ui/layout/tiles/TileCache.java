@@ -47,6 +47,7 @@ import static jcs.entities.TileBean.TileType.SWITCH;
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.BlockBean;
 import static jcs.entities.TileBean.TileType.CROSS_SWITCH;
+import jcs.ui.layout.LayoutUtil;
 import static jcs.ui.layout.tiles.LayoutScale.GRID;
 
 /**
@@ -302,7 +303,8 @@ public class TileCache {
     return createTile(tileType, orientation, direction, new Point(x, y));
   }
 
-  public static Tile createTile(TileBean.TileType tileType, TileBean.Orientation orientation, TileBean.Direction direction, Point center) {
+  public static Tile createTile(TileBean.TileType tileType, TileBean.Orientation orientation, TileBean.Direction direction, Point cp) {
+    Point center = LayoutUtil.snapToGrid(cp);
     Tile tile = null;
     switch (tileType) {
       case STRAIGHT ->
@@ -435,9 +437,9 @@ public class TileCache {
 
     for (TileBean tb : tileBeans) {
       Tile tile = createTile(tb, showvalues);
-      
+
       addTile(tile);
-      
+
 //      calculateMaxCoordinates(tile.tileX, tile.tileY);
 //      idMap.put(tile.id, tile);
 //      centerPointMap.put(tile.getCenter(), tile);
@@ -461,7 +463,7 @@ public class TileCache {
     calculateMaxCoordinates(tile.tileX, tile.tileY);
     idMap.put(tile.id, tile);
     centerPointMap.put(tile.getCenter(), tile);
-    
+
     //Alternative point(s) to be able to find all pointIds
     if (!tile.getAltPoints().isEmpty()) {
       Set<Point> alt = tile.getAltPoints();
@@ -631,11 +633,11 @@ public class TileCache {
       idMap.remove(tile.id);
       centerPointMap.remove(tile.getCenter());
 
-      Logger.info("Moving {} from ({},{}) to ({},{})",tile.getId(), tile.getCenterX(), tile.getCenterY(),p.x,p.y);
-      
+      Logger.info("Moving {} from ({},{}) to ({},{})", tile.getId(), tile.getCenterX(), tile.getCenterY(), p.x, p.y);
+
       tile.setCenter(p);
       tile.getTileBean().setCenter(p);
-      
+
       addAndSaveTile(tile);
     } else {
       Tile occ = findTile(p);

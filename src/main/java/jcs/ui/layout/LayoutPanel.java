@@ -150,6 +150,8 @@ public class LayoutPanel extends JPanel {
 
     topPanel = new JPanel();
     toolBar = new JToolBar();
+    editBtn = new JToggleButton();
+    filler1 = new Box.Filler(new Dimension(10, 0), new Dimension(10, 0), new Dimension(10, 32767));
     zoomMinBtn = new JButton();
     zoomPercLbl = new JLabel();
     zoomPlusBtn = new JButton();
@@ -157,7 +159,6 @@ public class LayoutPanel extends JPanel {
     routeBtn = new JButton();
     autoPilotBtn = new JToggleButton();
     startAllLocomotivesBtn = new JToggleButton();
-    filler1 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
     filler2 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
     loadBtn = new JButton();
     filler3 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
@@ -185,9 +186,25 @@ public class LayoutPanel extends JPanel {
     toolBar.setName(""); // NOI18N
     toolBar.setPreferredSize(new Dimension(980, 42));
 
+    editBtn.setIcon(new ImageIcon(getClass().getResource("/media/edit-24.png"))); // NOI18N
+    editBtn.setDoubleBuffered(true);
+    editBtn.setFocusable(false);
+    editBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    editBtn.setPreferredSize(new Dimension(38, 38));
+    editBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/controller-console-24.png"))); // NOI18N
+    editBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    editBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        editBtnActionPerformed(evt);
+      }
+    });
+    toolBar.add(editBtn);
+    toolBar.add(filler1);
+
     zoomMinBtn.setIcon(new ImageIcon(getClass().getResource("/media/zoom-out.png"))); // NOI18N
     zoomMinBtn.setFocusable(false);
     zoomMinBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    zoomMinBtn.setPreferredSize(new Dimension(38, 38));
     zoomMinBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
     zoomMinBtn.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
@@ -196,14 +213,16 @@ public class LayoutPanel extends JPanel {
     });
     toolBar.add(zoomMinBtn);
 
+    zoomPercLbl.setHorizontalAlignment(SwingConstants.CENTER);
     zoomPercLbl.setText("100 %");
-    zoomPercLbl.setMinimumSize(new Dimension(40, 17));
-    zoomPercLbl.setPreferredSize(new Dimension(40, 17));
+    zoomPercLbl.setMinimumSize(new Dimension(42, 17));
+    zoomPercLbl.setPreferredSize(new Dimension(42, 17));
     toolBar.add(zoomPercLbl);
 
     zoomPlusBtn.setIcon(new ImageIcon(getClass().getResource("/media/zoom-in.png"))); // NOI18N
     zoomPlusBtn.setFocusable(false);
     zoomPlusBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    zoomPlusBtn.setPreferredSize(new Dimension(38, 38));
     zoomPlusBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
     zoomPlusBtn.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
@@ -277,7 +296,6 @@ public class LayoutPanel extends JPanel {
       }
     });
     toolBar.add(startAllLocomotivesBtn);
-    toolBar.add(filler1);
     toolBar.add(filler2);
 
     loadBtn.setIcon(new ImageIcon(getClass().getResource("/media/load-24.png"))); // NOI18N
@@ -376,15 +394,59 @@ public class LayoutPanel extends JPanel {
 
   private void zoomMinBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_zoomMinBtnActionPerformed
     LayoutScale.getInstance().zoomIn();
-    zoomPercLbl.setText(LayoutScale.getInstance().getScalePercent()+" %");
+    zoomPercLbl.setText(LayoutScale.getInstance().getScalePercent() + " %");
     canvas.setScale(LayoutScale.getInstance().getScalePercent());
   }//GEN-LAST:event_zoomMinBtnActionPerformed
 
   private void zoomPlusBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_zoomPlusBtnActionPerformed
     LayoutScale.getInstance().zoomOut();
-    zoomPercLbl.setText(LayoutScale.getInstance().getScalePercent()+" %");
+    zoomPercLbl.setText(LayoutScale.getInstance().getScalePercent() + " %");
     canvas.setScale(LayoutScale.getInstance().getScalePercent());
   }//GEN-LAST:event_zoomPlusBtnActionPerformed
+
+  private void editBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_editBtnActionPerformed
+    this.canvas.setReadonly(!editBtn.isSelected());
+
+    if (readonly) {
+      canvas.setGridType(0);
+
+      loadBtn.setEnabled(!readonly);
+      loadBtn.setVisible(!readonly);
+      toolBar.remove(loadBtn);
+
+      routeBtn.setEnabled(readonly);
+      routeBtn.setVisible(readonly);
+
+      gridBtn.setEnabled(!readonly);
+      gridBtn.setVisible(!readonly);
+
+      autoPilotBtn.setEnabled(false);
+      startAllLocomotivesBtn.setEnabled(false);
+      toolBar.remove(autoPilotBtn);
+      toolBar.remove(startAllLocomotivesBtn);
+
+    } else {
+      gridType = 1;
+      gridBtn.setIcon(new ImageIcon(getClass().getResource(GRID_1)));
+      canvas.setGridType(gridType);
+
+      toolBar.remove(autoPilotBtn);
+      toolBar.remove(startAllLocomotivesBtn);
+    }
+
+    if (readonly) {
+      if (powerlistener == null) {
+        powerlistener = new Powerlistener();
+      }
+      JCS.getJcsCommandStation().addPowerEventListener(powerlistener);
+    } else {
+      JCS.getJcsCommandStation().removePowerEventListener(powerlistener);
+    }
+
+    loadLayoutInBackground();
+
+
+  }//GEN-LAST:event_editBtnActionPerformed
 
   public void showRoutes() {
     canvas.showRoutesDialog();
@@ -405,6 +467,7 @@ public class LayoutPanel extends JPanel {
   private JToggleButton autoPilotBtn;
   private LayoutCanvas canvas;
   private JScrollPane canvasScrollPane;
+  private JToggleButton editBtn;
   private Box.Filler filler1;
   private Box.Filler filler2;
   private Box.Filler filler3;

@@ -46,33 +46,53 @@ import org.tinylog.Logger;
  * The drawing functionality of a Tile.
  */
 public abstract class TileUI extends ComponentUI {
-  
+
   protected static final int RENDER_GRID = GRID * 10;
   protected static final int RENDER_WIDTH = RENDER_GRID * 2;
   protected static final int RENDER_HEIGHT = RENDER_GRID * 2;
-  
+
   protected static final int LOC_IMAGE_WIDTH = 45;
-  
+
   public static final String UI_CLASS_ID = "jcs.ui.layout.tiles.ui.TileUI";
-  
+
   protected int renderWidth;
   protected int renderHeight;
-  
+
   protected Color backgroundColor;
   protected Color trackColor;
   protected Color trackRouteColor;
-  
+
+  private int cachedRenderWidth = -1;
+  private int cachedRenderHeight = -1;
+  private BufferedImage cachedBuffer;
+
   protected BufferedImage tileImage;
-  protected boolean imageDirty = true;
-  
+  protected volatile boolean imageDirty = true;
+
   protected TileUI() {
     this.backgroundColor = DEFAULT_BACKGROUND_COLOR;
     this.trackColor = DEFAULT_TRACK_COLOR;
   }
-  
+
+  protected BufferedImage getOrCreateImage() {
+//    if (cachedBuffer == null || cachedRenderWidth != renderWidth || cachedRenderHeight != renderHeight) {
+      cachedBuffer = new BufferedImage(renderWidth, renderHeight, BufferedImage.TYPE_INT_RGB);
+
+//      GraphicsConfiguration gc = GraphicsEnvironment
+//              .getLocalGraphicsEnvironment()
+//              .getDefaultScreenDevice()
+//              .getDefaultConfiguration();
+//      cachedBuffer = gc.createCompatibleImage(renderWidth, renderHeight, Transparency.OPAQUE);
+
+      cachedRenderWidth = renderWidth;
+      cachedRenderHeight = renderHeight;
+//    }
+    return cachedBuffer;
+  }
+
   private void setRenderSize(JComponent c) {
     Tile tile = (Tile) c;
-    
+
     switch (tile.getTileType()) {
       case CROSS_SWITCH -> {
         if (tile.isHorizontal()) {
@@ -107,96 +127,91 @@ public abstract class TileUI extends ComponentUI {
       }
     }
   }
-  
+
   abstract void renderTile(Graphics2D g2d, JComponent c);
-  
+
   abstract void renderTileRoute(Graphics2D g2d, JComponent c);
-  
+
   public int getRenderWidth() {
     return renderWidth;
   }
-  
+
   public void setRenderWidth(int renderWidth) {
     this.renderWidth = renderWidth;
   }
-  
+
   public int getRenderHeight() {
     return renderHeight;
   }
-  
+
   public void setRenderHeight(int renderHeight) {
     this.renderHeight = renderHeight;
   }
-  
+
   public Color getBackgroundColor() {
     return backgroundColor;
   }
-  
+
   public void setBackgroundColor(Color backgroundColor) {
     this.backgroundColor = backgroundColor;
   }
-  
+
   public Color getTrackColor() {
     return trackColor;
   }
-  
+
   public void setTrackColor(Color trackColor) {
     this.trackColor = trackColor;
   }
-  
+
   public Color getTrackRouteColor() {
     return trackRouteColor;
   }
-  
+
   public void setTrackRouteColor(Color trackRouteColor) {
     this.trackRouteColor = trackRouteColor;
   }
-  
-  protected BufferedImage createImage() {
-    return new BufferedImage(renderWidth, renderHeight, BufferedImage.TYPE_INT_RGB);
-  }
-  
+
   public BufferedImage getTileImage() {
     return tileImage;
   }
-  
+
   public void markImageDirty() {
     this.imageDirty = true;
-    //repaint();
   }
-  
+
   public boolean isImageDirty() {
     return imageDirty;
   }
-  
+
   public void clearImageDirty() {
     imageDirty = false;
   }
-  
+
   public void drawTile(Graphics2D g2d, JComponent c) {
     // by default and image is rendered in the EAST orientation
     setRenderSize(c);
-    
+
     Tile tile = (Tile) c;
     TileModel model = ((Tile) c).getModel();
     TileBean.Orientation tileOrientation = model.getTileOrienation();
-    BufferedImage bf = createImage();
+    BufferedImage bf = getOrCreateImage();
     Graphics2D g2di = bf.createGraphics();
 
     //Avoid errors
     if (model.isShowRoute() && model.getIncomingSide() == null) {
       model.setIncomingSide(tileOrientation);
     }
-    
+
     if (model.isSelected()) {
       g2di.setBackground(model.getSelectedColor());
     } else {
       g2di.setBackground(backgroundColor);
     }
-    
+
     g2di.clearRect(0, 0, renderWidth, renderHeight);
     int ox = 0, oy = 0;
-    
+
     AffineTransform trans = new AffineTransform();
     switch (tileOrientation) {
       case SOUTH -> {
@@ -220,15 +235,15 @@ public abstract class TileUI extends ComponentUI {
         trans.translate(ox, oy);
       }
     }
-    
+
     g2di.setTransform(trans);
-    
+
     renderTile(g2di, c);
-    
+
     if (model.isShowRoute()) {
       renderTileRoute(g2di, c);
     }
-    
+
     if (model.isShowCenter()) {
       drawCenterPoint(g2di, c);
     }
@@ -239,7 +254,7 @@ public abstract class TileUI extends ComponentUI {
     } else {
       tileImage = bf;
     }
-    
+
     g2di.dispose();
   }
 
@@ -251,23 +266,23 @@ public abstract class TileUI extends ComponentUI {
    */
   protected void drawName(Graphics2D g2, JComponent c) {
   }
-  
+
   protected void drawCenterPoint(Graphics2D g2d, JComponent c) {
     drawCenterPoint(g2d, Color.magenta, c);
   }
-  
+
   protected void drawCenterPoint(Graphics2D g2, Color color, JComponent c) {
     drawCenterPoint(g2, color, 60, c);
   }
-  
+
   protected void drawCenterPoint(Graphics2D g2d, Color color, double size, JComponent c) {
     double dX = (renderWidth / 2 - size / 2);
     double dY = (renderHeight / 2 - size / 2);
-    
+
     g2d.setColor(color);
     g2d.fill(new Ellipse2D.Double(dX, dY, size, size));
   }
-  
+
   protected static void drawRotate(Graphics2D g2d, double x, double y, int angle, String text) {
     g2d.translate((float) x, (float) y);
     g2d.rotate(Math.toRadians(angle));
@@ -275,22 +290,25 @@ public abstract class TileUI extends ComponentUI {
     g2d.rotate(-Math.toRadians(angle));
     g2d.translate(-x, -y);
   }
-  
+
   @Override
   public void paint(Graphics g, JComponent c) {
     long started = System.currentTimeMillis();
     //  We don't want to paint inside the insets or borders.
-    Insets insets = c.getInsets();
-    g.translate(insets.left, insets.top);
-    
-    Graphics2D g2 = (Graphics2D) g.create();
-    
-    drawTile(g2, c);
-    g2.dispose();
-    
+
+    if (tileImage == null || imageDirty) {
+      Insets insets = c.getInsets();
+      g.translate(insets.left, insets.top);
+      Graphics2D g2 = (Graphics2D) g.create();
+      drawTile(g2, c);
+      g2.dispose();
+      g.translate(-insets.left, -insets.top);
+      imageDirty = false;
+    }
+
     g.drawImage(tileImage, 0, 0, null);
-    g.translate(-insets.left, -insets.top);
-    
+    //g.translate(-insets.left, -insets.top);
+
     if (Logger.isTraceEnabled() && 1 == 2) {
       Tile tile = (Tile) c;
       TileModel model = tile.getModel();
@@ -298,7 +316,7 @@ public abstract class TileUI extends ComponentUI {
       Logger.trace(tile.getId() + " Duration: " + (now - started) + " ms. Cp: " + tile.xyToString() + " O: " + model.getTileOrienation());
     }
   }
-  
+
   protected void redispatchToParent(MouseEvent e) {
     try {
       Component source = (Component) e.getSource();
@@ -310,7 +328,7 @@ public abstract class TileUI extends ComponentUI {
       Logger.error("Error: " + ex.getMessage());
     }
   }
-  
+
   protected boolean isControlMode(Component c) {
     if (c.getParent() != null && c.getParent() instanceof LayoutCanvas) {
       return ((LayoutCanvas) c.getParent()).isReadonly();
@@ -318,5 +336,5 @@ public abstract class TileUI extends ComponentUI {
       return false;
     }
   }
-  
+
 }

@@ -22,7 +22,6 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Paint;
 import java.awt.Point;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -98,7 +97,7 @@ public class LayoutCanvas extends JPanel {
 
   private int gridType = LINE_GRID;
 
-  private boolean readonly;
+  private volatile boolean readonly;
   private Mode mode;
   private boolean drawGrid = true;
 
@@ -128,13 +127,12 @@ public class LayoutCanvas extends JPanel {
     super();
     setLayout(null);
     setOpaque(true);
-    setDoubleBuffered(true);
+    //setDoubleBuffered(true);
 
     showCenter = "true".equalsIgnoreCase(System.getProperty("tile.show.center", "false"));
 
     this.readonly = readonly;
     drawGrid = !readonly;
-    //executor = Executors.newCachedThreadPool();
     executor = Executors.newSingleThreadExecutor(r -> {
       Thread t = new Thread(r, "layout-canvas-worker");
       t.setDaemon(true);
@@ -166,9 +164,31 @@ public class LayoutCanvas extends JPanel {
     return readonly;
   }
 
+  public void setReadonly(boolean readonly) {
+    this.readonly = readonly;
+
+    drawGrid = !readonly;
+    if (readonly) {
+      mode = Mode.CONTROL;
+    } else {
+      mode = Mode.EDIT;
+    }
+
+    if (!readonly) {
+      setTransferHandler(new TileBeanDropHandler());
+    } else {
+      setTransferHandler(null);
+    }
+  }
+
+  /**
+   * Paint the grid a last
+   *
+   * @param g
+   */
   @Override
   public void paint(Graphics g) {
-    //long started = System.currentTimeMillis();
+    long started = System.currentTimeMillis();
     super.paint(g);
 
     if (drawGrid) {
@@ -181,8 +201,8 @@ public class LayoutCanvas extends JPanel {
       }
     }
 
-    //long now = System.currentTimeMillis();
-    //Logger.trace("Duration: " + (now - started) + " ms.");
+    long now = System.currentTimeMillis();
+    Logger.trace("Duration: {} ms.", (now - started));
   }
 
   @Override
@@ -205,41 +225,12 @@ public class LayoutCanvas extends JPanel {
     return component;
   }
 
-//  private void paintDotGrid(Graphics g) {
-//    Graphics2D gc = (Graphics2D) g;
-//    Paint p = gc.getPaint();
-//    gc.setPaint(Color.BLACK);
-//    int w = getWidth(), h = getHeight();
-//    for (int x = 0; x < w; x += 40) {
-//      for (int y = 0; y < h; y += 40) {
-//        gc.fillOval(x - 2, y - 2, 4, 4);
-//      }
-//    }
-//    gc.setPaint(p);
-//  }
-//  private void paintLineGrid(Graphics g) {
-//    int width = getWidth();
-//    int height = getHeight();
-//    Graphics2D gc = (Graphics2D) g;
-//    Paint p = gc.getPaint();
-//    gc.setPaint(Color.lightGray);
-//
-//    gc.setStroke(GRID_STROKE);
-//
-//    for (int x = 0; x < width; x += 40) {
-//      gc.drawLine(x, 0, x, height);
-//    }
-//    for (int y = 0; y < height; y += 40) {
-//      gc.drawLine(0, y, width, y);
-//    }
-//    gc.setPaint(p);
-//  }
   private void paintLineGrid(Graphics g) {
     int width = getWidth();
     int height = getHeight();
 
     Graphics2D gc = (Graphics2D) g;
-    Paint p = gc.getPaint();
+    //Paint p = gc.getPaint();
     gc.setPaint(Color.lightGray);
     gc.setStroke(GRID_STROKE);
 
@@ -282,8 +273,9 @@ public class LayoutCanvas extends JPanel {
     // Resize and reposition every tile on the canvas
     for (Component c : getComponents()) {
       if (c instanceof Tile tile) {
-        tile.setScaleImage(true);              // recalculates size
-        tile.setBounds(tile.getTileBounds());  // recalculates position
+        tile.setScaleImage(true);
+        tile.markImageDirty();
+        tile.setBounds(tile.getTileBounds());
       }
     }
 
@@ -318,9 +310,9 @@ public class LayoutCanvas extends JPanel {
             revalidate();
             repaint();
             long duration = System.currentTimeMillis() - now;
-            if (readonly) {
-              Logger.trace("Loading and Repaint of " + tiles.size() + " tiles finished in " + duration + " ms...");
-            }
+            //if (readonly) {
+              Logger.trace("Loading and Repaint of {} tiles finished in {} ms...", tiles.size(), duration);
+            //}
           });
         } finally {
           loading = false;
@@ -388,14 +380,14 @@ public class LayoutCanvas extends JPanel {
       case EDIT -> {
         if (MouseEvent.BUTTON1 == evt.getButton() && selectedTile == null) {
           //Only add a new tile when there is no tile on the selected snapPoint
-          Logger.trace("Adding a new tile: " + tileType + " @ (" + snapPoint.x + ", " + snapPoint.y + ")");
+          Logger.trace("Adding a new tile: {} @ ({}, {})", tileType, snapPoint.x, snapPoint.y);
           selectedTile = addTile(snapPoint, tileType, orientation, direction, true, showCenter);
           if (selectedTile != null) {
             repaint(selectedTile.getTileBounds());
           }
         } else {
           if (selectedTile != null) {
-            Logger.trace("A tile exists: " + selectedTile.getTileType() + " @ (" + snapPoint.x + ", " + snapPoint.y + ") id: " + selectedTile.getId());
+            Logger.trace("A tile exists: {} @ ({}, {}) id: {}", selectedTile.getTileType(), snapPoint.x, snapPoint.y, selectedTile.getId());
           } else {
             // In Add mode position is free show the menu option to place a Track Component
             //remember the mouse location
@@ -419,12 +411,11 @@ public class LayoutCanvas extends JPanel {
 
   Tile addTile(TileType tileType, Direction direction) {
     Point addPoint = LayoutUtil.snapToGrid(mouseLocation);
-    Logger.trace("Adding new: " + tileType + " @ (" + addPoint.x + "," + addPoint.y + ")");
     return addTile(addPoint, tileType, getOrientation(), direction, true, showCenter);
   }
 
   Tile addTile(Point p, TileType tileType, Orientation orientation, Direction direction, boolean selected, boolean showCenter) {
-    Logger.trace("Adding: " + tileType + " @ " + p + " O: " + orientation + " D: " + direction);
+    Logger.trace("Adding: {} @ {} O: {} D: {}", tileType, p, orientation, direction);
     Tile tile = TileCache.createTile(tileType, orientation, direction, p);
 
     //Set the "last" used properties
@@ -436,6 +427,8 @@ public class LayoutCanvas extends JPanel {
       tile.setSelected(selected);
       tile.setDrawCenterPoint(showCenter);
       add(tile);
+      tile.setScaleImage(true);
+      tile.setBounds(tile.getTileBounds());
       TileCache.addAndSaveTile(tile);
 
       //unselect the previous selected tile if applicable 
@@ -449,7 +442,7 @@ public class LayoutCanvas extends JPanel {
       return tile;
     } else {
       Tile occ = TileCache.findTile(p);
-      Logger.trace("Can't add tile " + tile.getId() + " on " + tile.xyToString() + " Is occupied by " + occ.getId());
+      Logger.trace("Can't add tile {} on {} Is occupied by {}", tile.getId(), tile.xyToString(), occ.getId());
       TileCache.rollback(tile);
       return null;
     }
@@ -503,6 +496,7 @@ public class LayoutCanvas extends JPanel {
         Logger.trace("Deleting Tile " + tile.getId());
         remove(toBeDeleted);
         TileCache.deleteTile(tile);
+        repaint(tile.getTileBounds());
       }
     }
   }
