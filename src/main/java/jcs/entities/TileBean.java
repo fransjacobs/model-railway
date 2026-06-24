@@ -210,8 +210,14 @@ public class TileBean implements Comparable, Serializable {
   }
 
   public void setCenter(Point center) {
-    this.x = center.x;
-    this.y = center.y;
+    if (center != null) {
+      setCenter(center.x, center.y);
+    }
+  }
+
+  public void setCenter(int x, int y) {
+    this.x = x;
+    this.y = y;
   }
 
   @Column(name = "accessory_id")
@@ -399,7 +405,8 @@ public class TileBean implements Comparable, Serializable {
     SENSOR("Sensor"),
     BLOCK("Block"),
     END("End"),
-    CROSS("Cross");
+    CROSS("Cross"),
+    NONE("");
 
     private final String tileType;
 

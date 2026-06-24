@@ -17,6 +17,7 @@ package jcs.ui.layout;
 
 import java.awt.Point;
 import jcs.ui.layout.tiles.LayoutScale;
+import static jcs.ui.layout.tiles.LayoutScale.GRID;
 
 public class LayoutUtil {
 
@@ -34,7 +35,7 @@ public class LayoutUtil {
    * @param y the Y
    * @return Coordinates which are the X en Y wrapped
    */
-  public static Point snapToGrid(int x, int y) {
+  public static Point snapToGridOld(int x, int y) {
     LayoutScale scale = LayoutScale.getInstance();
     int grid = scale.scaledGrid();
     int scaledTileWidth = grid * 2;
@@ -49,6 +50,24 @@ public class LayoutUtil {
     sy = sy * scaledTileHeight + grid;
 
     return new Point(sx, sy);
+  }
+
+  public static Point snapToGrid(int x, int y) {
+    LayoutScale scale = LayoutScale.getInstance();
+    int step = scale.scaledTileSize();
+    // Snap display coordinate to nearest scaled grid point
+    //int displayX = Math.round((float) x / step) * step;
+    //int displayY = Math.round((float) y / step) * step;
+    
+    int displayX = (x / step) * step;
+    int displayY = (y / step) * step;
+    
+    // Return canonical coordinate for TileCache lookups and storage
+    
+    int lx = scale.toCanonical(displayX) + GRID;
+    int ly =scale.toCanonical(displayY) + GRID;
+    
+    return new Point(lx,ly);
   }
 
   public static int getGridX(int x) {

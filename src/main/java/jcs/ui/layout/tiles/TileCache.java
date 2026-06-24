@@ -47,7 +47,6 @@ import static jcs.entities.TileBean.TileType.SWITCH;
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.BlockBean;
 import static jcs.entities.TileBean.TileType.CROSS_SWITCH;
-import jcs.ui.layout.LayoutUtil;
 import static jcs.ui.layout.tiles.LayoutScale.GRID;
 
 /**
@@ -304,7 +303,7 @@ public class TileCache {
   }
 
   public static Tile createTile(TileBean.TileType tileType, TileBean.Orientation orientation, TileBean.Direction direction, Point cp) {
-    Point center = LayoutUtil.snapToGrid(cp);
+    Point center = cp;
     Tile tile = null;
     switch (tileType) {
       case STRAIGHT ->
@@ -592,29 +591,31 @@ public class TileCache {
   }
 
   public static boolean canMoveTo(Tile tile, Point p) {
+    boolean free = true;
     //check if a tile exist with point p
     //Check if the cache contains a Cp of a tile on p
-    //Logger.trace("Checking " + tile.id + " New Point (" + p.x + "," + p.y + ")");
+    Logger.trace("Checking tile: {} on new position ({}, {})", tile.id, p.x, p.y);
     if (centerPointMap.containsKey(p) && !tile.getCenter().equals(p) && !tile.getAltPoints().contains(p)) {
-      return false;
+      free = false;
     }
     //Check if the cache contains a Cp on any of the Alt point is case of a Block or Cross
     if (altPointMap.containsKey(p) && !tile.getAltPoints().contains(p)) {
-      return false;
+      free = false;
     }
 
     //Check with the tile on the new Cp with the new alt pointIds if that is also free...
     Set<Point> altPoints = tile.getAltPoints(p);
     for (Point ap : altPoints) {
       if (centerPointMap.containsKey(ap) && !tile.getCenter().equals(ap) && !tile.getAltPoints().contains(ap)) {
-        return false;
+        free = false;
       }
       if (altPointMap.containsKey(ap) && !tile.getAltPoints().contains(ap)) {
-        return false;
+        free = false;
       }
     }
-    //Logger.trace("Checked " + tile.id + " can move to (" + p.x + "," + p.y + ")");
-    return true;
+    Logger.info("Checked tile: {} for (new) position ({}, {}): {}", tile.id, p.x, p.y, (free ? "free" : "occupied"));
+
+    return free;
   }
 
   public static void moveTo(Tile tile, Point p) {

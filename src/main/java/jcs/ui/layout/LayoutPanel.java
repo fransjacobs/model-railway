@@ -150,6 +150,8 @@ public class LayoutPanel extends JPanel {
 
     topPanel = new JPanel();
     toolBar = new JToolBar();
+    selectBtn = new JButton();
+    filler3 = new Box.Filler(new Dimension(10, 0), new Dimension(10, 0), new Dimension(10, 32767));
     editBtn = new JToggleButton();
     filler1 = new Box.Filler(new Dimension(10, 0), new Dimension(10, 0), new Dimension(10, 32767));
     zoomMinBtn = new JButton();
@@ -161,7 +163,6 @@ public class LayoutPanel extends JPanel {
     startAllLocomotivesBtn = new JToggleButton();
     filler2 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
     loadBtn = new JButton();
-    filler3 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
     filler4 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
     canvasScrollPane = new JScrollPane();
     canvas = new LayoutCanvas(this.readonly);
@@ -186,10 +187,29 @@ public class LayoutPanel extends JPanel {
     toolBar.setName(""); // NOI18N
     toolBar.setPreferredSize(new Dimension(980, 42));
 
+    selectBtn.setIcon(new ImageIcon(getClass().getResource("/media/cursor-24.png"))); // NOI18N
+    selectBtn.setFocusable(false);
+    selectBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    selectBtn.setMargin(new Insets(2, 2, 2, 2));
+    selectBtn.setMaximumSize(new Dimension(38, 38));
+    selectBtn.setMinimumSize(new Dimension(38, 38));
+    selectBtn.setPreferredSize(new Dimension(38, 38));
+    selectBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    selectBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        selectBtnActionPerformed(evt);
+      }
+    });
+    toolBar.add(selectBtn);
+    toolBar.add(filler3);
+
     editBtn.setIcon(new ImageIcon(getClass().getResource("/media/edit-24.png"))); // NOI18N
     editBtn.setDoubleBuffered(true);
     editBtn.setFocusable(false);
     editBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    editBtn.setMargin(new Insets(2, 2, 2, 2));
+    editBtn.setMaximumSize(new Dimension(38, 38));
+    editBtn.setMinimumSize(new Dimension(38, 38));
     editBtn.setPreferredSize(new Dimension(38, 38));
     editBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/controller-console-24.png"))); // NOI18N
     editBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
@@ -204,6 +224,9 @@ public class LayoutPanel extends JPanel {
     zoomMinBtn.setIcon(new ImageIcon(getClass().getResource("/media/zoom-out.png"))); // NOI18N
     zoomMinBtn.setFocusable(false);
     zoomMinBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    zoomMinBtn.setMargin(new Insets(2, 2, 2, 2));
+    zoomMinBtn.setMaximumSize(new Dimension(38, 38));
+    zoomMinBtn.setMinimumSize(new Dimension(38, 38));
     zoomMinBtn.setPreferredSize(new Dimension(38, 38));
     zoomMinBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
     zoomMinBtn.addActionListener(new ActionListener() {
@@ -222,6 +245,9 @@ public class LayoutPanel extends JPanel {
     zoomPlusBtn.setIcon(new ImageIcon(getClass().getResource("/media/zoom-in.png"))); // NOI18N
     zoomPlusBtn.setFocusable(false);
     zoomPlusBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    zoomPlusBtn.setMargin(new Insets(2, 2, 2, 2));
+    zoomPlusBtn.setMaximumSize(new Dimension(38, 38));
+    zoomPlusBtn.setMinimumSize(new Dimension(38, 38));
     zoomPlusBtn.setPreferredSize(new Dimension(38, 38));
     zoomPlusBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
     zoomPlusBtn.addActionListener(new ActionListener() {
@@ -312,7 +338,6 @@ public class LayoutPanel extends JPanel {
       }
     });
     toolBar.add(loadBtn);
-    toolBar.add(filler3);
     toolBar.add(filler4);
 
     topPanel.add(toolBar);
@@ -444,9 +469,11 @@ public class LayoutPanel extends JPanel {
     }
 
     loadLayoutInBackground();
-
-
   }//GEN-LAST:event_editBtnActionPerformed
+
+  private void selectBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_selectBtnActionPerformed
+    this.canvas.resetSelection();
+  }//GEN-LAST:event_selectBtnActionPerformed
 
   public void showRoutes() {
     canvas.showRoutesDialog();
@@ -475,6 +502,7 @@ public class LayoutPanel extends JPanel {
   private JButton gridBtn;
   private JButton loadBtn;
   private JButton routeBtn;
+  private JButton selectBtn;
   private JToggleButton startAllLocomotivesBtn;
   private JToolBar toolBar;
   private JPanel topPanel;

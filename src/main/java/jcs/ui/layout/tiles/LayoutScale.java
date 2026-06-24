@@ -37,11 +37,14 @@ public class LayoutScale {
   public static final int[] SCALE_STEPS = {100, 90, 80, 70, 60, 50};
   private static final int DEFAULT_SCALE = 100;
 
-  private int grid = GRID;
+  //private int grid = GRID;
   private int scalePercent = DEFAULT_SCALE;
 
-  public int getGrid() {
-    return grid;
+  //public int getGrid() {
+  //  return grid;
+  //}
+  public boolean isScaled() {
+    return DEFAULT_SCALE != scalePercent;
   }
 
   public void zoomOut() {
@@ -72,6 +75,8 @@ public class LayoutScale {
 
   /**
    * Pixel size of one tile at current scale. At 100% = 40.
+   *
+   * @return
    */
   public int scaledTileSize() {
     return DEFAULT_WIDTH * scalePercent / 100;
@@ -79,6 +84,8 @@ public class LayoutScale {
 
   /**
    * Half a tile (= grid unit). At 100% = 20.
+   *
+   * @return
    */
   public int scaledGrid() {
     return scaledTileSize() / 2;
@@ -86,6 +93,10 @@ public class LayoutScale {
 
   /**
    * Convert a canonical (100% scale) coordinate to display pixels.
+   *
+   * @param canonical
+   * @return
+   *
    */
   public int toDisplay(int canonical) {
     return canonical * scalePercent / 100;
@@ -93,6 +104,10 @@ public class LayoutScale {
 
   /**
    * Convert display pixels back to canonical (100% scale) coordinate.
+   *
+   * @param display
+   * @return
+   *
    */
   public int toCanonical(int display) {
     return display * 100 / scalePercent;

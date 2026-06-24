@@ -160,10 +160,14 @@ public class TileBeanTableModel extends AbstractBeanTableModel<TileBean> {
     tileIcons.put("Cross", "/media/cross-x.png");
     tileIcons.put("End Track", "/media/new-end-track.png");
     tileIcons.put("Block", "/media/new-block.png");
+    tileIcons.put("Select", "/media/cursor-24.png");
   }
 
   private TileBean.TileType getTileType(String name) {
     switch (name) {
+      case "Select" -> {
+        return TileBean.TileType.NONE;
+      }
       case "Straight" -> {
         return TileBean.TileType.STRAIGHT;
       }

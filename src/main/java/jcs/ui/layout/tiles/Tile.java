@@ -138,6 +138,7 @@ public abstract class Tile extends JComponent implements Serializable {
     this.tileX = x;
     this.tileY = y;
 
+    this.
     setLayout(null);
     Dimension d = new Dimension(width, height);
     setSize(d);
@@ -638,6 +639,7 @@ public abstract class Tile extends JComponent implements Serializable {
 
   public void setSelectedColor(Color selectedColor) {
     model.setSelectedColor(selectedColor);
+    this.markImageDirty();
   }
 
   public Orientation getIncomingSide() {
@@ -1018,7 +1020,7 @@ public abstract class Tile extends JComponent implements Serializable {
    */
   public Rectangle getTileBounds() {
     LayoutScale scale = LayoutScale.getInstance();
-    int grid = scale.scaledGrid();  // half tile in display px
+    int grid = scale.scaledGrid(); 
 
     int dispX = scale.toDisplay(tileX);
     int dispY = scale.toDisplay(tileY);

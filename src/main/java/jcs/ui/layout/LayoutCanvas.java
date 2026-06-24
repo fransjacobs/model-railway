@@ -127,8 +127,8 @@ public class LayoutCanvas extends JPanel {
     super();
     setLayout(null);
     setOpaque(true);
-    //setDoubleBuffered(true);
 
+    //setDoubleBuffered(true);
     showCenter = "true".equalsIgnoreCase(System.getProperty("tile.show.center", "false"));
 
     this.readonly = readonly;
@@ -262,12 +262,26 @@ public class LayoutCanvas extends JPanel {
     repaint();
   }
 
+  void resetSelection() {
+    if(this.selectedTile != null) {
+      this.selectedTile.setSelected(false);
+      this.selectedTile.markImageDirty();
+      this.selectedTile = null;
+    }
+    this.tileType = TileType.NONE;
+  }
+  
   void setTileType(TileBean.TileType tileType) {
     this.tileType = tileType;
     Logger.trace("TileType: " + tileType + " Current mode: " + mode);
   }
 
   public void setScale(int scalePercent) {
+    if (selectedTile != null) {
+      selectedTile.setSelected(false);
+      selectedTile = null;
+    }
+
     LayoutScale.getInstance().setScalePercent(scalePercent);
 
     // Resize and reposition every tile on the canvas
@@ -311,7 +325,7 @@ public class LayoutCanvas extends JPanel {
             repaint();
             long duration = System.currentTimeMillis() - now;
             //if (readonly) {
-              Logger.trace("Loading and Repaint of {} tiles finished in {} ms...", tiles.size(), duration);
+            Logger.trace("Loading and Repaint of {} tiles finished in {} ms...", tiles.size(), duration);
             //}
           });
         } finally {
@@ -362,7 +376,7 @@ public class LayoutCanvas extends JPanel {
       Logger.trace("Same tile " + selectedTile.getId() + " selected");
     } else if (previousSelected != null) {
       previousSelected.setSelected(false);
-      repaint(previousSelected.getTileBounds());
+      //epaint(previousSelected.getTileBounds());
     }
 
     switch (mode) {
@@ -416,6 +430,10 @@ public class LayoutCanvas extends JPanel {
 
   Tile addTile(Point p, TileType tileType, Orientation orientation, Direction direction, boolean selected, boolean showCenter) {
     Logger.trace("Adding: {} @ {} O: {} D: {}", tileType, p, orientation, direction);
+    if(TileType.NONE == tileType) {
+      return null;
+    }
+    
     Tile tile = TileCache.createTile(tileType, orientation, direction, p);
 
     //Set the "last" used properties
@@ -442,8 +460,10 @@ public class LayoutCanvas extends JPanel {
       return tile;
     } else {
       Tile occ = TileCache.findTile(p);
-      Logger.trace("Can't add tile {} on {} Is occupied by {}", tile.getId(), tile.xyToString(), occ.getId());
-      TileCache.rollback(tile);
+      if (occ != null) {
+        Logger.trace("Can't add tile {} on {} Is occupied by {}", tile.getId(), tile.xyToString(), occ.getId());
+        TileCache.rollback(tile);
+      }
       return null;
     }
   }
@@ -485,29 +505,40 @@ public class LayoutCanvas extends JPanel {
   }
 
   void deleteSelectedTile() {
-    Logger.trace("Selected Tile " + selectedTile.getId());
-    removeTile(selectedTile);
-    selectedTile = null;
+    if (selectedTile != null) {
+      Logger.trace("Selected Tile " + selectedTile.getId());
+      removeTile(selectedTile);
+    }
   }
 
   void removeTile(Tile tile) {
-    if (getComponentAt(tile.getCenter()) instanceof Tile toBeDeleted) {
-      if (toBeDeleted != null) {
-        Logger.trace("Deleting Tile " + tile.getId());
+    LayoutScale scale = LayoutScale.getInstance();
+    int x = scale.toDisplay(tile.getCenterX());
+    int y = scale.toDisplay(tile.getCenterY());
+
+    if (getComponentAt(x, y) instanceof Tile toBeDeleted) {
+      if (toBeDeleted != null && toBeDeleted.getId().equals(tile.getId())) {
+        Logger.trace("Deleting Tile " + toBeDeleted.getId());
         remove(toBeDeleted);
-        TileCache.deleteTile(tile);
-        repaint(tile.getTileBounds());
+        TileCache.deleteTile(toBeDeleted);
+
+        if (selectedTile.equals(tile)) {
+          repaint(selectedTile.getTileBounds());
+          selectedTile = null;
+        }
       }
     }
   }
 
   private void mouseDragAction(MouseEvent evt) {
-    //Logger.trace("@ (" + evt.getX() + "," + evt.getY() + ")");
     Point snapPoint = LayoutUtil.snapToGrid(evt.getPoint());
-    if (selectedTile != null) {
-      setComponentZOrder(selectedTile, 0);
-      //Logger.trace("Moving: " + selectedTile.getId() + " @ " + selectedTile.xyToString() + " P: " + snapPoint.x + "," + snapPoint.y + ")");
+    Logger.trace("@ ({}, {}) snap: ({}, {}) ", evt.getX(), evt.getY(), snapPoint.x, snapPoint.y);
 
+    if (selectedTile != null) { // && !snapPoint.equals(selectedTile.getCenter())) {
+      setComponentZOrder(selectedTile, 0);
+      Logger.trace("Dragging tile: {} @ {} to: ({}, {})", selectedTile.getId(), selectedTile.xyToString(), snapPoint.x, snapPoint.y);
+
+      LayoutScale scale = LayoutScale.getInstance();
       if (!readonly) {
         if (TileCache.canMoveTo(selectedTile, snapPoint)) {
           selectedTile.setSelectedColor(Tile.DEFAULT_SELECTED_COLOR);
@@ -516,43 +547,45 @@ public class LayoutCanvas extends JPanel {
         }
 
         int curX, curY;
-        int grid = LayoutScale.getInstance().scaledGrid();
+        int grid = scale.scaledGrid();
+
         switch (selectedTile.getTileType()) {
           case BLOCK -> {
             if (selectedTile.isHorizontal()) {
-              curX = snapPoint.x - grid - grid * 2;
-              curY = snapPoint.y - grid;
+              curX = scale.toDisplay(snapPoint.x) - grid - grid * 2;
+              curY = scale.toDisplay(snapPoint.y) - grid;
             } else {
-              curX = snapPoint.x - grid;
-              curY = snapPoint.y - grid - grid * 2;
+              curX = scale.toDisplay(snapPoint.x) - grid;
+              curY = scale.toDisplay(snapPoint.y) - grid - grid * 2;
             }
           }
-          case CROSS_SWITCH -> {
+          case CROSS_SWITCH, CROSS -> {
             switch (selectedTile.getOrientation()) {
               case SOUTH -> {
-                curX = snapPoint.x - grid;
-                curY = snapPoint.y - grid;
+                curX = scale.toDisplay(snapPoint.x) - grid;
+                curY = scale.toDisplay(snapPoint.y) - grid;
               }
               case WEST -> {
-                curX = snapPoint.x - grid - grid * 2;
-                curY = snapPoint.y - grid;
+                curX = scale.toDisplay(snapPoint.x) - grid - grid * 2;
+                curY = scale.toDisplay(snapPoint.y) - grid;
               }
               case NORTH -> {
-                curX = snapPoint.x - grid;
-                curY = snapPoint.y - grid - grid * 2;
+                curX = scale.toDisplay(snapPoint.x) - grid;
+                curY = scale.toDisplay(snapPoint.y) - grid - grid * 2;
               }
               default -> {
                 //East
-                curX = snapPoint.x - grid;
-                curY = snapPoint.y - grid;
+                curX = scale.toDisplay(snapPoint.x) - grid;
+                curY = scale.toDisplay(snapPoint.y) - grid;
               }
             }
           }
           default -> {
-            curX = snapPoint.x - grid;
-            curY = snapPoint.y - grid;
+            curX = scale.toDisplay(snapPoint.x) - grid;
+            curY = scale.toDisplay(snapPoint.y) - grid;
           }
         }
+        Logger.trace("tile {} bounds[ x: {} y: {} w: {} h: {}", selectedTile.getId(), curX, curY, selectedTile.getWidth(), selectedTile.getHeight());
         selectedTile.setBounds(curX, curY, selectedTile.getWidth(), selectedTile.getHeight());
       }
     }
@@ -1237,11 +1270,7 @@ public class LayoutCanvas extends JPanel {
   }//GEN-LAST:event_moveMIActionPerformed
 
   private void deleteMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_deleteMIActionPerformed
-    if (selectedTile != null) {
-      removeTile(selectedTile);
-      repaint(selectedTile.getTileBounds());
-      selectedTile = null;
-    }
+    deleteSelectedTile();
   }//GEN-LAST:event_deleteMIActionPerformed
 
   private void propertiesMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_propertiesMIActionPerformed
@@ -1455,9 +1484,15 @@ public class LayoutCanvas extends JPanel {
         Direction direction = tb.getDirection();
         Point dropPoint = LayoutUtil.snapToGrid(support.getDropLocation().getDropPoint());
 
-        Logger.trace("Dropping: " + tb.getName() + " @ (" + dropPoint.x + "," + dropPoint.y + ")");
-        Tile newTile = addTile(dropPoint, tileType, orientation, direction, true, showCenter);
-        return newTile != null;
+        if (TileType.NONE != tileType) {
+          Logger.trace("Dropping: {} @ ({}, {})", tb.getName(), dropPoint.x, dropPoint.y);
+          Tile newTile = addTile(dropPoint, tileType, orientation, direction, true, showCenter);
+          return newTile != null;
+        } else {
+          Logger.trace("Resetting selection...");
+          resetSelection();
+          return false;
+        }
       } catch (UnsupportedFlavorException | IOException e) {
         // Handle potential exceptions.
         Logger.error(e);
