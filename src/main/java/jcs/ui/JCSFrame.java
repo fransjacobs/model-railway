@@ -767,7 +767,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
 
     layoutPanel.setMinimumSize(new Dimension(10, 10));
     layoutPanel.setName("layoutPanel"); // NOI18N
-    centerPanel.add(layoutPanel, "designPanel");
+    centerPanel.add(layoutPanel, "layoutPanel");
     layoutPanel.getAccessibleContext().setAccessibleName("designPanel");
 
     keyboardSensorMessagePanel.setMinimumSize(new Dimension(10, 10));
