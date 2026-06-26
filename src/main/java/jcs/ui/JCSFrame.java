@@ -26,10 +26,6 @@ import java.awt.KeyboardFocusManager;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.HierarchyBoundsListener;
-import java.awt.event.HierarchyEvent;
-import java.awt.event.InputMethodEvent;
-import java.awt.event.InputMethodListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -55,9 +51,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.JTextArea;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
@@ -76,7 +70,6 @@ import jcs.ui.layout.LayoutPanel;
 import jcs.ui.panel.SmallDriverCabPanel;
 import jcs.ui.settings.AccessoryDialog;
 import jcs.ui.settings.CommandStationDialog;
-import jcs.ui.settings.CommandStationPanel;
 import jcs.ui.settings.LocomotiveDialog;
 import jcs.ui.settings.SettingsDialog;
 import jcs.ui.settings.PropertiesDialog;
@@ -154,9 +147,8 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
       dispatcherStatusPanel.addLocomotiveSelectionChangeListener(smallDriverCabPanel);
 
       //Show the default panel
-      showOverviewPanel();
+      showLayoutControlPanel();
       editMode = false;
-
       //Register the main fram as listener for RailwayController statusses
       RailController.getInstance().addStatusListener(this);
     }
@@ -224,18 +216,52 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     toolbarPanel.repaint();
   }
 
-  public void showOverviewPanel() {
+  public void showLayoutControlPanel() {
     CardLayout card = (CardLayout) centerPanel.getLayout();
-    card.show(centerPanel, "overviewPanel");
+    card.show(centerPanel, "layoutPanel");
     editMode = false;
+
+    this.autoPilotBtn.setVisible(true);
+    this.autoPilotBtn.setEnabled(true);
+    this.startAllLocsBtn.setVisible(true);
+    this.startAllLocsBtn.setEnabled(true);
 
     if (autoPilotBtn.isSelected()) {
       dispatcherStatusPanel.showDispatcherTab();
     } else {
       dispatcherStatusPanel.showLocomotiveTab();
     }
+    layoutPanel.setReadOnly(!editMode);
 
-    overviewPanel.loadLayoutInBackground();
+    showGridBtn.setIcon(new ImageIcon(getClass().getResource(LayoutPanel.GRID_0)));
+
+  }
+
+  private void showLayoutEditPanel() {
+    CardLayout card = (CardLayout) centerPanel.getLayout();
+    card.show(centerPanel, "layoutPanel");
+    editMode = true;
+
+    autoPilotBtn.setVisible(false);
+    autoPilotBtn.setEnabled(false);
+    startAllLocsBtn.setVisible(false);
+    startAllLocsBtn.setEnabled(false);
+
+    dispatcherStatusPanel.showComponentsTab();
+    layoutPanel.setReadOnly(!editMode);
+
+    switch (layoutPanel.getGridType()) {
+      case 0 -> {
+        showGridBtn.setIcon(new ImageIcon(getClass().getResource(LayoutPanel.GRID_0)));
+      }
+      case 1 -> {
+        showGridBtn.setIcon(new ImageIcon(getClass().getResource(LayoutPanel.GRID_1)));
+      }
+      case 2 -> {
+        showGridBtn.setIcon(new ImageIcon(getClass().getResource(LayoutPanel.GRID_2)));
+      }
+    }
+
   }
 
   private void showLocomotives() {
@@ -312,17 +338,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     editMode = false;
   }
 
-  private void showEditLayoutPanel() {
-    //if (RailController.getInstance().isAutoModeActive()) {
-    CardLayout card = (CardLayout) centerPanel.getLayout();
-    card.show(centerPanel, "designPanel");
-
-    dispatcherStatusPanel.showComponentsTab();
-    layoutPanel.loadLayoutInBackground();
-    editMode = true;
-    //}
-  }
-
   private void setControllerProperties() {
     if (JCS.getJcsCommandStation() != null) {
       InfoBean info = JCS.getJcsCommandStation().getCommandStationInfo();
@@ -348,6 +363,28 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
       FrameMonitor.registerDialogFrame(feedbackMonitor, FeedbackSensorDialog.class.getName());
     }
     feedbackMonitor.showMonitor();
+  }
+
+  private void showGrid() {
+    layoutPanel.showGrid();
+
+    int gridType = layoutPanel.getGridType();
+
+    gridType++;
+    if (gridType > 2) {
+      gridType = 0;
+    }
+    switch (gridType) {
+      case 0 -> {
+        showGridBtn.setIcon(new ImageIcon(getClass().getResource(LayoutPanel.GRID_0)));
+      }
+      case 1 -> {
+        showGridBtn.setIcon(new ImageIcon(getClass().getResource(LayoutPanel.GRID_1)));
+      }
+      case 2 -> {
+        showGridBtn.setIcon(new ImageIcon(getClass().getResource(LayoutPanel.GRID_2)));
+      }
+    }
   }
 
   @Override
@@ -380,20 +417,21 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     showEditDesignBtn = new JButton();
     showVNCBtn = new JButton();
     showKeyboardBtn = new JButton();
-    filler3 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
     showFeedbackMonitorBtn = new JButton();
+    filler3 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
+    zoomMinBtn = new JButton();
+    zoomPlusBtn = new JButton();
+    showGridBtn = new JButton();
     filler4 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
     autoPilotBtn = new JToggleButton();
     filler5 = new Box.Filler(new Dimension(5, 0), new Dimension(5, 0), new Dimension(5, 32767));
     startAllLocsBtn = new JButton();
-    filler8 = new Box.Filler(new Dimension(25, 0), new Dimension(25, 0), new Dimension(25, 32767));
     statusPanel = new StatusPanel();
     mainPanel = new JPanel();
     locoDisplaySP = new JSplitPane();
     centerPanel = new JPanel();
-    keyboardSensorMessagePanel = new KeyboardSensorPanel();
     layoutPanel = new LayoutPanel();
-    overviewPanel = new LayoutPanel(true);
+    keyboardSensorMessagePanel = new KeyboardSensorPanel();
     vncPanel = new VNCPanel();
     leftPanel = new JPanel();
     locoSplitPane = new JSplitPane();
@@ -528,7 +566,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     jcsToolBar.add(showOverviewBtn);
     showOverviewBtn.getAccessibleContext().setAccessibleName("Home");
 
-    showEditDesignBtn.setIcon(new ImageIcon(getClass().getResource("/media/paintbrush-24.png"))); // NOI18N
+    showEditDesignBtn.setIcon(new ImageIcon(getClass().getResource("/media/edit-24.png"))); // NOI18N
     showEditDesignBtn.setToolTipText("Edit Layout");
     showEditDesignBtn.setBorder(BorderFactory.createLineBorder(new Color(204, 204, 204)));
     showEditDesignBtn.setFocusable(false);
@@ -585,9 +623,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     jcsToolBar.add(showKeyboardBtn);
     showKeyboardBtn.getAccessibleContext().setAccessibleName("Switchboard");
 
-    filler3.setName("filler3"); // NOI18N
-    jcsToolBar.add(filler3);
-
     showFeedbackMonitorBtn.setIcon(new ImageIcon(getClass().getResource("/media/monitor-24.png"))); // NOI18N
     showFeedbackMonitorBtn.setToolTipText("Show Sensor Monitor");
     showFeedbackMonitorBtn.setBorder(new LineBorder(new Color(204, 204, 204), 1, true));
@@ -604,6 +639,63 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
       }
     });
     jcsToolBar.add(showFeedbackMonitorBtn);
+
+    filler3.setName("filler3"); // NOI18N
+    jcsToolBar.add(filler3);
+
+    zoomMinBtn.setIcon(new ImageIcon(getClass().getResource("/media/zoom-out.png"))); // NOI18N
+    zoomMinBtn.setToolTipText("");
+    zoomMinBtn.setFocusable(false);
+    zoomMinBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    zoomMinBtn.setMargin(new Insets(2, 2, 2, 2));
+    zoomMinBtn.setMaximumSize(new Dimension(40, 40));
+    zoomMinBtn.setMinimumSize(new Dimension(40, 40));
+    zoomMinBtn.setName("zoomMinBtn"); // NOI18N
+    zoomMinBtn.setPreferredSize(new Dimension(40, 40));
+    zoomMinBtn.setRequestFocusEnabled(false);
+    zoomMinBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    zoomMinBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        zoomMinBtnActionPerformed(evt);
+      }
+    });
+    jcsToolBar.add(zoomMinBtn);
+
+    zoomPlusBtn.setIcon(new ImageIcon(getClass().getResource("/media/zoom-in.png"))); // NOI18N
+    zoomPlusBtn.setToolTipText("");
+    zoomPlusBtn.setFocusable(false);
+    zoomPlusBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    zoomPlusBtn.setMargin(new Insets(2, 2, 2, 2));
+    zoomPlusBtn.setMaximumSize(new Dimension(40, 40));
+    zoomPlusBtn.setMinimumSize(new Dimension(40, 40));
+    zoomPlusBtn.setName("zoomPlusBtn"); // NOI18N
+    zoomPlusBtn.setPreferredSize(new Dimension(40, 40));
+    zoomPlusBtn.setRequestFocusEnabled(false);
+    zoomPlusBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    zoomPlusBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        zoomPlusBtnActionPerformed(evt);
+      }
+    });
+    jcsToolBar.add(zoomPlusBtn);
+
+    showGridBtn.setIcon(new ImageIcon(getClass().getResource("/media/square-grid-24.png"))); // NOI18N
+    showGridBtn.setToolTipText("");
+    showGridBtn.setFocusable(false);
+    showGridBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    showGridBtn.setMargin(new Insets(2, 2, 2, 2));
+    showGridBtn.setMaximumSize(new Dimension(40, 40));
+    showGridBtn.setMinimumSize(new Dimension(40, 40));
+    showGridBtn.setName("showGridBtn"); // NOI18N
+    showGridBtn.setPreferredSize(new Dimension(40, 40));
+    showGridBtn.setRequestFocusEnabled(false);
+    showGridBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    showGridBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        showGridBtnActionPerformed(evt);
+      }
+    });
+    jcsToolBar.add(showGridBtn);
 
     filler4.setName("filler4"); // NOI18N
     jcsToolBar.add(filler4);
@@ -651,9 +743,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     });
     jcsToolBar.add(startAllLocsBtn);
 
-    filler8.setName("filler8"); // NOI18N
-    jcsToolBar.add(filler8);
-
     toolbarPanel.add(jcsToolBar);
 
     getContentPane().add(toolbarPanel, BorderLayout.NORTH);
@@ -673,23 +762,17 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     locoDisplaySP.setName("locoDisplaySP"); // NOI18N
     locoDisplaySP.setPreferredSize(new Dimension(1050, 850));
 
-    centerPanel.setMinimumSize(new Dimension(10, 10));
     centerPanel.setName("centerPanel"); // NOI18N
     centerPanel.setLayout(new CardLayout());
-
-    keyboardSensorMessagePanel.setMinimumSize(new Dimension(10, 10));
-    keyboardSensorMessagePanel.setName("keyboardSensorMessagePanel"); // NOI18N
-    centerPanel.add(keyboardSensorMessagePanel, "diagnosticPanel");
 
     layoutPanel.setMinimumSize(new Dimension(10, 10));
     layoutPanel.setName("layoutPanel"); // NOI18N
     centerPanel.add(layoutPanel, "designPanel");
     layoutPanel.getAccessibleContext().setAccessibleName("designPanel");
 
-    overviewPanel.setMinimumSize(new Dimension(10, 10));
-    overviewPanel.setName("overviewPanel"); // NOI18N
-    centerPanel.add(overviewPanel, "overviewPanel");
-    overviewPanel.getAccessibleContext().setAccessibleName("overviewPanel");
+    keyboardSensorMessagePanel.setMinimumSize(new Dimension(10, 10));
+    keyboardSensorMessagePanel.setName("keyboardSensorMessagePanel"); // NOI18N
+    centerPanel.add(keyboardSensorMessagePanel, "diagnosticPanel");
 
     vncPanel.setName("vncPanel"); // NOI18N
     centerPanel.add(vncPanel, "vncPanel");
@@ -1037,11 +1120,11 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     }//GEN-LAST:event_formWindowClosing
 
     private void showEditDesignBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showEditDesignBtnActionPerformed
-      showEditLayoutPanel();
+      showLayoutEditPanel();
     }//GEN-LAST:event_showEditDesignBtnActionPerformed
 
     private void showOverviewBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showOverviewBtnActionPerformed
-      showOverviewPanel();
+      showLayoutControlPanel();
     }//GEN-LAST:event_showOverviewBtnActionPerformed
 
     private void powerButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_powerButtonActionPerformed
@@ -1138,11 +1221,11 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     }//GEN-LAST:event_connectButtonActionPerformed
 
     private void showHomeActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showHomeActionPerformed
-      showOverviewPanel();
+      showLayoutControlPanel();
     }//GEN-LAST:event_showHomeActionPerformed
 
     private void editLayoutActionPerformed(ActionEvent evt) {//GEN-FIRST:event_editLayoutActionPerformed
-      showEditLayoutPanel();
+      showLayoutEditPanel();
     }//GEN-LAST:event_editLayoutActionPerformed
 
     private void showKeyboardActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showKeyboardActionPerformed
@@ -1228,7 +1311,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     }
   }
 
-
   private void startAllLocsBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startAllLocsBtnActionPerformed
     startAllLocomotives();
   }//GEN-LAST:event_startAllLocsBtnActionPerformed
@@ -1277,7 +1359,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   }//GEN-LAST:event_vncMIActionPerformed
 
   private void autoDrivingMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_autoDrivingMIActionPerformed
-    // TODO add your handling code here:
+    startAutopilot();
   }//GEN-LAST:event_autoDrivingMIActionPerformed
 
   private void resetRailControllerMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_resetRailControllerMIActionPerformed
@@ -1352,6 +1434,18 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   private void newMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_newMIActionPerformed
     createNewConfig();
   }//GEN-LAST:event_newMIActionPerformed
+
+  private void zoomMinBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_zoomMinBtnActionPerformed
+    layoutPanel.zoomIn();
+  }//GEN-LAST:event_zoomMinBtnActionPerformed
+
+  private void zoomPlusBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_zoomPlusBtnActionPerformed
+    layoutPanel.zoomOut();
+  }//GEN-LAST:event_zoomPlusBtnActionPerformed
+
+  private void showGridBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showGridBtnActionPerformed
+    showGrid();
+  }//GEN-LAST:event_showGridBtnActionPerformed
 
   private void createNewConfig() {
     int result = JOptionPane.showConfirmDialog(this, "Are you sure you want to create a new configuration?\nAll current settings will be removed.\nDid you create a backup?", "New Configuration", JOptionPane.YES_NO_OPTION);
@@ -1496,7 +1590,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   private Box.Filler filler3;
   private Box.Filler filler4;
   private Box.Filler filler5;
-  private Box.Filler filler8;
   private JMenuItem flipTileHorizontallyMI;
   private JMenuItem flipTileVerticallyMI;
   private JMenu helpMenu;
@@ -1509,7 +1602,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   private JSplitPane locoSplitPane;
   private JPanel mainPanel;
   private JMenuItem newMI;
-  private LayoutPanel overviewPanel;
   private JToggleButton powerButton;
   private JMenuItem quitMI;
   private JMenu railControllerMenu;
@@ -1522,6 +1614,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   private JMenuItem showDrivewaysMI;
   private JButton showEditDesignBtn;
   private JButton showFeedbackMonitorBtn;
+  private JButton showGridBtn;
   private JMenuItem showHome;
   private JMenuItem showKeyboard;
   private JButton showKeyboardBtn;
@@ -1541,6 +1634,8 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   private JCheckBoxMenuItem virtualCBMI;
   private JMenuItem vncMI;
   private VNCPanel vncPanel;
+  private JButton zoomMinBtn;
+  private JButton zoomPlusBtn;
   // End of variables declaration//GEN-END:variables
 
   private class PowerAction extends AbstractAction {
@@ -1589,7 +1684,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
 
     @Override
     public void actionPerformed(ActionEvent e) {
-      showOverviewPanel();
+      showLayoutControlPanel();
     }
   }
 
@@ -1599,7 +1694,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
 
     @Override
     public void actionPerformed(ActionEvent e) {
-      showEditLayoutPanel();
+      showLayoutEditPanel();
     }
   }
 

@@ -32,10 +32,10 @@ import javax.swing.JScrollPane;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import jcs.JCS;
 import jcs.commandStation.automation.RailController;
-import jcs.commandStation.events.PowerEvent;
-import jcs.commandStation.events.PowerEventListener;
 import jcs.entities.TileBean.TileType;
 import jcs.ui.layout.tiles.LayoutScale;
 import jcs.util.RunUtil;
@@ -59,29 +59,49 @@ public class LayoutPanel extends JPanel {
 
   private static final long serialVersionUID = 2275543202224445302L;
 
-  private final boolean readonly;
+  private final boolean readonly = true;
 
   private int gridType;
 
-  private Powerlistener powerlistener;
-
-  private static final String GRID_0 = "/media/square-grid-24.png";
-  private static final String GRID_1 = "/media/grid-2-24.png";
-  private static final String GRID_2 = "/media/grid-dot-24.png";
+  public static final String GRID_0 = "/media/square-grid-24.png";
+  public static final String GRID_1 = "/media/grid-2-24.png";
+  public static final String GRID_2 = "/media/grid-dot-24.png";
 
   public LayoutPanel() {
-    this(false);
-  }
-
-  public LayoutPanel(boolean readonly) {
-    this.readonly = readonly;
     initComponents();
     postInit();
   }
 
   private void postInit() {
-    RunUtil.loadProperties();
-    canvas.setTileType(TileType.STRAIGHT);
+    canvas.setTileType(TileType.NONE);
+    if (readonly) {
+      canvas.setGridType(0);
+
+      loadBtn.setEnabled(!readonly);
+      loadBtn.setVisible(!readonly);
+      toolBar.remove(loadBtn);
+
+      routeBtn.setEnabled(readonly);
+      routeBtn.setVisible(readonly);
+
+      gridBtn.setEnabled(!readonly);
+      gridBtn.setVisible(!readonly);
+
+      autoPilotBtn.setEnabled(false);
+      startAllLocomotivesBtn.setEnabled(false);
+      toolBar.remove(autoPilotBtn);
+      toolBar.remove(startAllLocomotivesBtn);
+    } else {
+      gridType = 1;
+      gridBtn.setIcon(new ImageIcon(getClass().getResource(GRID_1)));
+      canvas.setGridType(gridType);
+
+      toolBar.remove(autoPilotBtn);
+      toolBar.remove(startAllLocomotivesBtn);
+    }
+  }
+
+  public void setReadOnly(boolean readonly) {
     if (readonly) {
       canvas.setGridType(0);
 
@@ -100,6 +120,10 @@ public class LayoutPanel extends JPanel {
       toolBar.remove(autoPilotBtn);
       toolBar.remove(startAllLocomotivesBtn);
 
+      if (JCS.getParentFrame() != null) {
+        JCS.getParentFrame().hideExtraToolbar(this.toolBar);
+      }
+
     } else {
       gridType = 1;
       gridBtn.setIcon(new ImageIcon(getClass().getResource(GRID_1)));
@@ -107,14 +131,34 @@ public class LayoutPanel extends JPanel {
 
       toolBar.remove(autoPilotBtn);
       toolBar.remove(startAllLocomotivesBtn);
+      toolBar.remove(zoomMinBtn);
+      toolBar.remove(zoomPercLbl);
+      toolBar.remove(zoomPlusBtn);
+
+      if (JCS.getParentFrame() != null) {
+        toolBar.remove(autoPilotBtn);
+        toolBar.remove(startAllLocomotivesBtn);
+        toolBar.remove(zoomMinBtn);
+        toolBar.remove(zoomPercLbl);
+        toolBar.remove(zoomPlusBtn);
+
+        topPanel.remove(this.toolBar);
+        remove(topPanel);
+        doLayout();
+        JCS.getParentFrame().showExtraToolbar(this.toolBar);
+      }
     }
 
-    if (readonly) {
-      loadLayoutInBackground();
-      powerlistener = new Powerlistener();
-      JCS.getJcsCommandStation().addPowerEventListener(powerlistener);
-    }
+    canvas.setReadonly(readonly);
 
+  }
+
+  public int getGridType() {
+    return gridType;
+  }
+
+  public void setGridType(int gridType) {
+    this.gridType = gridType;
   }
 
   public void loadLayoutInBackground() {
@@ -152,28 +196,29 @@ public class LayoutPanel extends JPanel {
     toolBar = new JToolBar();
     selectBtn = new JButton();
     filler3 = new Box.Filler(new Dimension(10, 0), new Dimension(10, 0), new Dimension(10, 32767));
+    routeBtn = new JButton();
+    filler4 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
     editBtn = new JToggleButton();
     filler1 = new Box.Filler(new Dimension(10, 0), new Dimension(10, 0), new Dimension(10, 32767));
     zoomMinBtn = new JButton();
     zoomPercLbl = new JLabel();
     zoomPlusBtn = new JButton();
     gridBtn = new JButton();
-    routeBtn = new JButton();
     autoPilotBtn = new JToggleButton();
     startAllLocomotivesBtn = new JToggleButton();
     filler2 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
     loadBtn = new JButton();
-    filler4 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
     canvasScrollPane = new JScrollPane();
     canvas = new LayoutCanvas(this.readonly);
 
     setOpaque(false);
-    addComponentListener(new ComponentAdapter() {
-      public void componentHidden(ComponentEvent evt) {
-        formComponentHidden(evt);
+    addAncestorListener(new AncestorListener() {
+      public void ancestorAdded(AncestorEvent evt) {
+        formAncestorAdded(evt);
       }
-      public void componentShown(ComponentEvent evt) {
-        formComponentShown(evt);
+      public void ancestorMoved(AncestorEvent evt) {
+      }
+      public void ancestorRemoved(AncestorEvent evt) {
       }
     });
     setLayout(new BorderLayout());
@@ -202,6 +247,22 @@ public class LayoutPanel extends JPanel {
     });
     toolBar.add(selectBtn);
     toolBar.add(filler3);
+
+    routeBtn.setIcon(new ImageIcon(getClass().getResource("/media/river-black.png"))); // NOI18N
+    routeBtn.setToolTipText("Route");
+    routeBtn.setFocusable(false);
+    routeBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    routeBtn.setMaximumSize(new Dimension(38, 38));
+    routeBtn.setMinimumSize(new Dimension(38, 38));
+    routeBtn.setPreferredSize(new Dimension(38, 38));
+    routeBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    routeBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        routeBtnActionPerformed(evt);
+      }
+    });
+    toolBar.add(routeBtn);
+    toolBar.add(filler4);
 
     editBtn.setIcon(new ImageIcon(getClass().getResource("/media/edit-24.png"))); // NOI18N
     editBtn.setDoubleBuffered(true);
@@ -272,21 +333,6 @@ public class LayoutPanel extends JPanel {
     });
     toolBar.add(gridBtn);
 
-    routeBtn.setIcon(new ImageIcon(getClass().getResource("/media/river-black.png"))); // NOI18N
-    routeBtn.setToolTipText("Route");
-    routeBtn.setFocusable(false);
-    routeBtn.setHorizontalTextPosition(SwingConstants.CENTER);
-    routeBtn.setMaximumSize(new Dimension(38, 38));
-    routeBtn.setMinimumSize(new Dimension(38, 38));
-    routeBtn.setPreferredSize(new Dimension(38, 38));
-    routeBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
-    routeBtn.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        routeBtnActionPerformed(evt);
-      }
-    });
-    toolBar.add(routeBtn);
-
     autoPilotBtn.setIcon(new ImageIcon(getClass().getResource("/media/pilot.png"))); // NOI18N
     autoPilotBtn.setToolTipText("Auto mode");
     autoPilotBtn.setDoubleBuffered(true);
@@ -338,7 +384,6 @@ public class LayoutPanel extends JPanel {
       }
     });
     toolBar.add(loadBtn);
-    toolBar.add(filler4);
 
     topPanel.add(toolBar);
 
@@ -361,24 +406,6 @@ public class LayoutPanel extends JPanel {
       showRoutes();
     }//GEN-LAST:event_routeBtnActionPerformed
 
-    private void formComponentHidden(ComponentEvent evt) {//GEN-FIRST:event_formComponentHidden
-      if (JCS.getParentFrame() != null) {
-        JCS.getParentFrame().hideExtraToolbar(this.toolBar);
-      }
-      if (powerlistener != null) {
-        JCS.getJcsCommandStation().removePowerEventListener(powerlistener);
-      }
-    }//GEN-LAST:event_formComponentHidden
-
-    private void formComponentShown(ComponentEvent evt) {//GEN-FIRST:event_formComponentShown
-      if (JCS.getParentFrame() != null) {
-        topPanel.remove(this.toolBar);
-        this.remove(topPanel);
-        this.doLayout();
-        JCS.getParentFrame().showExtraToolbar(this.toolBar);
-      }
-    }//GEN-LAST:event_formComponentShown
-
   private void autoPilotBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_autoPilotBtnActionPerformed
     Logger.trace(evt.getActionCommand() + (autoPilotBtn.isSelected() ? " Enable" : " Disable") + " Auto mode");
 
@@ -397,13 +424,12 @@ public class LayoutPanel extends JPanel {
     }
   }//GEN-LAST:event_startAllLocomotivesBtnActionPerformed
 
-  private void gridBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_gridBtnActionPerformed
+  public void showGrid() {
     gridType++;
     if (gridType > 2) {
       gridType = 0;
     }
     switch (gridType) {
-
       case 0 -> {
         gridBtn.setIcon(new ImageIcon(getClass().getResource(GRID_0)));
       }
@@ -415,79 +441,62 @@ public class LayoutPanel extends JPanel {
       }
     }
     canvas.setGridType(gridType);
-  }//GEN-LAST:event_gridBtnActionPerformed
+  }
 
-  private void zoomMinBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_zoomMinBtnActionPerformed
+  public void zoomIn() {
     LayoutScale.getInstance().zoomIn();
     zoomPercLbl.setText(LayoutScale.getInstance().getScalePercent() + " %");
     canvas.setScale(LayoutScale.getInstance().getScalePercent());
-  }//GEN-LAST:event_zoomMinBtnActionPerformed
+  }
 
-  private void zoomPlusBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_zoomPlusBtnActionPerformed
+  public void zoomOut() {
     LayoutScale.getInstance().zoomOut();
     zoomPercLbl.setText(LayoutScale.getInstance().getScalePercent() + " %");
     canvas.setScale(LayoutScale.getInstance().getScalePercent());
+  }
+
+  private void gridBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_gridBtnActionPerformed
+    showGrid();
+  }//GEN-LAST:event_gridBtnActionPerformed
+
+  private void zoomMinBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_zoomMinBtnActionPerformed
+    zoomIn();
+  }//GEN-LAST:event_zoomMinBtnActionPerformed
+
+  private void zoomPlusBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_zoomPlusBtnActionPerformed
+    zoomOut();
   }//GEN-LAST:event_zoomPlusBtnActionPerformed
 
   private void editBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_editBtnActionPerformed
-    this.canvas.setReadonly(!editBtn.isSelected());
-
-    if (readonly) {
-      canvas.setGridType(0);
-
-      loadBtn.setEnabled(!readonly);
-      loadBtn.setVisible(!readonly);
-      toolBar.remove(loadBtn);
-
-      routeBtn.setEnabled(readonly);
-      routeBtn.setVisible(readonly);
-
-      gridBtn.setEnabled(!readonly);
-      gridBtn.setVisible(!readonly);
-
-      autoPilotBtn.setEnabled(false);
-      startAllLocomotivesBtn.setEnabled(false);
-      toolBar.remove(autoPilotBtn);
-      toolBar.remove(startAllLocomotivesBtn);
-
-    } else {
-      gridType = 1;
-      gridBtn.setIcon(new ImageIcon(getClass().getResource(GRID_1)));
-      canvas.setGridType(gridType);
-
-      toolBar.remove(autoPilotBtn);
-      toolBar.remove(startAllLocomotivesBtn);
-    }
-
-    if (readonly) {
-      if (powerlistener == null) {
-        powerlistener = new Powerlistener();
-      }
-      JCS.getJcsCommandStation().addPowerEventListener(powerlistener);
-    } else {
-      JCS.getJcsCommandStation().removePowerEventListener(powerlistener);
-    }
-
-    loadLayoutInBackground();
+    setReadOnly(!editBtn.isSelected());
   }//GEN-LAST:event_editBtnActionPerformed
 
   private void selectBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_selectBtnActionPerformed
     this.canvas.resetSelection();
   }//GEN-LAST:event_selectBtnActionPerformed
 
+  /**
+   * When added to the JCSFrame remove the toolbar and panel and some buttons which are taken over by the JCS Frame
+   *
+   * @param evt
+   */
+  private void formAncestorAdded(AncestorEvent evt) {//GEN-FIRST:event_formAncestorAdded
+    if (JCS.getParentFrame() != null) {
+      toolBar.remove(autoPilotBtn);
+      toolBar.remove(startAllLocomotivesBtn);
+      toolBar.remove(zoomMinBtn);
+      toolBar.remove(zoomPercLbl);
+      toolBar.remove(zoomPlusBtn);
+      toolBar.remove(editBtn);
+
+      topPanel.remove(toolBar);
+      remove(topPanel);
+      doLayout();
+    }
+  }//GEN-LAST:event_formAncestorAdded
+
   public void showRoutes() {
     canvas.showRoutesDialog();
-  }
-
-  private class Powerlistener implements PowerEventListener {
-
-    @Override
-    public void onPowerChange(PowerEvent event) {
-      if (!event.isPower() && autoPilotBtn.isSelected()) {
-        autoPilotBtn.doClick();
-      }
-      autoPilotBtn.setEnabled(event.isPower());
-    }
   }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables

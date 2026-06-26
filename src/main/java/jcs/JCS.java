@@ -307,7 +307,7 @@ public class JCS {
         FrameMonitor.registerFrame(jcsFrame, JCS.class.getName());
         jcsFrame.setVisible(true);
         jcsFrame.toFront();
-        jcsFrame.showOverviewPanel();
+        jcsFrame.showLayoutControlPanel();
 
       } finally {
         splashScreen.hideSplash(200);

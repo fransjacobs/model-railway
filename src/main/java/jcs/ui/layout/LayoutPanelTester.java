@@ -23,6 +23,7 @@ import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import jcs.JCS;
+import jcs.util.RunUtil;
 import org.tinylog.Logger;
 
 /**
@@ -33,6 +34,7 @@ public class LayoutPanelTester {
 
   public static void main(String args[]) {
     //System.setProperty("trackServiceAlwaysUseDemo", "true");
+    RunUtil.loadProperties();
     try {
       UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
     } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {

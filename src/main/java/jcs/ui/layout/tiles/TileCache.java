@@ -181,7 +181,6 @@ public class TileCache {
       }
       case CROSS -> {
         tile = new Cross(tileBean);
-        tile.setDrawCenterPoint(true);
         crossIdSeq.set(maxIdSeq(crossIdSeq.get(), getIdSeq(tileBean.getId())));
       }
       case CURVED -> {
@@ -436,19 +435,7 @@ public class TileCache {
 
     for (TileBean tb : tileBeans) {
       Tile tile = createTile(tb, showvalues);
-
       addTile(tile);
-
-//      calculateMaxCoordinates(tile.tileX, tile.tileY);
-//      idMap.put(tile.id, tile);
-//      centerPointMap.put(tile.getCenter(), tile);
-//      //Alternative point(s) to be able to find all pointIds
-//      if (!tile.getAltPoints().isEmpty()) {
-//        Set<Point> alt = tile.getAltPoints();
-//        for (Point ap : alt) {
-//          altPointMap.put(ap, tile);
-//        }
-//      }
     }
 
     Logger.trace("Loaded " + idMap.size() + " Tiles. Max: (" + maxX + "," + maxY + ")");

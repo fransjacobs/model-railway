@@ -33,6 +33,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -99,7 +100,6 @@ public class LayoutCanvas extends JPanel {
 
   private volatile boolean readonly;
   private Mode mode;
-  private boolean drawGrid = true;
 
   private Orientation orientation;
   private Direction direction;
@@ -132,7 +132,6 @@ public class LayoutCanvas extends JPanel {
     showCenter = "true".equalsIgnoreCase(System.getProperty("tile.show.center", "false"));
 
     this.readonly = readonly;
-    drawGrid = !readonly;
     executor = Executors.newSingleThreadExecutor(r -> {
       Thread t = new Thread(r, "layout-canvas-worker");
       t.setDaemon(true);
@@ -166,8 +165,6 @@ public class LayoutCanvas extends JPanel {
 
   public void setReadonly(boolean readonly) {
     this.readonly = readonly;
-
-    drawGrid = !readonly;
     if (readonly) {
       mode = Mode.CONTROL;
     } else {
@@ -179,6 +176,9 @@ public class LayoutCanvas extends JPanel {
     } else {
       setTransferHandler(null);
     }
+
+    loadLayoutInBackground();
+
   }
 
   /**
@@ -191,15 +191,13 @@ public class LayoutCanvas extends JPanel {
     long started = System.currentTimeMillis();
     super.paint(g);
 
-    if (drawGrid) {
-      switch (gridType) {
-        case 1 ->
-          paintLineGrid(g);
-        case 2 ->
-          paintDotGrid(g);
-        //default -> no grid
+    switch (gridType) {
+      case 1 ->
+        paintLineGrid(g);
+      case 2 ->
+        paintDotGrid(g);
+      //default -> no grid
       }
-    }
 
     long now = System.currentTimeMillis();
     Logger.trace("Duration: {} ms.", (now - started));
@@ -259,18 +257,18 @@ public class LayoutCanvas extends JPanel {
 
   void setGridType(int gridType) {
     this.gridType = gridType;
-    repaint();
+    this.repaint();
   }
 
   void resetSelection() {
-    if(this.selectedTile != null) {
+    if (this.selectedTile != null) {
       this.selectedTile.setSelected(false);
       this.selectedTile.markImageDirty();
       this.selectedTile = null;
     }
     this.tileType = TileType.NONE;
   }
-  
+
   void setTileType(TileBean.TileType tileType) {
     this.tileType = tileType;
     Logger.trace("TileType: " + tileType + " Current mode: " + mode);
@@ -312,24 +310,33 @@ public class LayoutCanvas extends JPanel {
 
   void loadLayoutInBackground() {
     if (!loading) {
-      executor.execute(() -> {
-        try {
-          loading = true;
-          long now = System.currentTimeMillis();
-          List<Tile> tiles = TileCache.loadTiles(readonly);
-
-          java.awt.EventQueue.invokeLater(() -> {
-            loadTiles(tiles);
-
-            revalidate();
-            repaint();
-            long duration = System.currentTimeMillis() - now;
-            //if (readonly) {
-            Logger.trace("Loading and Repaint of {} tiles finished in {} ms...", tiles.size(), duration);
-            //}
-          });
-        } finally {
-          loading = false;
+      executor.execute(new Runnable() {
+        @Override
+        public void run() {
+          try {
+            loading = true;
+            long now = System.currentTimeMillis();
+            List<Tile> tiles = TileCache.loadTiles(readonly);
+            
+            try {
+              java.awt.EventQueue.invokeAndWait(() -> {
+                loadTiles(tiles);
+                
+                revalidate();
+                repaint();
+                long duration = System.currentTimeMillis() - now;
+                //if (readonly) {
+                Logger.trace("Loading {} tiles finished in {} ms...", tiles.size(), duration);
+                //}
+              });
+            } catch (InterruptedException ex) {
+              Thread.currentThread().interrupt();
+            } catch (InvocationTargetException ex) {
+              Logger.error(ex.getMessage());
+            }
+          } finally {
+            loading = false;
+          }
         }
       });
     }
@@ -341,7 +348,7 @@ public class LayoutCanvas extends JPanel {
 
     Dimension minSize = TileCache.getMinCanvasSize();
     setPreferredSize(minSize);
-    revalidate();
+    //revalidate();
 
     for (Tile tile : tiles) {
       add(tile);
@@ -430,10 +437,10 @@ public class LayoutCanvas extends JPanel {
 
   Tile addTile(Point p, TileType tileType, Orientation orientation, Direction direction, boolean selected, boolean showCenter) {
     Logger.trace("Adding: {} @ {} O: {} D: {}", tileType, p, orientation, direction);
-    if(TileType.NONE == tileType) {
+    if (TileType.NONE == tileType) {
       return null;
     }
-    
+
     Tile tile = TileCache.createTile(tileType, orientation, direction, p);
 
     //Set the "last" used properties
