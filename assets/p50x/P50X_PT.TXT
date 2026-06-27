@@ -1,0 +1,833 @@
+Intellibox: Programming Track P50X commands
+(document version 0.98 - 05/04) - by St.Ch-B.
+Uhlenbrock Elektronik GmbH
+=============================================
+
+*** N.B.
+The Intellibox does not support the FMZ protocol and all related commands.
+The TWIN-CENTER does not support the Motorola protocol and all related
+commands.
+Apart from these cases, the term "TWIN-CENTER" can be substituted for
+"Intellibox" in all this document.
+
+
+The Intellibox can operate the Programming Track (PT) simultaneously with the
+normal tracks. There is no need to turn off the power to the layout in order
+to perform a PT operation.
+The Intellibox (IB) also features an integrated relay. This relay - depending
+on IB configuration - can automatically connect the PT output of the IB either
+to the normal power output of the IB or to the 'real' PT circuitry of the IB.
+
+It must be guaranteed that NO electrical connection exists between the PT and
+the normal tracks. Double gaps MUST be used - it is NOT enough to isolate only
+one rail.
+
+
+*** *** *** WARNING *** *** ***
+
+Please keep in mind that some older Lenz decoders (e.g. LE075 and the c82
+from Maerklin/Lenz) are PERMANENTLY DAMAGED by being programmed on an address
+greater then 99 (or, depending on decoder model, 127). Therefore, extreme
+caution should be exercised when programming **any** register of these
+decoders.
+As a safety measure, do NOT write values greater than 99 into any register!
+Since it is not possible, from the IB point of view, to find out exactly what
+kind of DCC decoder is on the PT, it is not possible to automatically detect
+these older decoders and block any such "illegal" programming attempts.
+Therefore, since other decoders do not have this limitation, the IB does NOT
+impose a reduced range for the writeable values: it is up to the user to be
+aware of this potential "dangerous" case.
+
+Since these older decoders only support 'register mode' read/write, no damage
+can occurr if using one of the other DCC write modes - particulary 'direct'
+mode.
+
+
+
+
+P50Xa (P50X ASCII) Programming Track commands.
+----------------------------------------------
+
+Upon issueing a P50Xa PT cmd, the IB shall reply only at the end of the
+corresponding action (e.g., when the decoder issues an acknowledge, when
+an error condition is detected, etc...).
+No other P50(X) cmd shall be processed until then.
+Most commands execute within 5..20 seconds.
+Motorola search is the slowest (about 1 minute).
+
+N.B. This behaviour (reply only at the end of PT processing) is quite
+different from what happens in case of (most) P50Xb commands: these would
+always immediately reply (meaning: cmd accepted or not), while only later
+would they provide the "real" reply (through a "PT event").
+
+Should the PT already be used by, e.g., a LocoNet device
+(KPU, etc...), then the P50Xa cmd shall immediately return
+with a 'Busy!' message: the cmd could not be executed.
+
+Non error results (messages) are:
+'Ok'		the PT cmd has been successfully completed
+'Yes'		the DCC decoder (probably) supports direct bit read cmds
+'No'		the DCC decoder (probably) does not support direct bit
+		read cmds
+
+Error messages are:
+'Busy!'		the PT is in use by a different device (e.g. LocoNet)
+'Short!'	short detected (on the PT)
+'No decoder'	no decoder could be detected (bad contact?)
+'No ack'	no acknowledge from decoder (but maybe a Write was ok!)
+'No page'	no acknowledge from decoder to the 'page' operation
+'Bit read err'	error in a DCC direct bit command
+'SX read err'	error while reading a Selectrix decoder
+'Timeout'	cmd not successfully completed
+'Error'		generic error
+
+
+######## General usage
+
+*** PT
+show PT & PT relay status
+
+
+*** PT1/0
+PT relay On/Off
+
+
+
+######## Selectrix
+
+*** PTSR
+SX Read
+
+
+*** PTSW
+SX Write {addr (0..111), vmax (0..7), accel (0..7), pwm (1..4), stops (1..2)}
+(N.B. this cmd currently does NOT perform a verify (read+compare)).
+ALL parameters are MANDATORY!
+
+
+
+######## FMZ
+
+*** PTFS
+This command is only available in the Twin-Center.
+PTFS = FMZ Search (address read)
+
+
+*** PTFW
+This command is only available in the Twin-Center. The syntax is:
+FMZ Write {addr(1..119)}
+(N.B. this cmd DOES verify, after programming, that the decoder address equals
+the addr parameter)
+
+
+*** PTFE
+This command is only available in the Twin-Center. The syntax is:
+FMZ Write {addr(1..119), SMin(1..99), SMax(2..100), SKL(1..3)}
+(N.B. this cmd DOES verify, after programming, that the decoder address equals
+the addr parameter)
+All parameters are mandatory.
+N.B. SMin must be less than SMax.
+
+
+
+######## Motorola
+
+*** PTMS
+Motorola Search (address read) {1st addr}
+The optional '1st addr' parameter (starting with v1.002) allows specifying
+the 1st address to be searched. If no '1st addr' is specified, then the
+search starts from address 1.
+This parameter allows searching for multiple addresses: Uhlenbrock decoders,
+for example, provide this feature.
+
+
+
+######## Uhlenbrock
+
+N.B.
+All Uhlenbrock decoders programming commands allow skipping one or more
+parameters. In this case, these parameters must be specified as zero -
+or, equivalently, they can be skipped with commas.
+The only non-skippable parameter is (quite obviously!) 'Old Address'.
+For example: 'ptua 3,4,,60' would program decoder #3 on the new address
+4, set its max speed to 60 and leave other decoder parameters unchanged.
+
+Furthermore, the Min and Max Speed and the 'Special Options' parameter
+of the 755/6 and the 'Assign 1' and 'Assig 2' parameters of the 760 are
+to be specified as +1 (with respect to what spec'd in the decoder manual).
+This does NOT apply to values input using the Intellibox menus (i.e.,
+'by hand').
+In case of Min and Max Speed (of 755/6), this implies that it is not
+possible to set these two decoder variables to the value 255. The maximum
+value is 254 (i.e., 255-1). This (254) would also be the maximum value
+when using the IB menus. (Specifying these two values as '1' would set
+them in the decoder to the value 0, which would imply that the Lok would
+not move!)
+
+N.B. It is NOT possible to read values programmed into Uhlenbrock
+decoders (e.g. max Speed, etc...). Only addresses can be read using the
+'Motorola Search' (PTMS) command.
+
+
+
+*** PTUA
+Uhlenbrock 750/751/770 {
+Old Address (1..255),  - cannot be 0!
+New Address (0..255),
+Min Speed (0..63),
+Max Speed (0..63),
+Deceleration (0..79),
+Acceleration (0..79),
+2nd Address (0..255),
+Analog(1)/Digital(2) (0..2)
+}
+N.B. Max Speed >= (Min Speed + 13) - this is NOT checked by the Intellibox!
+
+
+*** PTUB
+Uhlenbrock 755/756 {
+Old Address (1..255),  - cannot be 0!
+New Address (0..255),
+Speed Table (0..4),
+Min Speed (0..255),
+Max Speed (0..255),
+Deceleration (0..79),
+Acceleration (0..79),
+2nd Address (0..255),
+3rd Address (0..255),
+Analog(1)/Digital(2) (0..2),
+Special Options (0..64)
+}
+N.B. Max Speed >= (Min Speed + 13) - this is NOT checked by the Intellibox!
+
+
+*** PTUC
+Uhlenbrock 760 {
+Old Address (1..255),  - cannot be 0!
+New Address (0..255),
+Mode (0..4),
+PWM Freq (0..2),
+Volt A1,A2 (0..8),
+Volt A3-A5 (0..8),
+Flash rate 1 (0..79),
+Flash rate 2 (0..79),
+Assignement 1 (0..32),
+Assignement 2 (0..32)
+}
+
+
+*** PTUR
+Uhlenbrock (all decoder types) {
+Old Address (1..255),  - cannot be 0!
+}
+This command resets the decoder, thus restoring factory defaults (e.g.
+acceleration, deceleration, etc...).
+
+
+
+######## DCC
+
+*** PTDS
+DCC Search: address search (read)
+(to be used with 'non-readable' decoders)
+
+
+*** PTQA
+DCC Query Address: address read for very old decoders
+(e.g. c82, old Lenz models)
+
+
+*** PTRR {Register# (1..8)}
+DCC Read using register mode
+
+
+*** PTWR  {Register# (1..8), Value (0..255)}
+DCC Write using register mode
+
+
+*** PTRP {CV# (1..1024)}
+DCC Read using paged mode
+
+
+*** PTWP  {CV# (1..1024), Value (0..255)}
+DCC Write using paged mode
+
+
+*** PTRD {CV# (1..1024)}
+DCC Read using direct (byte) mode
+
+
+*** PTWD  {CV# (1..1024), Value (0..255)}
+DCC Write using direct (byte) mode
+
+
+*** PTRB {CV# (1..1024)}
+DCC Read using direct (bit) mode
+(N.B. a **whole** CV (8 bits) is read, not just one bit!)
+
+
+*** PTWB  {CV#, Bit# (0..7), Value (0..1)}
+DCC Write using direct (bit) mode
+(N.B. a **single** bit of a CV is written, not the whole CV!)
+
+
+*** PTQD
+DCC Query Direct
+(Does the decoder support direct (bit) read commands?)
+
+
+*** PTRL
+DCC Read long address from CV17/18
+(N.B. this cmd also **automatically** sets Bit #5 of CV29)
+Only compatible with decoders supporting direct bit read and write mode!
+
+
+*** PTWL {long address (128..9999)}
+DCC Write long address into CV17/18
+(N.B. this cmd also **automatically** sets Bit #5 of CV29)
+Only compatible with decoders supporting direct bit read and write mode!
+N.B. Long addresses in range 0..127 are legal 14-bit addresses,
+however, since the Intellibox uses 7-bit packets in this
+address range, we do not allow these values with the PTWL cmd.
+(Long addresses in range 10000..10239 are legal but not supported.)
+
+
+
+######## Possible future cmds
+
+*** PTRA
+DCC Read Address (auto 7/14-Bit identification and test)
+
+
+*** PTWA {address (1..9999)}
+DCC Write Address (auto 7/14-Bit identification and test)
+
+
+*** PTID
+Automatic decoder identification and address search
+
+
+
+######## Related P50Xa cmds (DCC)
+
+*** CV {CV17 (192..231), CV18 (0..255))
+Convert CV17, CV18 values into corresponding long address
+(N.B. the Intellibox only supports long addresses in range 128..9999)
+
+
+*** CA {long address (0..10239)}
+Convert long address into corresponding CV17, CV18 values
+(N.B. the Intellibox only supports long addresses in range 128..9999)
+
+
+*** PD {addr (1..9999), CV# (1..1024), value (0..255)}
+Program (write) a Lok decoder using operations mode (main line)
+programming.
+(The Intellibox uses the specified address value in order to
+tell whether to use a 7-bit (1..127) or a 14-Bit (128..9999)
+packet).
+N.B. Long addresses 0..127 are legal 14-bit addresses,
+however the Intellibox uses 7-bit packets for address range 1..127 - and
+address 0 (a legal 14-bit address) is not supported by the Intellibox
+for DCC decoders.
+(Long addresses in range 10000..10239 are legal but not supported.)
+If the IB buffer for operations mode commands is not free, this cmd
+replies with 'Busy!'.
+N.B. the **real** address of a Lok must be specified, not the virtual one!
+
+
+*** PA {addr (0..510), CV# (1..1024), value (0..255)}
+Program (write) an Accessory decoder using operations mode (main line)
+programming.
+N.B. The ***decoder*** address is to be specified, NOT the turnout
+     address! (Decoder address = (Turnout address - 1) / 4 + 1)
+If the IB buffer for operations mode commands is not free, this cmd
+replies with 'Busy!'.
+
+
+
+
+
+P50Xb (P50X binary) Programming Track commands.
+-----------------------------------------------
+
+Upon issuing a (valid) P50Xb PT cmd which asks for a PT task,
+the IB shall immediately reply. The reply consists of a single byte:
+
+00h	cmd accepted, task in progress
+80h	PT is busy (e.g. in use by a LocoNet device or previous task
+	not yet completed)
+02h	bad parameter value in cmd, cmd rejected
+
+The 'busy' reply does NOT apply to commands which do not ask
+for a read or write task to be performed on the PT.
+
+
+######## Reply to XEvtPT (0CEh) cmd
+
+Upon task completion, the Intellibox shall set the PT event flag
+(as read by the "are there events?" cmd (XEvent = 0C0h)).
+The PC can now issue the XEvtPT cmd (0CEh) and get the result
+of the PT task. The result is transmitted to the PC using
+the following format:
+
+
+*** 1st byte
+either 0F5h (no PT event to report (e.g. task not yet completed))
+or # of bytes to follow. Currently, only these values are possible
+for the # of bytes to follow: 1, 2, 3, 4 or 6.
+
+
+*** 2nd byte (sent only if 1st byte wasn't 0F5h)
+status of PT task:
+000h	Command completed, no errors
+0FFh	Timeout
+0FEh	No acknowledge from decoder (but a write maybe was successful)
+0FDh	Short! (on the PT)
+0FCh	No decoder detected
+0FBh	Generic Error
+0FAh	Error during DCC direct bit mode operation
+0F9h	No acknowledge to paged operation (paged r/w not supported?)
+0F8h	Error during Selectrix read
+0F7h	XPT_DCCQD: Ok (direct bit read mode is (probably) supported)
+0F6h	XPT_DCCQD: Not Ok (direct bit read mode is (probably) not supported)
+0F4h	Task terminated (see XPT_Term cmd)
+0F3h	No task to terminate (see XPT_Term cmd)
+0F2h	Cannot terminate task (see XPT_Term cmd)
+
+
+*** 3rd byte (sent only if 1st byte = 2, 3, 4, 6)
+1st byte resulting from a PT read task:
+- the content of a Register or CV (DCC Read cmds);
+- 1st decoder address ('search' cmds);
+- low byte of long addr read by DCC long addr read cmd;
+- address (Selectrix read): value = 0..111
+
+
+*** 4th byte (sent only if 1st byte = 3, 4, 6)
+2nd byte resulting from a PT read task:
+- eventual 2nd decoder address ('search' cmds);
+- high byte of long addr read by DCC long addr read cmd;
+- max speed (Selectrix read): value = 0..7
+
+
+*** 5th byte (sent only if 1st byte = 4, 6)
+3rd byte resulting from a PT read task:
+- eventual 3rd decoder address ('search' cmds);
+- acceleration (Selectrix read): value = 0..7
+
+
+*** 6th byte (sent only if 1st byte = 6)
+4th byte resulting from a PT read task:
+- PWM (Selectrix read): value = 1..4
+
+
+*** 7th byte (sent only if 1st byte = 6)
+5th byte resulting from a PT read task:
+- # of stop zones (Selectrix read): value = 1 or 2
+
+
+While a PT task is executing due to a P50Xb cmd, the Intellibox
+can process other P50X cmds. This is NOT true for P50Xa PT cmds!
+
+N.B. It is not mandatory to read the result of a PT task with the
+XEvtPT cmd. If the PC starts a new task (after completion of a
+previous task), this shall erase any 'unread' result.
+
+
+
+######## Reply to other P50Xb PT commands
+
+With the exception of XEvtPT and XPT_Sts, other PT commands
+reply with the usual P50Xb reply: 00h to tell 'Ok, cmd accepted'
+or a value different from zero to tell 'some error occurred'
+(e.g. illegal cmd parameter value, etc...).
+A reply of 00h to a command involving a read or write operation on
+the PT implies that the corresponding task has been started - and
+that, in due time, a PT event shall be generated.
+Depending on the task involved, its execution may take from a
+fraction of a second up to about 1 minute or more.
+
+
+P50Xb PT commands are in range 0E0h..0FEh.
+
+
+######## General usage
+
+*** XPT_Sts (0E0h) - length = 1 byte
+Report PT status:
+1st	bit #0:
+		0 = PT in 'PT only' mode
+		1 = PT in 'auto' mode
+	bit #1:
+		0 = PT relay is off
+		1 = PT relay is on
+	bit #7: (check also XEvent cmd)
+		0 = no PT event is pending
+		1 = a PT event is pending
+	(other bits are not currently defined and reported as zero)
+
+2nd	zero if no PT task is executing (PT is 'idle')
+	otherwise a non-zero value is returned
+
+
+*** XPT_On (0E1h) - length = 1 byte
+Turn on the PT relay
+
+
+*** XPT_Off (0E2h) - length = 1 byte
+Turn off the PT relay
+May report:
+000h	Ok, PT relay has been turned off
+080h	PT is busy!
+0F1h	Cannot turn off the PT relay: PT in 'PT only' mode!
+
+
+*** XEvtPT (0CEh) - length = 1 byte
+Report PT task event: see above for description of cmd reply.
+
+
+*** XPT_Term (0FEh) - length = 1 byte
+Terminate (abort) current PT task
+Reply (one byte):
+000h	task terminated
+	(an XEvtPT cmd would now report: 01h, 0F4h)
+0F3h	no task is active!
+0F2h	could not terminate task!
+
+
+
+######## Selectrix
+
+*** XPT_SXRd (0E4h) - length = 1 byte
+Read Selectrix decoder
+
+
+*** XPT_SXWr (0E5h) - length = 1+5 bytes
+Write Selectrix decoder
+Parameters (bytes):
+1st	Decoder address (0..111)
+2nd	Max speed (0..7)
+3rd	Acceleration (0..7)
+4th	PWM (1..4)
+5th	# of stop zones (1..2)
+
+
+*** XPT_SXSr (0E6h) - length = 1 byte
+Search for address of a Selectrix decoder
+(to be implemented)
+
+
+
+######## FMZ
+
+*** XPT_FMZSr (0E7h) - length = 1 byte
+Search for address of an FMZ decoder
+
+
+*** XPT_FMZWr (0E8h) - length = 1+1 bytes
+Write FMZ decoder address.
+Parameters (byte):
+1st	Decoder address (1..119)
+
+
+*** XPT_FMZEWr (0DDh) - length = 1+4 bytes
+Write FMZ decoder: address, SMin, SMax, SKL.
+Parameters (byte):
+1st	Decoder address (1..119)
+2nd	SMin (1..99) minimum speed
+3rd	SMax (2..100) maximum speed
+4th	SKL (1..3) Steuerkennlinie (speed curve)
+N.B. SMin must be less than SMax.
+
+
+
+######## Motorola
+
+*** XPT_MrkSr (0E9h) - length = 1+1 bytes
+N.B. up to v1.001 this cmd did NOT have any parameters!
+Search for address of a Motorola decoder
+Parameter (byte):
+1st	1st address to search for (0..255)
+A value of 0 for this parameter is interpreted as 1.
+N.B. this command has been changed with respect to the version
+1.000 of the SPU. In that case, cmd length was 1 byte only:
+there was no provision for specifying a '1st address', therefore
+it was not possible to search for multiple addresses (this is a
+feature of Uhlenbrock decoders).
+Please check also the 'PTMS' P50Xa cmd.
+
+
+
+######## DCC
+
+*** XPT_DCCSr (0EAh) - length = 1 byte
+Search for address of a DCC decoder
+(decoders which are not 'readable', e.g. Roco/Lenz digital crane)
+
+
+*** XPT_DCCQA (0EBh) - length = 1 byte
+Read address using obsolete "Address Query" packet
+(can only report 7-bit addresses in range 1..111)
+
+
+*** XPT_DCCRR (0ECh) - length = 1+2 bytes
+Read using register mode
+Parameters (byte):
+1st	Register# (1..8)
+2nd	00h
+
+
+*** XPT_DCCWR (0EDh) - length = 1+3 bytes
+Write using register mode
+Parameters (byte):
+1st	Register# (1..8)
+2nd	00h
+3rd	write value (0..255)
+
+
+*** XPT_DCCRP (0EEh) - length = 1+2 bytes
+Read using paged mode
+Parameters (byte):
+1st	CV# low byte
+2nd	CV# high byte
+N.B. CV# must be in range 1..1024
+
+
+*** XPT_DCCWP (0EFh) - length = 1+3 bytes
+Write using paged mode
+Parameters (byte):
+1st	CV# low byte
+2nd	CV# high byte
+3rd	write value (0..255)
+N.B. CV# must be in range 1..1024
+
+
+*** XPT_DCCRD (0F0h) - length = 1+2 bytes
+Read using direct (byte) mode
+Parameters (byte):
+1st	CV# low byte
+2nd	CV# high byte
+N.B. CV# must be in range 1..1024
+
+
+*** XPT_DCCWD (0F1h) - length = 1+3 bytes
+Write using direct (byte) mode
+Parameters (byte):
+1st	CV# low byte
+2nd	CV# high byte
+3rd	write value (0..255)
+N.B. CV# must be in range 1..1024
+
+
+*** XPT_DCCRB (0F2h) - length = 1+2 byte
+Read using direct (bit) mode
+Parameters (byte):
+1st	CV# low byte
+2nd	CV# high byte
+N.B. CV# must be in range 1..1024
+(N.B. a whole CV (8 bits) are read, not only 1 bit!)
+
+
+*** XPT_DCCWB (0F3h) - length = 1+4 bytes
+Write a single bit using direct (bit) mode
+Parameters (byte):
+1st	CV# low byte
+2nd	CV# high byte
+3rd	Bit# (0..7)
+4th	write value (0..1)
+N.B. CV# must be in range 1..1024
+(N.B. a single bit is written, not the whole CV!)
+
+
+*** XPT_DCCQD (0F4h) - length = 1 byte
+Does the decoder support bit read mode?
+(A 'yes' answer does NOT imply that also bit write cmds are accepted by
+the decoder!)
+
+
+*** XPT_DCCRL (0F5h) - length = 1 byte
+Read long (loco) address from CV17/18 and automatically set bit #5 of CV29
+Only compatible with decoders supporting direct bit read and write mode!
+
+
+*** XPT_DCCWL (0F6h) - length = 1+2 bytes
+Write long (loco) address into CV17/18 and automatically set bit #5 of CV29
+Parameters (byte):
+1st	low byte of long address
+2nd	high byte of long address
+N.B. address must be in range 128..16383
+Only compatible with decoders supporting direct bit read and write mode!
+N.B. the address high limit is set to 16383 (instead of 9999), in order
+     to be able to program the full range of addresses supported by
+     LISSY IR senders. The IB is _NOT_ capable of controlling DCC
+     addresses higher than 9999 and the DCC legal locomotive address
+     range ends at 10239.
+
+
+*** XPT_DCCRA (0F7h) - length = 1 byte
+Read long (accessory decoder) address from CV513/521.
+
+
+*** XPT_DCCWA (0F8h) - length = 1+2 bytes
+Write long (accessory decoder) address into CV513/521.
+Parameters (byte):
+1st	low byte of address
+2nd	high byte of address
+N.B. address must be in range 0..511
+
+
+*** XPT_DCCEWr (0DCh) - length = 1+4 bytes
+Generate and program the 'speed table' (CV's #67 through 94) of a
+DCC 28 speed steps decoder. Three curve types can be specified:
+1 = linear (constant speed increase: speed proportional to speed step)
+2 = 'exponential' (finer speed control at low speed steps)
+3 = 'logarithmic' (finer speed control at high speed steps)
+
+Furthermore, the minimum and maximum speed must be specified (in range
+1 through 101). The max speed can be adjusted so as to eventually
+take into account a non 'full' (0 through 255) format of CV's 67
+through 94 - or, of course, to reduce the maximum speed.
+SMax = 101 gives a max speed of 254 (value programmed into CV #94).
+SMax =  40 gives CV #94 = 100
+SMax =  13 gives CV #94 = 32
+
+SMin = 1 gives a minum speed of 2 (value programmed into CV #67).
+
+Parameters (byte):
+1st	(not currently used)
+2nd	SMin (1..123) minimum speed
+3rd	SMax (2..124) maximum speed
+4th	SKL (1..3) Steuerkennlinie (speed curve)
+
+N.B. SMin must be less than SMax.
+
+
+
+######## Uhlenbrock
+
+*** XPT_U750 (0F9h) - length = 1+8 bytes
+Parameters (byte):
+1st	Old Address (0..255) - N.B. 0 = special case: check note below
+2nd	New Address (0..255)
+3rd	Min Speed (0..63)
+4th	Max Speed (0..63)
+5th	Deceleration (0..79)
+6th	Acceleration (0..79)
+7th	2nd Address (0..255)
+8th	Analog(1)/Digital(2) (0..2)
+N.B. Max Speed >= (Min Speed + 13) - this is NOT checked by the Intellibox!
+N.B. all parameters, with the exception of 'Old Address' (check note below),
+can be specified as zero value. This implies: do not program the corresponding
+register in the decoder (i.e. preserve the current value). However, zero value
+parameters MUST still be sent as part of the command. In other words: the cmd
+length is constant.
+
+Note: Old Address = 0 case
+In this case, the decoder reset procedure is performed. This applies to all
+kinds of Uhlenbrock decoders (750, 751, 770, 755, 756 and 760).
+The New Address parameter holds the 'Old' (i.e. current) address of the
+decoder. This feature has been introduced starting with v1.001.
+
+
+*** XPT_U755 (0FAh) - length = 1+11 bytes
+Parameters (byte):
+1st	Old Address (1..255) - cannot be 0!
+2nd	New Address (0..255)
+3rd	Speed Table (0..4)
+4th	Min Speed (0..255)
+5th	Max Speed (0..255)
+6th	Deceleration (0..79)
+7th	Acceleration (0..79)
+8th	2nd Address (0..255)
+9th	3rd Address (0..255)
+10th	Analog(1)/Digital(2) (0..2)
+11th	Special Options (0..64)
+N.B. Max Speed >= (Min Speed + 13) - this is NOT checked by the Intellibox!
+N.B. all parameters, with the exception of 'Old Address', can be specified
+as zero value. This implies: do not program the corresponding register in
+the decoder (i.e. preserve the current value). However, zero value parameters
+MUST still be sent as part of the command. In other words: the cmd length
+is constant.
+N.B. Min Speed, Max Speed and Special Options value is internally decremented
+by one (by the Intellibox). Therefore, its value must be specified as '+1'
+with respect to what documented in the decoder manual.
+
+
+*** XPT_U760 (0FBh) - length = 1+10 bytes
+Parameters (byte):
+1st	Old Address (1..255) - cannot be 0!
+2nd	New Address (0..255)
+3rd	Mode (0..4)
+4th	PWM Freq (0..2)
+5th	Volt A1,A2 (0..8)
+6th	Volt A3-A5 (0..8)
+7th	Flash rate 1 (0..79)
+8th	Flash rate 2 (0..79)
+9th	Assignement 1 (0..32)
+10th	Assignement 2 (0..32)
+N.B. all parameters, with the exception of 'Old Address', can be specified
+as zero value. This implies: do not program the corresponding register in
+the decoder (i.e. preserve the current value). However, zero value parameters
+MUST still be sent as part of the command. In other words: the cmd length
+is constant.
+N.B. Assignement 1 & 2 value is internally decremented by one (by the
+Intellibox). Therefore, these values must be specified as '+1' with respect
+to what documented in the decoder manual.
+
+
+
+######## Possible future commands
+
+*** XPT_Src (0FCh) - length = 1 byte
+Fully automatic decoder identification and address read
+
+
+*** XPT_Ctrl (0FDh) - length = 1+(to be defined)
+PT control by external device
+
+
+
+######## Related P50Xb cmds (DCC)
+
+*** XDCC_PD (0DEh) - length = 1+5 bytes
+DCC operations mode programming for Loks
+Parameters (byte):
+1st	low byte of address
+2nd	high byte of address
+3rd	CV# low byte
+4th	CV# high byte
+5th	write value (0..255)
+N.B. address must be in range 1..9999
+(The Intellibox uses the specified address value in order to
+tell whether to use a 7-bit (1..127) or a 14-Bit (128..9999)
+packet).
+N.B. Long addresses 0..127 are legal 14-bit addresses, however the
+Intellibox uses 7-bit packets in this address range.
+Address 0 is not supported by the Intellibox for DCC decoders.
+(Long addresses in range 10000..10239 are legal but not supported.)
+N.B. the **real** address of a Lok should be specified, not the virtual one!
+Reply:
+00h	cmd Ok
+80h	the IB buffer for operations mode programming is not (yet) free
+	(e.g. it is used by a LocoNet device or previous operation not yet
+	completed)
+
+
+*** XDCC_PA (0DFh) - length = 1+5 bytes
+DCC operations mode programming for Accessory Decoders
+Parameters (byte):
+1st	low byte of address
+2nd	high byte of address
+3rd	CV# low byte
+4th	CV# high byte
+5th	write value (0..255)
+N.B. address must be in range 0..510
+N.B. The ***decoder*** address is to be specified, NOT the turnout
+     address! (Decoder address = (Turnout address - 1) / 4)
+Reply:
+00h	cmd Ok
+80h	the IB buffer for operations mode programming is not (yet) free
+	(e.g. it is used by a LocoNet device or previous operation not yet
+	completed)
+

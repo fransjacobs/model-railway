@@ -1,0 +1,208 @@
+Intellibox: Special Options (SO)
+(document version 0.41 - 07/99) - by St.Ch-B.
+=============================================
+
+The Intellibox uses up to 1000 Special Options (SO), numbered from 0 to 999.
+These are modifiable by the user only through the Intellibox menus, not by PC
+(see also XSOSet command) - however, the PC can read the value of all SO's.
+Each SO controls a particular aspect of the Intellibox configuration.
+This document lists some of these 1000 SO's, along with their 'meaning'.
+
+Only some SO's are documented. These would be the 'main' SO's, i.e. those
+which would or could make sense being able to modify. Please do NOT change
+the value of other SO's as this could interfere or even impede correct
+Intellibox operation.
+
+A maximum and a minimum value are internally associated with each SO.
+The Intellibox does not allow selecting a value outside that range.
+
+
+*** SO #1 (factory default = 0) - min = 0, max = 4
+Intellibox default power-on Baudrate.
+0 = 2400 bps
+1 = 4800 bps
+2 = 9600 bps
+3 = 19200 bps
+4 = 38400 bps
+
+
+*** SO #2 (factory default = 0) - min = 0, max = 2
+Intellibox default power-on RS-232 protocol.
+0 = P50 only
+1 = P50X only
+2 = both P50 and P50X
+
+
+*** SO #4 (factory default = 0) - min = 0, max = 1
+CTS line polarity (computer type)
+0 = PC (CTS active when at +12V)
+1 = Mac (CTS active when at -12V)
+
+
+*** SO #6 (factory default = 254) - min = 0, max = 255
+P5Xa 'RT' cmd default value.
+254 would mean: upon a non-PC power off, the CTS line is disabled
+for about 13 seconds (254 * 50 ms = 12.7 seconds).
+Please check also P50Xa 'RT' cmd documentation.
+
+
+*** SO #7 (factory default = 88 = ASCII 'X') - min = 80, max = 95
+Default P50X cmds leading character (when in mixed P50/P50X mode).
+
+
+*** SO #8 (factory default = 16) - min = 0, max = 62
+Number of s88 'half-modules' to be automatically read by the Intellibox.
+
+
+*** SO #10 (factory default = 1) - min = 0, max = 8
+Default Lok protocol
+0 = Motorola Old
+1 = Motorola New
+2 = DCC: 14
+3 = DCC: 27
+4 = DCC: 28
+5 = DCC: 28 DAC
+6 = DCC: 128
+7 = DCC: 128 DAC
+8 = Selectrix
+9 = ZZZ
+
+
+*** SO #11 (factory default = 50) - min = 30, max = 100
+How long, in 50 ms units, the Stop and Go keys must be held pressed
+before an Intellibox reset (warmstart) is performed.
+The default corresponds to 2.5 seconds.
+
+
+*** SO #12 (factory default = 0) - min = 0, max = 1
+Default Turnout protocol
+0 = Motorola
+1 = DCC
+
+
+*** SO #13 (factory default = 2) - min = 0, max = 255
+Minimum Turnout 'on' time in 50 ms units.
+A value of 0 turns minimum 'on' time checking off.
+
+
+*** SO #14 (factory default = 100) - min = 0, max = 255
+Maximum Turnout 'on' time in 50 ms units.
+A value of 0 turns maximum 'on' time checking off.
+
+
+*** SO #15 (factory default = 1) - min = 0, max = 1
+Whether (0) or not (1) to limit the Intellibox maximum voltage
+output. Shown as "N scale" (0) or "H0 scale" (1) by the Intellibox.
+
+
+*** SO #16 (factory default = 1) - min = 0, max = 1
+Programming Track mode (i.e. relay control)
+0 = PT only (relay always 'on')
+1 = automatic (relay 'on' only during PT mode or if explicitly
+    commanded 'on' by PC)
+When the PT relay is 'on' the Intellibox PT output is internally
+disconnected from the normal power output and internally connected to
+the Intellibox PT circuitry.
+
+
+*** SO #19 (factory default = 0) - min = 0, max = 2
+Whether to restore Lok status upon turning on the Intellibox and what
+eventually to restore:
+0 = no restore
+1 = restore Function, Dir, F1..F4, but set Speed = 0
+2 = restore Function, Dir, F1..F4 and Speed
+In case 1 and 2, also eventual consists (multi-tractions) are restored.
+
+
+*** SO #20 (factory default = 1) - min = 0, max = 1
+Whether (1) or not (0) P50 commands to an already 'busy' Lok are
+allowed ('busy' = already controlled by another (non-PC) device).
+
+
+*** SO #21 (factory default = 0) - min = 0, max = 1
+Whether (1) or not (0) to discard P50 turnout commands issued while
+the Intellibox is in Power Off.
+
+
+*** SO #23 (factory default = 1) - min = 0, max = 62
+s88 'half-module' number which is the source for the s88 Timers.
+(0 = s88 Timers are disabled).
+
+
+*** SO #24 (factory default = 1) - min = 0, max = 62
+s88 'half-module' number which is the source for the s88 Counters.
+(0 = s88 Counters are disabled).
+
+
+*** SO #25 (factory default = 1) - min = 0, max = 1
+Whether (1) or not (0) to always send a DCC signal - eventually a DCC
+idle signal (if there is no DCC Lok in the refresh cycle).
+
+
+*** SO #26 (factory default = 1) - min = 0, max = 1
+Whether (1) or not (0) a PC Break (RS-232) forces 2400 bps.
+
+
+*** SO #800 (factory default = 13) - min = 0, max = 13
+LCD backlight level.
+
+
+*** SO #801 (factory default = 0) - min = 0, max = 100
+LCD contrast voltage level (0 = about 0V, 100 = about 5V).
+
+
+*** SO #802 (factory default = 4) - min = 0, max = 6
+Intellibox panel LED's dimming factor (excluding Stop and Go LED's).
+A higher value reduces LED's brightness.
+
+
+*** SO #803 (factory default = 0) - min = 0, max = 7
+Currently selected language for Intellibox LCD messages.
+0 = de, 1 = uk, 2 = fr, 3 = it, 4 = nl, 5 = se, 6 = es, 7 = pt
+
+
+*** SO #808 (factory default = 0) - min = 0, max = 1
+AC (0) or DC (1) style speed knobs.
+
+
+*** SO #809 (factory default = 0) - min = 0, max = 1
+Absolute (0) or Percentage (1) speed display.
+
+
+*** SO #810 (factory default = 1) - min = 0, max = 255
+Default turnout address (after turning on the Intellibox) to be controlled
+through the first Intellibox key-pair devoted to turnout control while in
+Keyboard mode (keys [1] (red) and [4] (green)).
+The allowed range is 0..255, with 0 having a special meaning: it activates
+a special Keyboard mode - known as "table Keyboard mode".
+During this mode, each turnout control key-pair is associated with a
+user-defineable turnout address.
+The first turnout address is taken from the value of SO #871 incremented by 1.
+The second from SO #872 +1, 3rd SO #873 +1, 4th SO #874 +1, 5th SO #875 +1,
+6th SO #876 +1, 7th SO #877 +1 and the eigth turnout address is taken from
+SO #878 +1.
+For example: setting SO #871 to the value 10 would allow you to control the
+turnout address 11 through the [1] and [4] key-pair (of course: only if this
+"table Keyboard mode" has been activated!).
+The activation of this special mode can also be done 'on the fly', by
+choosing 0 as keyboard (base) address in the keyboard menu.
+The factory default for SO #871..878 allows controlling turnouts:
+11, 21, 31, 41, 51, 61, 71 and 81.
+
+
+*** SO #812 (factory default = 1) - min = 1, max = 128
+Default s88 module number to be shown when activating the s88 mode after
+turning on the Intellibox.
+(s88 module numbers 32..128 only correspond to LocoNet sensors).
+
+
+*** SO #815 (factory default = 0) - min = 0, max = 2
+Default mode to be selected after turning on the Intellibox:
+0 = Keyboard, 1 = s88, 2 = programming.
+
+
+*** SO #901 (factory default = 1) - min = 1, max = 100
+This SO has to be changed to a value **slightly** higher than the factory
+default one (e.g. 3) in order make it possible to control DCC Loks on layout
+sections supplied through a Maerklin Booster 6015 or 6017.
+

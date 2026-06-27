@@ -1,0 +1,357 @@
+Introduction to the P50X protocol
+(document version 0.96 - 09/00) - by St.Ch-B.
+Uhlenbrock Elektronik GmbH
+=============================================
+
+
+Note:
+Maerklin, Maerklin Digital, Maerklin Digital=, Lenz, Lenz Digital Plus, Roco,
+Digital is Cool, LokMaus, NMRA, Trix, Selectrix, Selectrix 2000, Fleischmann,
+Fleischmann FMZ, ZIMO, Wangrow, North Coast Engineering, Digitrax, LocoNet,
+Motorola, Modeltreno Digital Line, Uhlenbrock Digital etc. are copyrighted
+and registered trade marks.
+
+
+First of all, let us define some terms we regulary use:
+
+P50	  standard Maerklin Interface protocol : "P" for Protocol and "50"
+	  from 6050, the catalogue number of the original Maerklin Interface
+P50X	  the eXtended P50 protocol
+P50Xa	  the ASCII 'part' of the P50X (ASCII mode commands)
+P50Xb	  the binary 'part' of the P50X (binary mode commands)
+XDEV	  eXtended serial DEVice (a device which supports the P50X)
+Xk83	  eXtended k83 with 256 addresses capability
+PT	  Programming Track
+I2C	  The communication bus used by Maerklin between the different
+	  "white boxes" (also known as IIC)
+ISA-bus	  The most common communication bus on a PC
+X-Bus	  The communication bus used by Lenz devices (LZ100, LH100, ...)
+X-B lite  Communication bus used for the Lokmaus
+Lok	  Locomotive
+FL	  Function Light ("0"=Off, "1"=On. Default="0") - also known as "F0"
+F1,F2,..  Extended functions ("0"=Off, "1"=On. Default = "0")
+Dir	  Locomotive direction ("1"=forward, "0"=reverse. Default = "1")
+Speed	  Locomotive speed
+ICUM	  ISA-bus Central Unit Modeltreno, first existing device featuring
+	  the P50X protocol
+SO	  Special Option
+LSO	  Lok Special Option
+BABI	  Break and Automatic Baud-rate Identification
+Turnout	  the word 'turnout' is used instead of 'accessory' (therefore a
+	  'turnout' can also be a signal, etc...)
+Trnt	  turnout
+Turnout address
+	  the address of a **single** device (accessory, turnout, signal,
+	  etc...) controlled through an accessory decoder. To convert from
+	  decoder address to turnout address (assuming that each decoder
+	  controls 4 devices), the following formula applies:
+	  Decoder address = ((Turnout address - 1) / 4) + 1
+	  ["/" = integer divide]
+Color	  Switching direction of a turnout ("1" or "G" or "g" = green or
+	  closed, "0" or "R" or "r" = red or thrown)
+Status	  on (1) or off (0) status of the output of a decoder controlling
+	  a turnout
+TC	  Fleischmann TWIN-CENTER
+IB	  Uhlenbrock/Modeltreno Intellibox
+
+
+
+As far as the RS-232 serial interface is concerned, in general the "eXtended
+serial Device" (XDEV) supports communication speeds of 300, 600, 1200, 2400
+(default), 4800, 7200, 9600, 14400, 19200, 28800, 38400, 57600 and 115200 bps.
+However, as is the case of the Intellibox, not every communication speed in
+this list must be supported. The minimum is: support just 2400 bps.
+Probably, bit rates higher than approx 9600/14400 bps hardly make any
+sense - apart from a super fast (but "dumb": see events method for a better
+solution) reading of s88 status info.
+
+The Intellibox supports (check also the P50Xa 'B' cmd described in
+P50XAGEN.TXT): 2400, 4800, 9600, 19200 and ("unofficially") 38400 bps.
+
+The P50X protocol supports also a different "serial" device, i.e. the ISA-bus
+interface. This would be the case of, e.g., the Modeltreno ICUM.
+
+Let us start with the description of the communication protocol between the
+XDEV and an external device (possibly, a PC).
+
+As already said, the XDEV supports the official Maerklin Interface protocol
+(what we call P50). The support must be rather "high-fidelity", since it
+should also implement the non-documented command codes: it seems that the
+CPU in the Interface does not check for each and every bit.
+For example, the standard 20h command ("cmd", for short) - which turns off
+a turnout is also understood by sending 24h or 28h, etc...
+In a word: a lot of commands have "mirrors".
+
+In order to extend the P50, it is decided to use a single "lead-in"
+character: 58h (ASCII "X") or 78h (ASCII "x").
+These values are not currently defined in the Maerklin Interface protocol
+(the P50). However, one can change this lead-in character to any other value
+(within a limited range) using the ASCII command PX.
+
+After this first byte, subsequent byte(s) specify the actual P50X cmd.
+The first byte of these (i.e., the first byte after the initial "x" or "X")
+also tells whether this is a P50X binary (P50Xb) or P50X ASCII (P50Xa) cmd.
+While the former is more useful when controlling the XDEV through a program,
+the latter is more useful for a user who wants to type commands at the
+keyboard.
+The idea is: if the value of this byte is greater or equal $80 then the cmd
+is assumed to be in P50X binary format (P50Xb). If, on the contrary, it is
+less or equal than $7F, then it is in ASCII format.
+Not every P50Xb cmd has a correspondent P50Xa cmd and vice-versa.
+
+As an added convenience to the user, the "P50X only" mode can be forced by a
+special P50X cmd. This cmd is:
+"xZzA1"	"P50X only" mode On (turns off the P50 - check also P50X_GEN.TXT)
+"ZzA0"	"P50X only" mode Off (turns on the P50)
+
+After issuing "xZzA1" the leading "x" MUST be dropped.
+In particular, the "ZzA0" ("Off") cmd does NOT have to be leaded by an "x".
+This is so, since when the "P50X only" mode is On, no P50 cmds are (directly)
+executable.
+Therefore, the "x" is not needed (and therefore not allowed).
+It is convenient to take advantage of the "xZzA1" command  (if the
+"P50X only" mode is off) if you use a standard terminal program to talk
+to the XDEV through the serial line: thereafter you won’t have to remember
+to type an "x" or "X" at the beginning of each ASCII P50X command.
+
+Dropping the leading "x" would also be convenient for a program which mostly
+uses P50X commands. (Note: P50 commands are still executable even if in
+"P50X only" mode. Please check P50X_GEN.TXT).
+
+
+
+General Syntax of P50Xa cmds
+----------------------------
+
+As a rule, P50Xa cmds are NOT case sensitive: upper and lower case don't
+matter. The "xZzA1" and "ZzA0" cmds are the only exceptions to this rule.
+
+The CR (Carriage Return) character must be sent as the last character of
+each P50Xa cmd. A trailing Line Feed ($0A) is prohibited.
+
+Most P50Xa cmds accept parameters. Some of them are optional (and indicated
+between square brackets in the following).
+Spaces **before** parameters are skipped.
+
+You can directly preceed a parameter with the character "$", should you want
+to specify it in hexadecimal notation (e.g. $F3), or "%" in the case of a
+binary value (e.g. %11000110), starting from the most significant bit.
+Leading 0’s are skipped in every format (dec, hex or bin).
+Internally, parameters are evaluated (converted from ASCII to binary) as
+16 bit unsigned quantities. However, many commands only allow for a limited
+range of legal values (e.g. 0..255).
+
+Some commands accept a variable number of parameters.
+P50X commands are usually composed of 2 characters (plus leading "x"
+or "X"), however, there are a few exceptions.
+You can use one or more spaces or a comma as separator between parameters.
+Using a comma, you can add spaces only **after** the comma.
+
+Example: let's immagine that the maximum number of parameters of an
+hypothetical command "XX" is 3. You can type the command as "XX", "xX",
+"Xx" o "xx" and, with its parameters, as:
+
+xx parameter1, parameter2, parameter3
+xx parameter1,     parameter2,parameter3
+xx parameter1,parameter2,parameter3
+xxparameter1, parameter2, parameter3
+xxparameter1,parameter2,parameter3
+xx parameter1 parameter2 parameter3
+xxparameter1     parameter2 parameter3
+
+
+Also, some cmds "understand" that you actually want to get some info, not
+to send a "real" cmd. This happens if you limit your input to no parameters
+or to the very first (mandatory) parameter.
+For example, in order to turn on the lights, without changing the speed,
+of Lok #1, you would issue command: "L 1,,1" (or also, for example,
+"L1, ,  1": spaces before parameters are skipped).
+If, on the contrary, you only wanted to check the status of that Lok, you
+would issue the command: "L 1" (or "L1", etc...).
+
+The maximum length of P50Xa commands is 62 characters (excluding the
+final CR). Only one command per line is allowed. In other words, each and
+every ASCII command must be followed by CR (Carriage Return), or hex 0Dh
+(decimal 13).
+N.B. No LF (Line Feed, hex 0Ah) character should be added after CR!!
+
+Optional parameters are indicated in square brackets. For example:
+YY	Parameter1[, Parameter2]
+
+The reply of the XDEV to a P50Xa command is always terminated by the
+character "]" (prompt of the P50Xa cmds in normal mode (the ICUM also
+features a "PT mode": here the prompt would be "*")).
+A program can use this feature in order to understand when the last
+character of the XDEV reply to the P50Xa cmd has been received.  Moreover
+it is guaranteed that only one "]" character shall be sent by the XDEV as
+part of the reply: the very last character!
+
+If at least one character of a P50X ASCII cmd has been sent through the
+RS-232 channel to the XDEV, then it is possible to use the standard BS
+(backspace, 08h) character in order to "erase" the previous character of
+this cmd. This does NOT hold true for P50X binary commands!
+Note: the XDEV does NOT send the usual "space + BS" in reply to this
+BS character (this sequence is usually sent to erase from the terminal
+screen the "backspaced-over" character). If desired, this "erasure" must
+be performed locally (most terminal programs are configured that way by
+default).
+
+
+
+A note on P50 Lok cmds
+----------------------
+
+P50 Lok commands (i.e. "Speed and FL" and "Functions" commands) are expanded
+by the XDEV as far as the allowed address range is concerned.
+In fact, the second byte of these commands is not restricted to the range
+1..80 (as would be the case for a 6050/1 connected to a Motorola format
+Central Unit).
+
+The XDEV address range for P50 Lok commands is: 0..255.
+
+Of course, depending on the particular protocol the Lok has been configured
+for, not every address is a legal address.
+For example, Selectrix "only" supports addresses: 0..111.
+If the address is not "legal", then the XDEV shall discard that P50 cmd.
+
+
+
+Baud rate & protocol identification
+-----------------------------------
+
+The XDev, through the 'break' feature and the XNOP P50Xb cmd (0C4h),
+supports automatic baud rate identification by the PC ("BABI" = Break and
+Automatic Baud-rate Identification). Please read the next section for
+more details on how a Break is handled by the Intellibox.
+The BABI procedure is also esemplified in the demonstration programs.
+Automatic identification of the active protocol (P50, P50X or both) is also
+possible. Please check the IBE.BAS demonstration program for details.
+
+
+
+RS-232 'break'
+--------------
+
+Devices supporting the P50X protocol should also support the 'break' state
+of the RS-232 protocol - as we are about to explain.
+
+A PC can send a 'break' to the XDev when it would like the XDev to completely
+clear it's RS-232 input buffer, thus making sure that the next character -
+the one sent by the PC after the break - shall be interpreted as the very
+first byte of a new command.
+In the Intellibox case, a simple (short) break, as defined by the RS-232
+standard, is not enough. A longer sequence must be used:
+
+- 'no transmission' pause (about 200 ms or more);
+- actual RS-232 break lasting about 1 second or more (i.e. the PC tx line is
+  held at +12V for about 1 second or more);
+- a second 'no transmission' pause (about 600 ms or more).
+
+It is **very** important that NOTHING is transmitted to the Intellibox
+during these 'no transmission' pauses. Particulary in the case of the 1st
+pause, an eventual transmit buffer used by the PC program should be taken
+into account!
+(That is: wait for the specified amount of time **after** this tx buffer has
+become empty - or has been explicitly emptied by the PC program.)
+
+Please consider also the fact that, quite "correctly", some programming
+environments do not "send a break" if the corresponding serial port hasn't
+been opened first.
+
+
+Conversely, upon being resetted by the user or by a PC command (check P50Xa
+'@' and '@@' cmds), the XDev shall send an RS-232 break to the PC.
+(No break is sent in case of an Intellibox power-on reset.)
+It is guaranteed that the break shall last about 30 ms - what is more than
+enough, even at 2400 bps, for correct break identification on the PC side.
+
+
+Depending on Special Option #26, a break (from the XDev) may also 'reset'
+the Intellibox baud rate to 2400 bps. This happens if SO #26 is set (this
+would be the default factory setting).
+However, even after a Break, the 'original' baud rate (i.e. the default
+baud rate selected by the user through the Intellibox menus) can be
+restored by reading the Special Option (SO) #1 and then using the
+P50Xa 'B' cmd.
+SO #1 would have a value from 0 (2400 bps) to 4 (38400 bps).
+The Intellibox default factory setting is 2400 bps (SO #1 = 0).
+
+A PC break also re-enables both the P50 and the P50X protocols (should
+they have been disabled) and sets 'X' (or 'x') as the P50X leading
+character.
+
+(The P50 protocol can be disabled by the 'ZzA1' cmd, while the P50X
+protocol can be disabled through the 'PX0' cmd.
+While the P50 cmd can be re-enabled by cmd ('ZzA0'), there is no way, other
+then a PC break or a manual reset (should the Intellibox not have been
+configured for "6050 only"), to re-enable the P50X protocol by the PC.)
+
+
+
+CTS handling
+------------
+
+The Intellibox shall deactivate the CTS line as soon as the amount of
+available space in its input buffer has dropped below 5 characters.
+Therefore, in the case of a PC program reacting very slowly to CTS being
+set "off", the Intellibox can still correctly receive (without an 'overrun'
+error), up to 4 more characters.
+Only when more than 4 characters shall once again be free in the input
+buffer shall the Intellibox activate the CTS line once more.
+
+(Please notice: our tests show that not every programming environment
+correctly supports the CTS line!)
+
+The Intellibox input buffer size is 16 bytes plus one P50 or P50X command.
+Of these 16 bytes, 8 are 'fast' (immediately available), while 8 more are
+'slow'. For CTS handling the amount of 'fast' bytes still free is the
+quantity which is taken into account.
+
+It may happen, if using 'older' software (e.g. software written for a 6050),
+that this input buffer may produce unexpected side effects.
+For example: you can queue relatively fast up to 13 P50 locomotive commands
+in the Intellibox input buffers (or even more turnout commands). However,
+a P50 s88 read cmd sent after these would be processed only after the Lok
+commands have been processed: depending on several circumstances, this can
+take quite some time (seconds like).
+It may just happen that the 'older' software won't stand this 'delay'.
+
+This is one more reason, along with proper CTS handling on the PC side,
+why most P50X commands send a reply. In fact, speaking about P50Xb commands,
+since no such command is longer than a few bytes and since almost every
+P50Xb command sends a reply to the PC, then, if the PC decides to wait
+for this reply before sending a further command, then, even if the PC does
+not correctly react to CTS being set 'off', no problem (overrun) is possible.
+
+Please consider that P50Xb commands, including Lok and Turnout commands,
+usually reply within a few milliseconds - possibly with a "buffer full"
+error.
+While the exact reaction time is command-dependent, a maximum reply
+time of about 50 ms can be estimated (about 100 ms for an XPwrOn cmd),
+with 20-30 ms being a 'typical' figure.
+Of course, the selected baud rate has an effect on total command 'cycle'
+time!
+
+
+
+Command processing order
+------------------------
+
+While there is no cmd-to-reply identification system (i.e., it is not
+possible, by looking only at the reply to a cmd to find out exactly to
+what cmd that reply refers to), it is however guaranteed that the XDEV
+shall send to the PC replies in the same order as the received commands.
+Therefore, if you send n commands and only later on check the n replies to
+those commands, you shall still be able to find out exactly which command
+was successfully executed and which one may not have been.
+
+
+
+Fleischmann TWIN-CENTER
+-----------------------
+
+The TC supports, besides P50 and P50X also an emulation (with extensions
+and restrictions) of the protocol used by a 6800 FMZ command station - what
+we call 'PTC' (Protocol TC).
+This protocol is described in a separate document: PTC.TXT.
+

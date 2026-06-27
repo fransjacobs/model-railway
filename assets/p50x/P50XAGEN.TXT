@@ -1,0 +1,296 @@
+Intellibox: general purpose P50Xa commands
+(document version 0.851 - 09/2003) - by St.Ch-B.
+Uhlenbrock Elektronik GmbH
+================================================
+
+
+*** H
+Help. May also be sent in a short form: '?'.
+
+
+
+*** HL
+Help about the syntax of the 'L' Lok cmd.
+
+
+
+*** HT
+Help about the syntax of the 'T' Turnout cmd.
+
+
+
+*** HF
+Help about the syntax of the 'F' Function cmd.
+
+
+
+*** Stop
+Power Off. May also be sent in a short form: '.'
+
+
+
+*** Go
+Power On. May also be sent in a short form: '!'
+(All power on cmds, including the manual ones, clear an eventually
+active Halt mode.)
+Should there still be an error condition (e.g. 'overheating'),
+then the Intellibox shall reply with:
+'Pwr On not possible!'
+In this case, the result of the 'Y' cmd should tell you more.
+
+
+
+*** Halt
+Activates Halt mode: all Loks are forced in Stop (or Em. Stop).
+No Speed commands are executed, however other Lok commands *are*
+executed (e.g. direction change, light or function status change).
+Turnouts can be controlled.
+
+
+
+*** Y
+Shows the current IB status: Power On/Off, Halt mode On/Off, presence
+of an external I2C Control Unit, Voltage Regulation status, etc...
+This corresponds to the XStatus P50Xb cmd.
+
+
+
+*** V
+Report Intellibox/TWIN-CENTER software version number and serial number.
+(Also check the XVer P50Xb cmd in P50X_GEN.TXT for more details.)
+
+
+
+*** MT {[TMin], [TMax]}
+TMin	minimum turnout activation time (0..255)
+TMax	maximum turnout activation time (0..255)
+Specifying 0 as a value disables the corresponding timer.
+Both TMin and TMax are specified in 50 ms units.
+The IB default is:
+TMin	2 = 100 ms (Special Option #13)
+TMin	100 = 5 seconds (Special Option #14)
+accuracy is about +/-25 ms.
+This command allows to override, up to the next IB reset, the values
+specified by SO #13 and #14.
+
+
+
+*** SR {[Flag]}
+Flag	0 or 1
+This allows reading or setting the s88 'auto-reset' feature.
+The command 'SR0' corresponds to the P50 command 080h.
+The command 'SR1' corresponds to the P50 command 0C0h.
+
+
+
+*** SS {s88}
+s88	s88 module number to be read (1..31)
+
+
+
+*** SE {s88h}
+s88h	sets the highest s88 module 'half number' to be
+	automatically read by the IB
+	*OR*
+	disable automatic reading (s88h = 0)
+Allowed range is: 0..62
+
+For example, in order to have the IB automatically read only
+the very first s88 module, the following command should be
+used: 'SE 2'.
+The IB default (per Special Option #8) is: s88h = 16, which implies
+reading automatically the first 8 s88 modules (16 'half modules').
+If a P50 cmd for reading the s88 modules requires more than what
+is currently automatically read by the IB, then the IB automatically
+raises this number. This does NOT apply to event-style reading!
+You can also specify 0 as a value for s88h. In this case, the IB
+shall cease reading s88 modules automatically and only read them
+when an explicit P50 or P50Xa cmd shall be sent.
+
+This command allows to override, up to the next IB reset, the value
+specified by SO #8.
+
+N.B. No sensor event can be generated for s88 modules which are not
+being read automatically by the IB. Therefore, it is quite important
+to let the IB know, either manually through the IB menus or through
+this 'SE' cmd (or X88PSet), how many s88 modules are actually connected.
+LocoNet sensors, on the contrary, would be active even if s88 automatic
+reading has been disabled.
+
+
+
+*** SX {[Ts88h], [Cs88h]}
+Ts88h	source for s88 timers (0..62)
+Cs88h	source for s88 counters (0..62)
+Both parameters are specified in terms of 's88 half modules'.
+The IB default is Ts88h = 1 (Special Option #23) and Cs88h = 1
+(Special Option #24).
+This would imply that s88 Timer #1 keeps track of the total time
+the input #1 of the 1st s88 module has been 'active' (s88 input
+'closed' or 'on').
+s88 Timer #2 would be associated with the 2nd input of the same
+s88 module.
+
+For example, specifying 2 for Cs88h would make the 1st s88 Counter
+count the number of off/on cycles (contact open/closed) of input
+#9 of the first s88 module.
+
+Provided the corresponding s88 input is 'on' (closed), each s88 Timer
+is incremented approximately every 200 ms.
+The (time) resolution of the Counters depends on the number of s88
+modules which are being automatically read by the IB: the lower this
+number, the higher the resolution of s88 counters (i.e. they would be
+able to keep track also of very fast on/off cycles).
+A reasonable estimate, while automatically reading the first 8 s88
+modules, would be about 50 ms resolution for the Counters - or better.
+
+N.B. s88 Timers and Counters are NOT updated if automatic s88
+     reading is disabled (check 'SE' cmd).
+
+This command allows to override, up to the next IB reset, the values
+specified by SO #23 and #24.
+
+Specifying 0 for Ts88h disables s88 timer updates. The corresponding
+is true for s88 counters if setting Cs88h to 0.
+
+
+
+*** ST {s88Tim, [Reset]}
+s88Tim	s88 Timer (1..8)
+Reset	tells whether to reset (1) or not (0) the s88 Timer which
+	is being read.
+N.B. if Reset is not specified, then a reset is performed!
+Each Timer is 16 bit. If the maximum Timer value is reached, there
+is no wrap around: the Timer is no more incremented.
+
+
+
+*** SC {s88Cnt, [Reset]}
+s88Cnt	s88 Counter (1..8)
+Reset	tells whether to reset (1) or not (0) the s88 Counter which
+	is being read.
+N.B. if Reset is not specified, then a reset is performed!
+Each Counter is 16 bit. If the maximum Counter value is reached, there
+is no wrap around: the Counter is no more incremented.
+
+
+
+*** RT [Ctime]
+Ctime	CTS 'off' time in case of non-PC requested Power Off
+	(e.g. manual Power Off, shorts, etc...)
+	This value is to be interpreted in units of 50 ms.
+	The IB default is: Ctime = 254 (i.e. about 13 seconds).
+
+In practice: when a non-PC Power Off occurs, the IB, in order to
+find out what to do with the CTS line, checks the 'Ctime' value:
+
+if CTime = 0, then the CTS line is permanently disabled: only a
+	manual Power On (e.g. pressing the 'Go' key on the IB)
+	would reactivate the CTS line. This is what would happen
+	in case of a 6050 (actually: after a Power Off, a 6050
+	accepts at least one more cmd. If the 6050 is connected
+	to a 6021, then only a turnout cmd 'blocks' the 6050).
+
+if CTime = 255, then the CTS line is not disabled at all (excluding,
+	of course, IB RS-232 input buffer status).
+
+For other values, the CTS line is disabled for the specified amount
+of 50 ms units. The idea is to let the PC implicitly find out, through
+a timeout detected by the PC RS-232 driver on the CTS line, that a Power
+Off has occurred. Then, after a short while, the CTS line would be
+automatically re-enabled by the IB, thus allowing further cmds from the PC.
+
+If you are using events, then it would be probably wise to either set
+CTime = 255, or to set it to a very low value (e.g. 10).
+
+This command allows to override, up to the next IB reset, the value
+specified by SO #6.
+
+
+
+*** ZzA {parm}
+Enables (parm = 0) or disables (parm = 1) the P50 protocol.
+When the P50 protocol is disabled, the leading character of the P50X
+commands MUST NOT be sent (this is, by default, the "X" or "x" character).
+
+
+
+*** PX [char]
+char	the ASCII code of the P50X char to be used starting from the
+	next P50X cmd. Allowed range: 0 or 50h..5Fh
+As usual, not specifying any 'char' allows you to read the current value.
+If 0 is specified (as 'char' value), then the P50X protocol shall be
+disabled. Re-enable is possible only by PC break or Intellibox reset.
+The latter would only work provided that the Intellibox has been configured
+that way using its menus (i.e. configured for 'P50X enabled').
+
+
+
+*** @
+Have the IB perform a reset (warmstart).
+Turnout and Lok status is preserved (Lok Speed is set to 0 - however, this
+depends on the way the IB has been configured).
+N.B. starting from SPU version 1.500, this command must be enabled through
+     SO #663: that SO must have the value 1.
+
+
+
+*** @@
+Have the IB perform a reset (coldstart).
+Turnout and Lok status is NOT preserved: it is reset according to the last
+saved status for Loks and to the last saved turnout status for turnouts.
+All eventual turnout 'color' changes which may have occurred since the last
+power on shall be lost.
+N.B. starting from SPU version 1.500, this command must be enabled through
+     SO #663: that SO must have the value 1.
+
+
+
+*** B [baud_rate]
+The officially supported IB baud rates are: 2400, 4800, 9600 and 19200 bps.
+38400 bps should also work - even if we DO NOT officially support this
+RS-232 speed.
+The XNOP P50Xb cmd can be used in order to automatically detect both
+the current baud rate and the currently active protocol(s): either P50 only,
+P50X only, or "mixed" (P50 and P50X).
+
+
+
+*** CT [flag]
+In case of some "terminal" programs, in order not to have the Intellibox
+reply to a P50Xa cmd overwrite the P50Xa cmd itself, a leading CR (Carriage
+Return) must be sent by the Intellibox, before sending the answer to a P50Xa
+cmd. This would be enabled by specifying "1" as the value of the flag
+parameter of the CT cmd.
+The startup default is "0", which would imply NOT adding any leading CR.
+
+
+
+*** ID [flags]
+Allows overriding up to the next IB reset the value of SO #907.
+Only bit #0 (for Motorola idle) and bit #2 (for DCC idle) are to be
+used. NO OTHER BIT SHOULD BE SET!
+The IB shall send, provided that no other signal must be sent, the
+idle signal specified by the flag parameter.
+The IB default is to send both idle signals: flags = 5.
+(For Germany, the dafault is: flags = 1, i.e. send only Motorola idle).
+
+
+
+*** NR [flag]
+Allows disabling the refresh cycle (if flag = 1).
+If the refresh cycle is disabled, only new commands shall cause non-idle
+signals to be sent to the tracks.
+If the refresh signal is disabled, if the Special Option #25 is not set
+and if the 'flags' parameter of the 'ID' cmd was specified as 0, then
+NO SIGNAL shall be generated (DC output!).
+
+(If SO #25 is set, this forces sending a DCC idle signal even if no DCC Lok
+is in the refresh cycle.)
+
+
+
+*** SO [number]
+Allows reading the value of a Special Option.
+Legal range for 'number' is 0..999.
+

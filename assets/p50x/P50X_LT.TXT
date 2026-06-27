@@ -1,0 +1,820 @@
+Intellibox: locomotive and turnout P50X cmds
+(document version 0.982 - 09/01) - by St.Ch-B.
+Uhlenbrock Elektronik GmbH
+==============================================
+
+(This document uses the word 'turnout' instead of 'accessory'.
+Therefore, a 'turnout' can also be a signal, etc... not only a 'real
+turnout'!)
+
+
+*** Introductory note: locomotive direction in the P50 and in the P50X
+
+This note is not required reading.
+In a nutshell it only says: the IB tries to keep track internally of
+the driving direction even of decoders (e.g. Old Motorola format ones)
+which do not support such a feature. The idea is to make the different
+digital formats as 'transparent' as possible to a computer application.
+Please skip to the next section ('address conflict') if you are not
+interested in knowing the details of how the driving direction is
+handled in the IB.
+
+
+
+Most Motorola-format locomotive decoders produced up to now do NOT
+support the notion of a "driving direction". In other words, the decoder
+does NOT "know" what the front side of the locomotive is. There is no way
+to tell it "go forward" or "go backwards". You can only tell the decoder
+to invert its driving direction.
+This fact is reflected in the P50, the protocol of a 6050 Interface:
+you can only tell a locomotive to change (invert) its driving direction,
+you CANNOT tell "her" to go in a specific direction.
+(A 6051 interface uses **the same protocol** as a 6050!)
+
+This holds true even if using a 6050 along with a 6021, i.e. even if
+the Central Unit used is capable (with dip-sw #2 of the 6021 placed in
+the "on" position) of *generating* the so-called "new motorola format"
+digital signal - a signal which, countrary to the original motorola
+format (known as the "old motorola format"), DOES include information
+specifying what the locomotive driving direction (usually referred to
+as the "absolute driving direction") should be.
+
+There is a (small) helping factor: if you do a power off which lasts
+only a few seconds (up to a day or so for newer decoders), then it is
+guaranteed that the previous driving direction has not been "forgotten"
+by the decoder.
+Conversely, after a longer lasting Power Off, the decoder, having
+forgotten its previous driving direction, defaults to a specific driving
+direction (determined by the way it has been connected to the locomotive
+engine: the green and the blue wire).
+
+One more factor to consider: some motorola format decoders (those based
+on the 70113 and 70117 chips) only accept a direction change command,
+provided that the speed they currently are at is NOT higher than speed 6
+(expressed in terms of the P50).
+(However: the 70117 chip, being able to understand the new motorola
+format, obviously always evaluates the "absolute driving direction"
+information of that protocol).
+
+N.B. By design choice, the IB does NOT take into account this "speed 6"
+issue. Therefore: a P50 "direction change" command (Speed = 15) is
+regarded as effective if the current speed of the locomotive was not
+already "speed" 15.
+(Please consider that older and newer decoders, along with Uhlenbrock
+decoders, react to a direction change command even if at speeds higher
+that P50 speed 6).
+
+
+Therefore, we have the following situation:
+
+- P50: no notion of an absolute driving direction.
+  Only a "direction change" can be commanded.
+
+- P50X: a bit in the command for locomotives is reserved for specifying
+  the driving direction. There is NO command for telling a Lok to
+  "change" (invert) its driving direction (but this can be easily done
+  by toggling the Dir bit of a locomotive, as shown from its status or
+  as has been specified by the previous command issued to this locomotive).
+  Though it cannot be 100% reliable, this direction bit is also effective
+  with decoders which do not support an absolute driving direction.
+
+Furthermore, there is a compatibility issue: since P50 commands can be
+used in order to drive even non-Motorola format decoders (for locomotive
+addresses in range 0..255), then a peculiar (but perfectly normal)
+behaviour of Motorola format decoders must be symulated also for decoders
+whose digital format does support an absolute driving direction.
+The "problem" is: if you issue the P50 command for changing locomotive
+direction (this would be: Speed = 15), then the locomotive shall indeed
+change its driving direction ONLY IF the "speed" at which it currently is
+is NOT already "speed" 15 (and, check above note, for some decoders the
+current speed must be less or equal P50 speed 6).
+In other words: in order to positively change the speed of a locomotive,
+the following sequence of P50 commands should be sent:
+
+<speed = 0, i.e. Stop>
+<"speed" 15>
+
+In particular, in order to change twice the driving direction of a
+locomotive, it is MANDATORY to send at least the following sequence:
+
+<"speed" 15>
+<non-"speed" 15 (e.g.: speed 0 = Stop)>
+<"speed" 15>
+
+where it is assumed that, before sending this sequence, the locomotive
+speed was NOT already "speed" 15 (and was not greater than speed 6) - or
+else a non-"speed" 15 command (e.g. Stop) would have had to be sent before
+the above sequence, in order for the very first direction change command
+to be effective.
+
+
+Let's consider what the possible P50 cases are, but first let us define
+some terms:
+
+P50-CD	  P50 command for direction change ("speed" = 15)
+	  N.B. The Speed of a Lok commanded at P50-CD would be shown
+	       as 1 by locomotive status query P50X commands.
+Mot-CD	  direction change digital signal in the motorola format
+          (this would be "speed" 1 - in the digital signal)
+Stop	  speed = 0 = inertial stop
+Em. Stop  non-inertial (fast) stop
+Dir	  absolute driving direction
+CrS	  current locomotive speed in terms of the P50 protocol
+.NE.	  Not Equal
+.LE.	  Less or Equal
+Slot	  LocoNet slot (please check Digitrax LocoNet documentation)
+SO	  Special Option
+LSO	  Lok Special Option
+
+
+
+###### P50
+
+a) DCC
+a P50-CD shall always result in an Em. Stop being sent to the locomotive.
+Furthermore, if CrS .NE. P50-CD, then the direction of the locomotive
+shall be inverted. Otherwise, it shall NOT be inverted.
+N.B. Mixing of P50 and P50X commands: a P50-CD is internally stored as
+a P50X Speed = 1 (Em. Stop). Therefore, issueing a P50-CD after
+having commanded the Lok, through a P50X cmd, in Em. Stop, shall NOT
+result in a direction change.
+
+
+b) FMZ
+a P50-CD shall always result in an Em. Stop being sent to the locomotive,
+along with Speed = Stop (Em. Stop is sent through a separate bit in the
+FMZ protocol).
+Furthermore, if CrS .NE. P50-CD, then the direction of the locomotive
+shall be inverted. Otherwise, it shall NOT be inverted.
+(Also check the "Mixing of P50/P50X commands" note at point "a" above).
+
+
+c) SX
+a P50-CD shall always result in a Stop being sent to the locomotive.
+Furthermore, if CrS .NE. P50-CD, then the direction of the locomotive
+shall be inverted. Otherwise, it shall NOT be inverted.
+(Also check the "Mixing of P50/P50X commands" note at point "a" above).
+
+
+d) Motorola Old
+all P50 commands are directly sent to the tracks.
+If CrS .NE. P50-CD, then the direction of the locomotive, as memorized
+in the IB, shall be inverted. Otherwise, it shall NOT be inverted.
+Furthermore, in this case a Stop is automatically sent before the Mot-CD.
+(Also check the "Mixing of P50/P50X commands" note at point "a" above).
+
+
+e) Motorola New
+all P50 commands are directly sent to the tracks.
+If CrS .NE. P50-CD, then the direction of the locomotive shall be inverted.
+Otherwise, it shall NOT be inverted.
+(Also check the "Mixing of P50/P50X commands" note at point "a" above).
+In case of a direction change, the following shall be sent:
+- if this particular Lok has been configured this way (using the Special
+  Options for this very locomotive (LSO)), then an old format Mot-CD shall
+  be sent. This would be the default configuration;
+- Mot-CD shall be sent (in the new Motorola format);
+
+
+
+###### P50X (or LocoNet)
+
+Xa) DCC
+P50X commands directly map to DCC commands. There is no special case
+to consider.
+
+
+Xb) FMZ
+P50X commands directly map to FMZ commands. There is no special case
+to consider.
+
+
+Xc) SX
+P50X commands (almost) directly map to SX commands. The only case to
+consider is Em. Stop. In fact, since the SX protocol does not have
+this feature, an eventual Speed = 1 command (Em. Stop) shall be
+translated to a normal Stop (Speed = 0).
+
+
+Xd) Motorola Old
+Speed = 1 is converted, only as far as the digital signal is concerned,
+to Speed = 0 (Stop). This is done in order to avoid having a Speed = 1
+P50X cmd 'implicitly' change the driving direction: since we are in
+the P50X, the Dir bit should be used for this purpose!
+The P50X Speed would still be shown as 1 by a Lok status query P50X cmd.
+
+If a P50X command specifies a new (different from the current) Dir,
+then the following shall be automatically sent to the locomotive:
+- Stop;
+- Mot-CD;
+- current Speed.
+
+
+Xe) Motorola New
+Depending on each Mot New Lok configuration (Lok Special Option #6 for each
+Mot New Lok), a Speed = 1 P50X cmd may or may not be changed to Speed = 0.
+The default is to convert it - as usual: only as far as the digital
+signal is concerned - to Speed = 0 (LSO #6 = 0): this solves a problem with
+some programmable decoders (e.g. Uhlenbrock and XR1). In fact, these decoders
+enter programming mode if the Mot-CD signal is sent to them for more than
+X seconds (usually: X = 8..10 seconds).
+If a particular Lok is not equipped with such a decoder, then it may
+be configured so that the mentioned Lok Special Option #6 = 1. This implies
+that, since the decoder understands the new Motorola protocol, it shall
+NOT change direction when receiving the Mot-CD signal resulting from the
+Em. Stop P50X cmd. This results in an Em. Stop like behaviour.
+
+If a P50X command specifies a new (different from the current) Dir,
+then the following shall be automatically sent to the locomotive:
+- Stop;
+- if this particular Lok has been configured this way (using the Special
+  Options for this very locomotive), then an old format Mot-CD shall be
+  sent. This would be the default configuration;
+- finally, the IB shall send the Speed specified by the P50X command, along
+  with the specified direction - obviously using the new Motorola format.
+
+
+The strategy for case "Xd" above has one side effect: using the P50X (or,
+equivalently, LocoNet) it is not possible to send to the tracks the
+Mot-CD command for Lok addresses configured for the Motorola Old protocol.
+Therefore, in the case of some programmable decoders (e.g. Uhlenbrock, XR1,
+etc...), it would not be possible to have the decoder enter programming mode.
+This can be easily solved from the PC side by using a P50 cmd.
+
+
+There is at least one more issue to consider: what happens if a locomotive
+equipped with a Motorola format decoder of the old type is operated
+through the IB using a locomotive address which has been configured
+for the new Motorola format (or vice versa)?
+Given the default IB configuration for Motorola New, decoders **should**
+behave "correctly", i.e. change direction as expected. In fact, the
+default configuration asks for old protocol Mot-CD commands to be sent
+to the tracks before the new protocol ones.
+The exception is: if a P50X Speed = 1 command is sent to an Old Motorola
+format decoder being operated through an IB locomotive address configured
+for the New Motorola format (with LSO #6 = 1), then the locomotive would
+change driving direction, without the IB LCD (and the Lok status) showing
+it. This "mismatch" would not happen in case of P50 commands.
+
+
+
+Address conflicts involving the PC (RS-232 interface)
+-----------------------------------------------------
+
+This would mean: the PC is trying to send a command to a Lok already
+controlled by a non-PC device.
+The vice versa does not 'exist': since the P50X protocol defines Lok
+events, when the PC issues a cmd to a Lok, that Lok is NOT declared
+'taken', i.e. a non-PC device would still have free access to that Lok.
+Through Lok events the PC would be informed about eventual usage of
+that Lok by other devices.
+Therefore, let's consider only the case of the PC trying to get control
+of a Lok already controlled by a different device.
+
+P50)
+In this case, Special Option #20 tells whether to discard a Lok Speed+FL
+command (SO #20 = 0) or to execute it even if the Lok is already
+controlled by a non-PC device (SO #20 = 1). The IB default for SO #20
+is 1, therefore the PC can always send commands to any Lok.
+Differently from P50 Speed+FL commands, P50 Functions commands are
+always executed (there is no SO to consider).
+A 6050 would behave this way for function cmds, but would discard any
+Lok (Speed + FL) cmds sent to a Lok which is already 'taken'.
+
+P50X)
+While functions commands are always executed (just like in the P50 case),
+Lok commands are executed only if the involved Lok is not already
+controlled by a non-PC device.
+However, the P50Xb XLok cmd provides a bit which allows the PC to
+override this default behaviour: if this 'Force' bit is set, then the cmd
+would be effective even in case of Loks already controlled by a
+non-PC device. There is no such 'Force' bit for the P50Xa 'L' cmd.
+
+
+
+
+P50Xa (P50X ASCII) locomotive and turnout control commands.
+-----------------------------------------------------------
+
+As usual, the syntax of P50Xa cmds is shown using these 'meta-symbols':
+[]	tell an optional parameter or parameter plus separators, etc
+{}	tell a non optional part of the command, which may contain
+	optional parts
+|	tells that two or more possibilities exists: those shown before
+	and after this symbol
+
+
+*** L {Lok#, [Speed], [FL], [Dir], [F1], [F2], [F3], [F4]}
+Lok#	0..9999 (depending on protocol, not every address is legal!)
+Speed	0..127 (0 = Stop, 1 = Stop/Em.Stop (protocol dependent))
+FL	Light status (1 = on, 0 = off)
+Dir	Direction (1 = forward, 0 = reverse). Direction may also be
+	specified as 'f' = forward or 'r' = reverse
+F1	F1 status (1 = on, 0 = off)
+etc...
+
+depending on the Lok protocol, not all parameters are internally used
+or have the same range.
+For example, the (real) address range of each protocol is:
+Mrk	1..80 (1..255 for Uhlenbrock decoders)
+SX	0..111
+DCC	1..9999 (not every DCC decoder supports addr. > 99 or 127)
+FMZ	1..119
+however, virtual addresses can go from 0 to 9999.
+
+Depending on Lok protocol, Speed = 1 means (check also initial
+introductory note):
+Mrk Old		same as Stop
+Mrk New		Emergency Stop
+Selectrix	same as Stop
+DCC		Emergency Stop
+FMZ		Emergency Stop
+
+Another variable is the number of additional functions (apart from FL,
+i.e. usually the Lok lights - also known as F0):
+Mrk		4
+Selectrix	1
+DCC		4+ (F5.. to be specified using the P50Xa 'F' cmd)
+FMZ		1
+
+If only the first (mandatory) cmd parameter is specified (i.e. Lok#),
+then the current status of this Lok shall be displayed, provided, of
+course, that this Lok has ever been commanded before! (Or else the
+message 'No Lok data!' would be displayed.)
+
+The Speed parameter is *internally* scaled down in compliance with
+the Lok protocol. Min speed is always set by Speed = 2.
+Max Speed is always set by Speed = 127. The actual number of non-Stop
+speed steps varies depending on the Lok protocol:
+Mrk		14
+Selectrix	31
+DCC		14/27/28/126
+FMZ		15
+
+All parameters excluding the Lok# are optional. If at least one is
+specified, then Lok status is updated only as far as the specified
+parameter is concerned. Should no previous status be available, then
+the default is:
+Speed = 0
+Dir = 1 = forward
+FL (light) = Off
+F1..F4 = Off
+This only applies to the case in which at least one status parameter
+has been specified!
+In fact, as already written above, if no previous status is known and
+if the P50Xa 'L' cmd only specifies the Lok# parameter, then an error
+message is sent ('No Lok data').
+
+Address conflict with other devices:
+if the Lok specified by the 'L' cmd is already controlled by a non-PC
+device, then the error message 'Lok busy!' shall be displayed.
+
+Halt mode:
+If the Intellibox is in Halt mode, then Lok status (as specified by the
+'L' cmd) is updated, but any Speed changes involving a non-Stop speed
+shall NOT be effective.
+In this case, the reply shall be: "Halted!".
+
+Power Off:
+If the Intellibox is in Power Off, then Lok status (as specified by the
+'L' cmd) is updated. In this case, the reply shall be: "Pwr Off".
+
+
+
+*** LC {Lok#}
+Lok#	0..9999 (depending on protocol, not every address is legal!)
+Reports Lok protocol configuration (e.g. 'Mot Old', etc...) and
+number of non-Stop speed steps.
+N.B. There is NO cmd for setting the Lok configuration from the PC!
+     Loks **must** be configured using the IB menus.
+
+
+
+*** F {Lok#, [F1], [F2], [F3], [F4], [F5], [F6], [F7], [F8]}
+Lok#	0..9999 (depending on protocol, not every address is legal!)
+F1	F1 status (1 = on, 0 = off)
+etc...
+
+If only the first (mandatory) cmd parameter is specified (i.e. Lok#),
+then the current status of this Lok shall be displayed - as far as
+functions are concerned.
+
+The 'F' command is effective even if the specified Lok is already
+controlled by a non-PC device (there is no address conflict).
+
+
+
+*** T {Trnt#, [Color], [Status]}
+Trnt#	1..2040 (depending on protocol, not every address is legal!)
+	Please note: turnout address, NOT turnout *decoder* address!
+	Legal Motorola format turnout address range: 1..320
+	Legal DCC format turnout address range: 1..2040
+Color	'r' (red = thrown) or 'g' (green = closed)
+	('r' may also be spec'd as '0', 'g' also as '1')
+Status	1 = on, 0 = off (if not specified -> off)
+
+If only the first (mandatory) cmd parameter is specified (i.e. Turnout#),
+then the current status of this Turnout shall be displayed.
+
+In addition to the usual 'Syntax Error' reply, this cmd can also
+reply with:
+'Turnout fifo is full!'
+'Power is Off!'
+'Illegal Turnout address for this protocol!'
+
+
+
+*** TR {Trnt#, [Res]}
+Trnt#	1..2040 (depending on protocol, not every address is legal!)
+	Please note: turnout address, NOT turnout *decoder* address!
+Res	A flag specifying whether this turnout should be reserved (1)
+	or not (0) for exclusive PC control. If Res = 1, then non-PC
+	turnout commands shall not be executed by the IB - and a
+	corresponding event shall be generated (check XEvent cmd).
+If only the first (mandatory) cmd parameter is specified (i.e. Turnout#),
+then the current 'reserved' status of this Turnout shall be displayed.
+
+
+
+######## Possible future cmd
+
+*** LM  {...}
+Setup, delete and report multi-tractions (consists).
+
+
+*** FX {Lok#, [F9], [F10], [F11], [F12], ...?}
+Lok#	0..9999 (depending on protocol, not every address is legal!)
+F9	F9 status (1 = on, 0 = off)
+etc...
+
+
+
+
+P50Xb (P50X binary) locomotive & turnout control commands.
+----------------------------------------------------------
+
+(please read also introduction to P50Xa Lok/turnout cmds!)
+
+
+*** XLok (080h) - length = 1+4 bytes
+Parameters (byte) - please check also P50Xa 'L' cmd:
+1st	low byte of Lok address
+2nd	high byte of Lok address
+3rd	speed (0..127: 0 = Stop, 1 = Stop/Em.Stop)
+	N.B. bit #7 is reserved for future use!
+4th	this byte has the following format:
+
+	bit#   7     6     5     4     3     2     1     0
+	    +-----+-----+-----+-----+-----+-----+-----+-----+
+	    |ChgF |Force| Dir | FL  | F4  | F3  | F2  | F1  |
+	    +-----+-----+-----+-----+-----+-----+-----+-----+
+
+	where:
+		ChgF	set if F1..F4 to be used for setting F1..F4 of
+			Lok (otherwise F1..F4 are ignored)
+		Force	if set (1), then the XLok command is 'forced'
+			even in case of a Lok already controlled by a
+			non-PC device
+		Dir	Lok direction: 1 = forward, 0 = reverse
+		FL	Lok light status: 1 = on, 0 = off
+		F4..F1	Lok F4..F1 status (if ChgF is set)
+
+N.B.	Address must be in range 0..9999
+	(depending on protocol, not every address is legal!)
+
+Reply:
+1st	either 00h (cmd Ok) or error code.
+
+Error/warning codes:
+XBADPRM (02h)	illegal parameter value
+XNOLSPC (08h)	there is no space in the Lok cmd buffer, please try later!
+XNOSLOT (0Bh)	there is no slot available
+XBADLNP (0Ch)	Lok# is illegal for this protocol
+XLKBUSY (0Dh)	Lok already controlled by another device
+XLKHALT (41h)	Command accepted (Lok status updated), but IB in 'Halt' mode!
+XLkPOFF (42h)	Command accepted (Lok status updated), but IB in Power Off!
+
+
+
+*** XLokSts (084h) - length = 1+2 bytes
+Parameters (byte):
+1st	low byte of Lok address
+2nd	high byte of Lok address
+
+Reply:
+1st	either 00h (cmd Ok, 3 bytes shall follow) or error code
+2nd	Speed (0..127: 0 = Stop, 1 = Stop/Em.Stop)
+3rd	same format as 4th parameter of XLok cmd (bit #6 & 7 = 0)
+4th	'real' Lok speed (in terms of the Lok type/configuration)
+
+Error codes:
+XBADPRM (02h)	illegal parameter value
+XNODATA (0Ah)	no Lok status available (Lok is not in a slot)
+XBADLNP (0Ch)	Lok# is illegal for this protocol
+
+N.B.
+The 'real' speed is NOT expressed in the P50 format!
+According to each protocol, the 'real' speed value tells:
+Motorola:
+ 0 (Stop), 1 (Change Dir), 2 (min Speed), .., 15 (max Speed)
+Selectrix:
+ 0 (Stop), 1 (min Speed), .., 31 (max Speed)
+DCC:
+ 0 (Stop), 1 (Em.Stop), 2 (min Speed), .., 15/28/29/127 (max Speed)
+FMZ:
+ 0 (Stop), 1 (min Speed), .., 15 (max Speed)
+ (no information is returned about an eventual FMZ Em. Stop status,
+ however this can be inferred from the Speed status of the Lok,
+ i.e. from the 2nd byte of the XLokSts reply)
+
+If you need to compute the P50 speed starting from the P50X Speed,
+the following BASIC routine shows how to proceed (this very algorithm
+is internally used by the IB):
+
+DEFINT A-Z
+FUNCTION P50_Speed% (P50X_Speed AS INTEGER)
+SELECT CASE P50X_Speed
+CASE 0, 1
+   P50_Speed = 0
+CASE ELSE
+   P50_Speed = INT((P50X_Speed * 2) / 19) + 1
+END SELECT
+END FUNCTION
+
+(Obvioulsy, it cannot ever happen that P50_Speed() = 15.)
+
+The opposite conversion is performed using a table, indexed by the
+P50 speed:
+   0,  2, 10, 19, 29, 38, 48, 57, 67, 76, 86, 95, 105, 114, 127, 1
+
+The speed conversion routines for the other protocols/speed steps are:
+
+Speed_15:
+(FMZ protocol: 0 = Stop, 1..15 = non-stop speed steps)
+   IF (P50X_Speed = 0) OR (P50X_Speed = 1) THEN
+      Speed_15 = 0
+   ELSE
+      Speed_15 = INT((P50X_Speed + 1) / 9) + 1
+   ENDIF
+
+
+Speed_27:
+(DCC 27 protocol: 0 = Stop, 1 = Em. Stop, 2..28 = non-stop speed steps)
+   IF (P50X_Speed = 0) OR (P50X_Speed = 1) THEN
+      Speed_27 = P50X_Speed
+   ELSE
+      IF (P50X_Speed < 8) THEN
+         Speed_27 = 2
+      ELSE
+         nTemp = P50X_Speed * 2
+         nTemp1= INT(nTemp / 9)
+         nTemp2= nTemp - (nTemp1 * 9)
+         IF (nTemp2 >= 7) THEN
+            nTemp1 = nTemp1 + 2
+         ELSE
+            nTemp1 = nTemp1 + 1
+         ENDIF
+         IF nTemp1 > 28 THEN
+            Speed_27 = 28
+         ELSE
+            Speed_27 = nTemp1
+         ENDIF
+      ENDIF
+   ENDIF
+
+
+Speed_28:
+(DCC 28 protocol: 0 = Stop, 1 = Em. Stop, 2..29 = non-stop speed steps)
+   IF (P50X_Speed = 0) OR (P50X_Speed = 1) THEN
+      Speed_28 = P50X_Speed
+   ELSE
+      Speed_28 = INT(((P50X_Speed - 2) * 2) / 9) + 2
+   ENDIF
+
+
+Speed_31:
+(Selectrix protocol: 0 = Stop, 1..31 = non-stop speed steps)
+   IF (P50X_Speed = 0) OR (P50X_Speed = 1) THEN
+      Speed_31 = 0
+   ELSE
+      IF (P50X_Speed < 4) THEN
+         Speed_31 = 1
+      ELSE
+         Speed_31 = INT(P50X_Speed / 4)
+      ENDIF
+   ENDIF
+
+
+
+*** XLokCfg (085h) - length = 1+2 bytes
+Parameters (byte):
+1st	low byte of Lok address
+2nd	high byte of Lok address
+
+Reply:
+1st	either 00h (cmd Ok, 4 bytes shall follow) or error code
+2nd	Lok protocol: 0..3 = Mrk, SX, DCC, FMZ
+3rd	# of (non-Stop) speed steps supported by this Lok type.
+	Currently this would be: 14, 15, 27, 28, 31 or 126
+The rest of the reply depends on whether this Lok is a virtual one
+or a real one:
+
+- Virtual
+4th	Real Lok# (low) corresponding to this virtual one
+5th	Real Lok# (high) (Bit #6 is 0, this tells a virtual Lok from
+	a real one)
+
+- Real
+4th	0FFh
+5th	0FFh  (bit #6 is 1, this tells a real Lok from a virtual one)
+
+N.B.
+Bit #7 in the 5th byte of the reply is reserved for future use.
+
+Error codes:
+XBADPRM (02h)	illegal parameter value
+
+
+
+*** XLkDisp (083h) - length = 1+2 bytes
+1st	low byte of Lok address
+2nd	high byte of Lok address (or 0FFh if asking for dispatch status)
+
+Reply (if Lok address high byte not equal 0FFh, i.e. 'dispatch put'):
+1st	either 00h (cmd Ok) or error code (e.g. XBADLNP, XNODATA)
+or (if Lok address high byte equal 0FFh, i.e. 'dispatch get'):
+1st     either 00h (there is no dispatched slot to 'get') or slot #
+        (1..119) of slot waiting to be 'got'
+
+
+
+*** XFunc (088h) - length = 1+3 bytes
+Parameters (byte):
+1st	low byte of Lok address
+2nd	high byte of Lok address
+3rd	status of F1 (bit #0) .. F8 (bit #7)
+
+Reply:
+1st	either 00h (cmd Ok) or error code.
+
+Error codes:
+XBADPRM (02h)	illegal parameter value
+XNOSLOT (0Bh)	there is no slot available
+XBADLNP (0Ch)	Lok# is illegal for this protocol
+
+
+
+*** XFuncSts (08Ch) - length = 1+2 bytes
+Parameters (byte):
+1st	low byte of Lok address
+2nd	high byte of Lok address
+
+Reply:
+1st	either 00h (cmd Ok, 1 byte shall follow) or error code
+2nd	status of F1 (bit #0) .. F8 (bit #7)
+
+Error codes:
+XBADPRM (02h)	illegal parameter value
+XNODATA (0Ah)	no Lok status available (Lok is not in a slot)
+XBADLNP (0Ch)	Lok# is illegal for this protocol
+
+
+
+*** XTrnt (090h) - length = 1+2 bytes
+Parameters (byte):
+1st	low byte of Turnout address (A7..A0). Please note: turnout
+	address, NOT turnout *decoder* address!
+2nd	high byte of Turnout address plus 'color' and status bits:
+
+	bit#   7     6     5     4     3     2     1     0
+	    +-----+-----+-----+-----+-----+-----+-----+-----+
+	    |Color| Sts | Res |NoCmd| n.u.| A10 |  A9 |  A8 |
+	    +-----+-----+-----+-----+-----+-----+-----+-----+
+
+	where:
+		Color	1 = closed (green), 0 = thrown (red)
+		Sts	turnout status (1 = on, 0 = off)
+		Res	set if this turnout is to be reserved
+			for exclusive PC control: this would imply
+			that non-PC commands to this turnout would
+			be discarded by the IB. An event would also
+			be generated (please check the XEvent cmd)
+		NoCmd	if set then no turnout cmd is actually sent
+			to the tracks. Setting this bit allows, e.g.,
+			to only set/reset the 'Res' bit of a turnout.
+			Besides, if NoCmd is set, not even the internal
+			IB status of this turnout is modified.
+		n.u.	not currently used (0)
+		A10..A8	top address bits of turnout address
+Reply:
+1st	either 00h (cmd Ok) or error/warning code
+
+Error/warning codes:
+XBADPRM (02h)	illegal parameter value
+XPWOFF (06h)	Error: the Power is Off!
+XNOTSPC (09h)	Error: the fifo for turnout cmds is full, please try later
+		Plase note: XNOTSPC was erroneosly described as being
+		equal to 07h in P50X_LT.TXT versions up to the 0.93 one.
+		Please also note the new XNOISPC reply.
+XBADTNP (0Eh)	Error: illegal Turnout address for this protocol
+XNOISPC (10h)	Error: the I2C fifo is full, please try later
+XLOWTSP (40h)	Warning: the fifo for turnout cmds is 75% full
+
+The IB fifo for turnout cmds can hold up to 16 turnout cmds.
+This allows 'parallel' turnout and Lok commands execution.
+This fifo also plays a role in avoiding blocking the RS-232 channel in
+case of a Power Off.
+
+== A side note ==
+If a P50 turnout cmd is sent to the IB while in Power Off, then such a
+command would be inserted in the turnout cmd buffer as usual, provided
+that the Special Option (SO) #21 is 0 (this would be the IB default).
+However, since while in Power Off the turnout buffer is not processed
+'from the other side' (no turnout cmds are sent to the tracks),
+sooner or later this buffer shall get full - thus eventually blocking
+any further PC command to the IB.
+If SO #21 is 1, then P50 turnout cmds which are sent by the PC while
+the IB is in Power Off are automatically discarded, therefore no
+blocking the RS-232 channel can occur.
+The default SO #21 value (0) corresponds to what a 6050+Mrk CU would do.
+
+
+
+*** XTrntFree (093h) - length = 1 byte
+Allows resetting the 'Res' (reserved) bit of all turntouts with only
+one command.
+Reply:	always 00h
+N.B. Use the XTrnt cmd, with the 'NoCmd' = 1, for individually setting
+     the 'reserved' status of each turnout.
+
+N.B. It would be best to issue an XTrntFree cmd before exiting your
+     PC program! (Or else some turnouts may be left in the 'reserved'
+     status, not allowing a user to issue manual commands to these.)
+
+
+
+*** XTrntSts (094h) - length = 1+2 bytes
+Parameters (byte):
+1st	low byte of Turnout address
+2nd	high byte of Turnout address
+
+Reply:
+1st	either 00h (cmd Ok, 1 byte shall follow) or error code
+2nd	turnout configuration in bit #0: (check Bit #3 below)
+	turnout 'reserved' status in bit #1: 1 = reserved, 0 = free
+	turnout color in bit #2: 1 = green (closed), 0 = red (thrown)
+	turnout extended configuration in bit #3:
+		Bit #0/3	turnout type
+		  00		  Motorola
+		  10		  DCC
+		  01		  SX
+		  11		  FMZ
+	Other bits are reserved for future use.
+
+Error codes:
+XBADPRM (02h)	illegal parameter value
+XBADTNP (0Eh)	Error: illegal Turnout address for this protocol
+
+
+
+*** XTrntGrp (095h) - length = 1+1 byte
+Parameters (byte):
+1st	Turnout 'group' address (legal value: 1..255)
+The turnout 'group' address would be 1 for turnouts #1..8,
+2 for turnouts #9..16, etc... With a formula:
+turnout 'group' address = ((turnout address - 1) \ 8) + 1
+Reply:
+1st	either 00h (cmd Ok, 2 bytes shall follow) or error code
+2nd	Turnout 'group' color: each bit tells the 'green' (1) or
+	'red' (0) status of the corresponding turnout.
+	The 1st turnout of this group is in bit #0, etc...
+3rd	Turnout 'reserved' status: each bit...
+
+Error codes:
+XBADPRM (02h)	illegal parameter value
+
+
+
+
+######## Possible future cmds
+
+*** XFuncX (089h) - length = 1+3 bytes
+Parameters (byte):
+1st	low byte of Lok address
+2nd	high byte of Lok address
+3rd	status of F9 (bit #0) .. F16 (bit #7)
+
+Reply:
+1st	either 00h (cmd Ok) or error code.
+
+
+
+*** XFuncXSts (08Dh) - length = 1+2 bytes
+Parameters (byte):
+1st	low byte of Lok address
+2nd	high byte of Lok address
+
+Reply:
+1st	either 00h (cmd Ok, 1 byte shall follow) or error code
+2nd	status of F9 (bit #0) .. F16 (bit #7)
+
