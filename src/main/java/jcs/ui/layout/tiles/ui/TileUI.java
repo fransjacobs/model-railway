@@ -21,6 +21,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Point;
+import java.awt.RenderingHints;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
@@ -32,6 +33,7 @@ import jcs.entities.TileBean;
 import static jcs.entities.TileBean.Orientation.NORTH;
 import static jcs.entities.TileBean.Orientation.SOUTH;
 import static jcs.entities.TileBean.Orientation.WEST;
+import jcs.entities.TileBean.TileType;
 import static jcs.entities.TileBean.TileType.CROSS_SWITCH;
 import jcs.ui.layout.LayoutCanvas;
 import static jcs.ui.layout.tiles.LayoutScale.GRID;
@@ -62,10 +64,6 @@ public abstract class TileUI extends ComponentUI {
   protected Color trackColor;
   protected Color trackRouteColor;
 
-  private int cachedRenderWidth = -1;
-  private int cachedRenderHeight = -1;
-  private BufferedImage cachedBuffer;
-
   protected BufferedImage tileImage;
   protected volatile boolean imageDirty = true;
 
@@ -75,19 +73,7 @@ public abstract class TileUI extends ComponentUI {
   }
 
   protected BufferedImage getOrCreateImage() {
-//    if (cachedBuffer == null || cachedRenderWidth != renderWidth || cachedRenderHeight != renderHeight) {
-      cachedBuffer = new BufferedImage(renderWidth, renderHeight, BufferedImage.TYPE_INT_RGB);
-
-//      GraphicsConfiguration gc = GraphicsEnvironment
-//              .getLocalGraphicsEnvironment()
-//              .getDefaultScreenDevice()
-//              .getDefaultConfiguration();
-//      cachedBuffer = gc.createCompatibleImage(renderWidth, renderHeight, Transparency.OPAQUE);
-
-      cachedRenderWidth = renderWidth;
-      cachedRenderHeight = renderHeight;
-//    }
-    return cachedBuffer;
+    return new BufferedImage(renderWidth, renderHeight, BufferedImage.TYPE_INT_RGB);
   }
 
   private void setRenderSize(JComponent c) {
@@ -250,12 +236,45 @@ public abstract class TileUI extends ComponentUI {
 
     // Scale the image back...
     if (model.isScaleImage()) {
-      tileImage = Scalr.resize(bf, Scalr.Method.AUTOMATIC, Scalr.Mode.FIT_EXACT, tile.getWidth(), tile.getHeight(), Scalr.OP_ANTIALIAS);
+      if (TileType.BLOCK == tile.getTileType()) {
+        tileImage = Scalr.resize(bf, Scalr.Method.QUALITY, Scalr.Mode.AUTOMATIC, tile.getWidth(), tile.getHeight(), Scalr.OP_GRAYSCALE);
+      } else {
+        tileImage = Scalr.resize(bf, Scalr.Method.BALANCED, Scalr.Mode.AUTOMATIC, tile.getWidth(), tile.getHeight(), Scalr.OP_ANTIALIAS);
+      }
+      bf.flush();
     } else {
       tileImage = bf;
     }
 
+    imageDirty = false;
+
     g2di.dispose();
+  }
+
+  
+  ///Some new idea for resizeing must be tested for spedd etc. Mosttime is the rsize operation exspecally for block
+  ///Als make a rezieg call in the Tilecache and resize all tile in the cache in worker thread befor painting
+  public void resize(BufferedImage srcImage, BufferedImage destImage) {
+
+    int width = destImage.getWidth();
+    int height = destImage.getHeight();
+
+    //Graphics2D g = createGraphics(destImage);
+    Graphics2D g = destImage.createGraphics();
+
+    g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, width);
+    g.drawImage(srcImage, 0, 0, width, height, null);
+    g.dispose();
+  }
+
+  public BufferedImage resizeImage(BufferedImage image, int width, int height) {
+    int type = 0;
+    type = image.getType() == 0 ? BufferedImage.TYPE_INT_ARGB : image.getType();
+    BufferedImage resizedImage = new BufferedImage(width, height, type);
+    Graphics2D g = resizedImage.createGraphics();
+    g.drawImage(image, 0, 0, width, height, null);
+    g.dispose();
+    return resizedImage;
   }
 
   /**

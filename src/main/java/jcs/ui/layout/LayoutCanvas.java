@@ -315,25 +315,25 @@ public class LayoutCanvas extends JPanel {
         public void run() {
           try {
             loading = true;
-            long now = System.currentTimeMillis();
             List<Tile> tiles = TileCache.loadTiles(readonly);
-            
-            try {
-              java.awt.EventQueue.invokeAndWait(() -> {
+
+            //try {
+              //java.awt.EventQueue.invokeAndWait(() -> {
+              java.awt.EventQueue.invokeLater(() -> {
+                long now = System.currentTimeMillis();
+
                 loadTiles(tiles);
-                
+
                 revalidate();
                 repaint();
                 long duration = System.currentTimeMillis() - now;
-                //if (readonly) {
                 Logger.trace("Loading {} tiles finished in {} ms...", tiles.size(), duration);
-                //}
               });
-            } catch (InterruptedException ex) {
-              Thread.currentThread().interrupt();
-            } catch (InvocationTargetException ex) {
-              Logger.error(ex.getMessage());
-            }
+//            } catch (InterruptedException ex) {
+//              Thread.currentThread().interrupt();
+//            } catch (InvocationTargetException ex) {
+//              Logger.error(ex.getMessage());
+//            }
           } finally {
             loading = false;
           }
@@ -348,7 +348,8 @@ public class LayoutCanvas extends JPanel {
 
     Dimension minSize = TileCache.getMinCanvasSize();
     setPreferredSize(minSize);
-    //revalidate();
+
+    long now = System.currentTimeMillis();
 
     for (Tile tile : tiles) {
       add(tile);
@@ -356,6 +357,9 @@ public class LayoutCanvas extends JPanel {
         tile.setDrawCenterPoint(showCenter);
       }
     }
+
+    long duration = System.currentTimeMillis() - now;
+    Logger.trace("Added {} tiles in {} ms...", tiles.size(), duration);
   }
 
   private void mouseMoveAction(@SuppressWarnings("unused") MouseEvent evt) {

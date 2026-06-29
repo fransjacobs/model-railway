@@ -16,7 +16,10 @@
 package jcs.ui.layout.tiles;
 
 import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +28,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
+import javax.swing.JComponent;
 import jcs.JCS;
 import jcs.commandStation.events.AccessoryEvent;
 import jcs.commandStation.events.AccessoryEventListener;
@@ -47,6 +50,7 @@ import static jcs.entities.TileBean.TileType.SWITCH;
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.BlockBean;
 import static jcs.entities.TileBean.TileType.CROSS_SWITCH;
+import jcs.persistence.PersistenceService;
 import static jcs.ui.layout.tiles.LayoutScale.GRID;
 
 /**
@@ -79,7 +83,10 @@ public class TileCache {
   private static final AtomicInteger maxX = new AtomicInteger(0);
   private static final AtomicInteger maxY = new AtomicInteger(0);
 
+  private static final PersistenceService persistenceService;
+
   static {
+    persistenceService = PersistenceFactory.getService();
     actionEventQueueHandler.start();
   }
 
@@ -198,7 +205,7 @@ public class TileCache {
         if (tileBean.getAccessoryBean() != null && tileBean.getAccessoryBean().getId() != null) {
           JCS.getJcsCommandStation().addAccessoryEventListener(tileBean.getAccessoryBean().getId(), (AccessoryEventListener) tile);
         } else {
-          Logger.trace("Can't add tile " + tile.getId() + " as an AccessorListener as the AccessoryId is null...");
+          Logger.trace("Can't add tile {} as an AccessorListener as the AccessoryId is null...", tile.getId());
         }
       }
       case THREEWAY -> {
@@ -227,7 +234,7 @@ public class TileCache {
         if (tileBean.getAccessoryBean() != null && tileBean.getAccessoryBean().getId() != null) {
           JCS.getJcsCommandStation().addAccessoryEventListener(tileBean.getAccessoryBean().getId(), (AccessoryEventListener) tile);
         } else {
-          Logger.trace("Can't add tile " + tile.getId() + " as an AccessorListener as the AccessoryId is null...");
+          Logger.trace("Can't add tile {} as an AccessorListener as the AccessoryId is null...", tile.getId());
         }
       }
       case SIGNAL -> {
@@ -241,7 +248,7 @@ public class TileCache {
         if (tileBean.getAccessoryBean() != null && tileBean.getAccessoryBean().getId() != null) {
           JCS.getJcsCommandStation().addAccessoryEventListener(tileBean.getAccessoryBean().getId(), (AccessoryEventListener) tile);
         } else {
-          Logger.trace("Can't add tile " + tile.getId() + " as an AccessorListener as the AccessoryId is null...");
+          Logger.trace("Can't add tile {} as an AccessorListener as the AccessoryId is null...", tile.getId());
         }
       }
       case SENSOR -> {
@@ -255,7 +262,7 @@ public class TileCache {
         if (((Sensor) tile).getSensorBean() != null && ((Sensor) tile).getSensorBean().getId() != null) {
           JCS.getJcsCommandStation().addSensorEventListener(((Sensor) tile).getSensorBean().getId(), (SensorEventListener) tile);
         } else {
-          Logger.warn("Can't register Sensor " + tile.getId() + " no Sensor ID available");
+          Logger.trace("Can't register Sensor {} no Sensor ID available!", tile.getId());
         }
       }
       case BLOCK -> {
@@ -272,7 +279,7 @@ public class TileCache {
         endIdSeq.set(maxIdSeq(endIdSeq.get(), getIdSeq(tileBean.getId())));
       }
       default ->
-        Logger.warn("Unknown Tile Type " + tileType);
+        Logger.warn("Unknown Tile Type {}", tileType);
     }
 
     return (Tile) tile;
@@ -330,7 +337,7 @@ public class TileCache {
       case END ->
         tile = new End(orientation, center);
       default ->
-        Logger.warn("Unknown Tile Type " + tileType);
+        Logger.warn("Unknown Tile Type {}", tileType);
     }
 
     if (tile != null) {
@@ -424,6 +431,8 @@ public class TileCache {
   }
 
   public static List<Tile> loadTiles(boolean showvalues) {
+    long now = System.currentTimeMillis();
+    long start = now;
     deRegisterListeners();
     altPointMap.clear();
     centerPointMap.clear();
@@ -431,15 +440,30 @@ public class TileCache {
     maxX.set(0);
     maxY.set(0);
 
-    List<TileBean> tileBeans = PersistenceFactory.getService().getTileBeans();
+    List<TileBean> tileBeans = persistenceService.getTileBeans();
+
+    long end = System.currentTimeMillis();
+    long start2 = end;
+
+    Logger.info("Loaded {} tileBeans from database in {} ms.", tileBeans.size(), (end - start));
+
+    BufferedImage bi = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
+    Graphics2D g2 = bi.createGraphics();
 
     for (TileBean tb : tileBeans) {
       Tile tile = createTile(tb, showvalues);
+
+      //tile.getUI().drawTile(g2, tile);
+      //tile.getUI().paint(g2, tile);
+     tile.paint(g2);
+
       addTile(tile);
     }
 
-    Logger.trace("Loaded " + idMap.size() + " Tiles. Max: (" + maxX + "," + maxY + ")");
-    return idMap.values().stream().collect(Collectors.toList());
+    end = System.currentTimeMillis();
+
+    Logger.info("Created {} Tiles. Max: ({}, {}) in {} ms Total {} ms.", idMap.size(), maxX, maxX, (end - start2), (end - start));
+    return new ArrayList<>(idMap.values());
   }
 
   static void addTile(Tile tile) {
@@ -508,7 +532,7 @@ public class TileCache {
       TileBean tb = tile.getTileBean();
       PersistenceFactory.getService().persist(tb);
     } catch (IllegalArgumentException e) {
-      Logger.error("Can't persist Tile! " + e.getMessage());
+      Logger.error("Can't persist Tile! {}", e.getMessage());
     }
   }
 
@@ -521,7 +545,7 @@ public class TileCache {
       TileBean tb = tile.getTileBean();
       PersistenceFactory.getService().persist(tb);
     } catch (IllegalArgumentException e) {
-      Logger.error("Can't persist Block! " + e.getMessage());
+      Logger.error("Can't persist Block! {}", e.getMessage());
     }
   }
 
@@ -556,7 +580,7 @@ public class TileCache {
       PersistenceFactory.getService().remove(tb);
       Logger.trace("Deleted " + tile.getId());
     } else {
-      Logger.warn("Tile " + tile.getId() + " not found in cache");
+      Logger.warn("Tile {} not found in cache", tile.getId());
     }
   }
 
@@ -635,7 +659,7 @@ public class TileCache {
 
   public static Tile rotateTile(Tile tile) {
     if (!centerPointMap.containsKey(tile.getCenter())) {
-      Logger.warn("Tile " + tile.getId() + " NOT in cache!");
+      Logger.warn("Tile {} NOT in cache!", tile.getId());
     }
 
     //Remove the alternative or extra pointIds...
@@ -666,7 +690,7 @@ public class TileCache {
 
   private static Tile flipTile(Tile tile, boolean horizontal) {
     if (!centerPointMap.containsKey(tile.getCenter())) {
-      Logger.warn("Tile " + tile.getId() + " NOT in cache!");
+      Logger.warn("Tile {} NOT in cache!", tile.getId());
     }
 
     //Remove the alternative or extra pointIds...
@@ -711,7 +735,7 @@ public class TileCache {
       Tile tile = idMap.get(tileId);
       tile.repaint();
     } else {
-      Logger.warn("Can't find a Tile with Id: " + tileId + " in the cache");
+      Logger.warn("Can't find a Tile with Id: {} in the cache!", tileId);
     }
   }
 
@@ -743,4 +767,17 @@ public class TileCache {
       }
     }
   }
+
+  public static void main(String[] a) {
+    long now = System.currentTimeMillis();
+    long start = now;
+
+    List<Tile> tiles = loadTiles(true);
+
+    long end = System.currentTimeMillis();
+
+    Logger.info("Loaded {} tiles in {} ms", tiles.size(), (end - start));
+
+  }
+
 }

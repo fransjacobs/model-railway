@@ -578,6 +578,7 @@ public abstract class Tile extends JComponent implements Serializable {
     if (getUI() == null) {
       return;
     }
+    
     getUI().markImageDirty();
     repaint();
   }
