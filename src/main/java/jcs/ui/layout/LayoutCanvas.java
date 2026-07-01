@@ -282,25 +282,36 @@ public class LayoutCanvas extends JPanel {
 
     LayoutScale.getInstance().setScalePercent(scalePercent);
 
-    // Resize and reposition every tile on the canvas
-    for (Component c : getComponents()) {
-      if (c instanceof Tile tile) {
-        tile.setScaleImage(true);
-        tile.markImageDirty();
-        tile.setBounds(tile.getTileBounds());
-      }
-    }
+    //Don't do the scaling on the Event Disaptch Thread
+    executor.execute(() -> {
+      //Scale all tiles
 
-    // Update canvas preferred size (TileCache uses canonical, so scale it)
-    Dimension canonicalSize = TileCache.getMinCanvasSize();
-    LayoutScale scale = LayoutScale.getInstance();
-    setPreferredSize(new Dimension(
-            scale.toDisplay(canonicalSize.width),
-            scale.toDisplay(canonicalSize.height)
-    ));
+      java.awt.EventQueue.invokeLater(() -> {
+        long now = System.currentTimeMillis();
 
-    revalidate();
-    repaint();
+        for (Component c : getComponents()) {
+          if (c instanceof Tile tile) {
+            tile.setScaleImage(true);
+            tile.markImageDirty();
+            tile.setBounds(tile.getTileBounds());
+          }
+        }
+
+        // Resize and reposition every tile on the canvas
+        // Update canvas preferred size (TileCache uses canonical, so scale it)
+        Dimension canonicalSize = TileCache.getMinCanvasSize();
+        LayoutScale scale = LayoutScale.getInstance();
+        setPreferredSize(new Dimension(
+                scale.toDisplay(canonicalSize.width),
+                scale.toDisplay(canonicalSize.height)
+        ));
+
+        revalidate();
+        repaint();
+        long duration = System.currentTimeMillis() - now;
+        Logger.trace("Scaling {} tiles finished in {} ms...", getComponents().length, duration);
+      });
+    });
   }
 
   @SuppressWarnings("unused")
@@ -310,33 +321,30 @@ public class LayoutCanvas extends JPanel {
 
   void loadLayoutInBackground() {
     if (!loading) {
-      executor.execute(new Runnable() {
-        @Override
-        public void run() {
-          try {
-            loading = true;
-            List<Tile> tiles = TileCache.loadTiles(readonly);
+      executor.execute(() -> {
+        try {
+          loading = true;
+          List<Tile> tiles = TileCache.loadTiles(readonly);
 
-            //try {
-              //java.awt.EventQueue.invokeAndWait(() -> {
-              java.awt.EventQueue.invokeLater(() -> {
-                long now = System.currentTimeMillis();
+          //try {
+          //java.awt.EventQueue.invokeAndWait(() -> {
+          java.awt.EventQueue.invokeLater(() -> {
+            long now = System.currentTimeMillis();
 
-                loadTiles(tiles);
+            loadTiles(tiles);
 
-                revalidate();
-                repaint();
-                long duration = System.currentTimeMillis() - now;
-                Logger.trace("Loading {} tiles finished in {} ms...", tiles.size(), duration);
-              });
+            revalidate();
+            repaint();
+            long duration = System.currentTimeMillis() - now;
+            Logger.trace("Loading {} tiles finished in {} ms...", tiles.size(), duration);
+          });
 //            } catch (InterruptedException ex) {
 //              Thread.currentThread().interrupt();
 //            } catch (InvocationTargetException ex) {
 //              Logger.error(ex.getMessage());
 //            }
-          } finally {
-            loading = false;
-          }
+        } finally {
+          loading = false;
         }
       });
     }

@@ -452,11 +452,7 @@ public class TileCache {
 
     for (TileBean tb : tileBeans) {
       Tile tile = createTile(tb, showvalues);
-
-      //tile.getUI().drawTile(g2, tile);
-      //tile.getUI().paint(g2, tile);
-     tile.paint(g2);
-
+      tile.paint(g2);
       addTile(tile);
     }
 

@@ -49,6 +49,7 @@ import jcs.entities.TileBean;
 import jcs.entities.TileBean.Direction;
 import jcs.entities.TileBean.Orientation;
 import jcs.entities.TileBean.TileType;
+import static jcs.entities.TileBean.TileType.BLOCK;
 import static jcs.entities.TileBean.TileType.CROSS;
 import static jcs.entities.TileBean.TileType.CROSS_SWITCH;
 import jcs.ui.layout.LayoutUtil;
@@ -139,7 +140,7 @@ public abstract class Tile extends JComponent implements Serializable {
     this.tileY = y;
 
     this.
-    setLayout(null);
+            setLayout(null);
     Dimension d = new Dimension(width, height);
     setSize(d);
     setPreferredSize(d);
@@ -578,7 +579,7 @@ public abstract class Tile extends JComponent implements Serializable {
     if (getUI() == null) {
       return;
     }
-    
+
     getUI().markImageDirty();
     repaint();
   }
@@ -1021,7 +1022,7 @@ public abstract class Tile extends JComponent implements Serializable {
    */
   public Rectangle getTileBounds() {
     LayoutScale scale = LayoutScale.getInstance();
-    int grid = scale.scaledGrid(); 
+    int grid = scale.scaledGrid();
 
     int dispX = scale.toDisplay(tileX);
     int dispY = scale.toDisplay(tileY);

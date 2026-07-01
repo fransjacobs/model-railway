@@ -36,6 +36,7 @@ import static jcs.entities.TileBean.Orientation.WEST;
 import jcs.entities.TileBean.TileType;
 import static jcs.entities.TileBean.TileType.CROSS_SWITCH;
 import jcs.ui.layout.LayoutCanvas;
+import jcs.ui.layout.tiles.LayoutScale;
 import static jcs.ui.layout.tiles.LayoutScale.GRID;
 import jcs.ui.layout.tiles.Tile;
 import static jcs.ui.layout.tiles.Tile.DEFAULT_BACKGROUND_COLOR;
@@ -66,6 +67,12 @@ public abstract class TileUI extends ComponentUI {
 
   protected BufferedImage tileImage;
   protected volatile boolean imageDirty = true;
+
+  protected static LayoutScale layoutScale;
+
+  static {
+    layoutScale = LayoutScale.getInstance();
+  }
 
   protected TileUI() {
     this.backgroundColor = DEFAULT_BACKGROUND_COLOR;
@@ -251,7 +258,6 @@ public abstract class TileUI extends ComponentUI {
     g2di.dispose();
   }
 
-  
   ///Some new idea for resizeing must be tested for spedd etc. Mosttime is the rsize operation exspecally for block
   ///Als make a rezieg call in the Tilecache and resize all tile in the cache in worker thread befor painting
   public void resize(BufferedImage srcImage, BufferedImage destImage) {

@@ -43,6 +43,7 @@ public class DefaultTileModel implements TileModel {
   protected boolean selected = false;
   protected Color selectedColor;
   protected boolean scaleImage = true;
+
   protected boolean showCenter = false;
   protected Orientation tileOrienation;
   protected Orientation incomingSide;

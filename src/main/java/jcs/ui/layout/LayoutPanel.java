@@ -131,17 +131,12 @@ public class LayoutPanel extends JPanel {
 
       toolBar.remove(autoPilotBtn);
       toolBar.remove(startAllLocomotivesBtn);
-      toolBar.remove(zoomMinBtn);
-      toolBar.remove(zoomPercLbl);
-      toolBar.remove(zoomPlusBtn);
 
       if (JCS.getParentFrame() != null) {
-        toolBar.remove(autoPilotBtn);
-        toolBar.remove(startAllLocomotivesBtn);
+        JCS.getParentFrame().hideExtraToolbar(this.toolBar);
         toolBar.remove(zoomMinBtn);
         toolBar.remove(zoomPercLbl);
         toolBar.remove(zoomPlusBtn);
-
         topPanel.remove(this.toolBar);
         remove(topPanel);
         doLayout();
