@@ -15,12 +15,9 @@
  */
 package jcs.ui.util;
 
-import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
 import java.awt.Image;
+import java.awt.RenderingHints;
 import java.awt.Transparency;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
@@ -36,17 +33,6 @@ import org.tinylog.Logger;
  */
 public class ImageUtil {
 
-//  public static BufferedImage toBufferedImage1(Image image) {
-//    GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
-//    GraphicsDevice graphicsDevice = graphicsEnvironment.getDefaultScreenDevice();
-//    GraphicsConfiguration graphicsConfiguration = graphicsDevice.getDefaultConfiguration();
-//
-//    BufferedImage bufferedImage = graphicsConfiguration.createCompatibleImage(image.getWidth(null), image.getHeight(null), Transparency.BITMASK);
-//    Graphics graphics = bufferedImage.createGraphics();
-//    graphics.drawImage(image, 0, 0, null);
-//    graphics.dispose();
-//    return bufferedImage;
-//  }
   public static BufferedImage toBufferedImage(Image image) {
     if (image == null) {
       return null;
@@ -124,6 +110,51 @@ public class ImageUtil {
       img = img.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH);
     }
     return img;
+  }
+
+//  public static BufferedImage resizeImageFast(BufferedImage image, int width, int height) {
+//    BufferedImage resizedImage = new BufferedImage(width, height, image.getType());
+//
+//    Graphics2D g = resizedImage.createGraphics();
+//    g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+//    g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+//    g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+//
+//    g.drawImage(image, 0, 0, width, height, null);
+//    g.dispose();
+//    return resizedImage;
+//  }
+  public static BufferedImage resizeImage(BufferedImage image, int targetWidth, int targetHeight) {
+    int currentWidth = image.getWidth();
+    int currentHeight = image.getHeight();
+    BufferedImage current = image;
+
+    // Step down by at most 50% per pass.
+    // For 400→40 (10x): 400→200→100→50→40  (4 passes)
+    // Each pass preserves thin lines that a single 10x pass destroys.
+    while (currentWidth > targetWidth * 2 || currentHeight > targetHeight * 2) {
+      currentWidth = Math.max(currentWidth / 2, targetWidth);
+      currentHeight = Math.max(currentHeight / 2, targetHeight);
+      current = scaleStep(current, currentWidth, currentHeight);
+    }
+
+    // Final pass to exact target dimensions (may be a non-power-of-two step)
+    if (currentWidth != targetWidth || currentHeight != targetHeight) {
+      current = scaleStep(current, targetWidth, targetHeight);
+    }
+
+    return current;
+  }
+
+  private static BufferedImage scaleStep(BufferedImage src, int w, int h) {
+    BufferedImage dest = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+    Graphics2D g = dest.createGraphics();
+    g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+    g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+    g.drawImage(src, 0, 0, w, h, null);
+    g.dispose();
+    return dest;
   }
 
 }

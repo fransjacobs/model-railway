@@ -418,6 +418,10 @@ public class TileCache {
     return loadTiles(false);
   }
 
+  public static List<Tile> getTiles() {
+    return new ArrayList<>(idMap.values());
+  }
+
   static void deRegisterListeners() {
     for (Tile tile : idMap.values()) {
       if (tile instanceof AccessoryEventListener && tile.getTileBean() != null && tile.getTileBean().getAccessoryId() != null) {
@@ -477,10 +481,6 @@ public class TileCache {
         altPointMap.put(ap, tile);
       }
     }
-  }
-
-  public static List<Tile> getTiles() {
-    return new ArrayList<>(idMap.values());
   }
 
   static void calculateMaxCoordinates(int tileX, int tileY) {

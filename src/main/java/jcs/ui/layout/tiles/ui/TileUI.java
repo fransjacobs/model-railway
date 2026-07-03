@@ -33,7 +33,6 @@ import jcs.entities.TileBean;
 import static jcs.entities.TileBean.Orientation.NORTH;
 import static jcs.entities.TileBean.Orientation.SOUTH;
 import static jcs.entities.TileBean.Orientation.WEST;
-import jcs.entities.TileBean.TileType;
 import static jcs.entities.TileBean.TileType.CROSS_SWITCH;
 import jcs.ui.layout.LayoutCanvas;
 import jcs.ui.layout.tiles.LayoutScale;
@@ -42,7 +41,7 @@ import jcs.ui.layout.tiles.Tile;
 import static jcs.ui.layout.tiles.Tile.DEFAULT_BACKGROUND_COLOR;
 import static jcs.ui.layout.tiles.Tile.DEFAULT_TRACK_COLOR;
 import jcs.ui.layout.tiles.TileModel;
-import org.imgscalr.Scalr;
+import jcs.ui.util.ImageUtil;
 import org.tinylog.Logger;
 
 /**
@@ -65,7 +64,7 @@ public abstract class TileUI extends ComponentUI {
   protected Color trackColor;
   protected Color trackRouteColor;
 
-  protected BufferedImage tileImage;
+  protected volatile BufferedImage tileImage;
   protected volatile boolean imageDirty = true;
 
   protected static LayoutScale layoutScale;
@@ -124,6 +123,16 @@ public abstract class TileUI extends ComponentUI {
   abstract void renderTile(Graphics2D g2d, JComponent c);
 
   abstract void renderTileRoute(Graphics2D g2d, JComponent c);
+
+  /**
+   * Pre-renders the tile image on any thread without touching Swing component state. Safe to call from a worker thread as long as the tile model is not concurrently mutated.
+   *
+   * @param c
+   */
+  public void preRender(JComponent c) {
+    drawTile(null, c);
+    imageDirty = false;
+  }
 
   public int getRenderWidth() {
     return renderWidth;
@@ -243,11 +252,34 @@ public abstract class TileUI extends ComponentUI {
 
     // Scale the image back...
     if (model.isScaleImage()) {
-      if (TileType.BLOCK == tile.getTileType()) {
-        tileImage = Scalr.resize(bf, Scalr.Method.QUALITY, Scalr.Mode.AUTOMATIC, tile.getWidth(), tile.getHeight(), Scalr.OP_GRAYSCALE);
+      LayoutScale scale = LayoutScale.getInstance();
+      int s = scale.scaledTileSize();
+      int targetW, targetH;
+      if (tile.isHorizontal()) {
+        targetW = switch (tile.getTileType()) {
+          case CROSS_SWITCH, CROSS ->
+            s * 2;
+          case BLOCK ->
+            s * 3;
+          default ->
+            s;
+        };
+        targetH = s;
       } else {
-        tileImage = Scalr.resize(bf, Scalr.Method.BALANCED, Scalr.Mode.AUTOMATIC, tile.getWidth(), tile.getHeight(), Scalr.OP_ANTIALIAS);
+        targetW = s;
+        targetH = switch (tile.getTileType()) {
+          case CROSS_SWITCH, CROSS ->
+            s * 2;
+          case BLOCK ->
+            s * 3;
+          default ->
+            s;
+        };
       }
+
+      //tileImage = ImageUtil.resizeImage(bf, tile.getWidth(), tile.getHeight());
+      tileImage = ImageUtil.resizeImage(bf, targetW, targetH);
+
       bf.flush();
     } else {
       tileImage = bf;
@@ -258,31 +290,32 @@ public abstract class TileUI extends ComponentUI {
     g2di.dispose();
   }
 
-  ///Some new idea for resizeing must be tested for spedd etc. Mosttime is the rsize operation exspecally for block
-  ///Als make a rezieg call in the Tilecache and resize all tile in the cache in worker thread befor painting
-  public void resize(BufferedImage srcImage, BufferedImage destImage) {
-
-    int width = destImage.getWidth();
-    int height = destImage.getHeight();
-
-    //Graphics2D g = createGraphics(destImage);
-    Graphics2D g = destImage.createGraphics();
-
-    g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, width);
-    g.drawImage(srcImage, 0, 0, width, height, null);
-    g.dispose();
-  }
-
-  public BufferedImage resizeImage(BufferedImage image, int width, int height) {
-    int type = 0;
-    type = image.getType() == 0 ? BufferedImage.TYPE_INT_ARGB : image.getType();
-    BufferedImage resizedImage = new BufferedImage(width, height, type);
-    Graphics2D g = resizedImage.createGraphics();
-    g.drawImage(image, 0, 0, width, height, null);
-    g.dispose();
-    return resizedImage;
-  }
-
+//  // In TileUI.drawTile() — replace the Scalr/resize block:
+//if (model.isScaleImage()) {
+//    LayoutScale scale = LayoutScale.getInstance();
+//    Tile tile = (Tile) c;
+//    int s = scale.scaledTileSize();
+//    int targetW, targetH;
+//
+//    if (tile.isHorizontal()) {
+//        targetW = switch (tile.getTileType()) {
+//            case CROSS_SWITCH, CROSS -> s * 2;
+//            case BLOCK              -> s * 3;
+//            default                 -> s;
+//        };
+//        targetH = s;
+//    } else {
+//        targetW = s;
+//        targetH = switch (tile.getTileType()) {
+//            case CROSS_SWITCH, CROSS -> s * 2;
+//            case BLOCK              -> s * 3;
+//            default                 -> s;
+//        };
+//    }
+//    tileImage = resizeImage(bf, targetW, targetH);
+//} else {
+//    tileImage = bf;
+//}
   /**
    * Render a tile image Always starts at (0,0) used the default width and height
    *

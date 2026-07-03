@@ -274,7 +274,7 @@ public class LayoutCanvas extends JPanel {
     Logger.trace("TileType: " + tileType + " Current mode: " + mode);
   }
 
-  public void setScale(int scalePercent) {
+  public void setScaleOld(int scalePercent) {
     if (selectedTile != null) {
       selectedTile.setSelected(false);
       selectedTile = null;
@@ -285,11 +285,27 @@ public class LayoutCanvas extends JPanel {
     //Don't do the scaling on the Event Disaptch Thread
     executor.execute(() -> {
       //Scale all tiles
+//      Component[] components = getComponents();
+//      for (Component c : components) {
+//        if (c instanceof Tile tile) {
+//          tile.setScaleImage(true);
+//          tile.markImageDirty();
+//          tile.setBounds(tile.getTileBounds());
+//        }
+//      }
+//
+//      Dimension canonicalSize = TileCache.getMinCanvasSize();
+//
+//        LayoutScale scale = LayoutScale.getInstance();
+//        setPreferredSize(new Dimension(
+//                scale.toDisplay(canonicalSize.width),
+//                scale.toDisplay(canonicalSize.height)
+//        ));
 
       java.awt.EventQueue.invokeLater(() -> {
         long now = System.currentTimeMillis();
-
-        for (Component c : getComponents()) {
+        Component[] components = getComponents();
+        for (Component c : components) {
           if (c instanceof Tile tile) {
             tile.setScaleImage(true);
             tile.markImageDirty();
@@ -310,6 +326,51 @@ public class LayoutCanvas extends JPanel {
         repaint();
         long duration = System.currentTimeMillis() - now;
         Logger.trace("Scaling {} tiles finished in {} ms...", getComponents().length, duration);
+      });
+    });
+  }
+
+  public void setScale(int scalePercent) {
+    if (selectedTile != null) {
+      selectedTile.setSelected(false);
+      selectedTile = null;
+    }
+
+    LayoutScale.getInstance().setScalePercent(scalePercent);
+
+    // Snapshot the component array on the EDT before handing off to worker.
+    final Component[] components = getComponents();
+
+    executor.execute(() -> {
+      // Phase 1 — worker thread: pre-render all tile images at the new scale.
+      // resizeImage() is the slow part. tileImage is volatile so the EDT
+      // will see the freshly rendered image without a data race.
+      for (Component c : components) {
+        if (c instanceof Tile tile) {
+          tile.getUI().preRender(tile);  // renders + clears dirty flag
+        }
+      }
+
+      // Phase 2 — single EDT block: apply all Swing mutations atomically.
+      // Because we are on the EDT, all setBounds() → repaint() calls are
+      // coalesced by RepaintManager and fire as ONE combined repaint after
+      // this invokeLater block completes. No tile-by-tile display.
+      SwingUtilities.invokeLater(() -> {
+        for (Component c : components) {
+          if (c instanceof Tile tile) {
+            tile.setScaleImage(true);        // setSize / setPreferredSize
+            tile.setBounds(tile.getTileBounds());  // coalesced, not immediate
+          }
+        }
+
+        LayoutScale scale = LayoutScale.getInstance();
+        Dimension canonical = TileCache.getMinCanvasSize();
+        setPreferredSize(new Dimension(
+                scale.toDisplay(canonical.width),
+                scale.toDisplay(canonical.height)));
+
+        revalidate();
+        repaint();  // all tiles clean → pure blit, fast
       });
     });
   }
