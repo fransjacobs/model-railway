@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package jcs.commandStation.uhlenbrock.p50x;
+package jcs.commandStation.uhlenbrock.connection;
 
 import com.fazecast.jSerialComm.SerialPort;
 
@@ -26,7 +26,7 @@ import com.fazecast.jSerialComm.SerialPort;
  */
 class SerialPortListener { //implements SerialPortEventListener {
 
-  private CommandAddressPair callback;
+  private P50xMessage callback;
   private boolean cts;
   private final SerialPort serialPort;
 
@@ -56,11 +56,11 @@ class SerialPortListener { //implements SerialPortEventListener {
     return this.cts;
   }
 
-  void setCallback(CommandAddressPair callback) {
+  void setCallback(P50xMessage callback) {
     this.callback = callback;
   }
 
-  CommandAddressPair getCallback() {
+  P50xMessage getCallback() {
     return this.callback;
   }
 

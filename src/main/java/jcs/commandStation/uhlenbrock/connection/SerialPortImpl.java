@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package jcs.commandStation.uhlenbrock.p50x;
+package jcs.commandStation.uhlenbrock.connection;
 
 import com.fazecast.jSerialComm.SerialPort;
 import java.util.HashMap;
@@ -158,7 +158,7 @@ class SerialPortImpl {
     //Reconnect
     try {
       this.serialPort = this.initSerialPort(portname);
-      result = sendCommand(new CommandAddressPair(GO_COMMAND));
+      result = sendCommand(new P50xMessage(GO_COMMAND));
       this.powerOn = result;
       if (powerOn) {
         Logger.info("6050 Powered ON");
@@ -201,10 +201,10 @@ class SerialPortImpl {
 
   boolean sendSingleCommand(int command) {
     Logger.trace("Sending single command: " + command + "...");
-    return sendCommand(new CommandAddressPair(command));
+    return sendCommand(new P50xMessage(command));
   }
 
-  boolean sendCommand(CommandAddressPair cp) {
+  boolean sendCommand(P50xMessage cp) {
     this.busy = true;
     boolean result;
     try {
