@@ -21,8 +21,6 @@ import java.awt.FlowLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -38,7 +36,6 @@ import jcs.JCS;
 import jcs.commandStation.automation.RailController;
 import jcs.entities.TileBean.TileType;
 import jcs.ui.layout.tiles.LayoutScale;
-import jcs.util.RunUtil;
 import org.tinylog.Logger;
 
 /**

@@ -33,7 +33,7 @@ import org.tinylog.Logger;
 
 /**
  *
- * @author fransjacobs
+ * Dialog to link a Sensor Tile To a real sensor
  */
 public class SensorDialog extends javax.swing.JDialog {
 
@@ -256,35 +256,32 @@ public class SensorDialog extends javax.swing.JDialog {
     private void saveExitBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveExitBtnActionPerformed
       if (sensor != null && sensor.getSensorBean() != null) {
         SensorBean sensorBean = sensor.getSensorBean();
-
         sensorBean.setContactId((Integer) contactIdSpinner.getValue());
         sensorBean.setDeviceId((Integer) deviceIdSpinner.getValue());
         sensorBean.setName(nameTF.getText());
 
-        sensor.setSensorBean(sensorBean);
+        if (0 == sensorBean.getContactId() && 0 == sensorBean.getDeviceId() && sensorBean.getId() == null) {
+          //Reset the sensorBean
+          if (sensor.getSensorBean() != null) {
+            JCS.getJcsCommandStation().removeSensorEventListener(sensor.getSensorId(), sensor);
+          }
 
-        if (PersistenceFactory.getService() != null) {
-          PersistenceFactory.getService().persist(sensorBean);
-
-          PersistenceFactory.getService().persist((sensor.getTileBean()));
-          JCS.getJcsCommandStation().addSensorEventListener(sensorBean.getId(), sensor);
-        }
-      } else if (sensor != null && sensor.getSensorBean() == null) {
-
-        //TODO !!!!!
-        SensorBean sensorBean = null; //new SensorBean(this.nameTF.getText(), (Integer) this.deviceIdSpinner.getValue(), (Integer) contactIdSpinner.getValue());
-
-        if (PersistenceFactory.getService() != null) {
-          sensorBean = PersistenceFactory.getService().persist(sensorBean);
+          sensor.setSensorBean(null);
+          if (PersistenceFactory.getService() != null) {
+            PersistenceFactory.getService().persist(sensor.getTileBean());
+          }
+        } else {
           sensor.setSensorBean(sensorBean);
-          Logger.trace("Created " + sensorBean);
 
-          PersistenceFactory.getService().persist((sensor.getTileBean()));
-          //JCS.getJcsCommandStation().addSensorEventListener(sensor);
+          if (PersistenceFactory.getService() != null) {
+            PersistenceFactory.getService().persist(sensorBean);
+
+            PersistenceFactory.getService().persist((sensor.getTileBean()));
+            JCS.getJcsCommandStation().addSensorEventListener(sensorBean.getId(), sensor);
+            Logger.trace("Sensor Tile {} linked to Sensor {} in event {}", sensor.getId(), sensor.getSensorBean().getId(), evt.getActionCommand());
+          }
         }
       }
-
-      Logger.trace(evt.getActionCommand() + " Linking Sensor " + sensor.getId() + " to " + sensor.getSensorId());
 
       this.setVisible(false);
       this.dispose();
@@ -292,7 +289,7 @@ public class SensorDialog extends javax.swing.JDialog {
 
   private void sensorCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sensorCBActionPerformed
     SensorBean selected = (SensorBean) this.sensorComboBoxModel.getSelectedItem();
-    Logger.trace(evt.getActionCommand() + " Selected: " + selected.toLogString());
+    Logger.trace("Action {}, Selected: {}", evt.getActionCommand(), selected.toLogString());
     this.sensor.setSensorBean(selected);
 
     this.nameTF.setText(this.sensor.getSensorBean().getName());
