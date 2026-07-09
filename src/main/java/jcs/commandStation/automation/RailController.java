@@ -345,6 +345,10 @@ public final class RailController {
     enqueCommand(new RailControllerCommand(CMD_START_LOC, locomotiveBean));
   }
 
+  public void startLocomotive(LocomotiveBean locomotiveBean, boolean force) {
+    enqueCommand(new RailControllerCommand(CMD_START_LOC, locomotiveBean, force));
+  }
+
   public void stopLocomotive(LocomotiveBean locomotiveBean) {
     enqueCommand(new RailControllerCommand(CMD_STOP_LOC, locomotiveBean));
   }
@@ -435,9 +439,15 @@ public final class RailController {
     enqueCommand(new RailControllerCommand(CMD_FIRE_STATUS_LST, "all.dispatchers.removed"));
   }
 
-  synchronized void startDispatcher(LocomotiveBean locomotiveBean) {
-    Logger.trace("Starting locomotive " + locomotiveBean.getName() + " ...");
+  void startDispatcher(LocomotiveBean locomotiveBean) {
+    startDispatcher(locomotiveBean, "false");
+  }
+
+  synchronized void startDispatcher(LocomotiveBean locomotiveBean, String status) {
+    Logger.trace("Starting locomotive {} force {} ...", locomotiveBean.getName(), status);
     String key = locomotiveBean.getName();
+
+    boolean force = "true".equals(status);
 
     Dispatcher dispatcher;
     if (dispatchers.containsKey(key)) {
@@ -450,7 +460,7 @@ public final class RailController {
 
     if (!dispatcher.isLocomotiveStarted()) {
       Logger.trace("Starting dispatcher thread for " + key + " ...");
-      dispatcher.startLocomotive();
+      dispatcher.startLocomotive(force);
     }
 
     Logger.tag(TAG).debug("Started locomotive " + key);
@@ -659,7 +669,7 @@ public final class RailController {
         stopAutoMode();
       }
       case CMD_START_LOC -> {
-        startDispatcher(event.getLocomotiveBean());
+        startDispatcher(event.getLocomotiveBean(), event.getStatus());
       }
       case CMD_STOP_LOC -> {
         stopDispatcher(event.getLocomotiveBean());

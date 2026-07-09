@@ -1365,7 +1365,7 @@ public class LayoutCanvas extends JPanel {
     if (selectedTile != null && selectedTile.isBlock() && selectedTile.getLocomotive() != null) {
       LocomotiveBean locomotive = selectedTile.getLocomotive();
       //executor.execute(() -> AutoPilot.startStopLocomotive(locomotive, true));
-      RailController.getInstance().startLocomotive(locomotive);
+      RailController.getInstance().startLocomotive(locomotive, true);
     }
   }//GEN-LAST:event_startLocomotiveMIActionPerformed
 

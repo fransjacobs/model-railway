@@ -47,7 +47,11 @@ class RailControllerCommand {
   }
 
   RailControllerCommand(String command, LocomotiveBean locomotiveBean) {
-    this(command, locomotiveBean, null);
+    this(command, locomotiveBean, false);
+  }
+
+  RailControllerCommand(String command, LocomotiveBean locomotiveBean, boolean force) {
+    this(command, locomotiveBean, (force ? "true" : "false"));
   }
 
   RailControllerCommand(String command, LocomotiveBean locomotiveBean, String status) {
