@@ -15,123 +15,36 @@
  */
 package jcs.commandStation.uhlenbrock.p50x;
 
-import org.tinylog.Logger;
-
 /**
- *
+ * <p>
+ * P50x Message
+ * <p>
+ * Message start with command which is usually 1 byte
+ * <P>
+ * the command can have parameters which is max 4 bytes
+ * <p>
+ * A reply will usually follow which can be any size bytes
  */
 class P50xMessage {
 
   private final int command;
-  private final int address;
-  private int[] response;
-  private int resCount = 0;
+  private int[] parameters;
+  private int[] reply;
 
   P50xMessage(int command) {
-    this(command, -1);
+    this(command, new int[0]);
   }
 
-  P50xMessage(int command, int address) {
+  P50xMessage(int command, int[] parameters) {
     this.command = command;
-    this.address = address;
-
-    if (isFeedbackExpected()) {
-      this.response = new int[2];
-    }
-  }
-
-  final boolean isFeedbackExpected() {
-    return false;
-    //((M6050Controller.FEEDBACK_MULTIPLE_FIRST <= command && M6050Controller.FEEDBACK_MULTIPLE_LAST >= command)
-    //       || (M6050Controller.FEEDBACK_FIRST <= command && M6050Controller.FEEDBACK_LAST >= command));
-  }
-
-  final boolean isPowerOnCommand() {
-    return false; //SerialPortImpl.GO_COMMAND == this.command;
-
-  }
-
-  final boolean isPowerOffCommand() {
-    return false;//SerialPortImpl.STOP_COMMAND == this.command;
-  }
-
-  final boolean isSolenoidCommand() {
-    return false; //M6050Controller.SWITCH_RED == this.command || M6050Controller.SWITCH_GREEN == this.command;
-  }
-
-  final boolean isSwitchOffCommand() {
-    return false; //M6050Controller.SWITCH_OFF == this.command;
+    this.parameters = parameters;
   }
 
   int getCommand() {
     return this.command;
   }
 
-  int getAddress() {
-    return this.address;
-  }
-
-  boolean hasAddress() {
-    return this.address > 0;
-  }
-
-  void addResponse(int response) {
-    if (resCount < 2) {
-      this.response[resCount] = response;
-      resCount++;
-    }
-  }
-
-  int getModuleNumber() {
-    return 0; //this.command - M6050Controller.FEEDBACK_OFFSET;
-  }
-
-  int[] getResponse() {
-    return this.response;
-  }
-
-  boolean isResponseComplete() {
-    return this.resCount == 2;
-  }
-
-  /**
-   * Blocking call for result
-   *
-   * @return a List with the 2 result bytes as a integer
-   */
-  int[] getFeedback() {
-    // wait on the feedback but ensure a timeout...
-    long now = System.currentTimeMillis();
-    long timeout = now + 5000; // + SerialPortImpl.RESPONSE_TIMEOUT;
-
-    while (this.resCount < 2 && timeout > now) {
-      now = System.currentTimeMillis();
-    }
-
-    if (this.resCount != 2 && timeout < now) {
-      Logger.warn("Feedback timeout exceeded! Response size: " + this.resCount + "....");
-    }
-    return this.response;
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("{");
-    if (command < 10) {
-      sb.append("0");
-    }
-    sb.append(command);
-    if (hasAddress()) {
-      sb.append(",[");
-      if (address < 10) {
-        sb.append("0");
-      }
-      sb.append(address);
-      sb.append("]");
-    }
-    sb.append("}");
-    return sb.toString();
+  void addReply(int[] reply) {
   }
 
 }
