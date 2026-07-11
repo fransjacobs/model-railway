@@ -1,0 +1,616 @@
+/*
+ * Copyright 2026 Frans Jacobs.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package jcs.commandStation.uhlenbrock.p50x;
+
+/**
+ *
+ * Intellibox: general purpose and events related P50Xb commands<br>
+ * (document version 0.994 - 09/03) - by St.Ch-B. Uhlenbrock Elektronik GmbH
+ *
+ */
+public interface P50x {
+
+  public final static int X_OK = 0x00;
+
+  public final static int X_SYERR = 0x01;
+
+  public final static int X_BADPRM = 0x02;
+
+  public final static int X_BADSOV = 0x0F;
+
+  /**
+   * ######### P50 commands issued through P50Xb commands These two commands have been introduced in order to allow you to drop the typical leading "x" char of P50X commands (through the 'ZzA1' P50Xa
+   * cmd), while still being able to issue P50 commands. In fact, once the 'ZzA1' cmd has been issued, no P50 command is *directly* executable, as the 1st received byte would always be interpreted as
+   * the 1st byte of a P50X cmd.
+   */
+  public final static int X_P50LEN1 = 0xC6;
+  /**
+   * XP50Len1 (0C6h) - length = 1+1 bytes //Parameters (byte): //1st	same as a one byte long P50 cmd (e.g. s88, Pwr On/Off, //	and also turnout 'off') //N.B. there is NO reply!
+   */
+
+  public final static int X_P50LEN2 = 0xC7;
+//*** XP50Len2 (0C7h) - length = 1+2 bytes
+//Parameters (byte):
+//1st & 2nd  same as a two byte long P50 cmd (e.g. Lok control,
+//	   Fnc control and Turnout control (red on/green on))
+//N.B. there is NO reply!  
+
+  public final static int X_VER = 0xA0;
+//*** XVer (0A0h) - length = 1 byte
+//Reply: iterated format consisting of one 1st byte telling
+//the amount of bytes which shall follow. If this 1st byte
+//is zero, then this is the last byte of the XVer reply.
+//For example, the IB replies with:
+//02h, <SPU version low>, <SPU version high>,
+//02h, <KPU version low>, <KPU version high>,
+//01h, <PPU version>,
+//01h, <LIPU version>,
+//01h, <DNG version>,
+//05h, <IB serial number: 5 bytes (digits 98, 76, 54, 32, 10)>, 
+//00h
+//
+//A single byte version # is to be interpreted as: H.L
+//For example: 10h -> version 1.0
+//A two byte version # (low/high) is to be interpreted as: H.HLL
+//For example: 23h, 10h -> version 1.023
+//(the version numbers and the serial number are sent in BCD
+//notation - Binary Coded Decimal).
+//
+//The serial number is to be interpreted as: '9876543210' - i.e.
+//digit '9' is the most significant digit, etc...
+//
+//SPU = System Processing Unit (the IB 'heart')
+//KPU = Keypad Processing Unit (user interface)
+//PPU = Peripheral Processing Unit (digital signal generator)
+//LIPU = Lokmaus/I2C Processing Unit
+//DNG = Dispositivo di Nostra Gestione (sorry this is italian language!)
+
+  public final static int X_SOSET = 0xA3;
+//*** XSOSet (0A3h) - length = 1+3 bytes
+//N.B. NOT IMPLEMENTED IN THE INTELLIBOX!!
+//(Always replies with: XSYERR - that is: starting from SPU v1.002)
+//Parameters (byte):
+//1st	low byte of SO (Special Option) number
+//2nd	high byte of SO number
+//3rd	new SO value
+//legal SO number is 0..999
+//depending on the specific SO, the 3rd byte must lay inside a given
+//range (i.e., for each SO there is a minimum and a maximum value).
+//Special Options are user-only configurable parameters which control
+//many aspects of the Intellibox. Please check SO_DOC.TXT for a list of
+//the main SO's and their 'meaning'.
+//Reply:
+//Either 00h (cmd Ok) or error code:
+//XSYERR	(01h)	cmd not implemented
+//XBADPRM	(02h)	bad SO # (bad parameter value)
+//XBADSOV	(0Fh)	bad SO value
+//N.B. By design choice there is NO command for writing (changing) the
+//value of an SO in the Intellibox. This can only be done manually, using
+//the IB menus. The XSOSet cmd has only been defined in view of possible
+//future devices (e.g. CompuBox) and/or software implementations.
+
+  public final static int X_SOGET = 0xA4;
+//*** XSOGet (0A4h) - length = 1+2 bytes
+//Parameters (byte):
+//1st	low byte of SO (Special Option) number
+//2nd	high byte of SO number
+//legal SO number is 0..999
+//Special Options are user-only configurable parameters which control
+//many aspects of the Intellibox. Please check SO_DOC.TXT for a list of
+//the main SO's and their 'meaning'.
+//Reply:
+//Either 00h (cmd Ok, one more byte shall follow) or error code (XBADPRM).
+//The eventual 2nd byte holds the SO value.
+
+  public final static int X_PWR_OFF = 0xA6;
+//Reply:
+//1st	00h (cmd Ok)
+
+  public final static int X_PWR_ON = 0xA7;
+//Reply:
+//1st	00h (cmd Ok) or error code XPWOFF (06h): the Power is Off!
+//XPWOFF is reported if an error condition (e.g. 'overheating')
+//prevents the Intellibox from turning on the power to the layout.
+
+  public final static int X_HALT = 0xA5;
+//Reply:
+//1st	00h (cmd Ok) or error code
+//While in halt mode, all Loks are stopped.
+//The light and the driving direction are still controllable.
+//Turnouts can be controlled.
+//Halt mode is terminated by a Power On command (manual or PC).
+
+  public final static int X_P50XCH = 0xA1;
+//*** XP50XCh (0A1h) - length = 1+1 bytes
+//Parameters (byte):
+//1st	new P50X lead-in char (range: 0 or 50h..5Fh)
+//If 00h is specified (as parameter value), then the P50X protocol
+//shall be disabled. Re-enable is possible only by PC break or Intellibox
+//reset. The latter would only work provided that the Intellibox has been
+//configured that way using its menus (i.e. configured for 'P50X enabled').
+//
+//Reply:
+//1st	00h (cmd Ok) or error code
+
+  public final static int X_STATUS = 0xA2;
+//*** XStatus (0A2h) - length = 1 byte
+//Reply:
+//1st	current system status:
+//
+//	bit#   7     6     5     4     3     2     1     0
+//	    +-----+-----+-----+-----+-----+-----+-----+-----+
+//	    |Sts2 |VReg |ExtCU|Halt | Pwr | Hot | Go  |Stop |
+//	    +-----+-----+-----+-----+-----+-----+-----+-----+
+//
+//	where:
+//		Sts2	currently always reported as 0. If set, then
+//			one more byte is to be expected as part of
+//			the XStatus reply (this would be an eventual
+//			expansion for a future software release)
+//			This would be similar to what happens with
+//			the XEvent cmd.
+//		VReg	set if voltage regulation (N scale) is enabled
+//		ExtCU	set if an external I2C Central Unit is present
+//		Halt	set if in Halt mode (Lok's stopped, Pwr On)
+//		Pwr	set if we are in Power On
+//		Hot	Overheating condition detected
+//		Go	set if a [Go] key on an external I2C device
+//			is currently pressed
+//		Stop	set if a [Stop] key on an external I2C device
+//			is currently pressed
+
+  public final static int X_NOP = 0xC4;
+//*** XNOP (0C4h) - length = 1 byte
+//This cmd can be used in order to automatically identify the
+//currently selected IB baud rate and protocol.
+//In fact, this cmd only replies with the typical P50Xb 'Ok' (00h)
+//answer. This, along with the fact that the 0C4h P50 cmd replies
+//with two bytes (s88 data from the 4th s88 module), enables
+//automatic baud rate and protocol identification.
+//A second possible usage would be: checking that the communication
+//channel with the IB still works.
+//
+//N.B. The IB discards any byte which has been received with 'wrong'
+//     stop bits. This fact is 'used' as part of the automatic baud
+//     rate identification algorithm.   
+
+  public final static int X_SENSOR = 0x98;
+//*** XSensor (098h) - length = 1+1 bytes
+//Parameters (byte):
+//1st	s88 module number (1..128)
+//s88 module numbers 1..31 may correspond to real s88 modules
+//connected to the IB. Module numbers starting from 32 only
+//correspond to LocoNet sensors.
+//Reply:
+//1st	00h (cmd Ok, 2 bytes shall follow) or error code (XBADPRM)
+//	As usual, only in case of no error, more bytes are sent:
+//2nd	contacts #1..8 (bits #7..0)
+//3rd	contacts #9..16 (bits #7..0)
+//
+//N.B. If less than 31 'real' s88 modules are used, then the
+//corresponding addresses can be used for LocoNet sensors.
+//(Check also XEvtSen cmd.)
+//This would be the mapping of LocoNet sensors to s88 modules:
+//LocoNet sensor #0	s88 module #1, contact #1
+//LocoNet sensor #1	s88 module #1, contact #2
+//...
+//LocoNet sensor #15	s88 module #1, contact #16
+//LocoNet sensor #16	s88 module #2, contact #1
+//...
+//...
+//LocoNet sensor #2047	s88 module #128, contact #16
+//
+//The current version of the IB software "only" supports up to 2048
+//LocoNet sensors (0..2047). Eventual LocoNet messages related to higher
+//sensor addresses are currently discarded (ignored).
+//
+//N.B. In agreement with the Digitrax LocoNet documentation,
+//bit 'I' of byte 'IN2' of the OPC_INPUT_REP LocoNet message
+//is regarded as the least significant bit of the LocoNet
+//sensor address.
+//
+//N.B. The data read by the XSensor cmd shows the *current* status,
+//not the accumulated OR status (as would be the case for P50
+//s88 commands), for the s88 module or LocoNet sensor being read.
+//
+//Reading an s88 module with the XSensor cmd removes any
+//eventually pending sensor event for that module.
+
+  public final static int X_SENS_OFF = 0x99;
+//*** XSensOff (099h) - length = 1 byte
+//Reply:
+//1st	always 00h
+//This cmd tells the IB to report as new 'sensor events' the status of
+//all sensors which aren't 'off'.
+//It can be useful, e.g., at the start of a PC program, in oder to read,
+//using events, what the current status of all sensors ist.
+//Sensors for which no events shall be reported (after an XSensOff cmd)
+//can be assumed to be in the 'off' condition.
+//[Note: is there a way to improve this description?]
+
+  public final static int X_88P_GET = 0x9c;
+//*** X88PGet (09Ch) - length = 1+1 bytes
+//Parameter (byte):
+//1st	s88 parameter number
+//Allows reading the current value of an s88 related parameter.
+//Currently, these are the accessible parameters:
+//00h	# of automatically read s88 'half modules'
+//	(check also P50Xa 'SE' cmd)
+//01h	s88 module 'half number' which is source for the s88 timers
+//02h	s88 module 'half number' which is source for the s88 counters
+//
+//Reply: either 00h (cmd Ok, one byte shall follow) or error code.
+//Eventual 2nd byte holds the s88 parameter value
+
+  public final static int X_88P_SET = 0x9d;
+//*** X88PSet (09Dh) - length = 1+2 bytes
+//Parameters (byte):
+//1st	s88 parameter number (check X88PGet for details)
+//2nd	s88 parameter value
+//Allows setting current value of an s88 related parameter.
+//
+//N.B. s88 parameter shall only be modified up to the next IB reset.
+//     In fact, upon an IB reset all s88 parameters are reset to the
+//     values specified by the user (per IB menus) and stored in the
+//     corresponding Special Option.
+//
+//Reply: either 00h (cmd Ok) or error code.
+
+  public final static int X_S88_TIM = 0x9e;
+//*** Xs88Tim (09Eh) - length = 1+1 bytes
+//Parameters (byte):
+//1st	Bit #0..3: s88 Timer number (1..8)
+//	Bit #7 = set if Timer to be reset after reading (i.e. after this cmd)
+//	(Bit #4..6 are reserved: must always be 0)
+//Reply:
+//1st	00h (cmd Ok, 2 bytes shall follow) or error code
+//	As usual, only in case of no error, more bytes are sent:
+//2nd	s88 Timer value (low byte)
+//3rd	s88 Timer value (high byte)
+//The timer value is to be interpreted in 200 ms units.
+//
+//Provided the corresponding s88 input is 'on' (closed), each s88 Timer
+//is incremented (i.e., Timer = Timer + 1) approximately every 200 ms.
+//Upon eventually reaching the maximum value (0FFFFh), there is no
+//'wrap around': the timer stays at this maximum value.
+
+  public final static int X_S88_CNT = 0x9f;
+//*** Xs88Cnt (09Fh) - length = 1+1 bytes
+//Parameters (byte):
+//1st	Bit #0..3: s88 Counter number (1..8)
+//	Bit #7 = set if Counter to be reset after reading (i.e. after this cmd)
+//	(Bit #4..6 are reserved: must always be 0)
+//Reply:
+//1st	00h (cmd Ok, 2 bytes shall follow) or error code
+//	As usual, only in case of no error, more bytes are sent:
+//2nd	s88 Counter value (low byte)
+//3rd	s88 Counter value (high byte)
+//
+//The (time) resolution of the Counters depends on the number of s88
+//modules which are being automatically read by the IB: the lower this
+//number, the higher the resolution of s88 counters (i.e. they would be
+//able to keep track also of very fast on/off cycles).
+//A reasonable estimate, while automatically reading the first 8 s88
+//modules, would be about 50 ms resolution for the Counters - or better.
+//Upon eventually reaching the maximum value (0FFFFh), there is no
+//'wrap around': the counter stays at this maximum value.
+
+//######### P50Xb events related commands
+  public final static int X_EVENT = 0xc8;
+//*** XEvent (0C8h) - length = 1 byte
+//Reply:
+//the length of the reply varies from one to three bytes.
+//The length is determined from bit #7 of bytes #1 and 2.
+//If bit #7 is set, then one more byte shall be sent as part
+//of the reply.
+//Bit #7 of the 3rd byte is currently always reported as 0.
+//It could be used in the future for further extensions
+//to the XEvent cmd reply.
+//In case of 'no event to report', the reply consists of a
+//single byte: 00h.
+//
+//A pseudo-code algorithm should make things clear:
+//
+//if (bit #7 of 1st byte of reply to XEvent cmd is 1) then
+//	receive also 2nd byte
+//	if (bit #7 of 2nd byte... is 1) then
+//		receive also 3rd byte
+//	else
+//		consider 3rd byte as if it were 00h
+//	endif
+//else
+//	consider 2nd and 3rd bytes as if both were 00h
+//endif
+//
+//N.B. only **after** having eventually received also the 2nd and
+//the 3rd byte one should proceed and process the 'normal' (i.e.,
+//not bit #7) event flags of the XEvent reply.
+//This is to prevent 'forgetting' about the 2nd and 3rd byte and/or
+//mixing up a reply to a further cmd with this 2nd and 3rd byte.
+//
+//1st	event flags to be interpreted as:
+//
+//	bit#   7     6     5     4     3     2     1     0
+//	    +-----+-----+-----+-----+-----+-----+-----+-----+
+//	    | Ev2 |  x  |Trnt |TRes |PwOff| Sen | IR  | Lok |
+//	    +-----+-----+-----+-----+-----+-----+-----+-----+
+//
+//	where:
+//		Ev2	set if also the 2nd byte of the XEvent
+//			reply shall be sent (i.e.: there is at least
+//			one event also in the 2nd or in the 3rd byte)
+//		x	(reserved for future use)
+//		Trnt	there has been at least one non-PC Turnout cmd
+//		TRes	there has been at least one non-PC attempt at
+//			changing the status of a 'reserved' Turnout
+//		PwOff	there **has been** (not: is!) a Power Off
+//		Sen	there has been at least one sensor event
+//			(s88 or LocoNet)
+//		IR	there has been at least one infra-red event
+//		Lok	there has been at least one non-PC Lok cmd
+//
+//2nd	event flags to be interpreted as:
+//
+//	bit#   7     6     5     4     3     2     1     0
+//	    +-----+-----+-----+-----+-----+-----+-----+-----+
+//	    | Ev3 | Sts | Hot |PTSh |RSSh |IntSh|LMSh |ExtSh|
+//	    +-----+-----+-----+-----+-----+-----+-----+-----+
+//
+//	where:
+//		Ev3	set if also the 3rd byte of the XEvent reply
+//			shall be sent (i.e.: there is at least an
+//			event also in the 3rd byte)
+//		Sts	an XStatus cmd should be issued
+//		Hot	Overheating condition detected
+//		PTSh	while the PT relay was on (e.g., PT in 'PT only'
+//			mode), a non-allowed electrical connection btw
+//			the Programming Track and the rest of the layout
+//			has been detected
+//		RSSh	overload (short) on the DCC Booster C/D lines
+//			or on the LocoNet (B connector) Rail Sync +/-
+//			lines (or on the PT, if the PT relay was on)
+//		IntSh	short reported by the internal Booster
+//		LMSh	overload (short) on the Lokmaus bus
+//		ExtSh	short reported by an external Booster
+//
+//3rd	event flags to be interpreted as:
+//
+//	bit#   7     6     5     4     3     2     1     0
+//	    +-----+-----+-----+-----+-----+-----+-----+-----+
+//	    | Ev4 |  x  |  x  |ExVlt|TkRel| Mem |RSOF |  PT |
+//	    +-----+-----+-----+-----+-----+-----+-----+-----+
+//
+//	where:
+//		Ev4	not currently used, reported as 0
+//		x	not currently used
+//		ExVlt	an external voltage source is present
+//			(prior to turning on the layout). E.g.
+//			an external transformer is in contact
+//			with the rails.
+//		TkRel	report Lok 'take' and 'release' events
+//			from non-PC Lok controllers
+//			(to be documented)
+//		Mem	set if there has been at least one
+//			'memory' event (to be documented - related
+//			to the future IB 'memory' software expansion)
+//		RSOF	set if an RS-232 rx overflow has been
+//			detected (the PC probably does not
+//			correctly handle the CTS line)
+//		PT	a PT event is available.
+//			N.B. This bit must be 'cleared' by sending
+//			     the XPT_Event cmd!
+//
+//Possible future events (and eventual associated commands):
+//- events from s88 Counters and/or Timers.
+//- events from 6043 (Mrk Memory).
+//
+//Note:
+//though it is possible to only issue XEvtSen, XEvtLok, etc... cmds
+//while not issueing any XEvent cmd, please be advised that, particularly
+//in the case of XEvtSen, in most cases no speed advantage would result
+//from doing this.
+//Besides, since XEvent also reports error events (e.g. Power off or Short),
+//it would be best to use XEvent and, depending on its reply, eventually
+//issue XEvtSen, XEvtLok, etc...
+
+  public final static int X_EVT_SEN = 0xCB;
+//*** XEvtSen (0CBh) - length = 1 byte
+//Report eventual sensor events (s88 modules and/or LocoNet sensors)
+//Reply: iterated format consisting of one 1st which tells:
+//- 1st byte = 00h -> 'no further sensor event to report'
+//- 1st byte > 00h -> s88 module number whose status is reported
+//		    with the next 2 bytes
+//The 1st byte holds the current status of this s88 module
+//inputs #1..8 (bit #7..0).
+//The 2nd byte holds the current status of this s88 module
+//inputs #9..16 (bit #7..0).
+//
+//The s88 module number is 'real' for modules 1..31 (31 is
+//the maximum number of physical s88 modules which can be
+//connected to the IB). For s88 module numbers greater or equal
+//32, a 'virtual' module is assumed: the reported data really
+//relates to LocoNet sensors starting from sensor #497.
+//If only 'Events stile' reading of sensor data is performed (i.e.
+//if only the XEvtSen cmd is used for reading sensor status),
+//then physical s88 modules and LocoNet sensors can coexist in the
+//same address range.
+//Of course, this would be a relatively strange arrangement!
+//
+//Please note: the current version of the IB software does not
+//process nor store any OPC_SW_REP LocoNet messages (turnout feedbacks).
+//On the countrary, OPC_INPUT_REP messages are internally stored and
+//processed (these would be the sensor messages of LocoNet).
+//
+//N.B. It is possible that the XEvent cmd reports a sensor event,
+//but that a subsequent XEvtSen does not report any sensor event!
+//This happens if the sensor status has changed back to its previous
+//('on') status in the time elapsed btw the XEvent and the XEvtSen cmds.
+//In other words: it is possible to miss a super-fast 'off' status for
+//a sensor which is normally 'on.
+//On the countrary a no matter how brief 'on' status would always be
+//reported at least once.
+//
+//It is guaranteed that an answer to a XEvtSen event does NOT include
+//the SAME s88 module twice.
+//The status of up to 128 s88 modules may be reported by the XEvtSen cmd.
+//
+//N.B.
+//NO SENSOR EVENT IS REPORTED, as far as physical s88 modules are concerned,
+//if the automatic reading (check P50Xa 'SE' cmd in the P50XAGEN.TXT file)
+//has been either disabled ('SE 0') or set too low.
+//In the latter case, no event would be reported for s88 modules laying
+//"outside" the automatic read range.
+//Therefore, while the user can set per IB menu's the amount of s88 modules
+//connected to the IB, it would be best to check this setting by PC and/or
+//let the user configure this also per PC - thus eventually sending an
+//appropriate 'SE xx' cmd.
+//The 'SE' cmd obviously does not affect LocoNet sensors.
+
+  public final static int X_EVT_LOK = 0xc9;
+//*** XEvtLok (0C9h) - length = 1 byte
+//Report locomotives whose status may have changed due to non-PC
+//commands. Up to 119 locomotives may be reported by XEvtLok.
+//Reply: iterated format consisting of one 1st byte which tells:
+//- 1st byte = 80h -> 'no further Lok event to report'
+//- 1st byte < 80h -> Lok status in this (Speed) and next 4 bytes.
+//- 1st byte > 80h -> reserved for future use!
+//
+//Complete Lok status is given by:
+//1st	Speed: 0..127 (0 = Stop, 1 = Stop/Em.Stop)
+//2nd	F1..F8 (bit #0..7)
+//3rd	low byte of Lok# (A7..A0)
+//4th	high byte of Lok#, plus Dir and Light status as in:
+//
+//	bit#   7     6     5     4     3     2     1     0
+//	    +-----+-----+-----+-----+-----+-----+-----+-----+
+//	    | Dir |  FL | A13 | A12 | A11 | A10 | A9  | A8  |
+//	    +-----+-----+-----+-----+-----+-----+-----+-----+
+//
+//	where:
+//		Dir	Lok direction (1 = forward)
+//		FL	Light status
+//		A13..8	high bits of Lok#
+//
+//5th	'real' Lok speed (in terms of the Lok type/configuration)
+//	(please check XLokSts in P50X_LT.TXT for doc on 'real' speed)
+//
+//The maximum number of events which can be reported by one XEvtLok
+//cmd is 119: the amount of LocoNet 'normal' slots supported by the IB.
+//('Special' slots being those used for the Programming Track and
+//for the FAST clock feature (the latter is not supported in the
+//current IB software version).)
+//[### Note: add documentation with regard to the 1st byte (reply): Speed
+//is reported in a "funny" way for non-128 speed steps Loks.]
+//[### Note: add enphasys on the fact that the current _status_ is reported,
+//not the status at the time of the event]
+
+  public final static int X_EVT_TRN = 0xca;
+//*** XEvtTrn (0CAh) - length = 1 byte
+//Report eventual turnout events (turnout commands **not** from the PC).
+//Reply: a first byte which tells:
+//- 1st byte = 00h -> 'no turnout event to report'
+//- 1st byte > 00h -> this many turnout events are going to be reported
+//For each reported turnout event, two bytes are sent. The format is the
+//same used with the XTrnt P50Xb cmd for **sending** a turnout cmd to
+//the IB, with the exception that bit #5..3 are always reported as 0.
+//These bits are reserved for future use.
+//Up to 64 turnout events may be reported by one XEvtTrn cmd. This would
+//be the size of the turnout events buffer in the IB. Should more such
+//events occurr before an XEvtTrn cmd is issued, then newer events shall
+//overwrite older ones.
+
+  public final static int X_EVT_IR = 0xcc;
+//*** XEvtIR (0CCh) - length = 1 byte
+//Report eventual events due to Infra-Red (remote controller) commands.
+//Reply: a first byte which tells:
+//- 1st byte = 00h -> 'no IR event to report'
+//- 1st byte > 00h -> this many IR events (not bytes!) are going to be
+//reported. For each reported IR event, two bytes are sent.
+//The format of these two bytes is:
+//1st
+//	bit#   7     6     5     4     3     2     1     0
+//	    +-----+-----+-----+-----+-----+-----+-----+-----+
+//	    |  1  |  0  |  T  | Ch4 | Ch3 | Ch2 | Ch1 | Ch0 |
+//	    +-----+-----+-----+-----+-----+-----+-----+-----+
+//
+//	where:
+//		Ch0..4	channel number (IRIS: 24, 25, 26, 27)
+//		T	this bit toggles at each new keypress,
+//			therefore, it can used to tell btw
+//			a new cmd and the repetition of a
+//			previous cmd
+//		0	this bit always has the value 0
+//		1	this bit always has the value 1
+//
+//2nd
+//	bit#   7     6     5     4     3     2     1     0
+//	    +-----+-----+-----+-----+-----+-----+-----+-----+
+//	    |  0  | PC  | K5  | K4  | K3  | K2  |  K1 | K0  |
+//	    +-----+-----+-----+-----+-----+-----+-----+-----+
+//
+//	where:
+//		K5..0	Cmd (key) code
+//		PC	This bit is set for IR events resulting
+//			from the usage of IR_PCx or IR_PCLNx IRIS tokens
+//		0	this bit always has the value 0
+//
+//In this context, a 'token' is a command/action which has been assigned
+//to a particular IRIS key. Tokens include: digits (e.g., during loco,
+//turnout, route selection), loco/trnt/route selection start, speed control,
+//direction control, function control, turnout control, route activation,
+//send an IR event to the PC, send a LocoNet msg.
+//Tokens can also be assigned to (generated by) specific IRIS keys depending
+//on the status of an IRIS channel. For example, pressing a digit key on the
+//IRIS can generate two different tokens depending on if we are in a
+//selection mode or not.
+//Tokens are assigned using IB SO's. This is documented in a separate file.
+//
+//With regard to the IRIS (Infra-Red Intellibox System) - and thus with
+//regard to the IR events, the IB can be setup in different ways.
+//With regard to IR events, SO #768 is used to tell:
+//- bit #0: set if the IB is to report to the PC any received infra-red
+//          command _not_ coming from an IRIS channel
+//- bit #1: set if the IB is to report to the PC any received infra-red
+//          command which translated to an IR_PCx or IR_PCLNx token
+//- bit #2: set if the IB is to report to the PC any received infra-red
+//          command coming from an IRIS channel
+//- bit #3: set if the IB is to report on LocoNet any received infra-red
+//          command which translated to an IR_LNx or IR_PCLNx token
+//
+//If both bits #1 and #2 are set and if an infra-red command is received with
+//translates to an IR_PCx or IR_PCLNx token, then 2 IR events shall be reported
+//by the IB.
+//
+//LocoNet messages resulting from IR_LNx or IR_PCLNx tokens have this format
+//(hex):
+//E5 07 00 00 00 5x Cks  (for new keypresses)
+//E5 07 00 00 00 6x Cks  (for repetitions)
+//(where x equals the x in the IR_LNx or IR_PCLNx token).
+//This msgs are only sent if SO #768.3 has the value 1.
+
+  public final static int X_EVT_PT = 0xce;
+//*** XEvtPT (0CEh) - length = 1 byte
+//Report Programming Track events - please check the P50X_PT.TXT document.
+
+  public final static int X_EVT_TKR = 0xcf;
+//*** XEvtTkR (0CFh) - length = 1 byte
+//Report Lok 'take' and 'release' events.
+
+  public final static int X_EVT_MEM = 0xd0;
+//*** XEvtMem (0D0h) - length = 1 byte
+//Report 'Memory' events.
+
+}
