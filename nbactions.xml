@@ -114,4 +114,11 @@
             <activatedProfile>native</activatedProfile>
         </activatedProfiles>
     </action>
+    <action>
+            <actionName>CUSTOM-spotbugs</actionName>
+            <displayName>spotbugs</displayName>
+            <goals>
+                <goal>spotbugs:gui</goal>
+            </goals>
+        </action>
 </actions>

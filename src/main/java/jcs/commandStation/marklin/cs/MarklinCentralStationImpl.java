@@ -214,7 +214,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
         if (virtual) {
           canConnect = true;
         } else {
-          canConnect = Ping.IsReachable(commandStationBean.getIpAddress());
+          canConnect = Ping.isReachable(commandStationBean.getIpAddress());
         }
       }
 

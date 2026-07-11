@@ -72,11 +72,11 @@ public class TrackPowerBean extends ControllableDevice {
     return Status.ON.equals(this.status);
   }
 
-  public void On() {
+  public void on() {
     this.setStatus(Status.ON);
   }
 
-  public void Off() {
+  public void off() {
     this.setStatus(Status.OFF);
   }
 
