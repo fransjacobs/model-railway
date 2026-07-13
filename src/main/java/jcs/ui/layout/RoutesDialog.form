@@ -206,10 +206,6 @@
         <Component class="javax.swing.JList" name="routeList">
           <Properties>
             <Property name="selectionMode" type="int" value="0"/>
-            <Property name="doubleBuffered" type="boolean" value="true"/>
-            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-              <Dimension value="[130, 600]"/>
-            </Property>
           </Properties>
           <Events>
             <EventHandler event="valueChanged" listener="javax.swing.event.ListSelectionListener" parameters="javax.swing.event.ListSelectionEvent" handler="routeListValueChanged"/>
