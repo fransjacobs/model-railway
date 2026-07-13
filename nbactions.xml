@@ -41,7 +41,7 @@
         <properties>
             <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
             <exec.executable>java</exec.executable>
-            <exec.vmArgs>-Dtinylog.writer.level=trace -Xms256m -Xmx1024m --add-opens=java.desktop/sun.lwawt.macosx=ALL-UNNAMED -Dsun.java2d.metal=true</exec.vmArgs>
+            <exec.vmArgs>-Dtinylog.writer.level=trace -Xms256m -Xmx1024m --add-opens=java.desktop/sun.lwawt.macosx=ALL-UNNAMED -Dsun.java2d.metal=true --enable-native-access=ALL-UNNAMED</exec.vmArgs>
             <exec.appArgs></exec.appArgs>
             <exec.mainClass>jcs.JCS</exec.mainClass>
         </properties>
@@ -59,7 +59,7 @@
             <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
             <exec.executable>java</exec.executable>
             <jpda.listen>true</jpda.listen>
-            <exec.vmArgs>-Dtinylog.writer.level=trace -Xms256m -Xmx1024m --add-opens=java.desktop/sun.lwawt.macosx=ALL-UNNAMED -Dsun.java2d.metal=true -agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address}</exec.vmArgs>
+            <exec.vmArgs>-Dtinylog.writer.level=trace -Xms256m -Xmx1024m --add-opens=java.desktop/sun.lwawt.macosx=ALL-UNNAMED -Dsun.java2d.metal=true --enable-native-access=ALL-UNNAMED -agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address}</exec.vmArgs>
             <exec.appArgs></exec.appArgs>
             <exec.mainClass>jcs.JCS</exec.mainClass>
         </properties>
@@ -76,7 +76,7 @@
         <properties>
             <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
             <exec.executable>java</exec.executable>
-            <exec.vmArgs>-Dtinylog.writer.level=trace -Xms256m -Xmx1024m --add-opens=java.desktop/sun.lwawt.macosx=ALL-UNNAMED -Dsun.java2d.metal=true</exec.vmArgs>
+            <exec.vmArgs>-Dtinylog.writer.level=trace -Xms256m -Xmx1024m --add-opens=java.desktop/sun.lwawt.macosx=ALL-UNNAMED -Dsun.java2d.metal=true --enable-native-access=ALL-UNNAMED</exec.vmArgs>
             <exec.appArgs></exec.appArgs>
             <exec.mainClass>jcs.JCS</exec.mainClass>
         </properties>
@@ -120,5 +120,40 @@
             <goals>
                 <goal>spotbugs:gui</goal>
             </goals>
+        </action>
+    <action>
+            <actionName>run.single.main</actionName>
+            <packagings>
+                <packaging>*</packaging>
+            </packagings>
+            <goals>
+                <goal>process-classes</goal>
+                <goal>org.codehaus.mojo:exec-maven-plugin:3.5.1:exec</goal>
+            </goals>
+            <properties>
+                <exec.vmArgs>--enable-native-access=ALL-UNNAMED</exec.vmArgs>
+                <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
+                <exec.executable>java</exec.executable>
+                <exec.mainClass>${packageClassName}</exec.mainClass>
+                <exec.classpathScope>${classPathScope}</exec.classpathScope>
+            </properties>
+        </action>
+    <action>
+            <actionName>debug.single.main</actionName>
+            <packagings>
+                <packaging>*</packaging>
+            </packagings>
+            <goals>
+                <goal>process-test-classes</goal>
+                <goal>org.codehaus.mojo:exec-maven-plugin:3.5.1:exec</goal>
+            </goals>
+            <properties>
+                <exec.vmArgs>-agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address} --enable-native-access=ALL-UNNAMED</exec.vmArgs>
+                <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
+                <exec.executable>java</exec.executable>
+                <exec.mainClass>${packageClassName}</exec.mainClass>
+                <exec.classpathScope>${classPathScope}</exec.classpathScope>
+                <jpda.listen>true</jpda.listen>
+            </properties>
         </action>
 </actions>

@@ -150,6 +150,9 @@ public class JCS {
   public static void main(String[] args) throws InterruptedException {
     try {
       System.setProperty("fazecast.jSerialComm.appid", "JCS");
+      System.setProperty("jSerialComm.library.randomizeNativeName", "true");
+      
+      //System.setProperty("java.io.tmpdir", "/folder/where/execution/is/allowed")
 
       Logger.info("Starting JCS Version " + VersionInfo.getDisplayVersion() + " ...");
 

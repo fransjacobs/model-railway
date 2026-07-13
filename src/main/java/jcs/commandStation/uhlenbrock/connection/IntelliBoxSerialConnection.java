@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 frans.
+ * Copyright 2026 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,51 +15,47 @@
  */
 package jcs.commandStation.uhlenbrock.connection;
 
-import jcs.commandStation.dccex.connection.*;
 import com.fazecast.jSerialComm.SerialPort;
-import com.fazecast.jSerialComm.SerialPortEvent;
 import com.fazecast.jSerialComm.SerialPortInvalidPortException;
-import com.fazecast.jSerialComm.SerialPortMessageListener;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
-import jcs.commandStation.dccex.DccExConnection;
-import static jcs.commandStation.dccex.DccExConnection.MESSAGE_DELIMITER;
-import jcs.commandStation.dccex.DccExMessage;
-import jcs.commandStation.dccex.DccExMessageFactory;
-import jcs.commandStation.events.ConnectionEvent;
+import jcs.util.SerialPortUtil;
 import org.tinylog.Logger;
 
 /**
  *
  * @author frans
  */
-class IntelliBoxSerialConnection implements DccExConnection {
-
+class IntelliBoxSerialConnection implements IntelliBoxConnection {
+  
   private final String lastUsedPortName;
   private static SerialPort commPort;
   private Writer writer;
   private boolean portOpen = false;
   private boolean debug = false;
 
-  private final List<DccExMessageListener> dccExListeners;
-  private ResponseCallback responseCallback;
+  //private final List<DccExMessageListener> dccExListeners;
+  //private ResponseCallback responseCallback;
   private static final long TIMEOUT = 6000L;
+  
+  public static final int IB_PORT_VENDOR = 4292;
+  public static final int IB_PORT_PRODUCT_ID = 60000;
+  public static final String IB_PORT_MANUFACTURER = "Silicon Labs";
 
-  private final List<DccExMessage> startupMessages;
-
+  //private final List<DccExMessage> startupMessages;
   IntelliBoxSerialConnection(String portName) {
     lastUsedPortName = portName;
     debug = System.getProperty("message.debug", "false").equalsIgnoreCase("true");
-    dccExListeners = new ArrayList<>();
-    startupMessages = new ArrayList<>();
+    //dccExListeners = new ArrayList<>();
+    //startupMessages = new ArrayList<>();
 
     obtainSerialPort(portName);
   }
-
+  
   private void pause(long millis) {
     try {
       Thread.sleep(millis);
@@ -67,7 +63,7 @@ class IntelliBoxSerialConnection implements DccExConnection {
       Logger.trace(e.getMessage());
     }
   }
-
+  
   private void obtainSerialPort(String portName) {
     try {
       commPort = SerialPort.getCommPort(portName);
@@ -76,28 +72,27 @@ class IntelliBoxSerialConnection implements DccExConnection {
       commPort.setNumDataBits(8);
       commPort.setNumStopBits(1);
       commPort.setParity(0);
-
+      
       portOpen = commPort.openPort();
       commPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING | SerialPort.TIMEOUT_WRITE_BLOCKING, 10000, 1000);
       writer = new BufferedWriter(new OutputStreamWriter(commPort.getOutputStream()));
 
-      DccExSerialPortListener listener = new DccExSerialPortListener(this);
-      commPort.addDataListener(listener);
-
+      //DccExSerialPortListener listener = new DccExSerialPortListener(this);
+      //commPort.addDataListener(listener);
       Logger.trace("Manufacturer: " + commPort.getManufacturer() + " ProductId: " + commPort.getProductID());
-
+      
     } catch (SerialPortInvalidPortException ioe) {
       Logger.error("Can't find com port: " + portName + "; " + ioe.getMessage());
     }
   }
-
+  
   @Override
   public synchronized String sendMessage(String message) {
     String response = message;
-    String rxOpcode = DccExMessageFactory.getResponseOpcodeFor(message);
-    if (rxOpcode != null) {
-      this.responseCallback = new ResponseCallback(message);
-    }
+    //String rxOpcode = DccExMessageFactory.getResponseOpcodeFor(message);
+    //if (rxOpcode != null) {
+    //  this.responseCallback = new ResponseCallback(message);
+    //}
     try {
       writer.write(message);
       writer.flush();
@@ -108,43 +103,42 @@ class IntelliBoxSerialConnection implements DccExConnection {
       Logger.error(ex);
     }
 
-    if (responseCallback != null) {
-      long now = System.currentTimeMillis();
-      long start = now;
-      long timeout = now + TIMEOUT;
-
-      //Wait for the response
-      boolean responseComplete = responseCallback.isResponseComplete();
-      while (!responseComplete && now < timeout) {
-        pause(10);
-        responseComplete = responseCallback.isResponseComplete();
-        now = System.currentTimeMillis();
-      }
-
-      response = responseCallback.getResponse();
-      if (debug) {
-        if (responseComplete) {
-          Logger.trace("Got Response in " + (now - start) + " ms: " + response);
-        } else {
-          Logger.trace("No Response for " + message + " in " + (now - start) + " ms");
-        }
-      }
-    }
-
-    responseCallback = null;
+//    if (responseCallback != null) {
+//      long now = System.currentTimeMillis();
+//      long start = now;
+//      long timeout = now + TIMEOUT;
+//
+//      //Wait for the response
+//      boolean responseComplete = responseCallback.isResponseComplete();
+//      while (!responseComplete && now < timeout) {
+//        pause(10);
+//        responseComplete = responseCallback.isResponseComplete();
+//        now = System.currentTimeMillis();
+//      }
+//
+//      response = responseCallback.getResponse();
+//      if (debug) {
+//        if (responseComplete) {
+//          Logger.trace("Got Response in " + (now - start) + " ms: " + response);
+//        } else {
+//          Logger.trace("No Response for " + message + " in " + (now - start) + " ms");
+//        }
+//      }
+//    }
+//
+//    responseCallback = null;
     return response;
   }
 
-  private void messageReceived(DccExMessage dccExMessage) {
-    if (dccExListeners.isEmpty()) {
-      startupMessages.add(dccExMessage);
-    } else {
-      for (DccExMessageListener listener : dccExListeners) {
-        listener.onMessage(dccExMessage);
-      }
-    }
-  }
-
+//  private void messageReceived(DccExMessage dccExMessage) {
+//    if (dccExListeners.isEmpty()) {
+//      startupMessages.add(dccExMessage);
+//    } else {
+//      for (DccExMessageListener listener : dccExListeners) {
+//        listener.onMessage(dccExMessage);
+//      }
+//    }
+//  }
   @Override
   public boolean isConnected() {
     if (!portOpen) {
@@ -152,27 +146,27 @@ class IntelliBoxSerialConnection implements DccExConnection {
     }
     return portOpen;
   }
-
+  
   private void disconnected() {
-    try {
-      Logger.trace("Port " + commPort.getSystemPortName() + " is Disconnected");
-
-      String msg = commPort.getDescriptivePortName() + " [" + commPort.getSystemPortName() + "]";
-      ConnectionEvent de = new ConnectionEvent(msg, false, false);
-
-      for (DccExMessageListener listener : dccExListeners) {
-        listener.onDisconnect(de);
-      }
-      close();
-    } catch (Exception e) {
-      Logger.error("Error while trying to close port " + e.getMessage());
-    }
+//    try {
+//      Logger.trace("Port " + commPort.getSystemPortName() + " is Disconnected");
+//
+//      String msg = commPort.getDescriptivePortName() + " [" + commPort.getSystemPortName() + "]";
+//      ConnectionEvent de = new ConnectionEvent(msg, false, false);
+//
+//      for (DccExMessageListener listener : dccExListeners) {
+//        listener.onDisconnect(de);
+//      }
+//      close();
+//    } catch (Exception e) {
+//      Logger.error("Error while trying to close port " + e.getMessage());
+//    }
   }
-
+  
   @Override
   public void close() throws Exception {
-    dccExListeners.clear();
-    startupMessages.clear();
+//    dccExListeners.clear();
+//    startupMessages.clear();
     portOpen = false;
     if (writer != null) {
       writer.close();
@@ -181,99 +175,138 @@ class IntelliBoxSerialConnection implements DccExConnection {
     commPort.closePort();
   }
 
-  @Override
-  public void setMessageListener(DccExMessageListener messageListener) {
-    Boolean firstListener = dccExListeners.isEmpty();
-    this.dccExListeners.add(messageListener);
-    if (firstListener) {
-      for (DccExMessage m : startupMessages) {
-        messageReceived(m);
+//  @Override
+//  public void setMessageListener(DccExMessageListener messageListener) {
+//    Boolean firstListener = dccExListeners.isEmpty();
+//    this.dccExListeners.add(messageListener);
+//    if (firstListener) {
+//      for (DccExMessage m : startupMessages) {
+//        messageReceived(m);
+//      }
+//    }
+//  }
+//  public List<DccExMessage> getStartupMessages() {
+//    return this.startupMessages;
+//  }
+//  private final class DccExSerialPortListener implements SerialPortMessageListener {
+//
+//    private final IntelliBoxSerialConnection dccExSerialConnection;
+//
+//    DccExSerialPortListener(IntelliBoxSerialConnection hsiSerialConnection) {
+//      this.dccExSerialConnection = hsiSerialConnection;
+//    }
+//
+//    @Override
+//    public int getListeningEvents() {
+//      return SerialPort.LISTENING_EVENT_DATA_RECEIVED | SerialPort.LISTENING_EVENT_PORT_DISCONNECTED;
+//    }
+//
+//    @Override
+//    public byte[] getMessageDelimiter() {
+//      return MESSAGE_DELIMITER.getBytes();
+//    }
+//
+//    @Override
+//    public boolean delimiterIndicatesEndOfMessage() {
+//      return true;
+//    }
+//
+//    @Override
+//    public void serialEvent(SerialPortEvent event) {
+//      switch (event.getEventType()) {
+//        case SerialPort.LISTENING_EVENT_PORT_DISCONNECTED -> {
+//          this.dccExSerialConnection.disconnected();
+//        }
+//        case SerialPort.LISTENING_EVENT_DATA_RECEIVED -> {
+//          byte[] message = event.getReceivedData();
+//
+//          if (responseCallback != null && responseCallback.isSubscribedfor(message)) {
+//            //a "synchroneous" response
+//            responseCallback.setResponse(message);
+//          } else {
+//            //a "asynchroneous" response
+//            DccExMessage ddcExm = new DccExMessage(message);
+//            dccExSerialConnection.messageReceived(ddcExm);
+//          }
+//        }
+//      }
+//    }
+//  }
+//
+//  private class ResponseCallback {
+//
+//    private final String tx;
+//    private final String rxOpcode;
+//    private String rx;
+//
+//    ResponseCallback(final String tx) {
+//      this.tx = tx;
+//      this.rxOpcode = DccExMessageFactory.getResponseOpcodeFor(tx);
+//    }
+//
+//    boolean isSubscribedfor(final byte[] rx) {
+//      String response = new String(rx).replaceAll("\n", "").replaceAll("\r", "");
+//      String opcode = response.substring(1, 2);
+//
+//      return opcode.equals(rxOpcode);
+//    }
+//
+//    void setResponse(byte[] rx) {
+//      this.rx = new String(rx).replaceAll("\n", "").replaceAll("\r", "");
+//    }
+//
+//    String getResponse() {
+//      if (this.rx != null) {
+//        return this.rx;
+//      } else {
+//        return tx;
+//      }
+//    }
+//
+//    boolean isResponseComplete() {
+//      return rx != null && !rx.isBlank() && rx.startsWith("<") && rx.endsWith(">");
+//    }
+//  }
+  public static boolean isIntelliBoxPortAvailable() {
+    return !aquireIntelliBoxSerialPorts().isEmpty();
+  }
+  
+  public static List<SerialPort> obtainIntelliBoxPorts() {
+    return aquireIntelliBoxSerialPorts();
+  }
+  
+  static List<SerialPort> aquireIntelliBoxSerialPorts() {
+    SerialPort[] ports = SerialPortUtil.listComPorts();
+    
+    List<SerialPort> ibSerialPorts = new ArrayList<>();
+    for (SerialPort port : ports) {
+      int vendor = port.getVendorID();
+      int productId = port.getProductID();
+      if (IB_PORT_VENDOR == vendor && IB_PORT_PRODUCT_ID == productId) {
+        ibSerialPorts.add(port);
       }
     }
+    return ibSerialPorts;
   }
+  
+  ////////For testing
+  ///
+  public static void main(String[] a) {
 
-  public List<DccExMessage> getStartupMessages() {
-    return this.startupMessages;
-  }
-
-  private final class DccExSerialPortListener implements SerialPortMessageListener {
-
-    private final IntelliBoxSerialConnection dccExSerialConnection;
-
-    DccExSerialPortListener(IntelliBoxSerialConnection hsiSerialConnection) {
-      this.dccExSerialConnection = hsiSerialConnection;
-    }
-
-    @Override
-    public int getListeningEvents() {
-      return SerialPort.LISTENING_EVENT_DATA_RECEIVED | SerialPort.LISTENING_EVENT_PORT_DISCONNECTED;
-    }
-
-    @Override
-    public byte[] getMessageDelimiter() {
-      return MESSAGE_DELIMITER.getBytes();
-    }
-
-    @Override
-    public boolean delimiterIndicatesEndOfMessage() {
-      return true;
-    }
-
-    @Override
-    public void serialEvent(SerialPortEvent event) {
-      switch (event.getEventType()) {
-        case SerialPort.LISTENING_EVENT_PORT_DISCONNECTED -> {
-          this.dccExSerialConnection.disconnected();
-        }
-        case SerialPort.LISTENING_EVENT_DATA_RECEIVED -> {
-          byte[] message = event.getReceivedData();
-
-          if (responseCallback != null && responseCallback.isSubscribedfor(message)) {
-            //a "synchroneous" response
-            responseCallback.setResponse(message);
-          } else {
-            //a "asynchroneous" response
-            DccExMessage ddcExm = new DccExMessage(message);
-            dccExSerialConnection.messageReceived(ddcExm);
-          }
-        }
+    //SerialPort[] ports = SerialPortUtil.listComPorts();
+    Boolean isIntelliBoxAvailable = isIntelliBoxPortAvailable();
+    
+    Logger.trace("IntelliBox is {}", (isIntelliBoxAvailable ? "available" : "not available"));
+    
+    if (Logger.isTraceEnabled()) {
+      List<SerialPort> ibPorts = aquireIntelliBoxSerialPorts();
+      Logger.trace("IB Ports:");
+      
+      for (SerialPort port : ibPorts) {
+        Logger.trace("Port: {}", port.getDescriptivePortName());
       }
     }
+    
   }
-
-  private class ResponseCallback {
-
-    private final String tx;
-    private final String rxOpcode;
-    private String rx;
-
-    ResponseCallback(final String tx) {
-      this.tx = tx;
-      this.rxOpcode = DccExMessageFactory.getResponseOpcodeFor(tx);
-    }
-
-    boolean isSubscribedfor(final byte[] rx) {
-      String response = new String(rx).replaceAll("\n", "").replaceAll("\r", "");
-      String opcode = response.substring(1, 2);
-
-      return opcode.equals(rxOpcode);
-    }
-
-    void setResponse(byte[] rx) {
-      this.rx = new String(rx).replaceAll("\n", "").replaceAll("\r", "");
-    }
-
-    String getResponse() {
-      if (this.rx != null) {
-        return this.rx;
-      } else {
-        return tx;
-      }
-    }
-
-    boolean isResponseComplete() {
-      return rx != null && !rx.isBlank() && rx.startsWith("<") && rx.endsWith(">");
-    }
-  }
-
+  
 }

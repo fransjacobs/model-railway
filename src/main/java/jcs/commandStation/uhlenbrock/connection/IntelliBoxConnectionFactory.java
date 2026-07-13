@@ -16,7 +16,6 @@
 package jcs.commandStation.uhlenbrock.connection;
 
 import jcs.JCS;
-import jcs.commandStation.dccex.DccExConnection;
 import jcs.entities.CommandStationBean.ConnectionType;
 import jcs.util.RunUtil;
 import jcs.util.SerialPortUtil;
@@ -26,7 +25,7 @@ public class IntelliBoxConnectionFactory {
 
   private static IntelliBoxConnectionFactory instance;
 
-  private DccExConnection controllerConnection;
+  private IntelliBoxConnection controllerConnection;
 
   private static final String LAST_USED_COM_PORT_FILE = RunUtil.DEFAULT_PATH + "last-used-p50x-serial.properties";
 
@@ -40,12 +39,12 @@ public class IntelliBoxConnectionFactory {
     return instance;
   }
 
-  DccExConnection getConnectionImpl(ConnectionType connectionType) {
+  IntelliBoxConnection getConnectionImpl(ConnectionType connectionType) {
     if (controllerConnection == null) {
       if (null == connectionType) {
         throw new RuntimeException("Unknown connection type or connection type not set.");
       } else {
-        String lastUsedSerial = RunUtil.readProperty(LAST_USED_COM_PORT_FILE, "dcc-ex-com-port");
+        String lastUsedSerial = RunUtil.readProperty(LAST_USED_COM_PORT_FILE, "intelliBox-com-port");
         if (lastUsedSerial != null) {
           if (SerialPortUtil.portSystemNameExists(lastUsedSerial)) {
             controllerConnection = new IntelliBoxSerialConnection(lastUsedSerial);
@@ -62,7 +61,7 @@ public class IntelliBoxConnectionFactory {
     return this.controllerConnection;
   }
 
-  public static DccExConnection getConnection(ConnectionType connectionType) {
+  public static IntelliBoxConnection getConnection(ConnectionType connectionType) {
     return getInstance().getConnectionImpl(connectionType);
   }
 
