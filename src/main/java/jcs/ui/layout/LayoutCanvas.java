@@ -178,6 +178,10 @@ public class LayoutCanvas extends JPanel {
     }
 
     loadLayoutInBackground();
+    
+    if(routesDialog != null) {
+      routesDialog.setReadonly(readonly);
+    }
 
   }
 
@@ -940,6 +944,7 @@ public class LayoutCanvas extends JPanel {
   }
 
   void showRoutesDialog() {
+    routesDialog.setReadonly(readonly);
     routesDialog.setVisible(true);
   }
 

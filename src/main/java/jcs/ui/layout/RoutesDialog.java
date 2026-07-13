@@ -48,8 +48,7 @@ public class RoutesDialog extends javax.swing.JDialog {
 
   private final RouteBeanListModel routeListModel;
 
-  @SuppressWarnings("unused")
-  private final boolean readonly;
+  private boolean readonly;
   private RouteBean selectedRoute;
 
   private final LayoutCanvas layoutCanvas;
@@ -66,30 +65,49 @@ public class RoutesDialog extends javax.swing.JDialog {
    */
   public RoutesDialog(java.awt.Frame parent, boolean modal, LayoutCanvas layoutCanvas, boolean readonly) {
     super(parent, modal);
-    this.readonly = readonly;
     this.layoutCanvas = layoutCanvas;
     this.routeListModel = new RouteBeanListModel();
 
     initComponents();
     this.routeList.setModel(routeListModel);
 
-    loadRoutes();
-
     URL iconUrl = JCS.class.getResource("/media/jcs-train-64.png");
     if (iconUrl != null) {
       this.setIconImage(new ImageIcon(iconUrl).getImage());
     }
 
-    if (readonly) {
-      routeBtn.setEnabled(!readonly);
-      routeBtn.setVisible(!readonly);
-
-      deleteRoutesBtn.setEnabled(!readonly);
-      deleteRoutesBtn.setVisible(!readonly);
-    }
-
+//    if (readonly) {
+//      routeBtn.setEnabled(!readonly);
+//      routeBtn.setVisible(!readonly);
+//
+//      deleteRoutesBtn.setEnabled(!readonly);
+//      deleteRoutesBtn.setVisible(!readonly);
+//    }
     if (defaultRouteColor == null) {
       defaultRouteColor = Tile.DEFAULT_ROUTE_TRACK_COLOR;
+    }
+
+    postInit(readonly);
+
+  }
+
+  private void postInit(boolean readonly) {
+    setReadonly(readonly);
+
+  }
+
+  public boolean isReadonly() {
+    return readonly;
+  }
+
+  void setReadonly(boolean readonly) {
+    this.readonly = readonly;
+    if (readonly) {
+      routeBtn.setEnabled(readonly);
+      routeBtn.setVisible(readonly);
+
+      deleteRoutesBtn.setEnabled(readonly);
+      deleteRoutesBtn.setVisible(readonly);
     }
   }
 
