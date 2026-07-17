@@ -13,24 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation.uhlenbrock.connection;
-
+package jcs.commandStation.loconet;
 
 /**
  *
+ * @author fransjacobs
  */
-public interface IntelliBoxConnection extends AutoCloseable {
-
-  static final int MAX_ERRORS = 15;
-
-  //static final int DEFAULT_NETWORK_PORT = 2560;
-
-  static final String MESSAGE_DELIMITER = ">\n";
-
-  String sendMessage(byte[] message);
-
-  //void setMessageListener(DccExMessageListener messageListener);
-
-  boolean isConnected();
-
+public class LoconetCommand {
+  
+  
+  public static byte calculateChecksum(byte[] packet) {
+    int xorSum = 0;
+    // XOR all bytes except the last placeholder array item
+    for (int i = 0; i < packet.length - 1; i++) {
+        xorSum ^= packet[i];
+    }
+    // Bitwise NOT, constrained to 7-bit values
+    return (byte) ((~xorSum) & 0x7F);
+}
+  
 }
