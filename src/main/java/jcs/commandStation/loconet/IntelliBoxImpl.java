@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation.uhlenbrock;
+package jcs.commandStation.loconet;
 
 import java.awt.Image;
 import java.util.List;
@@ -36,13 +36,13 @@ import jcs.entities.SensorBean;
 /**
  * Uhlenbrock IntelliBox 2 implementation
  */
-public class IntelliBoxImpl extends AbstractController implements DecoderController, AccessoryController, FeedbackController, ConnectionEventListener {
+public class IntelliboxImpl extends AbstractController implements DecoderController, AccessoryController, FeedbackController, ConnectionEventListener {
 
-  public IntelliBoxImpl(CommandStationBean commandStationBean) {
+  public IntelliboxImpl(CommandStationBean commandStationBean) {
     this(commandStationBean, false);
   }
 
-  public IntelliBoxImpl(CommandStationBean commandStationBean, boolean autoConnect) {
+  public IntelliboxImpl(CommandStationBean commandStationBean, boolean autoConnect) {
     super(autoConnect, commandStationBean);
     this.executor = Executors.newCachedThreadPool();
   }

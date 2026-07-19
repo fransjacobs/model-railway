@@ -13,129 +13,97 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation.uhlenbrock.connection;
+package jcs.commandStation.loconet.connection;
 
 import com.fazecast.jSerialComm.SerialPort;
-import com.fazecast.jSerialComm.SerialPortEvent;
-import com.fazecast.jSerialComm.SerialPortMessageListener;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.List;
-import jcs.util.ByteUtil;
-import jcs.util.SerialPortUtil;
+import java.io.IOException;
 import org.tinylog.Logger;
 
 /**
  *
  * @author frans
  */
-class IntelliBoxSerialConnection implements IntelliBoxConnection {
+class IntelliboxConnectionImpl implements LoconetConnection {
 
-  private String lastUsedPortName = null;
-  private static SerialPort intelliBoxPort;
-  private Writer writer;
+  private SerialPort serialPort;
 
   private DataOutputStream dos;
+  private DataInputStream dis;
 
-  private IntelliBoxSerialPortListener listener;
-
-  private boolean portOpen = false;
   private boolean debug = false;
 
-  private static final long TIMEOUT = 6000L;
-
-  public static final int IB_PORT_VENDOR = 4292;
-  public static final int IB_PORT_PRODUCT_ID = 60000;
-  public static final String IB_PORT_MANUFACTURER = "Silicon Labs";
-
-  IntelliBoxSerialConnection() {
-    this(null);
-  }
-
-  IntelliBoxSerialConnection(String portName) {
+  IntelliboxConnectionImpl(SerialPort serialPort) {
     debug = System.getProperty("message.debug", "false").equalsIgnoreCase("true");
-    lastUsedPortName = portName;
-    intelliBoxPort = aquireSerialPort();
+    this.serialPort = serialPort;
+
+    //Is the buffered Stream a good idea?
+    //The dis shul bi in a client tread...
+    dis = new DataInputStream(new BufferedInputStream(serialPort.getInputStream()));
+    dos = new DataOutputStream(new BufferedOutputStream(serialPort.getOutputStream()));
   }
 
-  void connect() {
-    if (intelliBoxPort == null) {
-      intelliBoxPort = aquireSerialPort();
-    }
-
-    if (intelliBoxPort != null) {
-      portOpen = intelliBoxPort.openPort();
-      intelliBoxPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 0, 0);
-
-      //writer = new BufferedWriter(new OutputStreamWriter(intelliBoxPort.getOutputStream()));
-      //dos = new DataOutputStream(intelliBoxPort.getOutputStream());
-      //listener = new IntelliBoxSerialPortListener(this);
-      //intelliBoxPort.addDataListener(listener);
-      Logger.trace("Manufacturer: {}. Connected to {}", intelliBoxPort.getManufacturer(), intelliBoxPort.getDescriptivePortName());
-    }
+  @Override
+  public boolean isConnected() {
+    return this.serialPort.isOpen();
   }
 
-  private SerialPort aquireSerialPort() {
-    SerialPort serialPort = null;
-    boolean ibAvailable = isIntelliBoxPortAvailable();
-    if (lastUsedPortName == null && ibAvailable) {
-      // Use the first avalable port port
-      List<SerialPort> ports = aquireIntelliBoxSerialPorts();
-      serialPort = ports.getLast();
-      lastUsedPortName = serialPort.getSystemPortName();
-    } else if (ibAvailable) {
-      serialPort = SerialPort.getCommPort(lastUsedPortName);
-    }
-    Logger.trace("IntelliBox is {}", (ibAvailable ? "available" : "not available"));
-
-    if (serialPort != null) {
-      serialPort.setBaudRate(115200);
-      //serialPort.setBaudRate(19200);
-
-      serialPort.setNumDataBits(8);
-      serialPort.setNumStopBits(1);
-      serialPort.setParity(0);
-    }
-
-    return serialPort;
-  }
-
-  private void pause(long millis) {
+  @Override
+  public void close() {
     try {
-      Thread.sleep(millis);
-    } catch (InterruptedException e) {
-      Logger.trace(e.getMessage());
+      LoconetConnectionFactory lcf = LoconetConnectionFactory.getInstance();
+      //disable the re-connect
+      lcf.setAutoReAquirePort(false);
+      dos.flush();
+      dis.close();
+      dos.close();
+
+      lcf.closePort();
+
+    } catch (IOException e) {
+      Logger.trace("Error while closing serial port. {}", e.getMessage());
     }
+    this.dis = null;
+    this.dos = null;
+    this.serialPort = null;
+    Logger.debug("Serial port closed");
   }
 
+//  private void pause(long millis) {
+//    try {
+//      Thread.sleep(millis);
+//    } catch (InterruptedException e) {
+//      Logger.trace(e.getMessage());
+//    }
+//  }
   @Override
   public synchronized String sendMessage(byte[] message) {
     //String txm = ByteUtil.bytesToString(message);
     //String response = reply;
-    try {
-      //writer.write(reply);
-      //writer.flush();
-      //dos.write(message);
-      //dos.flush();
-      Logger.trace("TX: {}", ByteUtil.toHexString(message));
-
-      OutputStream os = intelliBoxPort.getOutputStream();
-      os.write(message);
-      os.flush();
-
-      //intelliBoxPort.writeBytes(message, MAX_ERRORS);
-      InputStream in = intelliBoxPort.getInputStream();
-      for (int j = 0; j < 10; ++j) {
-        Logger.trace("RX {}: {}", j, ByteUtil.toHexString(in.read()));
-      }
-      in.close();
-
-    } catch (Exception ex) {
-      Logger.error(ex);
-    }
+//    try {
+//      //writer.write(reply);
+//      //writer.flush();
+//      //dos.write(message);
+//      //dos.flush();
+//      Logger.trace("TX: {}", ByteUtil.toHexString(message));
+//
+//      OutputStream os = intelliBoxPort.getOutputStream();
+//      os.write(message);
+//      os.flush();
+//
+//      //intelliBoxPort.writeBytes(message, MAX_ERRORS);
+//      InputStream in = intelliBoxPort.getInputStream();
+//      for (int j = 0; j < 10; ++j) {
+//        Logger.trace("RX {}: {}", j, ByteUtil.toHexString(in.read()));
+//      }
+//      in.close();
+//
+//    } catch (Exception ex) {
+//      Logger.error(ex);
+//    }
 
 //    if (responseCallback != null) {
 //      long now = System.currentTimeMillis();
@@ -173,45 +141,6 @@ class IntelliBoxSerialConnection implements IntelliBoxConnection {
 //      }
 //    }
 //  }
-  @Override
-  public boolean isConnected() {
-    if (!portOpen) {
-      aquireSerialPort();
-    }
-    return portOpen;
-  }
-
-  private void disconnected() {
-    Logger.warn("DISCONNECTED!");
-//    try {
-//      Logger.trace("Port " + intelliBoxPort.getSystemPortName() + " is Disconnected");
-//
-//      String msg = intelliBoxPort.getDescriptivePortName() + " [" + intelliBoxPort.getSystemPortName() + "]";
-//      ConnectionEvent de = new ConnectionEvent(msg, false, false);
-//
-//      for (DccExMessageListener listener : dccExListeners) {
-//        listener.onDisconnect(de);
-//      }
-//      close();
-//    } catch (Exception e) {
-//      Logger.error("Error while trying to close port " + e.getMessage());
-//    }
-  }
-
-  @Override
-  public void close() {
-    try {
-      portOpen = false;
-
-      intelliBoxPort.removeDataListener();
-      intelliBoxPort.closePort();
-      intelliBoxPort = null;
-    } catch (Exception e) {
-      Logger.trace("Error while closing serial port. {}", e.getMessage());
-    }
-    Logger.debug("Serial port closed");
-  }
-
 //  @Override
 //  public void setMessageListener(DccExMessageListener messageListener) {
 //    Boolean firstListener = dccExListeners.isEmpty();
@@ -304,73 +233,50 @@ class IntelliBoxSerialConnection implements IntelliBoxConnection {
 //      return rx != null && !rx.isBlank() && rx.startsWith("<") && rx.endsWith(">");
 //    }
 //  }
-  public static boolean isIntelliBoxPortAvailable() {
-    return !aquireIntelliBoxSerialPorts().isEmpty();
-  }
-
-  public static List<SerialPort> obtainIntelliBoxPorts() {
-    return aquireIntelliBoxSerialPorts();
-  }
-
-  static List<SerialPort> aquireIntelliBoxSerialPorts() {
-    SerialPort[] ports = SerialPortUtil.listComPorts();
-
-    List<SerialPort> ibSerialPorts = new ArrayList<>();
-    for (SerialPort port : ports) {
-      int vendor = port.getVendorID();
-      int productId = port.getProductID();
-      if (IB_PORT_VENDOR == vendor && IB_PORT_PRODUCT_ID == productId) {
-        ibSerialPorts.add(port);
-      }
-    }
-    return ibSerialPorts;
-  }
-
-  private final class IntelliBoxSerialPortListener implements SerialPortMessageListener {
-
-    private final IntelliBoxSerialConnection ibSerialConnection;
-
-    IntelliBoxSerialPortListener(IntelliBoxSerialConnection ibSerialConnection) {
-      this.ibSerialConnection = ibSerialConnection;
-    }
-
-    @Override
-    public int getListeningEvents() {
-      return SerialPort.LISTENING_EVENT_DATA_RECEIVED | SerialPort.LISTENING_EVENT_PORT_DISCONNECTED;
-    }
-
-    @Override
-    public byte[] getMessageDelimiter() {
-      return MESSAGE_DELIMITER.getBytes();
-    }
-
-    @Override
-    public boolean delimiterIndicatesEndOfMessage() {
-      return true;
-    }
-
-    @Override
-    public void serialEvent(SerialPortEvent event) {
-      switch (event.getEventType()) {
-        case SerialPort.LISTENING_EVENT_PORT_DISCONNECTED -> {
-          ibSerialConnection.disconnected();
-        }
-        case SerialPort.LISTENING_EVENT_DATA_RECEIVED -> {
-          byte[] reply = event.getReceivedData();
-          Logger.trace("RX: {}", ByteUtil.toHexString(reply));
-        }
-        default -> {
-          byte[] reply = event.getReceivedData();
-          Logger.trace("#RX: {}", ByteUtil.toHexString(reply));
-        }
-
-      }
-    }
-  }
-
+//  private final class IntelliBoxSerialPortListener implements SerialPortMessageListener {
+//
+//    private final IntelliboxConnectionImpl ibSerialConnection;
+//
+//    IntelliBoxSerialPortListener(IntelliboxConnectionImpl ibSerialConnection) {
+//      this.ibSerialConnection = ibSerialConnection;
+//    }
+//
+//    @Override
+//    public int getListeningEvents() {
+//      return SerialPort.LISTENING_EVENT_DATA_RECEIVED | SerialPort.LISTENING_EVENT_PORT_DISCONNECTED;
+//    }
+//
+//
+//    @Override
+//    public boolean delimiterIndicatesEndOfMessage() {
+//      return true;
+//    }
+//
+//    @Override
+//    public void serialEvent(SerialPortEvent event) {
+//      switch (event.getEventType()) {
+//        case SerialPort.LISTENING_EVENT_PORT_DISCONNECTED -> {
+//          ibSerialConnection.disconnected();
+//        }
+//        case SerialPort.LISTENING_EVENT_DATA_RECEIVED -> {
+//          byte[] reply = event.getReceivedData();
+//          Logger.trace("RX: {}", ByteUtil.toHexString(reply));
+//        }
+//        default -> {
+//          byte[] reply = event.getReceivedData();
+//          Logger.trace("#RX: {}", ByteUtil.toHexString(reply));
+//        }
+//
+//      }
+//    }
+//  }
   ////////For testing
   ///
   public static void main(String[] a) {
+
+    LoconetConnectionFactory lcf = LoconetConnectionFactory.getInstance();
+
+    SerialPort p = lcf.getSerialPort();
 
     //SerialPort[] ports = SerialPortUtil.listComPorts();
 //    Boolean isIntelliBoxAvailable = isIntelliBoxPortAvailable();
@@ -385,10 +291,8 @@ class IntelliBoxSerialConnection implements IntelliBoxConnection {
 //        Logger.trace("Port: {}", port.getDescriptivePortName());
 //      }
 //    }
-    IntelliBoxSerialConnection ibc = new IntelliBoxSerialConnection();
-
-    ibc.connect();
-
+    //IntelliboxConnectionImpl ibc = new IntelliboxConnectionImpl();
+    //ibc.connect();
     //  public static final int GO_COMMAND = 96; 0x60
     // public static final Integer STOP_COMMAND = 97; 0x61
     //"xZzA1"
@@ -404,21 +308,24 @@ class IntelliBoxSerialConnection implements IntelliBoxConnection {
 
     //byte[] msg = new byte[]{(byte) 0xa6, (byte) 0xee};  //166
     byte[] msg = new byte[]{(byte) 0xA7};
-    ///167
+
+  
+
+///167
     
-    ibc.pause(100);
+    //ibc.pause(100);
 
-    ibc.sendMessage(powerOff);
+    //ibc.sendMessage(powerOff);
 
-    ibc.pause(1000);
+    //ibc.pause(1000);
 
-    ibc.sendMessage(powerOn);
+    //ibc.sendMessage(powerOn);
 
     //ibc.sendMessage(xZzA1); 
     //ibc.sendMessage(msg);
     //ibc.sendMessage(msg);
-    ibc.pause(10000);
-    ibc.close();
+    //ibc.pause(10000);
+    //ibc.close();
 
   }
 

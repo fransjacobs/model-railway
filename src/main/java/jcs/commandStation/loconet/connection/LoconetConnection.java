@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 fransjacobs.
+ * Copyright 2026 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,18 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation.uhlenbrock.p50x;
-
-import jcs.commandStation.uhlenbrock.connection.P50xMessage;
-import jcs.commandStation.events.ConnectionEvent;
+package jcs.commandStation.loconet.connection;
 
 /**
  *
  */
-public interface P50xMessageListener {
+public interface LoconetConnection extends AutoCloseable {
 
-  void onMessage(P50xMessage message);
+  String sendMessage(byte[] message);
 
-  void onDisconnect(ConnectionEvent event);
+  //void setMessageListener(DccExMessageListener messageListener);
+
+  boolean isConnected();
 
 }
