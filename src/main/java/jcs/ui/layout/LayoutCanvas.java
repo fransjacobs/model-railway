@@ -192,7 +192,7 @@ public class LayoutCanvas extends JPanel {
    */
   @Override
   public void paint(Graphics g) {
-    long started = System.currentTimeMillis();
+    //long started = System.currentTimeMillis();
     super.paint(g);
 
     switch (gridType) {
@@ -203,8 +203,8 @@ public class LayoutCanvas extends JPanel {
       //default -> no grid
       }
 
-    long now = System.currentTimeMillis();
-    Logger.trace("Duration: {} ms.", (now - started));
+    //long now = System.currentTimeMillis();
+    //Logger.trace("Duration: {} ms.", (now - started));
   }
 
   @Override
