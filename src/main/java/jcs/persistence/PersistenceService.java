@@ -544,14 +544,14 @@ public interface PersistenceService {
    *
    * @return the average accessory switch time
    */
-  Double getAverageAccessorySwitchTime();
+  Integer getAverageAccessorySwitchTime();
 
   /**
    *
    * @param routeBean
    * @return the average accessory switch time for the given routeBean
    */
-  Double getAverageAccessorySwitchTime(RouteBean routeBean);
+  Integer getAverageAccessorySwitchTime(RouteBean routeBean);
 
   /**
    * Retrieves a BlockBean by ID.
