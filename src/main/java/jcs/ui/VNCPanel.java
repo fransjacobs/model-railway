@@ -85,7 +85,7 @@ public class VNCPanel extends JPanel {
 //            String ip = JCS.getJcsCommandStation().getCommandStationInfo().getIpAddress();
 //            int port = DEFAULT_VNC_PORT;
 //
-//            if (Ping.IsReachable(ip)) {
+//            if (Ping.isReachable(ip)) {
 //              connect(ip, port);
 //            } else {
 //              Logger.trace("Can't reach " + ip + " ...");
@@ -364,7 +364,7 @@ public class VNCPanel extends JPanel {
       String ip = JCS.getJcsCommandStation().getCommandStationInfo().getIpAddress();
       int port = DEFAULT_VNC_PORT;
 
-      if (Ping.IsReachable(ip)) {
+      if (Ping.isReachable(ip)) {
         connect(ip, port);
       }
     }

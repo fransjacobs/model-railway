@@ -259,11 +259,8 @@ class RouteManager {
 
   Integer getEstimatedNextRouteSwitchTime() {
     RouteBean nextRoute = dispatcher.getNextRouteBean();
-    //Return a default switchtime 
-    int avgSwitchTime = PersistenceFactory.getService().getAverageAccessorySwitchTime(nextRoute).intValue();
-    avgSwitchTime = avgSwitchTime + 250;
-
-    return avgSwitchTime;
+    Integer ast = PersistenceFactory.getService().getAverageAccessorySwitchTime(nextRoute);
+    return ast;
   }
 
   boolean searchAndReserveNextRoute() {
@@ -366,6 +363,7 @@ class RouteManager {
 
     // Set Turnouts in the right state
     List<RouteElementBean> turnouts = getTurnouts(nextRoute);
+
     Logger.trace("There are " + turnouts.size() + " turnouts in the next route");
 
     //Now start to persist and perform critical thinks

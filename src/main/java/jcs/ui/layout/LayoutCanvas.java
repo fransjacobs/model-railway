@@ -178,6 +178,10 @@ public class LayoutCanvas extends JPanel {
     }
 
     loadLayoutInBackground();
+    
+    if(routesDialog != null) {
+      routesDialog.setReadonly(readonly);
+    }
 
   }
 
@@ -188,7 +192,7 @@ public class LayoutCanvas extends JPanel {
    */
   @Override
   public void paint(Graphics g) {
-    long started = System.currentTimeMillis();
+    //long started = System.currentTimeMillis();
     super.paint(g);
 
     switch (gridType) {
@@ -199,8 +203,8 @@ public class LayoutCanvas extends JPanel {
       //default -> no grid
       }
 
-    long now = System.currentTimeMillis();
-    Logger.trace("Duration: {} ms.", (now - started));
+    //long now = System.currentTimeMillis();
+    //Logger.trace("Duration: {} ms.", (now - started));
   }
 
   @Override
@@ -940,6 +944,7 @@ public class LayoutCanvas extends JPanel {
   }
 
   void showRoutesDialog() {
+    routesDialog.setReadonly(readonly);
     routesDialog.setVisible(true);
   }
 
@@ -1365,7 +1370,7 @@ public class LayoutCanvas extends JPanel {
     if (selectedTile != null && selectedTile.isBlock() && selectedTile.getLocomotive() != null) {
       LocomotiveBean locomotive = selectedTile.getLocomotive();
       //executor.execute(() -> AutoPilot.startStopLocomotive(locomotive, true));
-      RailController.getInstance().startLocomotive(locomotive);
+      RailController.getInstance().startLocomotive(locomotive, true);
     }
   }//GEN-LAST:event_startLocomotiveMIActionPerformed
 

@@ -1097,7 +1097,7 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
 
   private void checkConnection(final CommandStationBean commandStation) {
     String ip = commandStation.getIpAddress();
-    boolean canConnect = Ping.IsReachable(ip);
+    boolean canConnect = Ping.isReachable(ip);
 
     java.awt.EventQueue.invokeLater(() -> {
       if (canConnect) {

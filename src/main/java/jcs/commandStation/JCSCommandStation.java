@@ -155,7 +155,11 @@ public class JCSCommandStation {
     try {
       if (decoderController != null && (decoderController.getCommandStationBean() != null || !accessoryControllers.isEmpty() || !feedbackControllers.isEmpty()) && autoConnectController) {
         connect();
-        Logger.trace(decoderController != null ? "Aquired " + decoderController.getClass().getSimpleName() : "Could not aquire a Command Station! " + (decoderController.isConnected() ? "Connected" : "NOT Connected"));
+        if (decoderController != null) {
+          Logger.trace("Aquired {}, {}.", decoderController.getClass().getSimpleName(), (decoderController.isConnected() ? "Connected" : "NOT Connected"));
+        } else {
+          Logger.trace("Could not aquire a Command Station! NOT Connected.");
+        }
       } else {
         Logger.trace("Auto Connect disabled");
       }

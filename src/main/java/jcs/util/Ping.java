@@ -27,7 +27,7 @@ import org.tinylog.Logger;
  */
 public class Ping {
 
-    public static Boolean IsReachable(String ipAddress) {
+    public static Boolean isReachable(String ipAddress) {
         Boolean reachable = false;
         try {
             InetAddress inet = InetAddress.getByName(ipAddress);

@@ -55,7 +55,7 @@ public class DccExConnectionFactory {
             String lastUsedIp = RunUtil.readProperty(LAST_USED_IP_PROP_FILE, "dcc-ex-ip-address");
             if (lastUsedIp != null) {
               try {
-                if (Ping.IsReachable(lastUsedIp)) {
+                if (Ping.isReachable(lastUsedIp)) {
                   this.controllerHost = InetAddress.getByName(lastUsedIp);
                 } else {
                   Logger.trace("IP Address: " + lastUsedIp + " is not reachable");

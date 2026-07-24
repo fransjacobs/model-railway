@@ -1178,7 +1178,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
         String name = JCS.getJcsCommandStation().getCommandStationBean().getDescription();
 
         executor.execute(() -> {
-          boolean reachable = Ping.IsReachable(ip);
+          boolean reachable = Ping.isReachable(ip);
           SwingUtilities.invokeLater(() -> {
             if (!reachable) {
               Logger.debug("Can't reach ip " + ip + "...");

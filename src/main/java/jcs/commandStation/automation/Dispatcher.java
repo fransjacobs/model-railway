@@ -15,7 +15,10 @@
  */
 package jcs.commandStation.automation;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import jcs.JCS;
@@ -30,6 +33,7 @@ import jcs.entities.LocomotiveBean.Direction;
 import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
 import jcs.entities.StationBean;
+import jcs.entities.StationBlockBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.layout.tiles.TileCache;
 import jcs.ui.layout.tiles.Tile;
@@ -150,22 +154,35 @@ public class Dispatcher {
         locomotiveStarted = false;
         stateMachine = new StateMachine(this, new IdleState());
       } else {
-        Logger.tag(TAG).debug("There is a running dispatcherRunner for " + getName());
+        Logger.tag(TAG).debug("There is a running dispatcher for {}", getName());
       }
     }
   }
 
-  public void startLocomotive() {
+  public void startLocomotive(boolean force) {
     if (railController.isAutoModeActive()) {
       if (stateMachine != null && !stateMachine.isRunning()) {
         stateMachine.startStateMachineThread();
         locomotiveStarted = stateMachine.isRunning();
       } else {
-        Logger.tag(TAG).debug("There is a running dispatcherRunner");
+        Logger.tag(TAG).debug("There is a running dispatcher.");
       }
     } else {
-      Logger.trace("Can't start Locomotive " + getName() + " automode is not enabled");
+      Logger.trace("Can't start Locomotive {} automode is not enabled.", getName());
     }
+    if (force) {
+      BlockBean departure = getDepartureBlock();
+      StationBean station = PersistenceFactory.getService().getStation(departure);
+      if (station != null) {
+        StationBlockBean stb = station.getStationBlockBean(departure);
+        // force Last updated to yesterday, so this must be the first locomotive to leave ;)
+        Date yesterday = Date.from(LocalDate.now().minusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant());
+        stb.setLastUpdated(yesterday);
+        PersistenceFactory.getService().persist(station);
+      }
+
+    }
+
   }
 
   //For test mocking only!!!
@@ -246,7 +263,7 @@ public class Dispatcher {
     setNextRouteBean(null);
     setDestinationBlockId(null);
 
-    Logger.tag(TAG).trace(getName() + " has been Reset");
+    Logger.tag(TAG).trace("{} has been Reset!", getName());
 
     stateEventListeners.clear();
   }
@@ -429,9 +446,9 @@ public class Dispatcher {
       JCS.getJcsCommandStation().switchAccessory(signal, newValue);
       if (SignalValue.Hp0 == newValue) {
         setActiveSignal(null);
-        Logger.trace("Signal " + signal.getId() + " set to: " + newValue + " Sinal is marked " + (getActiveSignal() != null ? "active" : "not active"));
+        Logger.trace("Signal {} set to: {} Signal is marked {}.", signal.getId(), newValue, (getActiveSignal() != null ? "active" : "not active"));
       }
-      Logger.tag(TAG).debug("Dispatcher " + getName() + " Signal " + signal.getId() + " set to: " + newValue);
+      Logger.tag(TAG).debug("Dispatcher {} Signal {} set to: {}.", getName(), signal.getId(), newValue);
     }
     return delayStart;
   }

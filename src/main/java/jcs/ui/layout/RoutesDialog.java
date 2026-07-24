@@ -30,6 +30,8 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.AbstractListModel;
 import javax.swing.ImageIcon;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import jcs.JCS;
 import jcs.entities.AccessoryBean;
 import jcs.entities.BlockBean.BlockState;
@@ -41,15 +43,13 @@ import jcs.ui.layout.tiles.Tile;
 import org.tinylog.Logger;
 
 /**
- *
- * @author Frans Jacobs
+ * Dialog to show routes on the LayoutCanvas and to create or delete all routes
  */
 public class RoutesDialog extends javax.swing.JDialog {
 
   private final RouteBeanListModel routeListModel;
 
-  @SuppressWarnings("unused")
-  private final boolean readonly;
+  private boolean readonly;
   private RouteBean selectedRoute;
 
   private final LayoutCanvas layoutCanvas;
@@ -66,30 +66,40 @@ public class RoutesDialog extends javax.swing.JDialog {
    */
   public RoutesDialog(java.awt.Frame parent, boolean modal, LayoutCanvas layoutCanvas, boolean readonly) {
     super(parent, modal);
-    this.readonly = readonly;
     this.layoutCanvas = layoutCanvas;
-    this.routeListModel = new RouteBeanListModel();
+    routeListModel = new RouteBeanListModel();
 
     initComponents();
-    this.routeList.setModel(routeListModel);
-
-    loadRoutes();
+    routeList.setModel(routeListModel);
 
     URL iconUrl = JCS.class.getResource("/media/jcs-train-64.png");
     if (iconUrl != null) {
       this.setIconImage(new ImageIcon(iconUrl).getImage());
     }
 
-    if (readonly) {
-      routeBtn.setEnabled(!readonly);
-      routeBtn.setVisible(!readonly);
-
-      deleteRoutesBtn.setEnabled(!readonly);
-      deleteRoutesBtn.setVisible(!readonly);
-    }
-
     if (defaultRouteColor == null) {
       defaultRouteColor = Tile.DEFAULT_ROUTE_TRACK_COLOR;
+    }
+    postInit(readonly);
+  }
+
+  //Avoid not final warning
+  private void postInit(boolean readonly) {
+    setReadonly(readonly);
+  }
+
+  public boolean isReadonly() {
+    return readonly;
+  }
+
+  void setReadonly(boolean readonly) {
+    this.readonly = readonly;
+    if (readonly) {
+      routeBtn.setEnabled(readonly);
+      routeBtn.setVisible(readonly);
+
+      deleteRoutesBtn.setEnabled(readonly);
+      deleteRoutesBtn.setVisible(readonly);
     }
   }
 
@@ -97,6 +107,7 @@ public class RoutesDialog extends javax.swing.JDialog {
     if (PersistenceFactory.getService() != null) {
       routeListModel.clear();
       List<RouteBean> routes = PersistenceFactory.getService().getRoutes();
+      Logger.trace("Found {} routes...", routes.size());
       routeListModel.addAll(routes);
     }
   }
@@ -138,21 +149,26 @@ public class RoutesDialog extends javax.swing.JDialog {
       Orientation incomingSide = re.getIncomingOrientation();
 
       Tile tile = TileCache.findTile(tileId);
-      tile.setIncomingSide(incomingSide);
-      tile.setTrackRouteColor(defaultRouteColor);
 
-      if (re.isTurnout()) {
-        AccessoryBean.AccessoryValue routeState = re.getAccessoryValue();
-        tile.setRouteValue(routeState);
-      } else if (re.isBlock()) {
-        if (re.getTileId().equals(routeBean.getFromTileId())) {
-          //departure block
-          tile.setBlockState(BlockState.OUTBOUND);
-        } else {
-          tile.setBlockState(BlockState.INBOUND);
+      if (tile != null) {
+        tile.setIncomingSide(incomingSide);
+        tile.setTrackRouteColor(defaultRouteColor);
+
+        if (re.isTurnout()) {
+          AccessoryBean.AccessoryValue routeState = re.getAccessoryValue();
+          tile.setRouteValue(routeState);
+        } else if (re.isBlock()) {
+          if (re.getTileId().equals(routeBean.getFromTileId())) {
+            //departure block
+            tile.setBlockState(BlockState.OUTBOUND);
+          } else {
+            tile.setBlockState(BlockState.INBOUND);
+          }
         }
+        tile.setShowRoute(true);
+      } else {
+        Logger.trace("Tile {} not found in cache...", tileId);
       }
-      tile.setShowRoute(true);
     }
   }
 
@@ -222,8 +238,6 @@ public class RoutesDialog extends javax.swing.JDialog {
     routeListSP.setViewportView(routeList);
 
     routeList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-    routeList.setDoubleBuffered(true);
-    routeList.setPreferredSize(new java.awt.Dimension(130, 600));
     routeList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
       public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
         routeListValueChanged(evt);
@@ -238,7 +252,7 @@ public class RoutesDialog extends javax.swing.JDialog {
 
     private void routeListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_routeListValueChanged
       if (!evt.getValueIsAdjusting() && routeList.getModel().getSize() > 0 && this.routeList.getSelectedIndex() >= 0) {
-        RouteBean selected = this.routeList.getSelectedValue();
+        RouteBean selected = routeList.getSelectedValue();
         setSelectedRoute(selected);
       }
     }//GEN-LAST:event_routeListValueChanged
@@ -248,7 +262,7 @@ public class RoutesDialog extends javax.swing.JDialog {
         layoutCanvas.routeLayout();
         loadRoutes();
       } else {
-        Logger.warn("Can not perform routing as the LayoutPanel is null " + evt.paramString());
+        Logger.warn("Can not perform routing as the LayoutPanel is null. Event: {}", evt.paramString());
       }
     }//GEN-LAST:event_routeBtnActionPerformed
 
@@ -266,7 +280,7 @@ public class RoutesDialog extends javax.swing.JDialog {
       final Rectangle currentScreenBounds = c
               .getGraphicsConfiguration().getBounds();
       return new Point(currentScreenBounds.x, currentScreenBounds.y);
-    } else {/*  www.jav  a  2  s . c o m*/
+    } else {
       return new Point(0, 0);
     }
   }
@@ -284,19 +298,24 @@ public class RoutesDialog extends javax.swing.JDialog {
   public void setVisible(boolean b) {
     if (b) {
       loadRoutes();
+      routeList.setModel(routeListModel);
 
       pack();
-      Point p = this.layoutCanvas.getLocationOnScreen();
+      if (layoutCanvas != null) {
+        Point p = layoutCanvas.getLocationOnScreen();
+        Logger.trace("Canvas P  x: {} y: {}", p.x, p.y);
+        Logger.trace("Canvas S  w: {} h: {}", layoutCanvas.getWidth(), layoutCanvas.getHeight());
 
-      Logger.trace("Canvas P  x: " + p.x + " y: " + p.y);
-      Logger.trace("Canvas S  w: " + this.layoutCanvas.getWidth() + " h: " + this.layoutCanvas.getHeight());
-
-      Point d = new Point(p.x + this.layoutCanvas.getWidth() + 30, p.y);
-      setLocation(d);
+        Point d = new Point(p.x + layoutCanvas.getWidth() + 30, p.y);
+        setLocation(d);
+      } else {
+        setLocationRelativeTo(null);
+      }
     } else {
       if (selectedRoute != null) {
-        resetRoute(this.selectedRoute.getRouteElements());
+        resetRoute(selectedRoute.getRouteElements());
       }
+      routeListModel.clear();
     }
 
     super.setVisible(b);
@@ -379,10 +398,20 @@ public class RoutesDialog extends javax.swing.JDialog {
 
   class RouteBeanListModel extends AbstractListModel<RouteBean> {
 
+    private static final long serialVersionUID = 8353159888767697436L;
+
     private final List<RouteBean> all;
 
     public RouteBeanListModel() {
-      all = new ArrayList<>();
+      this(null);
+    }
+
+    public RouteBeanListModel(List<RouteBean> routes) {
+      if (routes != null) {
+        all = new ArrayList<>(routes);
+      } else {
+        all = new ArrayList<>();
+      }
     }
 
     @Override
@@ -392,31 +421,37 @@ public class RoutesDialog extends javax.swing.JDialog {
 
     @Override
     public RouteBean getElementAt(int index) {
-      return (RouteBean) all.toArray()[index];
+      //return (RouteBean) all.toArray()[index];
+      return all.get(index);
     }
 
     public void add(RouteBean element) {
       all.add(element);
+      Logger.trace("Added element. Now ther are {}", all.size());
+
       Collections.sort(all, new RouteBeanByIdSorter());
-      fireContentsChanged(this, 0, getSize());
+      fireContentsChanged(this, 0, all.size());
     }
 
     public void addAll(RouteBean elements[]) {
       Collection<RouteBean> c = Arrays.asList(elements);
       all.addAll(c);
+      Logger.trace("Added {} elements from Array", elements.length);
+
       Collections.sort(all, new RouteBeanByIdSorter());
-      fireContentsChanged(this, 0, getSize());
+      fireContentsChanged(this, 0, all.size());
     }
 
     public void addAll(Collection<RouteBean> elements) {
       all.addAll(elements);
+      Logger.trace("Added {} elements from Collection", elements.size());
       Collections.sort(all, new RouteBeanByIdSorter());
-      fireContentsChanged(this, 0, getSize());
+      fireContentsChanged(this, 0, all.size());
     }
 
     public void clear() {
       all.clear();
-      fireContentsChanged(this, 0, getSize());
+      fireContentsChanged(this, 0, all.size());
     }
 
     public boolean contains(RouteBean element) {
@@ -446,7 +481,7 @@ public class RoutesDialog extends javax.swing.JDialog {
     public boolean removeElement(RouteBean element) {
       boolean removed = all.remove(element);
       Collections.sort(all, new RouteBeanByIdSorter());
-      fireContentsChanged(this, 0, getSize());
+      fireContentsChanged(this, 0, all.size());
       return removed;
     }
   }
@@ -459,4 +494,33 @@ public class RoutesDialog extends javax.swing.JDialog {
   private javax.swing.JToolBar routeToolBar;
   private javax.swing.JPanel toolbarPanel;
   // End of variables declaration//GEN-END:variables
+
+  //For testing only
+  public static void main(String args[]) {
+    /* Set the FlatLightLaf look and feel */
+    //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+    try {
+      UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
+    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
+      Logger.warn("Can't set the LookAndFeel: " + ex);
+    }
+    //</editor-fold>
+
+    /* Create and display the dialog */
+    java.awt.EventQueue.invokeLater(() -> {
+      RoutesDialog dialog = new RoutesDialog(new javax.swing.JFrame(), true, null, false);
+      dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+        @Override
+        public void windowClosing(java.awt.event.WindowEvent e) {
+          System.exit(0);
+        }
+      });
+      dialog.setTitle("Test Routes Dialogs");
+      dialog.pack();
+      dialog.setLocationRelativeTo(null);
+
+      dialog.setVisible(true);
+    });
+  }
+
 }

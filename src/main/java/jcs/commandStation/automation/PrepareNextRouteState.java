@@ -31,10 +31,10 @@ import org.tinylog.Logger;
  */
 class PrepareNextRouteState extends AbstractState implements SensorEventCallback {
 
-  private Integer inSensorId;
-  private boolean nextRouteFound;
-  private boolean inSensorTriggered = false;
-  private boolean nextRouteAvaliable = false;
+  private volatile Integer inSensorId;
+  private volatile boolean nextRouteFound;
+  private volatile boolean inSensorTriggered = false;
+  private volatile boolean nextRouteAvaliable = false;
 
   PrepareNextRouteState() {
     super(PREPNEXTROUTE);
@@ -69,7 +69,12 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
     dispatcher.showBlockState(destinationBlock);
 
     //Search for a next route...
+    long now = System.currentTimeMillis();
+    
     nextRouteFound = dispatcher.getRouteManager().searchNextRoute();
+    
+    long done = System.currentTimeMillis();
+    Logger.trace("Next route {} in {} ms.",(nextRouteFound?"found":"not found"),(done-now));
 
     if (nextRouteFound) {
       // If max switch time exceeds a threshold, slow down preemptively
@@ -83,7 +88,8 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
         }
 
         dispatcher.changeLocomotiveVelocity(speed1);
-        Logger.tag(TAG).trace("Dispatcher "+dispatcher.getName()+" Reducing speed while reserving the next route. Est. switch time: (" + estimatedSwitchTime + "ms)...");
+        Logger.tag(TAG).trace("Dispatcher " + dispatcher.getName() + " Reducing speed while reserving the next route. Est. switch time: (" + estimatedSwitchTime + "ms)...");
+        Logger.tag(TAG).trace("Dispatcher {} Reducing speed while reserving the next route. Est. switch time: {} ms...", dispatcher.getName(), estimatedSwitchTime);
       }
     }
   }
@@ -111,21 +117,21 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
   AbstractState execute() {
     BlockBean destinationBlock = dispatcher.getDestinationBlock();
 
-    Logger.debug((nextRouteFound ? "Next" : "No") + " Route found for: " + dispatcher.getName() + " in " + destinationBlock.getDescription() + " Direction: " + dispatcher.getLocomotiveBean().getDirection().getDirection() + " Route: " + dispatcher.getRouteBean().getId() + " Speed: " + dispatcher.getLocomotiveBean().getVelocity() + " Listening for In sensorId: " + inSensorId + "...");
+    Logger.debug("{} Route found for: {} in: {} Direction: {} {}Route: {} Speed: Listening for InSensorId: {} ...", (nextRouteFound ? "Next" : "No"), dispatcher.getName(), destinationBlock.getDescription(), dispatcher.getLocomotiveBean().getDirection().getDirection(), (nextRouteFound ? "Next" : ""), (nextRouteFound ? dispatcher.getNextRouteBean().getId() : dispatcher.getRouteBean().getId()), dispatcher.getLocomotiveBean().getVelocity(), inSensorId);
 
     if (nextRouteFound) {
       //Try to reserve the next route
       int permits = RailController.avialablePermits();
-      Logger.trace("Obtaining a lock. There are currently " + permits + " available permits...");
+      Logger.trace("Obtaining a lock. There are currently {} available permits...", permits);
       if (permits > 0) {
         if (RailController.tryAquireLock()) {
           try {
-            Logger.trace("##### Locked ####");
+            Logger.trace("##### Locked N ####");
             nextRouteAvaliable = dispatcher.getRouteManager().searchAndReserveNextRoute();
           } finally {
             //Make sure the lock is released
             RailController.releaseLock();
-            Logger.trace("##### Released ####");
+            Logger.trace("##### Released N ####");
           }
         } else {
           Logger.trace("No Semaphore available");
@@ -134,7 +140,7 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
         }
       } else {
         nextRouteFound = false;
-        Logger.tag(TAG).trace("Dispatcher "+dispatcher.getName()+" No semaphore permits available");
+        Logger.tag(TAG).trace("Dispatcher {} No semaphore permits available!", dispatcher.getName());
       }
 
       boolean automodeInActive = !dispatcher.getRailController().isAutoModeActive();
@@ -146,12 +152,12 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
       }
     }
 
-    Logger.tag(TAG).debug("Dispatcher: " + dispatcher.getName() + " in " + destinationBlock.getDescription() + " and " + (nextRouteAvaliable ? "will continue" : "starts braking") + " Current Route: " + dispatcher.getRouteBean().getId() + " Speed: " + dispatcher.getLocomotiveBean().getVelocity() + "...");
+    Logger.tag(TAG).debug("Dispatcher: {} in {} and {} Current Route: {} Speed: {} ...", dispatcher.getName(), destinationBlock.getDescription(), (nextRouteAvaliable ? "will continue" : "starts braking"), dispatcher.getRouteBean().getId(), dispatcher.getLocomotiveBean().getVelocity());
 
+    dispatcher.handleSignal(state);
     if (inSensorTriggered) {
       return new ArrivedState();
     } else if (nextRouteAvaliable) {
-      dispatcher.handleSignal(state);
       return new PassingThroughState(inSensorTriggered);
     } else {
       return new BrakingState(inSensorTriggered);
@@ -171,17 +177,17 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
   @Override
   public void onEvent(SensorEvent event) {
     if (inSensorId.equals(event.getSensorId())) {
-      if (event.isActive()) {
-        inSensorTriggered = true;
-        //Stop the locomotive!
-        dispatcher.changeLocomotiveVelocity(0);
-        Logger.tag(TAG).debug("Dispatcher " + dispatcher.getName() + " Occupied (in) event during route preparation! Sensor " + event.getSensorId() + " Value " + (event.isActive() ? "On" : "Off"));
+      if (!inSensorTriggered) {
+        if (event.isActive()) {
+          inSensorTriggered = true;
+          //Stop the locomotive!
+          dispatcher.changeLocomotiveVelocity(0);
 
-        nextRouteFound = false;
-        dispatcher.wakeup();
+          Logger.tag(TAG).debug("Dispatcher {} Occupied (in) event during next route preparation! Sensor {} Value {}", dispatcher.getName(), event.getSensorId(), (event.isActive() ? "On" : "Off"));
+        }
       }
     } else {
-      Logger.trace("Event for " + event.getSensorId() + " not for this state...");
+      Logger.trace("Event for {} not for this state...", event.getSensorId());
     }
   }
 }
