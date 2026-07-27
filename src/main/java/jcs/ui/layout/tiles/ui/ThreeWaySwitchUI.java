@@ -167,10 +167,10 @@ public class ThreeWaySwitchUI extends TileUI implements MouseListener, MouseMoti
       routeValue = AccessoryBean.AccessoryValue.OFF;
     }
     switch (routeValue) {
-      case RED -> {
+      case RED2 -> {
         renderRouteDiagonalSouth(g2, trackRouteColor, c);
       }
-      case RED2 -> {
+      case RED -> {
         renderRouteDiagonalNorth(g2, trackRouteColor, c);
       }
       case GREEN -> {
