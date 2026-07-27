@@ -36,13 +36,13 @@ import jcs.entities.SensorBean;
 /**
  * Uhlenbrock IntelliBox 2 implementation
  */
-public class IntelliboxImpl extends AbstractController implements DecoderController, AccessoryController, FeedbackController, ConnectionEventListener {
+public class Uhlenbrock extends AbstractController implements DecoderController, AccessoryController, FeedbackController, ConnectionEventListener {
 
-  public IntelliboxImpl(CommandStationBean commandStationBean) {
+  public Uhlenbrock(CommandStationBean commandStationBean) {
     this(commandStationBean, false);
   }
 
-  public IntelliboxImpl(CommandStationBean commandStationBean, boolean autoConnect) {
+  public Uhlenbrock(CommandStationBean commandStationBean, boolean autoConnect) {
     super(autoConnect, commandStationBean);
     this.executor = Executors.newCachedThreadPool();
   }
