@@ -25,6 +25,7 @@ import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.TileBean;
 import jcs.entities.TileBean.Direction;
 import jcs.entities.TileBean.Orientation;
+import static jcs.entities.TileBean.Orientation.EAST;
 import static jcs.entities.TileBean.Orientation.NORTH;
 import static jcs.entities.TileBean.Orientation.SOUTH;
 import static jcs.entities.TileBean.Orientation.WEST;
@@ -174,6 +175,14 @@ public class ThreeWaySwitch extends Switch implements AccessoryEventListener {
     return true;
   }
 
+  /**
+   * For South
+   * G R R2 \||/ \\|/ \|// 
+   *         ||   ||   ||
+   *
+   * In Words Red is Right Red2 is Left
+   *
+   */
   @Override
   public AccessoryValue accessoryValueForRoute(Orientation from, Orientation to) {
     if (from != null && to != null) {
@@ -181,13 +190,13 @@ public class ThreeWaySwitch extends Switch implements AccessoryEventListener {
         if ((from == Orientation.WEST && to == Orientation.EAST) || (from == Orientation.EAST && to == Orientation.WEST)) {
           return AccessoryValue.GREEN;
         } else if (((from == Orientation.EAST && to == Orientation.SOUTH) || (from == Orientation.SOUTH && to == Orientation.EAST)) && Orientation.EAST == getOrientation()) {
-          return AccessoryValue.RED2;
+          return AccessoryValue.RED;
         } else if (((from == Orientation.EAST && to == Orientation.NORTH) || (from == Orientation.NORTH && to == Orientation.EAST)) && Orientation.EAST == getOrientation()) {
-          return AccessoryValue.RED;
-        } else if (((from == Orientation.WEST && to == Orientation.NORTH) || (from == Orientation.NORTH && to == Orientation.WEST)) && Orientation.WEST == getOrientation()) {
           return AccessoryValue.RED2;
-        } else if (((from == Orientation.WEST && to == Orientation.SOUTH) || (from == Orientation.SOUTH && to == Orientation.WEST)) && Orientation.WEST == getOrientation()) {
+        } else if (((from == Orientation.WEST && to == Orientation.NORTH) || (from == Orientation.NORTH && to == Orientation.WEST)) && Orientation.WEST == getOrientation()) {
           return AccessoryValue.RED;
+        } else if (((from == Orientation.WEST && to == Orientation.SOUTH) || (from == Orientation.SOUTH && to == Orientation.WEST)) && Orientation.WEST == getOrientation()) {
+          return AccessoryValue.RED2;
         } else {
           return AccessoryValue.OFF;
         }
@@ -196,13 +205,13 @@ public class ThreeWaySwitch extends Switch implements AccessoryEventListener {
         if ((from == Orientation.NORTH && to == Orientation.SOUTH) || (from == Orientation.SOUTH && to == Orientation.NORTH)) {
           return AccessoryValue.GREEN;
         } else if (((from == Orientation.SOUTH && to == Orientation.WEST) || (from == Orientation.WEST && to == Orientation.SOUTH)) && Orientation.SOUTH == getOrientation()) {
-          return AccessoryValue.RED2;
+          return AccessoryValue.RED;
         } else if (((from == Orientation.NORTH && to == Orientation.WEST) || (from == Orientation.WEST && to == Orientation.NORTH)) && Orientation.NORTH == getOrientation()) {
-          return AccessoryValue.RED;
-        } else if (((from == Orientation.NORTH && to == Orientation.EAST) || (from == Orientation.EAST && to == Orientation.NORTH)) && Orientation.NORTH == getOrientation()) {
           return AccessoryValue.RED2;
-        } else if (((from == Orientation.SOUTH && to == Orientation.EAST) || (from == Orientation.EAST && to == Orientation.SOUTH)) && Orientation.SOUTH == getOrientation()) {
+        } else if (((from == Orientation.NORTH && to == Orientation.EAST) || (from == Orientation.EAST && to == Orientation.NORTH)) && Orientation.NORTH == getOrientation()) {
           return AccessoryValue.RED;
+        } else if (((from == Orientation.SOUTH && to == Orientation.EAST) || (from == Orientation.EAST && to == Orientation.SOUTH)) && Orientation.SOUTH == getOrientation()) {
+          return AccessoryValue.RED2;
 
         } else {
           return AccessoryValue.OFF;

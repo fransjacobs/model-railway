@@ -115,7 +115,7 @@ public class AStarThreeWaySwitchSouth {
     AStar instance = new AStar();
     List<Tile> tiles = jcs.ui.layout.tiles.TileCache.loadTiles(false);
     instance.buildGraph(tiles);
-    String expPath = "[bk-2-]->[bk-3+]: bk-2-[bk-2] -> se-7 -> st-5 -> tw-1[RED2] -> ct-3 -> ct-2 -> ct-1 -> st-1 -> se-4 -> bk-3+[bk-3]";
+    String expPath = "[bk-2-]->[bk-3+]: bk-2-[bk-2] -> se-7 -> st-5 -> tw-1[RED] -> ct-3 -> ct-2 -> ct-1 -> st-1 -> se-4 -> bk-3+[bk-3]";
 
     List<Node> path = instance.findPath(fromNodeId, fromSuffix, toNodeId, toSuffix);
     String result = instance.pathToString(path);
@@ -134,7 +134,7 @@ public class AStarThreeWaySwitchSouth {
     AStar instance = new AStar();
     List<Tile> tiles = jcs.ui.layout.tiles.TileCache.loadTiles(false);
     instance.buildGraph(tiles);
-    String expPath = "[bk-3+]->[bk-2-]: bk-3+[bk-3] -> se-4 -> st-1 -> ct-1 -> ct-2 -> ct-3 -> tw-1[RED2] -> st-5 -> se-7 -> bk-2-[bk-2]";
+    String expPath = "[bk-3+]->[bk-2-]: bk-3+[bk-3] -> se-4 -> st-1 -> ct-1 -> ct-2 -> ct-3 -> tw-1[RED] -> st-5 -> se-7 -> bk-2-[bk-2]";
 
     List<Node> path = instance.findPath(fromNodeId, fromSuffix, toNodeId, toSuffix);
     String result = instance.pathToString(path);
@@ -153,7 +153,7 @@ public class AStarThreeWaySwitchSouth {
     AStar instance = new AStar();
     List<Tile> tiles = jcs.ui.layout.tiles.TileCache.loadTiles(false);
     instance.buildGraph(tiles);
-    String expPath = "[bk-2-]->[bk-4+]: bk-2-[bk-2] -> se-7 -> st-5 -> tw-1[RED] -> ct-4 -> ct-6 -> ct-5 -> st-3 -> se-6 -> bk-4+[bk-4]";
+    String expPath = "[bk-2-]->[bk-4+]: bk-2-[bk-2] -> se-7 -> st-5 -> tw-1[RED2] -> ct-4 -> ct-6 -> ct-5 -> st-3 -> se-6 -> bk-4+[bk-4]";
     List<Node> path = instance.findPath(fromNodeId, fromSuffix, toNodeId, toSuffix);
     String result = instance.pathToString(path);
 
@@ -171,7 +171,7 @@ public class AStarThreeWaySwitchSouth {
     AStar instance = new AStar();
     List<Tile> tiles = jcs.ui.layout.tiles.TileCache.loadTiles(false);
     instance.buildGraph(tiles);
-    String expPath = "[bk-4+]->[bk-2-]: bk-4+[bk-4] -> se-6 -> st-3 -> ct-5 -> ct-6 -> ct-4 -> tw-1[RED] -> st-5 -> se-7 -> bk-2-[bk-2]";
+    String expPath = "[bk-4+]->[bk-2-]: bk-4+[bk-4] -> se-6 -> st-3 -> ct-5 -> ct-6 -> ct-4 -> tw-1[RED2] -> st-5 -> se-7 -> bk-2-[bk-2]";
     List<Node> path = instance.findPath(fromNodeId, fromSuffix, toNodeId, toSuffix);
     String result = instance.pathToString(path);
 
@@ -186,11 +186,11 @@ public class AStarThreeWaySwitchSouth {
 
     List<String> expRouteDesc = new ArrayList<>();
 
-    String r1 = "Route: [bk-2-]->[bk-4+]: bk-2 -> bk-2-[bk-2] -> se-7 -> st-5 -> tw-1[RED] -> ct-4 -> ct-6 -> ct-5 -> st-3 -> se-6 -> bk-4+[bk-4]";
-    String r2 = "Route: [bk-2-]->[bk-3+]: bk-2 -> bk-2-[bk-2] -> se-7 -> st-5 -> tw-1[RED2] -> ct-3 -> ct-2 -> ct-1 -> st-1 -> se-4 -> bk-3+[bk-3]";
+    String r1 = "Route: [bk-2-]->[bk-4+]: bk-2 -> bk-2-[bk-2] -> se-7 -> st-5 -> tw-1[RED2] -> ct-4 -> ct-6 -> ct-5 -> st-3 -> se-6 -> bk-4+[bk-4]";
+    String r2 = "Route: [bk-2-]->[bk-3+]: bk-2 -> bk-2-[bk-2] -> se-7 -> st-5 -> tw-1[RED] -> ct-3 -> ct-2 -> ct-1 -> st-1 -> se-4 -> bk-3+[bk-3]";
     String r3 = "Route: [bk-1-]->[bk-2-]: bk-1 -> bk-1-[bk-1] -> se-5 -> st-2 -> st-4 -> tw-1[GREEN] -> st-5 -> se-7 -> bk-2-[bk-2]";
-    String r4 = "Route: [bk-4+]->[bk-2-]: bk-4 -> bk-4+[bk-4] -> se-6 -> st-3 -> ct-5 -> ct-6 -> ct-4 -> tw-1[RED] -> st-5 -> se-7 -> bk-2-[bk-2]";
-    String r5 = "Route: [bk-3+]->[bk-2-]: bk-3 -> bk-3+[bk-3] -> se-4 -> st-1 -> ct-1 -> ct-2 -> ct-3 -> tw-1[RED2] -> st-5 -> se-7 -> bk-2-[bk-2]";
+    String r4 = "Route: [bk-4+]->[bk-2-]: bk-4 -> bk-4+[bk-4] -> se-6 -> st-3 -> ct-5 -> ct-6 -> ct-4 -> tw-1[RED2] -> st-5 -> se-7 -> bk-2-[bk-2]";
+    String r5 = "Route: [bk-3+]->[bk-2-]: bk-3 -> bk-3+[bk-3] -> se-4 -> st-1 -> ct-1 -> ct-2 -> ct-3 -> tw-1[RED] -> st-5 -> se-7 -> bk-2-[bk-2]";
     String r6 = "Route: [bk-2-]->[bk-1-]: bk-2 -> bk-2-[bk-2] -> se-7 -> st-5 -> tw-1[GREEN] -> st-4 -> st-2 -> se-5 -> bk-1-[bk-1]";
 
     expRouteDesc.add(r1);
