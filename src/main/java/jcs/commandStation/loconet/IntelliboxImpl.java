@@ -34,15 +34,15 @@ import jcs.entities.LocomotiveBean;
 import jcs.entities.SensorBean;
 
 /**
- * Uhlenbrock IntelliBox 2 implementation
+ * IntelliboxImpl IntelliBox 2 implementation
  */
-public class Uhlenbrock extends AbstractController implements DecoderController, AccessoryController, FeedbackController, ConnectionEventListener {
+public class IntelliboxImpl extends AbstractController implements DecoderController, AccessoryController, FeedbackController, ConnectionEventListener {
 
-  public Uhlenbrock(CommandStationBean commandStationBean) {
+  public IntelliboxImpl(CommandStationBean commandStationBean) {
     this(commandStationBean, false);
   }
 
-  public Uhlenbrock(CommandStationBean commandStationBean, boolean autoConnect) {
+  public IntelliboxImpl(CommandStationBean commandStationBean, boolean autoConnect) {
     super(autoConnect, commandStationBean);
     this.executor = Executors.newCachedThreadPool();
   }
