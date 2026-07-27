@@ -69,7 +69,12 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
     dispatcher.showBlockState(destinationBlock);
 
     //Search for a next route...
+    long now = System.currentTimeMillis();
+    
     nextRouteFound = dispatcher.getRouteManager().searchNextRoute();
+    
+    long done = System.currentTimeMillis();
+    Logger.trace("Next route {} in {} ms.",(nextRouteFound?"found":"not found"),(done-now));
 
     if (nextRouteFound) {
       // If max switch time exceeds a threshold, slow down preemptively
@@ -172,12 +177,14 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
   @Override
   public void onEvent(SensorEvent event) {
     if (inSensorId.equals(event.getSensorId())) {
-      if (event.isActive()) {
-        inSensorTriggered = true;
-        //Stop the locomotive!
-        dispatcher.changeLocomotiveVelocity(0);
+      if (!inSensorTriggered) {
+        if (event.isActive()) {
+          inSensorTriggered = true;
+          //Stop the locomotive!
+          dispatcher.changeLocomotiveVelocity(0);
 
-        Logger.tag(TAG).debug("Dispatcher {} Occupied (in) event during next route preparation! Sensor {} Value {}", dispatcher.getName(), event.getSensorId(), (event.isActive() ? "On" : "Off"));
+          Logger.tag(TAG).debug("Dispatcher {} Occupied (in) event during next route preparation! Sensor {} Value {}", dispatcher.getName(), event.getSensorId(), (event.isActive() ? "On" : "Off"));
+        }
       }
     } else {
       Logger.trace("Event for {} not for this state...", event.getSensorId());

@@ -115,7 +115,7 @@ public class AStarThreeWaySwitchNorth {
     AStar instance = new AStar();
     List<Tile> tiles = jcs.ui.layout.tiles.TileCache.loadTiles(false);
     instance.buildGraph(tiles);
-    String expPath = "[bk-1+]->[bk-3+]: bk-1+[bk-1] -> se-8 -> st-8 -> tw-1[RED] -> ct-3 -> ct-2 -> ct-6 -> st-4 -> se-6 -> bk-3+[bk-3]";
+    String expPath = "[bk-1+]->[bk-3+]: bk-1+[bk-1] -> se-8 -> st-8 -> tw-1[RED2] -> ct-3 -> ct-2 -> ct-6 -> st-4 -> se-6 -> bk-3+[bk-3]";
 
     List<Node> path = instance.findPath(fromNodeId, fromSuffix, toNodeId, toSuffix);
     String result = instance.pathToString(path);
@@ -134,7 +134,7 @@ public class AStarThreeWaySwitchNorth {
     AStar instance = new AStar();
     List<Tile> tiles = jcs.ui.layout.tiles.TileCache.loadTiles(false);
     instance.buildGraph(tiles);
-    String expPath = "[bk-3+]->[bk-1+]: bk-3+[bk-3] -> se-6 -> st-4 -> ct-6 -> ct-2 -> ct-3 -> tw-1[RED] -> st-8 -> se-8 -> bk-1+[bk-1]";
+    String expPath = "[bk-3+]->[bk-1+]: bk-3+[bk-3] -> se-6 -> st-4 -> ct-6 -> ct-2 -> ct-3 -> tw-1[RED2] -> st-8 -> se-8 -> bk-1+[bk-1]";
 
     List<Node> path = instance.findPath(fromNodeId, fromSuffix, toNodeId, toSuffix);
     String result = instance.pathToString(path);
@@ -153,7 +153,7 @@ public class AStarThreeWaySwitchNorth {
     AStar instance = new AStar();
     List<Tile> tiles = jcs.ui.layout.tiles.TileCache.loadTiles(false);
     instance.buildGraph(tiles);
-    String expPath = "[bk-1+]->[bk-4+]: bk-1+[bk-1] -> se-8 -> st-8 -> tw-1[RED2] -> ct-5 -> ct-4 -> ct-1 -> st-2 -> se-2 -> bk-4+[bk-4]";
+    String expPath = "[bk-1+]->[bk-4+]: bk-1+[bk-1] -> se-8 -> st-8 -> tw-1[RED] -> ct-5 -> ct-4 -> ct-1 -> st-2 -> se-2 -> bk-4+[bk-4]";
     List<Node> path = instance.findPath(fromNodeId, fromSuffix, toNodeId, toSuffix);
     String result = instance.pathToString(path);
 
@@ -171,7 +171,7 @@ public class AStarThreeWaySwitchNorth {
     AStar instance = new AStar();
     List<Tile> tiles = jcs.ui.layout.tiles.TileCache.loadTiles(false);
     instance.buildGraph(tiles);
-    String expPath = "[bk-4+]->[bk-1+]: bk-4+[bk-4] -> se-2 -> st-2 -> ct-1 -> ct-4 -> ct-5 -> tw-1[RED2] -> st-8 -> se-8 -> bk-1+[bk-1]";
+    String expPath = "[bk-4+]->[bk-1+]: bk-4+[bk-4] -> se-2 -> st-2 -> ct-1 -> ct-4 -> ct-5 -> tw-1[RED] -> st-8 -> se-8 -> bk-1+[bk-1]";
     List<Node> path = instance.findPath(fromNodeId, fromSuffix, toNodeId, toSuffix);
     String result = instance.pathToString(path);
 
@@ -186,12 +186,12 @@ public class AStarThreeWaySwitchNorth {
 
     List<String> expRouteDesc = new ArrayList<>();
 
-    String r1 = "Route: [bk-4+]->[bk-1+]: bk-4 -> bk-4+[bk-4] -> se-2 -> st-2 -> ct-1 -> ct-4 -> ct-5 -> tw-1[RED2] -> st-8 -> se-8 -> bk-1+[bk-1]";
+    String r1 = "Route: [bk-4+]->[bk-1+]: bk-4 -> bk-4+[bk-4] -> se-2 -> st-2 -> ct-1 -> ct-4 -> ct-5 -> tw-1[RED] -> st-8 -> se-8 -> bk-1+[bk-1]";
     String r2 = "Route: [bk-2-]->[bk-1+]: bk-2 -> bk-2-[bk-2] -> se-3 -> st-3 -> st-1 -> tw-1[GREEN] -> st-8 -> se-8 -> bk-1+[bk-1]";
-    String r3 = "Route: [bk-3+]->[bk-1+]: bk-3 -> bk-3+[bk-3] -> se-6 -> st-4 -> ct-6 -> ct-2 -> ct-3 -> tw-1[RED] -> st-8 -> se-8 -> bk-1+[bk-1]";
+    String r3 = "Route: [bk-3+]->[bk-1+]: bk-3 -> bk-3+[bk-3] -> se-6 -> st-4 -> ct-6 -> ct-2 -> ct-3 -> tw-1[RED2] -> st-8 -> se-8 -> bk-1+[bk-1]";
     String r4 = "Route: [bk-1+]->[bk-2-]: bk-1 -> bk-1+[bk-1] -> se-8 -> st-8 -> tw-1[GREEN] -> st-1 -> st-3 -> se-3 -> bk-2-[bk-2]";
-    String r5 = "Route: [bk-1+]->[bk-3+]: bk-1 -> bk-1+[bk-1] -> se-8 -> st-8 -> tw-1[RED] -> ct-3 -> ct-2 -> ct-6 -> st-4 -> se-6 -> bk-3+[bk-3]";
-    String r6 = "Route: [bk-1+]->[bk-4+]: bk-1 -> bk-1+[bk-1] -> se-8 -> st-8 -> tw-1[RED2] -> ct-5 -> ct-4 -> ct-1 -> st-2 -> se-2 -> bk-4+[bk-4]";
+    String r5 = "Route: [bk-1+]->[bk-3+]: bk-1 -> bk-1+[bk-1] -> se-8 -> st-8 -> tw-1[RED2] -> ct-3 -> ct-2 -> ct-6 -> st-4 -> se-6 -> bk-3+[bk-3]";
+    String r6 = "Route: [bk-1+]->[bk-4+]: bk-1 -> bk-1+[bk-1] -> se-8 -> st-8 -> tw-1[RED] -> ct-5 -> ct-4 -> ct-1 -> st-2 -> se-2 -> bk-4+[bk-4]";
 
     expRouteDesc.add(r1);
     expRouteDesc.add(r2);
