@@ -18,6 +18,8 @@
         <maven.compiler.release>25</maven.compiler.release>
         <app.distribution.directory>${project.build.directory}/distributions/app</app.distribution.directory>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss z</maven.build.timestamp.format>
+        <!-- default for local builds -->
+        <jpackage.type>APP_IMAGE</jpackage.type>
     </properties>    
     <licenses>
         <license>
@@ -86,7 +88,7 @@
         <dependency>
             <groupId>com.twelvemonkeys.imageio</groupId>
             <artifactId>imageio-batik</artifactId>
-            <version>3.13.1</version>
+            <version>3.14.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.commons</groupId>
@@ -94,12 +96,12 @@
                 </exclusion>
             </exclusions>     
         </dependency>
-        <dependency>
+        <!--dependency>
             <groupId>org.apache.xmlgraphics</groupId>
             <artifactId>batik</artifactId>
             <version>1.19</version>
             <type>pom</type>
-        </dependency>
+        </dependency-->
         <dependency>
             <groupId>org.apache.xmlgraphics</groupId>
             <artifactId>batik-transcoder</artifactId>
@@ -114,13 +116,13 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>6.1.1</version>
+            <version>6.1.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-params</artifactId>
-            <version>6.1.1</version>
+            <version>6.1.2</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -132,7 +134,7 @@
         <dependency>
             <groupId>org.junit.vintage</groupId>
             <artifactId>junit-vintage-engine</artifactId>
-            <version>6.1.1</version>
+            <version>6.1.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -154,17 +156,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-all</artifactId>
-            <version>1.3</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <version>1.10.19</version>
+            <artifactId>mockito-core</artifactId>
+            <version>5.23.0</version>
             <scope>test</scope>
-        </dependency>
+        </dependency>        
         <dependency>
             <groupId>com.formdev</groupId>
             <artifactId>flatlaf</artifactId>
@@ -173,7 +169,7 @@
         <dependency>
             <groupId>org.httprpc</groupId>
             <artifactId>sierra</artifactId>
-            <version>4.6.3</version>
+            <version>4.6.6</version>
         </dependency>
         <dependency>
             <groupId>eu.hansolo</groupId>
@@ -221,29 +217,104 @@
             <version>RELEASE300</version>
         </dependency>
     </dependencies>
-    <build>        
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>templating-maven-plugin</artifactId>
-                <version>3.1.0</version>
-                <executions>
-                    <execution>
-                        <id>generate-jcs-version</id>
-                        <goals>
-                            <goal>filter-sources</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>3.6.3</version>
-                <configuration>
-                    <mainClass>${app.main.class}</mainClass>
-                </configuration>
-            </plugin>
+    <build>     
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.panteleyev</groupId>
+                    <artifactId>jpackage-maven-plugin</artifactId>
+                    <version>1.6.5</version>
+                    <configuration>
+                        <name>jcs</name>
+                        <appVersion>0.4</appVersion>
+                        <type>${jpackage.type}</type>    <!-- ← driven by property -->
+                        <input>${project.build.directory}</input>
+                        <mainJar>${project.build.finalName}.jar</mainJar>
+                        <mainClass>${app.main.class}</mainClass>
+                        <vendor>Frans Jacobs</vendor>
+                        <copyright>Frans Jacobs</copyright>
+                        <description>JCS is model railroad automation software</description>
+                        <destination>${project.build.directory}/jpackage</destination>
+                        <javaOptions>
+                            <option>-Dfile.encoding=UTF-8</option>
+                            <option>-Xms256m</option>
+                            <option>-Xmx1024m</option>
+                        </javaOptions>
+                        <mac>
+                            <macPackageIdentifier>jcs</macPackageIdentifier>
+                            <icon>${project.basedir}/config/jpackage/resources/appname.icns</icon>
+                        </mac>
+                        <win>
+                            <icon>${project.basedir}/config/jpackage/resources/appname.ico</icon>
+                            <winConsole>false</winConsole>
+                        </win>
+                        
+                        <!-- TODO!
+                        <mac>
+                            <macPackageIdentifier>jcs</macPackageIdentifier>
+                            <icon>${project.basedir}/config/jpackage/resources/jcs.icns</icon>
+                        </mac>
+                        <win>
+                            <icon>${project.basedir}/config/jpackage/resources/jcs.ico</icon>
+                            <winConsole>false</winConsole>
+                            <winMenuGroup>JCS</winMenuGroup>
+                            <winShortcut>true</winShortcut>
+                        </win>
+                        <linux>
+                            <icon>${project.basedir}/config/jpackage/resources/jcs.png</icon>
+                            <linuxMenuGroup>Education</linuxMenuGroup>
+                            <linuxShortcut>true</linuxShortcut>
+                        </linux>
+                        -->
+                        
+                        
+                        
+                        
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <version>3.6.2</version>
+                    <configuration>
+                        <transformers>
+                            <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                <mainClass>${app.main.class}</mainClass>
+                            </transformer>
+                        </transformers>
+                        <filters>
+                            <filter>
+                                <artifact>*:*</artifact>
+                                <excludes>
+                                    <exclude>module-info.class</exclude>
+                                    <exclude>META-INF/*.txt</exclude>
+                                    <exclude>META-INF/*.SF</exclude>
+                                    <exclude>META-INF/*.DSA</exclude>
+                                    <exclude>META-INF/*.RSA</exclude>
+                                    <exclude>META-INF/NOTICE</exclude>
+                                    <exclude>META-INF/LICENSE</exclude>
+                                    <exclude>META-INF/MANIFEST.MF</exclude>
+                                    <exclude>META-INF.versions.9.module-info.class</exclude>
+                                    <exclude>META-INF/versions.9.module-info.class</exclude>
+                                    <exclude>META-INF/services/org.slf4j.spi.SLF4JServiceProvider</exclude>
+                                </excludes>
+                            </filter>
+                        </filters>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>templating-maven-plugin</artifactId>
+                    <version>3.1.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <version>3.6.3</version>
+                    <configuration>
+                        <mainClass>${app.main.class}</mainClass>
+                    </configuration>
+                </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.15.0</version>
@@ -254,7 +325,6 @@
                     <showDeprecation>true</showDeprecation>
                 </configuration>
             </plugin>  
-            
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
@@ -268,8 +338,32 @@
                     </dependency>
                 </dependencies>
             </plugin>
-
-            
+            </plugins>
+        </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>templating-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>generate-jcs-version</id>
+                        <goals>
+                            <goal>filter-sources</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>  
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -286,14 +380,15 @@
                     </archive>
                 </configuration>
             </plugin>
+            <!--
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>3.6.2</version>
                 <executions>
                     <execution>
-                        <phase>none</phase>  <!-- disabled by default; enabled via profile -->
-                        <!--phase>package</phase-->
+                        <phase>none</phase>  <!- - disabled by default; enabled via profile - ->
+                        <!- -phase>package</phase- ->
                         <goals>
                             <goal>shade</goal>
                         </goals>
@@ -325,6 +420,7 @@
                     </execution>
                 </executions>
             </plugin>
+            -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
@@ -417,6 +513,7 @@
                     </execution>
                 </executions>
             </plugin>
+            <!--
             <plugin>
                 <groupId>io.github.fvarrui</groupId>
                 <artifactId>javapackager</artifactId>
@@ -451,8 +548,8 @@
                     </additionalResources>
                 </configuration>
                 <executions>
-                    <!-- Issue in JDK 25 as it does not contain a jmods folder https://github.com/actions/setup-java/issues/804 -->
-                    <!--execution>
+                    < ! - - Issue in JDK 25 as it does not contain a jmods folder https://github.com/actions/setup-java/issues/804 - - >
+                    <!- -execution>
                         <id>bundle-with-jre</id>
                         <phase>package</phase>
                         <goals>
@@ -515,7 +612,7 @@
                                 </categories>
                             </linuxConfig>
                         </configuration>
-                    </execution-->
+                    </execution- ->
                     <execution>
                         <id>bundle-without-jre</id>
                         <phase>package</phase>
@@ -550,7 +647,7 @@
                                 <generatePkg>false</generatePkg>
                                 <volumeName>jcs</volumeName>
                                 <macStartup>SCRIPT</macStartup>
-                                <!--macStartup>UNIVERSAL</macStartup-->
+                                <!- -macStartup>UNIVERSAL</macStartup- ->
                                 <relocateJar>false</relocateJar>
                                 <codesignApp>false</codesignApp>
                                 <hardenedCodesign>false</hardenedCodesign>
@@ -578,13 +675,8 @@
                     </execution>
                 </executions>
             </plugin>
-            
-            <plugin>
-                <groupId>com.github.akman</groupId>
-                <artifactId>jpackage-maven-plugin</artifactId>
-                <version>0.1.5</version>
-            </plugin>
-            
+            -->
+           
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>license-maven-plugin</artifactId>
@@ -682,7 +774,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-shade-plugin</artifactId>
-                        <version>3.6.2</version>
                         <executions>
                             <execution>
                                 <phase>none</phase>
@@ -726,6 +817,18 @@
                             </execution>
                         </executions>
                     </plugin>
+                    <plugin>
+                        <groupId>org.panteleyev</groupId>
+                        <artifactId>jpackage-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>none</phase>
+                                <goals>
+                                    <goal>none</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
                 </plugins>
             </build>
         </profile>
@@ -736,12 +839,23 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-shade-plugin</artifactId>
-                        <version>3.6.2</version>
                         <executions>
                             <execution>
                                 <phase>package</phase>
                                 <goals>
                                     <goal>shade</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.panteleyev</groupId>
+                        <artifactId>jpackage-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>jpackage</goal>
                                 </goals>
                             </execution>
                         </executions>
