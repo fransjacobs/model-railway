@@ -48,31 +48,31 @@
         <plugin>
           <groupId>org.panteleyev</groupId>
           <artifactId>jpackage-maven-plugin</artifactId>
-          <version>1.6.5</version>
+          <version>1.8.0</version>
           <configuration>
             <name>jcs</name>
             <appVersion>0.4</appVersion>
+            <type>${jpackage.type}</type>
+            <input>${project.build.directory}</input>
+            <mainJar>${project.build.finalName}.jar</mainJar>
+            <mainClass>${app.main.class}</mainClass>
             <vendor>Frans Jacobs</vendor>
             <copyright>Frans Jacobs</copyright>
             <description>JCS is model railroad automation software</description>
             <destination>${project.build.directory}/jpackage</destination>
-            <type>APP_IMAGE</type>
-            <input>${project.build.directory}</input>
-            <mainJar>${project.build.finalName}.jar</mainJar>
-            <mainClass>${app.main.class}</mainClass>
             <javaOptions>
               <option>-Dfile.encoding=UTF-8</option>
               <option>-Xms256m</option>
               <option>-Xmx1024m</option>
+              <option>--enable-native-access=ALL-UNNAMED</option>
             </javaOptions>
-            <mac>
-              <macPackageIdentifier>jcs</macPackageIdentifier>
-              <icon>${project.basedir}/config/jpackage/resources/appname.icns</icon>
-            </mac>
-            <win>
-              <icon>${project.basedir}/config/jpackage/resources/appname.ico</icon>
-              <winConsole>false</winConsole>
-            </win>
+            <macPackageIdentifier>jcs</macPackageIdentifier>
+            <winConsole>false</winConsole>
+            <winMenuGroup>JCS</winMenuGroup>
+            <winShortcut>true</winShortcut>
+            <linuxMenuGroup>Education</linuxMenuGroup>
+            <linuxShortcut>true</linuxShortcut>
+            <icon>${app.icon}</icon>
           </configuration>
         </plugin>
         <plugin>
@@ -83,6 +83,7 @@
               <transformer>
                 <mainClass>${app.main.class}</mainClass>
               </transformer>
+              <transformer />
             </transformers>
             <filters>
               <filter>
@@ -96,13 +97,151 @@
                   <exclude>META-INF/NOTICE</exclude>
                   <exclude>META-INF/LICENSE</exclude>
                   <exclude>META-INF/MANIFEST.MF</exclude>
-                  <exclude>META-INF.versions.9.module-info.class</exclude>
-                  <exclude>META-INF/versions.9.module-info.class</exclude>
+                  <exclude>META-INF/versions/**/module-info.class</exclude>
                   <exclude>META-INF/services/org.slf4j.spi.SLF4JServiceProvider</exclude>
                 </excludes>
               </filter>
             </filters>
           </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>3.5.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>templating-maven-plugin</artifactId>
+          <version>3.1.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>exec-maven-plugin</artifactId>
+          <version>3.6.3</version>
+          <configuration>
+            <mainClass>${app.main.class}</mainClass>
+          </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.15.0</version>
+          <configuration>
+            <compilerArgs>-verbose</compilerArgs>
+            <release>25</release>
+            <showDeprecation>true</showDeprecation>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>com.github.spotbugs</groupId>
+          <artifactId>spotbugs-maven-plugin</artifactId>
+          <version>4.10.3.0</version>
+          <dependencies>
+            <dependency>
+              <groupId>com.github.spotbugs</groupId>
+              <artifactId>spotbugs</artifactId>
+              <version>4.10.3</version>
+            </dependency>
+          </dependencies>
+        </plugin>
+        <plugin>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>3.11.0</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>3.5.0</version>
+          <configuration>
+            <encoding>UTF-8</encoding>
+            <propertiesEncoding>${project.build.sourceEncoding}</propertiesEncoding>
+            <nonFilteredFileExtensions>
+              <nonFilteredFileExtension>db:encryptable</nonFilteredFileExtension>
+              <nonFilteredFileExtension>db</nonFilteredFileExtension>
+              <nonFilteredFileExtension>png</nonFilteredFileExtension>
+              <nonFilteredFileExtension>icns</nonFilteredFileExtension>
+            </nonFilteredFileExtensions>
+          </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>3.5.6</version>
+          <configuration>
+            <argLine>-Dfile.encoding=UTF-8</argLine>
+            <parallel>false</parallel>
+          </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-install-plugin</artifactId>
+          <version>3.1.4</version>
+          <configuration>
+            <packaging>jar</packaging>
+          </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-checkstyle-plugin</artifactId>
+          <version>3.6.0</version>
+          <dependencies>
+            <dependency>
+              <groupId>com.puppycrawl.tools</groupId>
+              <artifactId>checkstyle</artifactId>
+              <version>10.26.1</version>
+            </dependency>
+          </dependencies>
+        </plugin>
+        <plugin>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <version>3.6.3</version>
+          <configuration>
+            <rules>
+              <requireMavenVersion>
+                <version>3.2.5</version>
+              </requireMavenVersion>
+            </rules>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>license-maven-plugin</artifactId>
+          <version>2.7.1</version>
+          <configuration>
+            <licensesOutputDirectory>${project.build.directory}/generated-resources/licenses</licensesOutputDirectory>
+            <useRepositoryContent>true</useRepositoryContent>
+            <cacheDir>${project.build.directory}/license-cache</cacheDir>
+            <licenseMerges>
+              <licenseMerge>GNU Lesser General Public License</licenseMerge>
+              <licenseMerge>LGPL-2.1</licenseMerge>
+            </licenseMerges>
+            <licenseMap>
+              <license>
+                <name>GNU Lesser General Public License</name>
+                <url>https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt</url>
+              </license>
+              <license>
+                <name>OpenJDK GPLv2 + Classpath Exception</name>
+                <url>https://openjdk.org/legal/gplv2+ce.html</url>
+              </license>
+            </licenseMap>
+            <licenseUrlMap>
+              <licenseUrl>
+                <match>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</match>
+                <replacement>https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt</replacement>
+              </licenseUrl>
+              <licenseUrl>
+                <match>http://www.gnu.org/licenses/lgpl.html</match>
+                <replacement>https://www.gnu.org/licenses/lgpl-2.1.txt</replacement>
+              </licenseUrl>
+              <licenseUrl>
+                <match>https://openjdk.java.net/legal/gplv2+ce.html</match>
+                <replacement>https://openjdk.org/legal/gplv2+ce.html</replacement>
+              </licenseUrl>
+              <licenseUrl>
+                <match>/LICENSE.txt</match>
+                <replacement>https://raw.githubusercontent.com/apache/commons-logging/master/LICENSE.txt</replacement>
+              </licenseUrl>
+            </licenseUrlMap>
+          </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-gpg-plugin</artifactId>
+          <version>3.2.8</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -110,7 +249,6 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>templating-maven-plugin</artifactId>
-        <version>3.1.0</version>
         <executions>
           <execution>
             <id>generate-jcs-version</id>
@@ -123,50 +261,19 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
-        <version>3.6.3</version>
-        <configuration>
-          <mainClass>${app.main.class}</mainClass>
-        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.15.0</version>
-        <configuration>
-          <compilerArgs>-verbose</compilerArgs>
-          <release>25</release>
-          <showDeprecation>true</showDeprecation>
-        </configuration>
       </plugin>
       <plugin>
         <groupId>com.github.spotbugs</groupId>
         <artifactId>spotbugs-maven-plugin</artifactId>
-        <version>4.9.8.5</version>
-        <dependencies>
-          <dependency>
-            <groupId>com.github.spotbugs</groupId>
-            <artifactId>spotbugs</artifactId>
-            <version>4.10.2</version>
-          </dependency>
-        </dependencies>
       </plugin>
       <plugin>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>3.5.0</version>
-        <configuration>
-          <skipIfEmpty>true</skipIfEmpty>
-          <archive>
-            <manifestEntries>
-              <Main-Class>${app.main.class}</Main-Class>
-              <Automatic-Module-Name>jcs</Automatic-Module-Name>
-              <Program-Version>${project.version}</Program-Version>
-              <Implementation-Version>${project.version}</Implementation-Version>
-            </manifestEntries>
-          </archive>
-        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
-        <version>3.11.0</version>
         <executions>
           <execution>
             <id>copy-dependencies</id>
@@ -174,44 +281,20 @@
             <goals>
               <goal>copy-dependencies</goal>
             </goals>
-            <configuration>
-              <outputDirectory>${project.build.directory}/libs</outputDirectory>
-            </configuration>
           </execution>
         </executions>
       </plugin>
       <plugin>
         <artifactId>maven-resources-plugin</artifactId>
-        <version>3.5.0</version>
-        <configuration>
-          <encoding>UTF-8</encoding>
-          <propertiesEncoding>${project.build.sourceEncoding}</propertiesEncoding>
-          <nonFilteredFileExtensions>
-            <nonFilteredFileExtension>db:encryptable</nonFilteredFileExtension>
-            <nonFilteredFileExtension>db</nonFilteredFileExtension>
-            <nonFilteredFileExtension>png</nonFilteredFileExtension>
-            <nonFilteredFileExtension>icns</nonFilteredFileExtension>
-          </nonFilteredFileExtensions>
-        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.5.6</version>
-        <configuration>
-          <argLine>-Dfile.encoding=UTF-8</argLine>
-          <parallel>false</parallel>
-        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-install-plugin</artifactId>
-        <version>3.1.4</version>
-        <configuration>
-          <packaging>jar</packaging>
-        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>3.6.0</version>
         <executions>
           <execution>
             <id>checkstyle</id>
@@ -221,37 +304,21 @@
             </goals>
           </execution>
         </executions>
-        <dependencies>
-          <dependency>
-            <groupId>com.puppycrawl.tools</groupId>
-            <artifactId>checkstyle</artifactId>
-            <version>10.26.1</version>
-          </dependency>
-        </dependencies>
       </plugin>
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>3.6.3</version>
         <executions>
           <execution>
             <id>enforce-maven</id>
             <goals>
               <goal>enforce</goal>
             </goals>
-            <configuration>
-              <rules>
-                <requireMavenVersion>
-                  <version>3.2.5</version>
-                </requireMavenVersion>
-              </rules>
-            </configuration>
           </execution>
         </executions>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>license-maven-plugin</artifactId>
-        <version>2.7.1</version>
         <executions>
           <execution>
             <id>aggregate-download-licenses</id>
@@ -261,47 +328,9 @@
             </goals>
           </execution>
         </executions>
-        <configuration>
-          <licensesOutputDirectory>${project.build.directory}/generated-resources/licenses</licensesOutputDirectory>
-          <useRepositoryContent>true</useRepositoryContent>
-          <cacheDir>${project.build.directory}/license-cache</cacheDir>
-          <licenseMerges>
-            <licenseMerge>GNU Lesser General Public License</licenseMerge>
-            <licenseMerge>LGPL-2.1</licenseMerge>
-          </licenseMerges>
-          <licenseMap>
-            <license>
-              <name>GNU Lesser General Public License</name>
-              <url>https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt</url>
-            </license>
-            <license>
-              <name>OpenJDK GPLv2 + Classpath Exception</name>
-              <url>https://openjdk.org/legal/gplv2+ce.html</url>
-            </license>
-          </licenseMap>
-          <licenseUrlMap>
-            <licenseUrl>
-              <match>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</match>
-              <replacement>https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt</replacement>
-            </licenseUrl>
-            <licenseUrl>
-              <match>http://www.gnu.org/licenses/lgpl.html</match>
-              <replacement>https://www.gnu.org/licenses/lgpl-2.1.txt</replacement>
-            </licenseUrl>
-            <licenseUrl>
-              <match>https://openjdk.java.net/legal/gplv2+ce.html</match>
-              <replacement>https://openjdk.org/legal/gplv2+ce.html</replacement>
-            </licenseUrl>
-            <licenseUrl>
-              <match>/LICENSE.txt</match>
-              <replacement>https://raw.githubusercontent.com/apache/commons-logging/master/LICENSE.txt</replacement>
-            </licenseUrl>
-          </licenseUrlMap>
-        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-gpg-plugin</artifactId>
-        <version>3.2.8</version>
         <executions>
           <execution>
             <id>sign-artifacts</id>
@@ -316,6 +345,24 @@
   </build>
   <profiles>
     <profile>
+      <id>linux-icon</id>
+      <properties>
+        <app.icon>${project.basedir}/config/jpackage/resources/JCS.png</app.icon>
+      </properties>
+    </profile>
+    <profile>
+      <id>win-icon</id>
+      <properties>
+        <app.icon>${project.basedir}/config/jpackage/resources/JCS.ico</app.icon>
+      </properties>
+    </profile>
+    <profile>
+      <id>mac-icon</id>
+      <properties>
+        <app.icon>${project.basedir}/config/jpackage/resources/JCS.icns</app.icon>
+      </properties>
+    </profile>
+    <profile>
       <id>no-app</id>
       <build>
         <plugins>
@@ -329,7 +376,6 @@
           </plugin>
           <plugin>
             <artifactId>maven-gpg-plugin</artifactId>
-            <version>3.2.8</version>
             <executions>
               <execution>
                 <id>sign-artifacts</id>
@@ -338,20 +384,8 @@
             </executions>
           </plugin>
           <plugin>
-            <groupId>io.github.fvarrui</groupId>
-            <artifactId>javapackager</artifactId>
-            <version>1.7.6</version>
-            <executions>
-              <execution>
-                <id>bundle-without-jre</id>
-                <phase>none</phase>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>license-maven-plugin</artifactId>
-            <version>2.7.1</version>
             <executions>
               <execution>
                 <id>aggregate-download-licenses</id>
@@ -411,7 +445,6 @@
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>license-maven-plugin</artifactId>
-            <version>2.7.1</version>
             <executions>
               <execution>
                 <id>aggregate-download-licenses</id>
@@ -532,6 +565,7 @@
   </dependencies>
   <properties>
     <maven.compiler.release>25</maven.compiler.release>
+    <jpackage.type>APP_IMAGE</jpackage.type>
     <java.version>25</java.version>
     <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss z</maven.build.timestamp.format>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
