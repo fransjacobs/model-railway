@@ -16,18 +16,17 @@
 package jcs.ui.settings;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
-import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -75,118 +74,133 @@ import jcs.util.KeyValuePair;
 import org.tinylog.Logger;
 
 /**
- * Dialog panel for importing and editing locomotive settings
- *
- * @author Frans Jacobs
+ * Dialog panel for importing and editing Accessory settings
  */
 public class AccessorySettingsPanel extends JPanel implements PropertyChangeListener {
-  
+
   private static final long serialVersionUID = -8354030030958257426L;
-  
+
   private final AccessoryBeanListModel accessoryListModel;
   //TODO: support for multiple AccessoryControllers 
   private CommandStationBean commandStationBean;
   private AccessoryBean selectedAccessory;
   private final DefaultComboBoxModel<Protocol> protocolCBModel;
   private final DefaultComboBoxModel<KeyValuePair> typeCBModel;
-  
+
   private final Map<String, KeyValuePair> typeMap = new HashMap<>();
-  
+
   private SynchronizationTask task;
-  
+
   public AccessorySettingsPanel() {
     accessoryListModel = new AccessoryBeanListModel();
     protocolCBModel = new DefaultComboBoxModel(Protocol.values());
-    
+
     List<KeyValuePair> kvl = createTypeKeyValuePairs();
     typeCBModel = new DefaultComboBoxModel(kvl.toArray());
     //Lookup for types
     for (KeyValuePair kv : kvl) {
       typeMap.put(kv.getKey(), kv);
     }
-    
+
     initComponents();
-    initModels();
+    initModels(null);
   }
-  
-  private void initModels() {
+
+  private void initModels(AccessoryBean currentSelected) {
     if (PersistenceFactory.getService() != null) {
       commandStationBean = PersistenceFactory.getService().getDefaultCommandStation();
       commandStationLbl.setText(commandStationBean.getDescription());
-      
+
       accessoryListModel.clear();
       List<AccessoryBean> accessories = PersistenceFactory.getService().getAccessoriesByCommandStationId(commandStationBean.getId());
       accessoryListModel.addAll(accessories);
-      this.accessoryList.setModel(accessoryListModel);
-      
+      accessoryList.setModel(accessoryListModel);
+
+      if (currentSelected != null) {
+        this.selectedAccessory = currentSelected;
+      } else {
+        if (!accessories.isEmpty()) {
+          this.selectedAccessory = accessories.getFirst();
+        }
+      }
+
       setFieldValues();
     }
   }
-  
+
   private void setFieldValues() {
     if (selectedAccessory != null) {
       String id = selectedAccessory.getId();
       if (id != null) {
         this.idLabel.setText(id);
       }
-      
+
       Integer address = selectedAccessory.getAddress();
       if (address == null) {
         address = 0;
       }
       this.addressSpinner.setValue(address);
-      
+
       Integer address2 = selectedAccessory.getAddress2();
       if (address2 == null) {
         address2 = 0;
       }
       this.address2Spinner.setValue(address2);
-      
+
       String name = selectedAccessory.getName();
       this.nameTF.setText(name);
-      
+
       String type = selectedAccessory.getType();
       if (type != null) {
         KeyValuePair kv = typeMap.get(type);
         typeCBModel.setSelectedItem(kv);
       }
-      
+
       Integer switchTime = selectedAccessory.getSwitchTime();
       if (switchTime == null) {
         switchTime = 200;
         selectedAccessory.setSwitchTime(switchTime);
       }
       this.switchTimeSpinner.setValue(switchTime);
-      
+
       Protocol protocol = selectedAccessory.getProtocol();
       this.protocolCBModel.setSelectedItem(protocol);
-      
+
       String decoder = selectedAccessory.getDecoder();
       this.decoderTF.setText(decoder);
-      
+
       Integer states = selectedAccessory.getStates();
       if (states == null) {
         states = 2;
         selectedAccessory.setStates(states);
       }
-      this.statesSpinner.setValue(states);
-      
+      statesSpinner.setValue(states);
+
       if (null == selectedAccessory.getAccessoryValue()) {
-        this.currentGreenStateLabel.setVisible(false);
-        this.currentRedStateLabel.setVisible(false);
+        this.currentGreenLbl.setVisible(false);
+        this.currentRedLbl.setVisible(false);
+        this.currentRed2Lbl.setVisible(false);
       } else {
         switch (selectedAccessory.getAccessoryValue()) {
           case GREEN -> {
-            this.currentGreenStateLabel.setVisible(true);
-            this.currentRedStateLabel.setVisible(false);
+            this.currentGreenLbl.setVisible(true);
+            this.currentRedLbl.setVisible(false);
+            this.currentRed2Lbl.setVisible(false);
           }
           case RED -> {
-            this.currentGreenStateLabel.setVisible(false);
-            this.currentRedStateLabel.setVisible(true);
+            this.currentGreenLbl.setVisible(false);
+            this.currentRedLbl.setVisible(true);
+            this.currentRed2Lbl.setVisible(false);
+          }
+          case RED2 -> {
+            this.currentGreenLbl.setVisible(false);
+            this.currentRedLbl.setVisible(false);
+            this.currentRed2Lbl.setVisible(true);
           }
           default -> {
-            this.currentGreenStateLabel.setVisible(false);
-            this.currentRedStateLabel.setVisible(false);
+            this.currentGreenLbl.setVisible(false);
+            this.currentRedLbl.setVisible(false);
+            this.currentRed2Lbl.setVisible(false);
           }
         }
       }
@@ -206,12 +220,12 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
       //String icon = selectedAccessory.getIcon();
       String iconFile = selectedAccessory.getIconFile();
       this.iconTF.setText(iconFile);
-      
+
       String source = selectedAccessory.getSource();
       if (source == null) {
         selectedAccessory.setSource("Manual Inserted");
       }
-      
+
       boolean synch = selectedAccessory.isSynchronize();
       synchronizeCB.setSelected(synch);
     } else {
@@ -223,46 +237,47 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
       this.protocolCBModel.setSelectedItem(Protocol.MM);
       this.decoderTF.setText(null);
       this.statesSpinner.setValue(2);
-      this.currentGreenStateLabel.setVisible(false);
-      this.currentRedStateLabel.setVisible(false);
+      this.currentGreenLbl.setVisible(false);
+      this.currentRedLbl.setVisible(false);
+      this.currentRed2Lbl.setVisible(false);
       this.groupLabel.setText(null);
       this.iconTF.setText(null);
       this.synchronizeCB.setSelected(false);
     }
     enableFields(selectedAccessory != null);
   }
-  
+
   private void enableFields(boolean enable) {
     //ProgressBar
     this.synchPB.setVisible(false);
-    
+
     this.synchronizeBtn.setEnabled(this.commandStationBean.isAccessoryControlSupport());
     this.synchronizeBtn.setVisible(this.commandStationBean.isAccessorySynchronizationSupport());
-    
+
     this.synchronizeCB.setEnabled(this.commandStationBean.isAccessorySynchronizationSupport() && enable);
-    
+
     boolean showId = selectedAccessory != null && selectedAccessory.getId() != null;
     this.idNameLbl.setVisible(showId);
     this.idLabel.setVisible(showId);
-    
+
     boolean showGrp = selectedAccessory != null && selectedAccessory.getGroup() != null;
     this.groupLbl.setVisible(showGrp);
     this.groupLabel.setVisible(showGrp);
-    
+
     boolean enableFields = enable && !this.synchronizeCB.isSelected();
     this.nameTF.setEnabled(enableFields);
     this.addressSpinner.setEnabled(enableFields);
     this.protocolCB.setEnabled(enableFields);
     this.typeCB.setEnabled(enableFields);
     this.decoderTF.setEnabled(enableFields);
-    
+
     boolean acsup = this.commandStationBean.isAccessorySynchronizationSupport();
     this.iconTF.setEnabled(enableFields && acsup);
     this.iconFileDialogBtn.setEnabled(enableFields && acsup);
-    
+
     this.switchTimeSpinner.setEnabled(enableFields);
     this.statesSpinner.setEnabled(enableFields);
-    
+
     this.saveBtn.setEnabled(!this.synchronizeCB.isSelected() && enable);
   }
 
@@ -312,10 +327,11 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
     groupLabel = new JLabel();
     row5Panel = new JPanel();
     statesLbl = new JLabel();
-    currentStateLbl = new JLabel();
     statesSpinner = new JSpinner();
-    currentGreenStateLabel = new JLabel();
-    currentRedStateLabel = new JLabel();
+    currentStateLbl = new JLabel();
+    currentGreenLbl = new JLabel();
+    currentRedLbl = new JLabel();
+    currentRed2Lbl = new JLabel();
     row6Panel = new JPanel();
     switchTimeLbl = new JLabel();
     switchTimeSpinner = new JSpinner();
@@ -633,21 +649,13 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
     row5Panel.setLayout(flowLayout6);
 
     statesLbl.setHorizontalAlignment(SwingConstants.TRAILING);
-    statesLbl.setLabelFor(statesSpinner);
-    statesLbl.setText("States:");
+    statesLbl.setText("Max. States:");
     statesLbl.setToolTipText("");
     statesLbl.setPreferredSize(new Dimension(100, 17));
     row5Panel.add(statesLbl);
 
-    currentStateLbl.setHorizontalAlignment(SwingConstants.TRAILING);
-    currentStateLbl.setText("Current State:");
-    currentStateLbl.setPreferredSize(new Dimension(100, 17));
-    row5Panel.add(currentStateLbl);
-
-    statesSpinner.setModel(new SpinnerNumberModel(0, 0, 300, 1));
-    statesSpinner.setToolTipText("Nr of States the accessory can perform/show");
-    statesSpinner.setDoubleBuffered(true);
-    statesSpinner.setPreferredSize(new Dimension(85, 26));
+    statesSpinner.setModel(new SpinnerNumberModel(2, 1, 4, 1));
+    statesSpinner.setToolTipText("Number of State possible");
     statesSpinner.addChangeListener(new ChangeListener() {
       public void stateChanged(ChangeEvent evt) {
         statesSpinnerStateChanged(evt);
@@ -655,13 +663,32 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
     });
     row5Panel.add(statesSpinner);
 
-    currentGreenStateLabel.setIcon(new ImageIcon(getClass().getResource("/media/Button-Green-14px.png"))); // NOI18N
-    currentGreenStateLabel.setPreferredSize(new Dimension(17, 17));
-    row5Panel.add(currentGreenStateLabel);
+    currentStateLbl.setHorizontalAlignment(SwingConstants.TRAILING);
+    currentStateLbl.setText("Current Value:");
+    currentStateLbl.setPreferredSize(new Dimension(100, 17));
+    row5Panel.add(currentStateLbl);
 
-    currentRedStateLabel.setIcon(new ImageIcon(getClass().getResource("/media/Button-Red-14px.png"))); // NOI18N
-    currentRedStateLabel.setPreferredSize(new Dimension(17, 17));
-    row5Panel.add(currentRedStateLabel);
+    currentGreenLbl.setBackground(new Color(51, 255, 51));
+    currentGreenLbl.setHorizontalAlignment(SwingConstants.CENTER);
+    currentGreenLbl.setText("G");
+    currentGreenLbl.setOpaque(true);
+    currentGreenLbl.setPreferredSize(new Dimension(20, 20));
+    row5Panel.add(currentGreenLbl);
+
+    currentRedLbl.setBackground(new Color(255, 51, 51));
+    currentRedLbl.setHorizontalAlignment(SwingConstants.CENTER);
+    currentRedLbl.setText("R");
+    currentRedLbl.setToolTipText("");
+    currentRedLbl.setOpaque(true);
+    currentRedLbl.setPreferredSize(new Dimension(20, 20));
+    row5Panel.add(currentRedLbl);
+
+    currentRed2Lbl.setBackground(new Color(255, 51, 102));
+    currentRed2Lbl.setHorizontalAlignment(SwingConstants.CENTER);
+    currentRed2Lbl.setText("R2");
+    currentRed2Lbl.setOpaque(true);
+    currentRed2Lbl.setPreferredSize(new Dimension(20, 20));
+    row5Panel.add(currentRed2Lbl);
 
     detailPanel.add(row5Panel);
 
@@ -785,16 +812,16 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
     int last = accessories.size();
     String id = String.format("%03d", (last + 1));
     newAccessory.setId(id);
-    
+
     newAccessory.setSource("Manual Inserted");
-    
+
     newAccessory.setProtocol(Protocol.DCC);
     newAccessory.setSynchronize(false);
-    
+
     this.accessoryListModel.add(newAccessory);
     this.accessoryList.setSelectedValue(newAccessory, true);
     this.selectedAccessory = newAccessory;
-    
+
     setFieldValues();
   }//GEN-LAST:event_newBtnActionPerformed
 
@@ -810,13 +837,14 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
       int address2 = selectedAccessory.getAddress2();
       if (address2 == 0 || address2 == address || address2 < address) {
         selectedAccessory.setAddress2(null);
+        selectedAccessory.setStates(2);
       }
-      
+
       Logger.trace("Saving: " + selectedAccessory.toLogString());
-      
+
       selectedAccessory = PersistenceFactory.getService().persist(selectedAccessory);
-      initModels();
-      accessoryList.setSelectedValue(selectedAccessory, true);
+
+      initModels(selectedAccessory);
     }
   }//GEN-LAST:event_saveBtnActionPerformed
 
@@ -824,11 +852,11 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
     Logger.trace("Delete: " + selectedAccessory.toLogString());
     PersistenceFactory.getService().remove(selectedAccessory);
     selectedAccessory = null;
-    initModels();
+    initModels(null);
   }//GEN-LAST:event_deleteBtnActionPerformed
 
   private void refreshBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_refreshBtnActionPerformed
-    this.initModels();
+    initModels(selectedAccessory);
   }//GEN-LAST:event_refreshBtnActionPerformed
 
     private void synchronizeBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_synchronizeBtnActionPerformed
@@ -836,11 +864,11 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
       this.synchronizeBtn.setEnabled(false);
       this.accessoryList.setEnabled(false);
       this.showAllRB.setSelected(true);
-      
+
       this.synchPB.setValue(0);
       this.synchPB.setIndeterminate(true);
       this.synchPB.setVisible(true);
-      
+
       task = new SynchronizationTask();
       task.addPropertyChangeListener(this);
       task.execute();
@@ -859,20 +887,6 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
     JFrame parentFrame = (JFrame) SwingUtilities.getAncestorOfClass(JFrame.class, this);
     IconFileChooser fileDialog = new IconFileChooser(parentFrame, true);
     fileDialog.setVisible(true);
-    
-    File iconFile = fileDialog.getSelectedIconFile();
-    if (iconFile != null) {
-      //iconTF.setText(iconFile.getPath());
-      //this.selectedAccessory.setIcon(iconFile.getPath());
-
-      //try to show the image also
-      Image img = PersistenceFactory.getService().readImage(iconFile.getPath(), false);
-      //if (img != null) {
-      //img = PersistenceFactory.getService().getLocomotiveImage(iconFile.getPath());
-      //this.selectedAccessory.setLocIcon(img);
-      //this.imageLabel.setIcon(new ImageIcon(img));
-      //}
-    }
   }//GEN-LAST:event_iconFileDialogBtnActionPerformed
 
   private void nameTFFocusLost(FocusEvent evt) {//GEN-FIRST:event_nameTFFocusLost
@@ -923,13 +937,6 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
     }
   }//GEN-LAST:event_switchTimeSpinnerStateChanged
 
-  private void statesSpinnerStateChanged(ChangeEvent evt) {//GEN-FIRST:event_statesSpinnerStateChanged
-    Integer states = (Integer) statesSpinner.getValue();
-    if (selectedAccessory != null) {
-      this.selectedAccessory.setState(states);
-    }
-  }//GEN-LAST:event_statesSpinnerStateChanged
-
   private void showAllRBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showAllRBActionPerformed
     accessoryListModel.resetFilters();
     if (selectedAccessory != null) {
@@ -972,7 +979,7 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
     if (selectedAccessory != null) {
       Integer address = (Integer) addressSpinner.getValue();
       Integer address2 = (Integer) address2Spinner.getValue();
-      
+
       if (address2 > 0 && address2 > address) {
         selectedAccessory.setAddress2(address2);
       } else {
@@ -980,10 +987,17 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
       }
     }
   }//GEN-LAST:event_address2SpinnerStateChanged
-  
+
+  private void statesSpinnerStateChanged(ChangeEvent evt) {//GEN-FIRST:event_statesSpinnerStateChanged
+    if (selectedAccessory != null) {
+      Integer states = (Integer) statesSpinner.getValue();
+      selectedAccessory.setStates(states);
+    }
+  }//GEN-LAST:event_statesSpinnerStateChanged
+
   private List<KeyValuePair> createTypeKeyValuePairs() {
     List<KeyValuePair> kvl = new ArrayList<>();
-    
+
     kvl.add(new KeyValuePair("null", ""));
     kvl.add(new KeyValuePair("std_rot_gruen", "Red/Green"));
     kvl.add(new KeyValuePair("std_rot", "Red only"));
@@ -995,13 +1009,13 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
     kvl.add(new KeyValuePair("dreiwegweiche", "3 way Turnout"));
     kvl.add(new KeyValuePair("entkupplungsgleis", "Decoupler"));
     kvl.add(new KeyValuePair("entkupplungsgleis_1", "Decoupler 1"));
-    
+
     kvl.add(new KeyValuePair("lichtsignal_HP01", "Signal Hp0/1"));
     kvl.add(new KeyValuePair("lichtsignal_HP02", "Signal Hp0/2"));
     kvl.add(new KeyValuePair("lichtsignal_HP012", "Signal Hp0/1/2"));
     kvl.add(new KeyValuePair("lichtsignal_HP012_SH01", "Signal Hp0/1/2 Sh0/1"));
     kvl.add(new KeyValuePair("lichtsignal_SH01", "Signal Sh0/1"));
-    
+
     kvl.add(new KeyValuePair("formsignal_HP01", "Semaphore Hp0/1"));
     kvl.add(new KeyValuePair("formsignal_HP02", "Semaphore Hp0/2"));
     kvl.add(new KeyValuePair("formsignal_HP012", "Semaphore Hp0/1/2"));
@@ -1012,12 +1026,12 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
     kvl.add(new KeyValuePair("urc_lichtsignal_HP012", "Signal URC Hp0/1/2"));
     kvl.add(new KeyValuePair("urc_lichtsignal_HP012_SH01", "Signal URC Hp0/1/2"));
     kvl.add(new KeyValuePair("urc_lichtsignal_SH01", "Signal URC Sh0/1"));
-    
+
     return kvl;
   }
-  
+
   class AccessoryBeanByNameSorter implements Comparator<AccessoryBean> {
-    
+
     @Override
     public int compare(AccessoryBean a, AccessoryBean b) {
       //Avoid null pointers
@@ -1029,57 +1043,57 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
       if (bb == null) {
         bb = "000";
       }
-      
+
       return aa.compareTo(bb);
     }
   }
-  
+
   class AccessoryBeanListModel extends AbstractListModel<AccessoryBean> {
-    
+
     private static final long serialVersionUID = 3490682684799724780L;
-    
+
     private final List<AccessoryBean> all;
     private final List<AccessoryBean> filtered;
-    
+
     private boolean turnoutsOnly;
     private boolean signalsOnly;
-    
+
     public AccessoryBeanListModel() {
       all = new ArrayList<>();
       filtered = new ArrayList<>();
     }
-    
+
     public void showTurnoutsOnly(boolean flag) {
       turnoutsOnly = flag;
       signalsOnly = !flag;
       filterList();
       fireContentsChanged(this, 0, getSize());
     }
-    
+
     public void showSignalsOnly(boolean flag) {
       turnoutsOnly = !flag;
       signalsOnly = flag;
       filterList();
       fireContentsChanged(this, 0, getSize());
     }
-    
+
     public void resetFilters() {
       turnoutsOnly = false;
       signalsOnly = false;
       filterList();
       fireContentsChanged(this, 0, getSize());
     }
-    
+
     @Override
     public int getSize() {
       return filtered.size();
     }
-    
+
     @Override
     public AccessoryBean getElementAt(int index) {
       return (AccessoryBean) filtered.toArray()[index];
     }
-    
+
     public void add(AccessoryBean element) {
       if (all.add(element)) {
         filterList();
@@ -1087,7 +1101,7 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
         fireContentsChanged(this, 0, getSize());
       }
     }
-    
+
     public void addAll(AccessoryBean elements[]) {
       Collection<AccessoryBean> c = Arrays.asList(elements);
       all.addAll(c);
@@ -1095,24 +1109,24 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
       Collections.sort(filtered, new AccessoryBeanByNameSorter());
       fireContentsChanged(this, 0, getSize());
     }
-    
+
     public void addAll(Collection<AccessoryBean> elements) {
       all.addAll(elements);
       filterList();
       Collections.sort(filtered, new AccessoryBeanByNameSorter());
       fireContentsChanged(this, 0, getSize());
     }
-    
+
     public void clear() {
       all.clear();
       filterList();
       fireContentsChanged(this, 0, getSize());
     }
-    
+
     public boolean contains(AccessoryBean element) {
       return filtered.contains(element);
     }
-    
+
     public AccessoryBean firstElement() {
       if (!filtered.isEmpty()) {
         return filtered.get(0);
@@ -1120,11 +1134,11 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
         return null;
       }
     }
-    
+
     public Iterator<AccessoryBean> iterator() {
       return filtered.iterator();
     }
-    
+
     public AccessoryBean lastElement() {
       if (!filtered.isEmpty()) {
         return filtered.get(filtered.size() - 1);
@@ -1132,7 +1146,7 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
         return null;
       }
     }
-    
+
     public boolean removeElement(AccessoryBean element) {
       boolean removed = all.remove(element);
       if (removed) {
@@ -1142,7 +1156,7 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
       }
       return removed;
     }
-    
+
     private void filterList() {
       filtered.clear();
       for (AccessoryBean ab : all) {
@@ -1156,26 +1170,23 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
       }
     }
   }
-  
+
   @Override
   public void propertyChange(PropertyChangeEvent evt) {
     if ("progress".equals(evt.getPropertyName())) {
       int progress = (Integer) evt.getNewValue();
       synchPB.setIndeterminate(progress < 20);
       synchPB.setValue(progress);
-      
+
       if (task.isDone()) {
         synchronizeBtn.setEnabled(commandStationBean.isLocomotiveSynchronizationSupport());
       }
     }
     if ("updated".equals(evt.getPropertyName())) {
       Logger.trace("Done: " + evt.getNewValue());
-      //if (!accessoryListModel.contains((LocomotiveBean) evt.getNewValue())) {
-      //  accessoryListModel.add((LocomotiveBean) evt.getNewValue());
-      //}
-      this.accessoryList.setSelectedValue(evt.getNewValue(), true);
+      accessoryList.setSelectedValue(evt.getNewValue(), true);
     }
-    
+
     if ("done".equals(evt.getPropertyName())) {
       Logger.trace("Done: " + evt.getNewValue());
       //this.connectionTestResultLbl.setText((String) evt.getNewValue());
@@ -1184,37 +1195,37 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
       accessoryList.clearSelection();
     }
   }
-  
+
   class SynchronizationTask extends SwingWorker<Void, Void> {
-    
+
     @Override
     public Void doInBackground() {
       setProgress(0);
-      
+
       AccessoryController accessoryController = ControllerFactory.getAccessoryController(commandStationBean);
       if (accessoryController != null && !accessoryController.isConnected()) {
         accessoryController.connect();
       }
-      
+
       if (accessoryController == null || !accessoryController.isConnected()) {
-        
+
         Logger.warn("No Controller or No connection!");
         firePropertyChange("done", "", "Can't Connect with Controller!");
         setProgress(0);
         return null;
       }
-      
+
       List<AccessoryBean> fromController = accessoryController.getAccessories();
       String importedFrom = commandStationBean.getShortName();
-      
+
       int accCount = fromController.size();
       int processedCount = 0;
-      
+
       for (AccessoryBean accessory : fromController) {
         String id = accessory.getId();
         AccessoryBean dbAccessory = PersistenceFactory.getService().getAccessory(id);
         boolean store = true;
-        
+
         if (dbAccessory != null && accessory.getId().equals(dbAccessory.getId())) {
           if (dbAccessory.isSynchronize()) {
             Logger.trace("Accessory id: " + accessory.getId() + ", " + accessory.getName() + " Addres: " + accessory.getAddress() + " Exists");
@@ -1230,37 +1241,31 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
           accessory.setSource(importedFrom);
         }
 
-        //if (accessory.getAddress() == null) {
-        //  //store = false;
-        //  //use id as address.....?
-        //  accessory.setAddress(Integer.parseInt(accessory.getId()));
-        //  Logger.warn("Accessory " + id + " does not have an address?");
-        //}
         if (store) {
           try {
             PersistenceFactory.getService().persist(accessory);
-            
+
             firePropertyChange("updated", null, accessory);
-            
+
           } catch (Exception e) {
             Logger.error(e);
           }
-          
+
         }
         processedCount++;
-        
+
         double progress = (double) processedCount / accCount * 100;
         setProgress((int) progress);
       }
-      
+
       firePropertyChange("done", "", "Accessories Synchronized");
-      
+
       return null;
     }
-    
+
     @Override
     public void done() {
-      initModels();
+      initModels(selectedAccessory);
       synchronizeBtn.setEnabled(commandStationBean.isAccessorySynchronizationSupport());
     }
   }
@@ -1276,8 +1281,9 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
   JPanel buttonPanel;
   JLabel commandStationLbl;
   JLabel commandStationNameLbl;
-  JLabel currentGreenStateLabel;
-  JLabel currentRedStateLabel;
+  JLabel currentGreenLbl;
+  JLabel currentRed2Lbl;
+  JLabel currentRedLbl;
   JLabel currentStateLbl;
   JLabel decoderLbl;
   JTextField decoderTF;
