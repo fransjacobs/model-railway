@@ -51,7 +51,7 @@
           <version>1.8.0</version>
           <configuration>
             <name>jcs</name>
-            <appVersion>0.4</appVersion>
+            <appVersion>1.0.0</appVersion>
             <type>${jpackage.type}</type>
             <input>${project.build.directory}</input>
             <mainJar>${project.build.finalName}.jar</mainJar>
