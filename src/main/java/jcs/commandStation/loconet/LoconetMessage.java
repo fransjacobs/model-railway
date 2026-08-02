@@ -15,232 +15,262 @@
  */
 package jcs.commandStation.loconet;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import jcs.util.ByteUtil;
 
 /**
- * Immutable Loconet message.
+ * Loconet Message.<br>
+ * Inspired on the work from Thomas Kurz in 2007
  */
-public final class LoconetMessage {
+public final class LoconetMessage implements Opcodes {
 
-  private final Loconet.Opcode opcode;
-  private final byte[] message;
-  private final List<Integer> reply;
+  protected int[] message = new int[0];
 
-  public LoconetMessage(Loconet.Opcode opcode, byte[] message) {
-    this(opcode, message, List.of());
+  public LoconetMessage() {
   }
 
-  public LoconetMessage(Loconet.Opcode opcode, byte[] message, List<Integer> reply) {
-    if (opcode == null) {
-      throw new IllegalArgumentException("opcode may not be null");
+  /**
+   * 2 Byte Message Constructor
+   */
+  public LoconetMessage(int opcode) {
+    this.message = new int[]{opcode, 0};
+    calculateChecksum();
+    String chk = checkMessage();
+    if (chk != null) {
+      throw new IllegalArgumentException(chk);
     }
-    if (message == null || message.length < 2) {
-      throw new IllegalArgumentException("message must contain at least opcode and checksum");
-    }
-    if ((message[0] & Loconet.BYTE_MASK) != opcode.value()) {
-      throw new IllegalArgumentException(
-              "Message opcode byte " + Loconet.toHex(message[0])
-              + " does not match opcode " + opcode.name()
-      );
-    }
-
-    this.opcode = opcode;
-    this.message = Arrays.copyOf(message, message.length);
-    this.reply = new ArrayList<>(reply == null ? List.of() : reply);
-
-    validateStructure();
   }
 
-  public Loconet.Opcode getOpcode() {
-    return opcode;
+  /**
+   * 4 Byte Message Constructor
+   */
+  public LoconetMessage(int opcode, int param1, int param2) {
+    setMsg4Byte(opcode, param1, param2);
   }
 
-  public byte[] getMessageBytes() {
+  private void setMsg4Byte(int opcode, int param1, int param2) {
+    this.message = new int[]{opcode, param1, param2, 0};
+    calculateChecksum();
+    String chk = checkMessage();
+    if (chk != null) {
+      throw new IllegalArgumentException(chk);
+    }
+  }
+
+  /**
+   * 6 Byte Message Constructor
+   */
+  public LoconetMessage(int opcode, int param1, int param2, int param3, int param4) {
+    this.message = new int[]{opcode, param1, param2, param3, param4, 0};
+    calculateChecksum();
+    String chk = checkMessage();
+    if (chk != null) {
+      throw new IllegalArgumentException(chk);
+    }
+  }
+
+  /**
+   * N Bytes length Message Constructor
+   */
+  public LoconetMessage(int opcode, int... aParams) {
+    int iLength = aParams.length + 3;  // 3 for opcode/length/checkbyte
+    this.message = new int[iLength];
+    this.message[0] = opcode;
+    this.message[1] = iLength;
+    System.arraycopy(aParams, 0, this.message, 2, aParams.length);
+    calculateChecksum();
+    String chk = checkMessage();
+    if (chk != null) {
+      throw new IllegalArgumentException(chk);
+    }
+  }
+
+  public int[] getMessage() {
     return Arrays.copyOf(message, message.length);
   }
 
-  public int[] getMessageUnsigned() {
-    int[] result = new int[message.length];
-
+  public byte[] getMessageBytes() {
+    byte[] msg = new byte[message.length];
     for (int i = 0; i < message.length; i++) {
-      result[i] = message[i] & Loconet.BYTE_MASK;
+      msg[i] = (byte) message[i];
     }
-
-    return result;
+    return msg;
   }
 
-  public List<Integer> getReply() {
-    return Collections.unmodifiableList(reply);
-  }
-
-  public void setReply(List<Integer> newReply) {
-    reply.clear();
-
-    if (newReply != null) {
-      reply.addAll(newReply);
-    }
-  }
-
-  public int length() {
+  public int getLength() {
     return message.length;
   }
 
-  public int calculateLength() {
-    return calculateLength(message);
-  }
-
-  public static int calculateLength(byte[] bytes) {
-    if (bytes == null || bytes.length == 0) {
-      throw new IllegalArgumentException("Message bytes are empty");
+  public int getLengthByOpcode() {
+    switch (getOpcode() & 0x60) {
+      case 0x00:
+        return 2;
+      case 0x20:
+        return 4;
+      case 0x40:
+        return 6;
+      default:
+      case 0x60:
+        return message[1];
     }
-
-    int opcode = bytes[0] & Loconet.BYTE_MASK;
-    Loconet.MessageLengthKind kind = Loconet.lengthKindFromOpcode(opcode);
-
-    return switch (kind) {
-      case FIXED_2 ->
-        2;
-      case FIXED_4 ->
-        4;
-      case FIXED_6 ->
-        6;
-      case VARIABLE -> {
-        if (bytes.length < 2) {
-          throw new IllegalArgumentException("Variable-length message is missing count byte");
-        }
-        yield bytes[1] & Loconet.DATA_MASK;
-      }
-    };
   }
 
-  /**
-   * Calculates checksum for all bytes except the final checksum byte.
-   *
-   * Loconet checksum = one's complement of XOR of all previous bytes.
-   */
-  public static byte calculateChecksum(byte[] bytesWithoutChecksum) {
-    int xor = 0;
-
-    for (byte b : bytesWithoutChecksum) {
-      xor ^= b & Loconet.BYTE_MASK;
+  protected String checkMessage() {
+    if (message.length < 2) {
+      return "Message too short";
     }
-
-    return (byte) (xor ^ Loconet.BYTE_MASK);
-  }
-
-  /**
-   * Calculates checksum for all values passed as unsigned byte values.
-   */
-  public static byte calculateChecksum(int... bytesWithoutChecksum) {
-    int xor = 0;
-
-    for (int value : bytesWithoutChecksum) {
-      xor ^= value & Loconet.BYTE_MASK;
+    if (!getMsb(getOpcode())) {
+      return "First byte is not an opcode";
     }
-
-    return (byte) (xor ^ Loconet.BYTE_MASK);
-  }
-
-  /**
-   * Calculates the checksum expected for this message, excluding the current final checksum byte.
-   */
-  public byte calculateChecksum() {
-    byte[] withoutChecksum = Arrays.copyOf(message, message.length - 1);
-    return calculateChecksum(withoutChecksum);
-  }
-
-  /**
-   * Valid Loconet messages XOR to 0xFF when all bytes, including checksum, are XOR'ed together.
-   */
-  public boolean hasValidChecksum() {
-    int xor = 0;
-
-    for (byte b : message) {
-      xor ^= b & Loconet.BYTE_MASK;
-    }
-
-    return (xor & Loconet.BYTE_MASK) == Loconet.BYTE_MASK;
-  }
-
-  public boolean hasValidOpcode() {
-    int value = message[0] & Loconet.BYTE_MASK;
-    return Loconet.Opcode.isKnown(value);
-  }
-
-  public List<Integer> predictReplyLengths() {
-    return predictReplyLengths(opcode);
-  }
-
-  public static List<Integer> predictReplyLengths(Loconet.Opcode opcode) {
-    return switch (opcode.replyKind()) {
-      case NONE ->
-        List.of();
-      case LONG_ACK ->
-        List.of(4);
-      case MAYBE_LONG_ACK ->
-        List.of(0, 4);
-      case SLOT_READ ->
-        List.of(14);
-      case SLOT_READ_OR_LONG_ACK ->
-        List.of(14, 4);
-    };
-  }
-
-  private void validateStructure() {
-    int expectedLength = calculateLength();
-
-    if (expectedLength != message.length) {
-      throw new IllegalArgumentException(
-              "Invalid Loconet message length. Expected "
-              + expectedLength + " but got " + message.length
-      );
-    }
-
-    if (!hasValidOpcode()) {
-      throw new IllegalArgumentException(
-              "Unknown Loconet opcode: " + Loconet.toHex(message[0])
-      );
-    }
-
-    /*
-         * Only the first byte may be an opcode byte with bit 7 set.
-         * All remaining bytes, including checksum, must be 7-bit data bytes.
-     */
     for (int i = 1; i < message.length; i++) {
-      int value = message[i] & Loconet.BYTE_MASK;
-
-      if (!Loconet.isDataByte(value)) {
-        throw new IllegalArgumentException(
-                "Invalid data byte at index " + i + ": " + Loconet.toHex(value)
-                + ". Only the first byte may have bit 7 set."
-        );
+      if (getMsb(message[i])) {
+        return "Data bytes after opcode may not have bit 7 set";
       }
     }
+    if (getLengthByOpcode() != getLength()) {
+      return "Length as specified by opcode differes with actual byte count";
+    }
+    if (!checkChecksum()) {
+      return "Invalid checksum";
+    }
+    return null;
+  }
 
-    if (!hasValidChecksum()) {
-      throw new IllegalArgumentException("Invalid Loconet checksum: " + toHexString());
+  protected static boolean getMsb(int value, int index) {
+    return getMsb(value >> (index * 8));
+  }
+
+  protected static boolean getMsb(int value) {
+    return (value & 0x80) == 0x80;
+  }
+
+  protected static byte getLs7b(int value, int index) {
+    return getLs7b(value >> (index * 8));
+  }
+
+  protected static byte getLs7b(int value) {
+    return (byte) (value & 0x7F);
+  }
+
+  protected static int changeBit(int number, int index, boolean value) {
+    if (value) {
+      return number | (1 << index);
+    } else {
+      return number & (~(1 << index));
     }
   }
 
-  public String toHexString() {
-    StringBuilder sb = new StringBuilder();
+  protected static boolean isBitSet(int number, int index) {
+    return (number & (1 << index)) != 0;
+  }
 
-    for (byte b : message) {
-      if (!sb.isEmpty()) {
-        sb.append(' ');
-      }
+  public void setMessage(int[] message, int length) {
+    this.message = message;
+    if (message.length != length) {
+      throw new IllegalArgumentException("Data array length (" + message.length + ") is not equal to " + length + "!");
+    }
+  }
 
-      sb.append(Loconet.toHex(b));
+  public int getOpcode() {
+    return message[0];
+  }
+
+  public int getDataByte(int pos) {
+    if (pos == 0) {
+      return -1;
+    }
+    if (pos < (message.length - 1)) {
+      return message[pos];
+    } else {
+      return -1;
+    }
+  }
+
+  public int getNumOfData() {
+    return message.length - 2;
+  }
+
+  public void setMsgOpcSwReq(int address, boolean dirFlag, boolean pwrOnFlag) {
+    int dataBytes1 = address & 0x7F;
+    int dataBytes2 = (address & 0x0780) >> 7;
+
+    if (dirFlag) {
+      dataBytes2 |= 0x20;
+    }
+    if (pwrOnFlag) {
+      dataBytes2 |= 0x10;
     }
 
-    return sb.toString();
+    setMsg4Byte(OPC_SW_REQ, dataBytes1, dataBytes2);
+  }
+
+  public void setMsgOpcSwRep(int address, boolean dirFlag, boolean pwrOnFlag) {
+    int dataBytes1 = address & 0x7F;
+    int dataBytes2 = (address & 0x0780) >> 7;
+
+    if (dirFlag) {
+      dataBytes2 |= 0x20;
+    }
+    if (pwrOnFlag) {
+      dataBytes2 |= 0x10;
+    }
+
+    setMsg4Byte(OPC_SW_REP, dataBytes1, dataBytes2);
+  }
+
+  public void setMsgOpcInpRep(int address, boolean state) {
+    int dataBytes1 = address & 0x7F;
+    int dataBytes2 = (address & 0x0780) >> 7;
+
+    if (state) {
+      dataBytes2 |= 0x10;
+    }
+
+    setMsg4Byte(OPC_INPUT_REP, dataBytes1, dataBytes2);
+  }
+
+  public int calculateChecksumValue() {
+    int checksum = 0xFF;
+    for (int i = 0; i < message.length - 1; i++) {
+      checksum ^= message[i];
+    }
+    return checksum;
+  }
+
+  public void calculateChecksum() {
+    message[message.length - 1] = calculateChecksumValue();
+  }
+
+  public boolean checkChecksum() {
+    return message[message.length - 1] == calculateChecksumValue();
+  }
+
+  public String getHexString() {
+    String retString = "";
+    for (int i = 0; i < message.length; i++) {
+      retString += " " + getByteHex(message[i]);
+    }
+
+    return retString;
   }
 
   @Override
   public String toString() {
-    return opcode.name() + " [" + toHexString() + "]";
+    return ByteUtil.toHexString(message);
   }
+
+  public static String getByteHex(int b) {
+    return String.format("%02X", b & 0xFF);
+  }
+
+  public static String toString(byte[] data) {
+    return new String(data);
+  }
+
+  public static String toString(byte[] data, int length) {
+    byte[] stringData = new byte[length];
+    System.arraycopy(data, 0, stringData, 0, stringData.length);
+    return new String(stringData);
+  }
+
 }

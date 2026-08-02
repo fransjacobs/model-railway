@@ -16,320 +16,155 @@
 package jcs.commandStation.loconet.connection;
 
 import com.fazecast.jSerialComm.SerialPort;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import jcs.commandStation.loconet.LoconetMessage;
+import jcs.commandStation.loconet.LoconetMessageFactory;
+import jcs.util.ByteUtil;
 import org.tinylog.Logger;
 
 /**
- *
- * @author frans
+ * Loconet Connection Implementation for the Uhlenbrock Intellibox 2
  */
 class IntelliboxConnectionImpl implements LoconetConnection {
 
-  private SerialPort serialPort;
+  private final SerialPort serialPort;
 
-  private DataOutputStream dos;
-  private DataInputStream dis;
+  private OutputStream output;
+  private LoconetMessageReceiver loconetMessageReceiver;
 
   private boolean debug = false;
 
   IntelliboxConnectionImpl(SerialPort serialPort) {
     debug = System.getProperty("message.debug", "false").equalsIgnoreCase("true");
     this.serialPort = serialPort;
+    output = serialPort.getOutputStream();
+    initReceiver();
+  }
 
-    //Is the buffered Stream a good idea?
-    //The dis shul bi in a client tread...
-    dis = new DataInputStream(new BufferedInputStream(serialPort.getInputStream()));
-    dos = new DataOutputStream(new BufferedOutputStream(serialPort.getOutputStream()));
+  private void initReceiver() {
+    loconetMessageReceiver = new LoconetMessageReceiver(serialPort);
+    loconetMessageReceiver.start();
   }
 
   @Override
   public boolean isConnected() {
-    return this.serialPort.isOpen();
+    return serialPort.isOpen() && loconetMessageReceiver != null && loconetMessageReceiver.isRunning();
+  }
+
+  void pause(long millis) {
+    try {
+      Thread.sleep(millis);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      Logger.trace(e.getMessage());
+    }
   }
 
   @Override
   public void close() {
     try {
-      LoconetConnectionFactory lcf = LoconetConnectionFactory.getInstance();
-      //disable the re-connect
-      lcf.setAutoReAquirePort(false);
-      dos.flush();
-      dis.close();
-      dos.close();
+      output.flush();
+      if (loconetMessageReceiver != null) {
+        loconetMessageReceiver.quit();
 
-      lcf.closePort();
+        while (loconetMessageReceiver.isRunning()) {
+          pause(50);
+        }
+      }
+
+      output.close();
+      loconetMessageReceiver = null;
+      output = null;
 
     } catch (IOException e) {
-      Logger.trace("Error while closing serial port. {}", e.getMessage());
+      Logger.trace("Error while closing. {}", e.getMessage());
     }
-    this.dis = null;
-    this.dos = null;
-    this.serialPort = null;
-    Logger.debug("Serial port closed");
+    Logger.debug("Connection closed");
   }
 
-//  private void pause(long millis) {
-//    try {
-//      Thread.sleep(millis);
-//    } catch (InterruptedException e) {
-//      Logger.trace(e.getMessage());
-//    }
-//  }
   @Override
-  public synchronized String sendMessage(byte[] message) {
-    //String txm = ByteUtil.bytesToString(message);
-    //String response = reply;
-//    try {
-//      //writer.write(reply);
-//      //writer.flush();
-//      //dos.write(message);
-//      //dos.flush();
-//      Logger.trace("TX: {}", ByteUtil.toHexString(message));
-//
-//      OutputStream os = intelliBoxPort.getOutputStream();
-//      os.write(message);
-//      os.flush();
-//
-//      //intelliBoxPort.writeBytes(message, MAX_ERRORS);
-//      InputStream in = intelliBoxPort.getInputStream();
-//      for (int j = 0; j < 10; ++j) {
-//        Logger.trace("RX {}: {}", j, ByteUtil.toHexString(in.read()));
-//      }
-//      in.close();
-//
-//    } catch (Exception ex) {
-//      Logger.error(ex);
-//    }
+  public LoconetMessage sendMessage(LoconetMessage message) {
+    try {
+      Logger.trace("TX: {}", message.toString());
 
-//    if (responseCallback != null) {
-//      long now = System.currentTimeMillis();
-//      long start = now;
-//      long timeout = now + TIMEOUT;
-//
-//      //Wait for the response
-//      boolean responseComplete = responseCallback.isResponseComplete();
-//      while (!responseComplete && now < timeout) {
-//        pause(10);
-//        responseComplete = responseCallback.isResponseComplete();
-//        now = System.currentTimeMillis();
-//      }
-//
-//      response = responseCallback.getResponse();
-//      if (debug) {
-//        if (responseComplete) {
-//          Logger.trace("Got Response in " + (now - start) + " ms: " + response);
-//        } else {
-//          Logger.trace("No Response for " + reply + " in " + (now - start) + " ms");
-//        }
-//      }
-//    }
-//
-//    responseCallback = null;
-    return "";
+      output.write(message.getMessageBytes());
+      output.flush();
+    } catch (IOException ex) {
+      Logger.error(ex);
+    }
+    return message;
   }
 
-//  private void messageReceived(DccExMessage dccExMessage) {
-//    if (dccExListeners.isEmpty()) {
-//      startupMessages.add(dccExMessage);
-//    } else {
-//      for (DccExMessageListener listener : dccExListeners) {
-//        listener.onMessage(dccExMessage);
-//      }
-//    }
-//  }
-//  @Override
-//  public void setMessageListener(DccExMessageListener messageListener) {
-//    Boolean firstListener = dccExListeners.isEmpty();
-//    this.dccExListeners.add(messageListener);
-//    if (firstListener) {
-//      for (DccExMessage m : startupMessages) {
-//        messageReceived(m);
-//      }
-//    }
-//  }
-//  public List<DccExMessage> getStartupMessages() {
-//    return this.startupMessages;
-//  }
-//  private final class DccExSerialPortListener implements SerialPortMessageListener {
-//
-//    private final IntelliBoxSerialConnection dccExSerialConnection;
-//
-//    DccExSerialPortListener(IntelliBoxSerialConnection hsiSerialConnection) {
-//      this.dccExSerialConnection = hsiSerialConnection;
-//    }
-//
-//    @Override
-//    public int getListeningEvents() {
-//      return SerialPort.LISTENING_EVENT_DATA_RECEIVED | SerialPort.LISTENING_EVENT_PORT_DISCONNECTED;
-//    }
-//
-//    @Override
-//    public byte[] getMessageDelimiter() {
-//      return MESSAGE_DELIMITER.getBytes();
-//    }
-//
-//    @Override
-//    public boolean delimiterIndicatesEndOfMessage() {
-//      return true;
-//    }
-//
-//    @Override
-//    public void serialEvent(SerialPortEvent event) {
-//      switch (event.getEventType()) {
-//        case SerialPort.LISTENING_EVENT_PORT_DISCONNECTED -> {
-//          this.dccExSerialConnection.disconnected();
-//        }
-//        case SerialPort.LISTENING_EVENT_DATA_RECEIVED -> {
-//          byte[] reply = event.getReceivedData();
-//
-//          if (responseCallback != null && responseCallback.isSubscribedfor(reply)) {
-//            //a "synchroneous" response
-//            responseCallback.setResponse(reply);
-//          } else {
-//            //a "asynchroneous" response
-//            DccExMessage ddcExm = new DccExMessage(reply);
-//            dccExSerialConnection.messageReceived(ddcExm);
-//          }
-//        }
-//      }
-//    }
-//  }
-//
-//  private class ResponseCallback {
-//
-//    private final String tx;
-//    private final String rxOpcode;
-//    private String rx;
-//
-//    ResponseCallback(final String tx) {
-//      this.tx = tx;
-//      this.rxOpcode = DccExMessageFactory.getResponseOpcodeFor(tx);
-//    }
-//
-//    boolean isSubscribedfor(final byte[] rx) {
-//      String response = new String(rx).replaceAll("\n", "").replaceAll("\r", "");
-//      String opcode = response.substring(1, 2);
-//
-//      return opcode.equals(rxOpcode);
-//    }
-//
-//    void setResponse(byte[] rx) {
-//      this.rx = new String(rx).replaceAll("\n", "").replaceAll("\r", "");
-//    }
-//
-//    String getResponse() {
-//      if (this.rx != null) {
-//        return this.rx;
-//      } else {
-//        return tx;
-//      }
-//    }
-//
-//    boolean isResponseComplete() {
-//      return rx != null && !rx.isBlank() && rx.startsWith("<") && rx.endsWith(">");
-//    }
-//  }
-//  private final class IntelliBoxSerialPortListener implements SerialPortMessageListener {
-//
-//    private final IntelliboxConnectionImpl ibSerialConnection;
-//
-//    IntelliBoxSerialPortListener(IntelliboxConnectionImpl ibSerialConnection) {
-//      this.ibSerialConnection = ibSerialConnection;
-//    }
-//
-//    @Override
-//    public int getListeningEvents() {
-//      return SerialPort.LISTENING_EVENT_DATA_RECEIVED | SerialPort.LISTENING_EVENT_PORT_DISCONNECTED;
-//    }
-//
-//
-//    @Override
-//    public boolean delimiterIndicatesEndOfMessage() {
-//      return true;
-//    }
-//
-//    @Override
-//    public void serialEvent(SerialPortEvent event) {
-//      switch (event.getEventType()) {
-//        case SerialPort.LISTENING_EVENT_PORT_DISCONNECTED -> {
-//          ibSerialConnection.disconnected();
-//        }
-//        case SerialPort.LISTENING_EVENT_DATA_RECEIVED -> {
-//          byte[] reply = event.getReceivedData();
-//          Logger.trace("RX: {}", ByteUtil.toHexString(reply));
-//        }
-//        default -> {
-//          byte[] reply = event.getReceivedData();
-//          Logger.trace("#RX: {}", ByteUtil.toHexString(reply));
-//        }
-//
-//      }
-//    }
-//  }
-  ////////For testing
-  ///
+  private class LoconetMessageReceiver extends Thread {
+
+    private volatile boolean running = false;
+    private final SerialPort serialPort;
+    private final InputStream in;
+
+    LoconetMessageReceiver(SerialPort serialPort) {
+      super("INBX-LN-RX");
+      this.serialPort = serialPort;
+      this.in = serialPort.getInputStream();
+    }
+
+    void quit() {
+      running = false;
+    }
+
+    boolean isRunning() {
+      return running;
+    }
+
+    @Override
+    public void run() {
+      running = true;
+      Logger.trace("Started listening on port " + serialPort.getDescriptivePortName() + "...");
+
+      while (running) {
+        try {
+
+          Logger.trace("RX: {}", ByteUtil.toHexString(in.read()));
+        } catch (IOException e) {
+          Logger.trace("Error: {}", e.getMessage());
+        }
+      }
+
+      cleanup();
+      Logger.debug("Stopped receiving");
+    }
+
+    private void cleanup() {
+      try {
+        if (in != null) {
+          in.close();
+        }
+      } catch (IOException ex) {
+        Logger.error("Error closing input stream", ex);
+      }
+    }
+  }
+
+  ////////For first steps testing only ///
   public static void main(String[] a) {
 
-    LoconetConnectionFactory lcf = LoconetConnectionFactory.getInstance();
+    //LoconetConnectionFactory lcf = LoconetConnectionFactory.getInstance();
+    LoconetConnection connection = LoconetConnectionFactory.aquireConnection();
+    LoconetMessage powerOff = LoconetMessageFactory.powerOff();
+    LoconetMessage powerOn = LoconetMessageFactory.powerOn();
 
-    SerialPort p = lcf.getSerialPort();
+    connection.sendMessage(powerOn);
 
-    //SerialPort[] ports = SerialPortUtil.listComPorts();
-//    Boolean isIntelliBoxAvailable = isIntelliBoxPortAvailable();
-//
-//    Logger.trace("IntelliBox is {}", (isIntelliBoxAvailable ? "available" : "not available"));
-//
-//    if (Logger.isTraceEnabled() && isIntelliBoxAvailable) {
-//      List<SerialPort> ibPorts = aquireIntelliBoxSerialPorts();
-//      Logger.trace("IB Ports:");
-//
-//      for (SerialPort port : ibPorts) {
-//        Logger.trace("Port: {}", port.getDescriptivePortName());
-//      }
-//    }
-    //IntelliboxConnectionImpl ibc = new IntelliboxConnectionImpl();
-    //ibc.connect();
-    //  public static final int GO_COMMAND = 96; 0x60
-    // public static final Integer STOP_COMMAND = 97; 0x61
-    //"xZzA1"
-    //78h
-    //check baudrate via s88 module 4
-    byte[] baud = new byte[]{(byte) 0xC4};
-    byte[] baud2 = new byte[]{(byte) 0x58, (byte) 0x0D, (byte) 0x0A};
+    ((IntelliboxConnectionImpl) connection).pause(1000L);
 
-    byte[] powerOn = new byte[]{(byte) 0x82, (byte) 0x7D};
-    byte[] powerOff = new byte[]{(byte) 0x83, (byte) 0x7C};
+    connection.sendMessage(powerOff);
 
-    byte[] xZzA1 = "xZzA1".getBytes();
+    ((IntelliboxConnectionImpl) connection).pause(10000L);
 
-    //byte[] msg = new byte[]{(byte) 0xa6, (byte) 0xee};  //166
-    byte[] msg = new byte[]{(byte) 0xA7};
-
-  
-
-///167
-    
-    //ibc.pause(100);
-
-    //ibc.sendMessage(powerOff);
-
-    //ibc.pause(1000);
-
-    //ibc.sendMessage(powerOn);
-
-    //ibc.sendMessage(xZzA1); 
-    //ibc.sendMessage(msg);
-    //ibc.sendMessage(msg);
-    //ibc.pause(10000);
-    //ibc.close();
-
+    LoconetConnectionFactory.closeConnection();
   }
 
-  
 //TRACE	2026-07-16 19:42:24.819 [main] IntelliBoxSerialConnection.sendMessage(): RX 3: 02
 //TRACE	2026-07-16 19:42:24.819 [main] IntelliBoxSerialConnection.sendMessage(): RX 4: 39
 //TRACE	2026-07-16 19:42:24.820 [main] IntelliBoxSerialConnection.sendMessage(): RX 5: 64
@@ -337,6 +172,4 @@ class IntelliboxConnectionImpl implements LoconetConnection {
 //TRACE	2026-07-16 19:42:25.380 [main] IntelliBoxSerialConnection.sendMessage(): RX 7: 01
 //TRACE	2026-07-16 19:42:25.380 [main] IntelliBoxSerialConnection.sendMessage(): RX 8: 02
 //TRACE	2026-07-16 19:42:25.381 [main] IntelliBoxSerialConnection.sendMessage(): RX 9: 5c
-  
-  
 }

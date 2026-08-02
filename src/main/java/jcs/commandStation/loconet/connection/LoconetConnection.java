@@ -15,14 +15,14 @@
  */
 package jcs.commandStation.loconet.connection;
 
+import jcs.commandStation.loconet.LoconetMessage;
+
 /**
  *
  */
 public interface LoconetConnection extends AutoCloseable {
 
-  String sendMessage(byte[] message);
-
-  //void setMessageListener(DccExMessageListener messageListener);
+  LoconetMessage sendMessage(LoconetMessage message);
 
   boolean isConnected();
 

@@ -39,6 +39,10 @@ public class LoconetConnectionFactory {
   /* Uhlenbrock Intellibox 2 */
   public static final int IB_PORT_VENDOR = 4292;
   public static final int IB_PORT_PRODUCT_ID = 60000;
+
+  /**
+   * Intellibox 2 returns String this as it manufacturer, used to recognize the Intellibox 2 on the Serialport
+   */
   public static final String IB_PORT_MANUFACTURER = "Silicon Labs";
 
   public static final int BAUD_RATE = 115200;
@@ -71,15 +75,52 @@ public class LoconetConnectionFactory {
     closePort();
   }
 
-  public SerialPort getSerialPort() {
+  SerialPort getSerialPort() {
     return this.serialPort;
+  }
+
+  public static void closeConnection() {
+    if (instance != null) {
+      instance.setAutoReAquirePort(false);
+      instance.closePort();
+    }
+  }
+
+  public static LoconetConnection aquireConnection() {
+    return getInstance().aquireLoconetConnection();
+  }
+
+  synchronized LoconetConnection aquireLoconetConnection() {
+    long now = System.currentTimeMillis();
+    long start = now;
+    long timeout = start + 2000;
+
+    while (this.loconetConnection == null && timeout > now) {
+      zleep(100);
+      now = System.currentTimeMillis();
+    }
+
+    long end = System.currentTimeMillis();
+
+    if (loconetConnection == null || !loconetConnection.isConnected() && timeout <= end) {
+      Logger.error("Can't establish a connection with Intellibox Timeout after {} ms.", (end - start));
+    } else {
+      Logger.trace("Connected in {} ms.", (end - start));
+    }
+    return this.loconetConnection;
   }
 
   void closePort() {
     if (serialPort != null && serialPort.isOpen()) {
       try {
+        if (loconetConnection != null) {
+          loconetConnection.close();
+        }
+        loconetConnection = null;
+
         serialPort.flushIOBuffers();
         serialPort.removeDataListener();
+
         serialPort.closePort();
       } catch (Exception e) {
         Logger.trace("Exception while closing port: {}", e.getMessage());
@@ -229,7 +270,11 @@ public class LoconetConnectionFactory {
           zleep(2000);
         }
       }
-      Logger.trace("Port Connected {}.", loconetConnection.isConnected());
+      if (loconetConnection != null) {
+        Logger.trace("Port Connected {}.", loconetConnection.isConnected());
+      } else {
+        Logger.trace("Port NOT Connected!");
+      }
     }
   }
 

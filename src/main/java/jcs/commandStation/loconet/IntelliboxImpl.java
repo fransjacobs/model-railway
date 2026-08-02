@@ -93,7 +93,7 @@ public class IntelliboxImpl extends AbstractController implements DecoderControl
   public List<LocomotiveBean> getLocomotives() {
     return null;
   }
-
+  
   @Override
   public Image getLocomotiveImage(String icon) {
     return null;
