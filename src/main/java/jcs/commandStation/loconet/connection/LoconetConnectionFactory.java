@@ -250,7 +250,7 @@ public class LoconetConnectionFactory {
             comPort.setNumStopBits(SerialPort.ONE_STOP_BIT);
             comPort.setParity(SerialPort.NO_PARITY);
 
-            comPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 0, 0);
+            comPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 100, 0);
 
             loconetConnectionFactory.connectionEventListener = new ConnectionEventListener(loconetConnectionFactory);
             comPort.addDataListener(connectionEventListener);

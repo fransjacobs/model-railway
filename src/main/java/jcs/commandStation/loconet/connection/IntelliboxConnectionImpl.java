@@ -19,8 +19,10 @@ import com.fazecast.jSerialComm.SerialPort;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Predicate;
 import jcs.commandStation.loconet.LoconetMessage;
-import jcs.commandStation.loconet.LoconetMessageFactory;
 import jcs.util.ByteUtil;
 import org.tinylog.Logger;
 
@@ -95,6 +97,26 @@ class IntelliboxConnectionImpl implements LoconetConnection {
       Logger.error(ex);
     }
     return message;
+  }
+
+  @Override
+  public CompletableFuture<LoconetMessage> sendAndAwaitEcho(LoconetMessage message, Duration timeout) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public CompletableFuture<LoconetMessage> sendAndAwait(LoconetMessage message, Predicate<LoconetMessage> matcher, Duration timeout) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public void addMessageListener(LoconetMessageListener listener) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public void removeMessageListener(LoconetMessageListener listener) {
+    throw new UnsupportedOperationException("Not supported yet.");
   }
 
   private class LoconetMessageReceiver extends Thread {

@@ -273,4 +273,23 @@ public final class LoconetMessage implements Opcodes {
     return new String(stringData);
   }
 
+  @Override
+  public boolean equals(Object other) {
+    if (this == other) {
+      return true;
+    }
+    if (!(other instanceof LoconetMessage otherMessage)) {
+      return false;
+    }
+    return Arrays.equals(this.message, otherMessage.message);
+  }
+
+  @Override
+  public int hashCode() {
+    return Arrays.hashCode(message);
+  }
+
+  public boolean sameMessage(LoconetMessage other) {
+    return other != null && Arrays.equals(this.message, other.message);
+  }
 }
