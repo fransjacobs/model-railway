@@ -53,7 +53,7 @@ class IntelliboxConnectionImpl implements LoconetConnection {
     return serialPort.isOpen() && loconetMessageReceiver != null && loconetMessageReceiver.isRunning();
   }
 
-  void pause(long millis) {
+  private void pause(long millis) {
     try {
       Thread.sleep(millis);
     } catch (InterruptedException e) {
@@ -145,31 +145,4 @@ class IntelliboxConnectionImpl implements LoconetConnection {
       }
     }
   }
-
-  ////////For first steps testing only ///
-  public static void main(String[] a) {
-
-    //LoconetConnectionFactory lcf = LoconetConnectionFactory.getInstance();
-    LoconetConnection connection = LoconetConnectionFactory.aquireConnection();
-    LoconetMessage powerOff = LoconetMessageFactory.powerOff();
-    LoconetMessage powerOn = LoconetMessageFactory.powerOn();
-
-    connection.sendMessage(powerOn);
-
-    ((IntelliboxConnectionImpl) connection).pause(1000L);
-
-    connection.sendMessage(powerOff);
-
-    ((IntelliboxConnectionImpl) connection).pause(10000L);
-
-    LoconetConnectionFactory.closeConnection();
-  }
-
-//TRACE	2026-07-16 19:42:24.819 [main] IntelliBoxSerialConnection.sendMessage(): RX 3: 02
-//TRACE	2026-07-16 19:42:24.819 [main] IntelliBoxSerialConnection.sendMessage(): RX 4: 39
-//TRACE	2026-07-16 19:42:24.820 [main] IntelliBoxSerialConnection.sendMessage(): RX 5: 64
-//TRACE	2026-07-16 19:42:25.379 [main] IntelliBoxSerialConnection.sendMessage(): RX 6: a0
-//TRACE	2026-07-16 19:42:25.380 [main] IntelliBoxSerialConnection.sendMessage(): RX 7: 01
-//TRACE	2026-07-16 19:42:25.380 [main] IntelliBoxSerialConnection.sendMessage(): RX 8: 02
-//TRACE	2026-07-16 19:42:25.381 [main] IntelliBoxSerialConnection.sendMessage(): RX 9: 5c
 }
