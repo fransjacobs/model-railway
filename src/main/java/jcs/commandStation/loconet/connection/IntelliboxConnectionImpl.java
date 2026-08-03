@@ -20,10 +20,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.time.Duration;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Predicate;
 import jcs.commandStation.loconet.LoconetMessage;
-import jcs.util.ByteUtil;
+import jcs.commandStation.loconet.LoconetMessageParser;
 import org.tinylog.Logger;
 
 /**
@@ -35,11 +37,13 @@ class IntelliboxConnectionImpl implements LoconetConnection {
 
   private OutputStream output;
   private LoconetMessageReceiver loconetMessageReceiver;
+  private final BlockingQueue<LoconetMessage> messagesQueue;
 
   private boolean debug = false;
 
   IntelliboxConnectionImpl(SerialPort serialPort) {
     debug = System.getProperty("message.debug", "false").equalsIgnoreCase("true");
+    this.messagesQueue = new LinkedBlockingQueue<>();
     this.serialPort = serialPort;
     output = serialPort.getOutputStream();
     initReceiver();
@@ -55,6 +59,11 @@ class IntelliboxConnectionImpl implements LoconetConnection {
     return serialPort.isOpen() && loconetMessageReceiver != null && loconetMessageReceiver.isRunning();
   }
 
+  @Override
+  public BlockingQueue<LoconetMessage> getMessageQueue() {
+    return this.messagesQueue;
+  }
+
   private void pause(long millis) {
     try {
       Thread.sleep(millis);
@@ -67,6 +76,7 @@ class IntelliboxConnectionImpl implements LoconetConnection {
   @Override
   public void close() {
     try {
+      messagesQueue.clear();
       output.flush();
       if (loconetMessageReceiver != null) {
         loconetMessageReceiver.quit();
@@ -124,11 +134,13 @@ class IntelliboxConnectionImpl implements LoconetConnection {
     private volatile boolean running = false;
     private final SerialPort serialPort;
     private final InputStream in;
+    private final LoconetMessageParser parser;
 
     LoconetMessageReceiver(SerialPort serialPort) {
       super("INBX-LN-RX");
       this.serialPort = serialPort;
       this.in = serialPort.getInputStream();
+      this.parser = new LoconetMessageParser();
     }
 
     void quit() {
@@ -146,8 +158,12 @@ class IntelliboxConnectionImpl implements LoconetConnection {
 
       while (running) {
         try {
-
-          Logger.trace("RX: {}", ByteUtil.toHexString(in.read()));
+          LoconetMessage received = parser.readMessage(in);
+          if (received != null) {
+            Logger.trace("RX: {}", received.toString());
+            messagesQueue.offer(received);
+          }
+          //Logger.trace("RX: {}", ByteUtil.toHexString(in.read()));
         } catch (IOException e) {
           Logger.trace("Error: {}", e.getMessage());
         }

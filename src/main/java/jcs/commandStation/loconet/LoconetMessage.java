@@ -22,7 +22,7 @@ import jcs.util.ByteUtil;
  * Loconet Message.<br>
  * Inspired on the work from Thomas Kurz in 2007
  */
-public final class LoconetMessage implements Opcodes {
+public class LoconetMessage implements Opcodes {
 
   protected int[] message = new int[0];
 
@@ -31,6 +31,8 @@ public final class LoconetMessage implements Opcodes {
 
   /**
    * 2 Byte Message Constructor
+   *
+   * @param opcode
    */
   public LoconetMessage(int opcode) {
     this.message = new int[]{opcode, 0};
@@ -43,6 +45,10 @@ public final class LoconetMessage implements Opcodes {
 
   /**
    * 4 Byte Message Constructor
+   *
+   * @param opcode
+   * @param param1
+   * @param param2
    */
   public LoconetMessage(int opcode, int param1, int param2) {
     setMsg4Byte(opcode, param1, param2);
@@ -59,6 +65,12 @@ public final class LoconetMessage implements Opcodes {
 
   /**
    * 6 Byte Message Constructor
+   *
+   * @param opcode
+   * @param param1
+   * @param param2
+   * @param param3
+   * @param param4
    */
   public LoconetMessage(int opcode, int param1, int param2, int param3, int param4) {
     this.message = new int[]{opcode, param1, param2, param3, param4, 0};
@@ -71,6 +83,9 @@ public final class LoconetMessage implements Opcodes {
 
   /**
    * N Bytes length Message Constructor
+   *
+   * @param opcode
+   * @param aParams
    */
   public LoconetMessage(int opcode, int... aParams) {
     int iLength = aParams.length + 3;  // 3 for opcode/length/checkbyte
@@ -83,6 +98,19 @@ public final class LoconetMessage implements Opcodes {
     if (chk != null) {
       throw new IllegalArgumentException(chk);
     }
+  }
+
+  protected LoconetMessage(int[] frame) {
+    this.message = frame;
+    calculateChecksum();
+    String chk = checkMessage();
+    if (chk != null) {
+      throw new IllegalArgumentException(chk);
+    }
+  }
+
+  public static LoconetMessage fromReceived(int[] frame) {
+    return new LoconetMessage(frame);
   }
 
   public int[] getMessage() {
@@ -115,7 +143,7 @@ public final class LoconetMessage implements Opcodes {
     }
   }
 
-  protected String checkMessage() {
+  protected final String checkMessage() {
     if (message.length < 2) {
       return "Message too short";
     }
@@ -237,7 +265,7 @@ public final class LoconetMessage implements Opcodes {
     return checksum;
   }
 
-  public void calculateChecksum() {
+  public final void calculateChecksum() {
     message[message.length - 1] = calculateChecksumValue();
   }
 

@@ -17,7 +17,9 @@ package jcs.commandStation.loconet;
 
 import java.awt.Image;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import jcs.commandStation.AbstractController;
 import jcs.commandStation.AccessoryController;
 import jcs.commandStation.DecoderController;
@@ -44,6 +46,7 @@ import org.tinylog.Logger;
 public class Intellibox2Impl extends AbstractController implements DecoderController, AccessoryController, FeedbackController, ConnectionEventListener {
 
   private LoconetConnection loconet;
+  private ThreadGroup threadGroup;
 
   public Intellibox2Impl(CommandStationBean commandStationBean) {
     this(commandStationBean, false);
@@ -51,6 +54,7 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
 
   public Intellibox2Impl(CommandStationBean commandStationBean, boolean autoConnect) {
     super(autoConnect, commandStationBean);
+    threadGroup = new ThreadGroup("INTELLIBOX2");
     this.executor = Executors.newCachedThreadPool();
   }
 
@@ -156,14 +160,176 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
   public void onConnectionChange(ConnectionEvent event) {
   }
 
-  private class LoconetMessageReceiver extends Thread {
+  private class EventMessageHandler extends Thread {
 
-    LoconetMessageReceiver() {
+    private volatile boolean running = false;
+    private final BlockingQueue<LoconetMessage> messagesQueue;
 
+    EventMessageHandler(LoconetConnection connection) {
+      super(threadGroup, "IB-LN-MSG-HANDLER");
+      messagesQueue = connection.getMessageQueue();
+    }
+
+    void quit() {
+      this.running = false;
+    }
+
+    boolean isRunning() {
+      return this.running;
     }
 
     @Override
     public void run() {
+      this.running = true;
+      Logger.trace("Event Handler Started...");
+
+      while (isRunning()) {
+        try {
+          try {
+            LoconetMessage message = messagesQueue.poll(10, TimeUnit.MILLISECONDS);
+            //Logger.trace("# " + eventMessage);
+
+            if (message != null) {
+              int opcode = message.getOpcode();
+              int length = message.getLength();
+
+              switch (opcode) {
+//                case CanMessage.PING_REQ -> {
+//                  //Lets do this the when we know all of the CS...
+//                  if (CanMessage.DLC_0 == dlc) {
+//                    //Logger.trace("Answering Ping RQ: " + eventMessage);
+//                    //sendJCSUIDMessage();
+//                  }
+//                }
+//                case CanMessage.PING_RESP -> {
+//                  if (CanMessage.DLC_8 == dlc) {
+
+              
+            
+           ////                Logger.trace("Ping Response RX: " + eventMessage);
+////                List<CanDevice> devices = CanDeviceParser.parse(eventMessage);
+////                if (!devices.isEmpty()) {
+////                  CanDevice deviceU = devices.get(0);
+////                  CanDevice device = canDevices.get(deviceU.getUidInt());
+////                  Logger.trace("Found " + device+" GFP "+(csUid==deviceU.getUidInt()?"yes":"no"));
+////                }
+//                    //updateDevice(eventMessage);
+//                  }
+//                }
+//                case CanMessage.STATUS_CONFIG -> {
+//                  if (CanMessage.JCS_UID == uid && CanMessage.DLC_5 == dlc) {
+//                    Logger.trace("StatusConfig RQ: " + eventMessage);
+//                    //sentJCSInformationMessage();
+//                  }
+//                }
+//                case CanMessage.STATUS_CONFIG_RESP -> {
+//                  Logger.trace("StatusConfigResponse RX: " + eventMessage);
+//                  //add to an list of resposne check
+//
+//                }
+//                case CanMessage.S88_EVENT_RESPONSE -> {
+//                  if (CanMessage.DLC_8 == dlc) {
+//                    //Logger.trace("FeedbackSensorEvent RX: " + eventMessage);
+//
+//                    SensorBean sb = FeedbackEventMessage.parse(eventMessage, new Date());
+//                    Logger.trace("Sensor " + sb.getId() + " value " + sb.getStatus());
+//                    SensorEvent sme = new SensorEvent(sb);
+//                    if (sme.getSensorBean() != null) {
+//                      fireAllSensorEventsListeners(sme);
+//                    }
+//                  }
+//                }
+//                case CanMessage.SX1_EVENT -> {
+//                  if (CanMessage.DLC_8 == dlc) {
+//                    SensorBean sb = FeedbackEventMessage.parse(eventMessage, new Date());
+//                    SensorEvent sme = new SensorEvent(sb);
+//                    if (sme.getSensorBean() != null) {
+//                      fireAllSensorEventsListeners(sme);
+//                    }
+//                  }
+//                }
+//                case CanMessage.SYSTEM_COMMAND -> {
+//                  //Logger.trace("SystemConfigCommand RX: " + eventMessage);
+//                }
+//                case CanMessage.SYSTEM_COMMAND_RESP -> {
+//                  switch (subcmd) {
+//                    case CanMessage.STOP_SUB_CMD -> {
+//                      PowerEvent spe = PowerEventParser.parse(eventMessage);
+//                      notifyPowerEventListeners(spe);
+//                    }
+//                    case CanMessage.GO_SUB_CMD -> {
+//                      PowerEvent gpe = PowerEventParser.parse(eventMessage);
+//                      notifyPowerEventListeners(gpe);
+//                    }
+//                    case CanMessage.HALT_SUB_CMD -> {
+//                      PowerEvent gpe = PowerEventParser.parse(eventMessage);
+//                      notifyPowerEventListeners(gpe);
+//                    }
+//                    case CanMessage.LOC_STOP_SUB_CMD -> {
+//                      //stop specific loc
+//                      LocomotiveSpeedEvent lse = LocomotiveEmergencyStopMessage.parse(eventMessage);
+//                      notifyLocomotiveSpeedEventListeners(lse);
+//                    }
+//                    case CanMessage.OVERLOAD_SUB_CMD -> {
+//                      PowerEvent gpe = OverloadEventParser.parse(eventMessage);
+//                      notifyPowerEventListeners(gpe);
+//                    }
+//                  }
+//                }
+//                case CanMessage.ACCESSORY_SWITCHING -> {
+//                  //Logger.trace("AccessorySwitching RX: " + eventMessage);
+//                }
+//                case CanMessage.ACCESSORY_SWITCHING_RESP -> {
+//                  AccessoryEvent ae = AccessoryMessage.parse(eventMessage);
+//                  if (!ae.isPower()) {
+//                    Logger.trace("AccessorySwitching RX: " + eventMessage);
+//                    //Only notify when the power of the accessory is turned off, so the action should has been done.
+//                    //notifyAccessoryEventListeners(ae);
+//                    accessoryManager.update(ae);
+//                  }
+//                }
+//                case CanMessage.LOC_VELOCITY -> {
+//                  Logger.trace("VelocityChange# " + eventMessage);
+//
+//                }
+//                case CanMessage.LOC_VELOCITY_RESP -> {
+//                  Logger.trace("VelocityChange " + eventMessage);
+//                  notifyLocomotiveSpeedEventListeners(LocomotiveVelocityMessage.parse(eventMessage));
+//                }
+//                case CanMessage.LOC_DIRECTION -> {
+//                  Logger.trace("DirectionChange# " + eventMessage);
+//
+//                }
+//                case CanMessage.LOC_DIRECTION_RESP -> {
+//                  Logger.trace("DirectionChange " + eventMessage);
+//                  notifyLocomotiveDirectionEventListeners(LocomotiveDirectionEventParser.parse(eventMessage));
+//                }
+//                case CanMessage.LOC_FUNCTION -> {
+//
+//                }
+//                case CanMessage.LOC_FUNCTION_RESP -> {
+//                  Logger.trace("FunctionChange " + eventMessage);
+//                  notifyLocomotiveFunctionEventListeners(LocomotiveFunctionEventParser.parseMessage(eventMessage));
+//                }
+//                case CanMessage.BOOTLOADER_CAN -> {
+//                  //Update the last time millis. Used for the watchdog timer.
+//                  canBootLoaderLastCallMillis = System.currentTimeMillis();
+//                }
+//                default -> {
+//                }
+//              }
+              }
+            }
+          } catch (InterruptedException ex) {
+            Logger.error(ex);
+            Thread.currentThread().interrupt();
+          }
+        } catch (Exception e) {
+          Logger.error("Error in Handling Thread. Cause: " + e.getMessage());
+        }
+      }
+      Logger.debug("Stop Event handling");
+
     }
 
   }

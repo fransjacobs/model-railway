@@ -132,13 +132,13 @@ public interface Opcodes {
       return replyKind;
     }
 
-    public MessageLengthKind lengthKind() {
-      return lengthKindFromOpcode(value);
-    }
+//    public MessageLengthKind lengthKind() {
+//      return lengthKindFromOpcode(value);
+//    }
 
-    public int fixedLength() {
-      return fixedLengthFromOpcode(value);
-    }
+//    public int fixedLength() {
+//      return fixedLengthFromOpcode(value);
+//    }
 
     public static Optional<Opcode> from(int value) {
       int normalized = value & BYTE_MASK;
@@ -161,7 +161,7 @@ public interface Opcodes {
     return (value & 0x80) == 0;
   }
 
-  static MessageLengthKind lengthKindFromOpcode(int opcode) {
+  static int lengthFromOpcode(int opcode) {
     int value = opcode & BYTE_MASK;
 
     if (!isOpcodeByte(value)) {
@@ -172,30 +172,30 @@ public interface Opcodes {
 
     return switch (lengthBits) {
       case 0x00 ->
-        MessageLengthKind.FIXED_2;
+        2;
       case 0x20 ->
-        MessageLengthKind.FIXED_4;
+        4;
       case 0x40 ->
-        MessageLengthKind.FIXED_6;
+        6;
       case 0x60 ->
-        MessageLengthKind.VARIABLE;
+        -1;
       default ->
         throw new IllegalStateException("Unexpected length bits: " + toHex(lengthBits));
     };
   }
 
-  static int fixedLengthFromOpcode(int opcode) {
-    return switch (lengthKindFromOpcode(opcode)) {
-      case FIXED_2 ->
-        2;
-      case FIXED_4 ->
-        4;
-      case FIXED_6 ->
-        6;
-      case VARIABLE ->
-        -1;
-    };
-  }
+//  static int fixedLengthFromOpcode(int opcode) {
+//    return switch (lengthKindFromOpcode(opcode)) {
+//      case FIXED_2 ->
+//        2;
+//      case FIXED_4 ->
+//        4;
+//      case FIXED_6 ->
+//        6;
+//      case VARIABLE ->
+//        -1;
+//    };
+//  }
 
   static void require7Bit(String name, int value) {
     if ((value & ~DATA_MASK) != 0) {
