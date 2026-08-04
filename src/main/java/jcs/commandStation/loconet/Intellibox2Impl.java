@@ -194,41 +194,41 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
               int length = message.getLength();
 
               switch (opcode) {
-//                case CanMessage.PING_REQ -> {
-//                  //Lets do this the when we know all of the CS...
-//                  if (CanMessage.DLC_0 == dlc) {
-//                    //Logger.trace("Answering Ping RQ: " + eventMessage);
-//                    //sendJCSUIDMessage();
-//                  }
-//                }
-//                case CanMessage.PING_RESP -> {
-//                  if (CanMessage.DLC_8 == dlc) {
+                case LoconetMessage.OPC_GPON -> {
+                  //Power ON
+//                      PowerEvent spe = PowerEventParser.parse(eventMessage);
+//                      notifyPowerEventListeners(spe);
 
-              
-            
-           ////                Logger.trace("Ping Response RX: " + eventMessage);
-////                List<CanDevice> devices = CanDeviceParser.parse(eventMessage);
-////                if (!devices.isEmpty()) {
-////                  CanDevice deviceU = devices.get(0);
-////                  CanDevice device = canDevices.get(deviceU.getUidInt());
-////                  Logger.trace("Found " + device+" GFP "+(csUid==deviceU.getUidInt()?"yes":"no"));
-////                }
-//                    //updateDevice(eventMessage);
-//                  }
-//                }
-//                case CanMessage.STATUS_CONFIG -> {
-//                  if (CanMessage.JCS_UID == uid && CanMessage.DLC_5 == dlc) {
-//                    Logger.trace("StatusConfig RQ: " + eventMessage);
-//                    //sentJCSInformationMessage();
-//                  }
-//                }
-//                case CanMessage.STATUS_CONFIG_RESP -> {
-//                  Logger.trace("StatusConfigResponse RX: " + eventMessage);
-//                  //add to an list of resposne check
-//
-//                }
-//                case CanMessage.S88_EVENT_RESPONSE -> {
-//                  if (CanMessage.DLC_8 == dlc) {
+                }
+                case LoconetMessage.OPC_GPOFF -> {
+                  //Power off
+//                      PowerEvent gpe = PowerEventParser.parse(eventMessage);
+//                      notifyPowerEventListeners(gpe);
+
+                }
+                case LoconetMessage.OPC_IDLE -> {
+                  //Idle -> STOP - HALT
+//                      PowerEvent gpe = PowerEventParser.parse(eventMessage);
+//                      notifyPowerEventListeners(gpe);
+
+//                      PowerEvent gpe = OverloadEventParser.parse(eventMessage);
+//                      notifyPowerEventListeners(gpe);
+                }
+                case LoconetMessage.OPC_BUSY -> {
+                  //Master busy nothing to do
+                }
+                case LoconetMessage.OPC_INPUT_REP -> {
+                  //Sensor message
+                  //OPC_INPUT_REP 0xB2 ; General SENSOR Input codes NO
+                  //<0xB2>, <IN1>, <IN2>, <CHK>
+                  //<IN1> = < 0, A6, A5, A4 - A3, A2, A1, A0 >, 7 ls adr bits.
+                  // A1, A0 select 1 of 4 inputs pairs in a DS54.
+                  //<IN2> = < 0,X,I,L- A10,A9,A8,A7 > Report/status bits and 4 MS adr bits.
+                  //"I"=0 for DS54 "aux" inputs and 1 for "switch" inputs mapped to 4K SENSOR space.
+                  //(This is effectively a least significant adr bit when using DS54 input configuration)
+                  //"L"=0 for input SENSOR now 0V (LO) , 1 for Input sensor >=+6V (HI)
+                  //"X"=1, control bit , 0 is RESERVED for future!
+
 //                    //Logger.trace("FeedbackSensorEvent RX: " + eventMessage);
 //
 //                    SensorBean sb = FeedbackEventMessage.parse(eventMessage, new Date());
@@ -238,44 +238,29 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
 //                      fireAllSensorEventsListeners(sme);
 //                    }
 //                  }
-//                }
-//                case CanMessage.SX1_EVENT -> {
-//                  if (CanMessage.DLC_8 == dlc) {
+                }
+                case LoconetMessage.OPC_SW_REP -> {
+//                  0xB1 ;Turnout SENSOR state REPORT NO
+//; <0xB1>,<SN1>,<SN2>,<CHK> SENSOR state REPORT
+//<SN1> <SN2> =<0,A6,A5,A4- A3,A2,A1,A0>, 7 ls adr bits. A1,A0 select 1 of 4 input pairs in a DS54
+//=<0,1,I,L- A10,A9,A8,A7> Report/status bits and 4 MS adr bits.
+//this <B1> opcode encodes input levels for turnout feedback
+//"I" =0 for "aux" inputs (normally not feedback), 1 for "switch" input used for turnout
+//feedback for DS54 ouput/turnout # encoded by A0-A10
+//"L" = 0 for this input 0V (LO), 1= this input > +6V (HI)
+//alternately;
+//<SN2> =<0,0,C,T- A10,A9,A8,A7> Report/status bits and 4 MS adr bits.
+//this <B1> opcode encodes current OUTPUT levels
+//"C"= 0 if "Closed" ouput line is OFF, 1="closed" output line is ON (sink current)
+//"T"=0 if "Thrown" output line is OFF, 1="thrown" output line is ON (sink I)
+
 //                    SensorBean sb = FeedbackEventMessage.parse(eventMessage, new Date());
 //                    SensorEvent sme = new SensorEvent(sb);
 //                    if (sme.getSensorBean() != null) {
 //                      fireAllSensorEventsListeners(sme);
 //                    }
-//                  }
-//                }
-//                case CanMessage.SYSTEM_COMMAND -> {
-//                  //Logger.trace("SystemConfigCommand RX: " + eventMessage);
-//                }
-//                case CanMessage.SYSTEM_COMMAND_RESP -> {
-//                  switch (subcmd) {
-//                    case CanMessage.STOP_SUB_CMD -> {
-//                      PowerEvent spe = PowerEventParser.parse(eventMessage);
-//                      notifyPowerEventListeners(spe);
-//                    }
-//                    case CanMessage.GO_SUB_CMD -> {
-//                      PowerEvent gpe = PowerEventParser.parse(eventMessage);
-//                      notifyPowerEventListeners(gpe);
-//                    }
-//                    case CanMessage.HALT_SUB_CMD -> {
-//                      PowerEvent gpe = PowerEventParser.parse(eventMessage);
-//                      notifyPowerEventListeners(gpe);
-//                    }
-//                    case CanMessage.LOC_STOP_SUB_CMD -> {
-//                      //stop specific loc
-//                      LocomotiveSpeedEvent lse = LocomotiveEmergencyStopMessage.parse(eventMessage);
-//                      notifyLocomotiveSpeedEventListeners(lse);
-//                    }
-//                    case CanMessage.OVERLOAD_SUB_CMD -> {
-//                      PowerEvent gpe = OverloadEventParser.parse(eventMessage);
-//                      notifyPowerEventListeners(gpe);
-//                    }
-//                  }
-//                }
+                }
+
 //                case CanMessage.ACCESSORY_SWITCHING -> {
 //                  //Logger.trace("AccessorySwitching RX: " + eventMessage);
 //                }
@@ -310,10 +295,6 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
 //                case CanMessage.LOC_FUNCTION_RESP -> {
 //                  Logger.trace("FunctionChange " + eventMessage);
 //                  notifyLocomotiveFunctionEventListeners(LocomotiveFunctionEventParser.parseMessage(eventMessage));
-//                }
-//                case CanMessage.BOOTLOADER_CAN -> {
-//                  //Update the last time millis. Used for the watchdog timer.
-//                  canBootLoaderLastCallMillis = System.currentTimeMillis();
 //                }
 //                default -> {
 //                }
