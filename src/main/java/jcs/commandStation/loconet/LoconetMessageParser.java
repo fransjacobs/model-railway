@@ -21,9 +21,12 @@ import java.io.InputStream;
 import java.util.Arrays;
 import static jcs.commandStation.loconet.Opcodes.BYTE_MASK;
 import static jcs.commandStation.loconet.Opcodes.DATA_MASK;
+import jcs.entities.SensorBean;
 import org.tinylog.Logger;
 
 public class LoconetMessageParser implements Opcodes {
+
+  private static final String COMMAND_STATION_ID = "intellibox2";
 
   private final boolean validateChecksum;
 
@@ -150,4 +153,60 @@ public class LoconetMessageParser implements Opcodes {
 
     return (xor & BYTE_MASK) == 0xFF;
   }
+
+  /**
+   * Parses a raw 4-byte LocoNet sensor message.
+   *
+   * @param opcode expected 0xB2
+   * @param in1 address low byte (a6..a0)
+   * @param in2 address high nibble + flags (X, I, L, a10..a7)
+   * @param chk checksum byte
+   * @return the decoded sensor event
+   * @throws IllegalArgumentException if opcode or checksum is invalid
+   */
+  public static SensorBean parseSensorEvent(LoconetMessage message) {
+    if (!message.isChecksumValid()) {
+      throw new IllegalArgumentException(String.format("Checksum mismatch for message {}", message.toString()));
+    }
+    if (!message.isExpectedsOpcode(OPC_INPUT_REP)) {
+      throw new IllegalArgumentException(String.format("Not a sensor message, opcode={}", message.getHexOpcode()));
+    }
+
+    int in1 = message.getByte(1);
+    int in2 = message.getByte(2);
+
+    int addrLow = in1 & 0x7F;   // a6..a0
+    int addrHigh = in2 & 0x0F;  // a10..a7
+    int rawAddress = (addrHigh << 7) | addrLow; // 11-bit pair address
+
+    boolean x = (in2 & 0x40) != 0;
+    boolean i = (in2 & 0x20) != 0; // selects sub-address within the pair
+    boolean value = (in2 & 0x10) != 0; // L bit
+
+    // I bit distinguishes the two sensors sharing this raw pair address
+    int address = (rawAddress << 1) | (i ? 1 : 0);
+
+    Integer id = address + 1;
+    Integer deviceId = calculateDeviceId(address);
+    Integer contactId = calculateContactId(address);
+    return new SensorBean(id, deviceId, contactId, 0, (value ? 1 : 0), (value ? 0 : 1), COMMAND_STATION_ID, 0);
+  }
+
+  private static Integer calculateDeviceId(int address) {
+    int deviceId = (address + 1) / 16 + 1;
+    return deviceId;
+  }
+
+  private static int calculateContactId(int address) {
+    int module = (address + 1) / 16 + 1;
+    int mport = address + 1 - (module - 1) * 16;
+    return mport;
+  }
+
+  private static int calculateContactId(int module, int port) {
+    module = module - 1;
+    int contactId = module * 16;
+    return contactId + port;
+  }
+
 }

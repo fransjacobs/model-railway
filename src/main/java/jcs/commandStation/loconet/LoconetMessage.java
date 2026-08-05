@@ -158,7 +158,7 @@ public class LoconetMessage implements Opcodes {
     if (getLengthByOpcode() != getLength()) {
       return "Length as specified by opcode differes with actual byte count";
     }
-    if (!checkChecksum()) {
+    if (!isChecksumValid()) {
       return "Invalid checksum";
     }
     return null;
@@ -203,7 +203,15 @@ public class LoconetMessage implements Opcodes {
     return message[0];
   }
 
-  public int getDataByte(int pos) {
+  public String getHexOpcode() {
+    return getByteHex(getOpcode());
+  }
+
+  public boolean isExpectedsOpcode(int expected) {
+    return (getOpcode() & 0xFF) == expected;
+  }
+
+  public int getByte(int pos) {
     if (pos == 0) {
       return -1;
     }
@@ -269,7 +277,7 @@ public class LoconetMessage implements Opcodes {
     message[message.length - 1] = calculateChecksumValue();
   }
 
-  public boolean checkChecksum() {
+  public boolean isChecksumValid() {
     return message[message.length - 1] == calculateChecksumValue();
   }
 

@@ -47,6 +47,7 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
 
   private LoconetConnection loconet;
   private ThreadGroup threadGroup;
+  private EventMessageHandler eventMessageHandler;
 
   public Intellibox2Impl(CommandStationBean commandStationBean) {
     this(commandStationBean, false);
@@ -62,11 +63,19 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
   public boolean connect() {
     loconet = LoconetConnectionFactory.aquireConnection();
     this.connected = loconet != null && loconet.isConnected();
+
+    if (connected) {
+      eventMessageHandler = new EventMessageHandler(loconet);
+      eventMessageHandler.start();
+    }
+
     return connected;
   }
 
   @Override
   public void disconnect() {
+    eventMessageHandler.quit();
+    
     LoconetConnectionFactory.closeConnection();
   }
 
@@ -193,6 +202,8 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
               int opcode = message.getOpcode();
               int length = message.getLength();
 
+              Logger.trace("RX: {} Opcode: {} Lenght: {}", message.toString(), message.getHexOpcode(), length);
+
               switch (opcode) {
                 case LoconetMessage.OPC_GPON -> {
                   //Power ON
@@ -219,25 +230,13 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
                 }
                 case LoconetMessage.OPC_INPUT_REP -> {
                   //Sensor message
-                  //OPC_INPUT_REP 0xB2 ; General SENSOR Input codes NO
-                  //<0xB2>, <IN1>, <IN2>, <CHK>
-                  //<IN1> = < 0, A6, A5, A4 - A3, A2, A1, A0 >, 7 ls adr bits.
-                  // A1, A0 select 1 of 4 inputs pairs in a DS54.
-                  //<IN2> = < 0,X,I,L- A10,A9,A8,A7 > Report/status bits and 4 MS adr bits.
-                  //"I"=0 for DS54 "aux" inputs and 1 for "switch" inputs mapped to 4K SENSOR space.
-                  //(This is effectively a least significant adr bit when using DS54 input configuration)
-                  //"L"=0 for input SENSOR now 0V (LO) , 1 for Input sensor >=+6V (HI)
-                  //"X"=1, control bit , 0 is RESERVED for future!
-
-//                    //Logger.trace("FeedbackSensorEvent RX: " + eventMessage);
-//
-//                    SensorBean sb = FeedbackEventMessage.parse(eventMessage, new Date());
-//                    Logger.trace("Sensor " + sb.getId() + " value " + sb.getStatus());
-//                    SensorEvent sme = new SensorEvent(sb);
-//                    if (sme.getSensorBean() != null) {
-//                      fireAllSensorEventsListeners(sme);
-//                    }
-//                  }
+                  Logger.trace("SensorEvent RX: {}", message);
+                  SensorBean sb = LoconetMessageParser.parseSensorEvent(message);
+                  if (sb != null) {
+                    Logger.trace("Sensor " + sb.getId() + " value " + sb.getStatus());
+                    SensorEvent sme = new SensorEvent(sb);
+                    fireAllSensorEventsListeners(sme);
+                  }
                 }
                 case LoconetMessage.OPC_SW_REP -> {
 //                  0xB1 ;Turnout SENSOR state REPORT NO
@@ -356,7 +355,7 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
       //Lets power Off
       intellibox2.power(false);
 
-      intellibox2.pause(10000);
+      intellibox2.pause(200000);
 
       intellibox2.disconnect();
 
