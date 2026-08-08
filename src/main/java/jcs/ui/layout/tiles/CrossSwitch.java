@@ -207,14 +207,14 @@ public class CrossSwitch extends Switch implements AccessoryEventListener {
     switch (orientation) {
       case SOUTH -> {
         edgeConnections.put(Orientation.NORTH, new Point(cx, cy - GRID));
-        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + GRID));
+        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + GRID * 3));
 
         if (Direction.LEFT == direction) {
           edgeConnections.put(Orientation.EAST, new Point(cx + GRID, cy + GRID * 2));
           edgeConnections.put(Orientation.WEST, new Point(cx - GRID, cy));
         } else {
           edgeConnections.put(Orientation.EAST, new Point(cx + GRID, cy));
-          edgeConnections.put(Orientation.WEST, new Point(cx + GRID * 2, cy - GRID));
+          edgeConnections.put(Orientation.WEST, new Point(cx - GRID, cy + GRID * 2));
         }
       }
       case WEST -> {
@@ -225,7 +225,7 @@ public class CrossSwitch extends Switch implements AccessoryEventListener {
           edgeConnections.put(Orientation.NORTH, new Point(cx, cy - GRID));
           edgeConnections.put(Orientation.SOUTH, new Point(cx - GRID * 2, cy + GRID));
         } else {
-          edgeConnections.put(Orientation.NORTH, new Point(cx - GRID, cy - GRID * 2));
+          edgeConnections.put(Orientation.NORTH, new Point(cx - GRID * 2, cy - GRID));
           edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + GRID));
         }
       }
@@ -243,15 +243,15 @@ public class CrossSwitch extends Switch implements AccessoryEventListener {
       }
       default -> {
         //EAST
-        edgeConnections.put(Orientation.EAST, new Point(cx + GRID * 4, cy));
-        edgeConnections.put(Orientation.WEST, new Point(cx - GRID * 2, cy));
+        edgeConnections.put(Orientation.EAST, new Point(cx + GRID * 3, cy));
+        edgeConnections.put(Orientation.WEST, new Point(cx - GRID, cy));
 
         if (Direction.LEFT == direction) {
           edgeConnections.put(Orientation.NORTH, new Point(cx + 2 * GRID, cy - GRID));
           edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + GRID));
         } else {
           edgeConnections.put(Orientation.NORTH, new Point(cx, cy - GRID));
-          edgeConnections.put(Orientation.SOUTH, new Point(cx + 2 * GRID, cy + 3 * GRID));
+          edgeConnections.put(Orientation.SOUTH, new Point(cx + 2 * GRID, cy + GRID));
         }
       }
     }

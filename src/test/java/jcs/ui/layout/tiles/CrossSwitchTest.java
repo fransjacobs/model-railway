@@ -20,7 +20,6 @@ import static jcs.entities.TileBean.Orientation.NORTH;
 import static jcs.entities.TileBean.TileType.CROSS_SWITCH;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import java.awt.Point;
 import java.util.Map;
@@ -38,34 +37,10 @@ import static jcs.entities.TileBean.Orientation.SOUTH;
 import static jcs.entities.TileBean.Orientation.WEST;
 
 import org.junit.Test;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.BeforeAll;
 
-/**
- *
- * @author frans
- */
 public class CrossSwitchTest {
 
   public CrossSwitchTest() {
-  }
-
-  @BeforeAll
-  public static void setUpClass() {
-  }
-
-  @AfterAll
-  public static void tearDownClass() {
-  }
-
-  @BeforeEach
-  public void setUp() {
-  }
-
-  @AfterEach
-  public void tearDown() {
   }
 
   @Test
@@ -128,24 +103,21 @@ public class CrossSwitchTest {
     expResult.add(new Point(200, 200));
     expResult.add(new Point(200, 160));
 
-    Point center = new Point(200,160);
+    Point center = new Point(200, 160);
     Set<Point> result = instance.getAllPoints(center);
     assertEquals(expResult, result);
   }
 
-  /**
-   * Test of getAltPoints method, of class CrossSwitch.
-   */
-  //@Test
+  @Test
   public void testGetAltPoints_Point() {
     System.out.println("getAltPoints");
-    Point center = null;
-    CrossSwitch instance = null;
-    Set<Point> expResult = null;
+    Tile instance = TileCache.createTile(CROSS_SWITCH, NORTH, RIGHT, 200, 200);
+    Set<Point> expResult = new HashSet<>();
+    expResult.add(new Point(200, 160));
+
+    Point center = new Point(200, 160);
     Set<Point> result = instance.getAltPoints(center);
     assertEquals(expResult, result);
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
   }
 
   @Test
@@ -251,10 +223,10 @@ public class CrossSwitchTest {
 
     Map<Orientation, Point> expResult = new HashMap<>();
 
-    expResult.put(NORTH, new Point(200, 160));
-    expResult.put(WEST, new Point(120, 200));
-    expResult.put(SOUTH, new Point(160, 240));
-    expResult.put(EAST, new Point(240, 200));
+    expResult.put(WEST, new Point(140, 200));
+    expResult.put(EAST, new Point(220, 200));
+    expResult.put(NORTH, new Point(200, 180));
+    expResult.put(SOUTH, new Point(160, 220));
 
     Map<Orientation, Point> result = instance.getEdgePoints();
     assertEquals(expResult, result);
@@ -267,26 +239,106 @@ public class CrossSwitchTest {
 
     Map<Orientation, Point> expResult = new HashMap<>();
 
-    expResult.put(NORTH, new Point(240, 160));
-    expResult.put(WEST, new Point(160, 200));
-    expResult.put(SOUTH, new Point(200, 240));
-    expResult.put(EAST, new Point(280, 200));
+    expResult.put(NORTH, new Point(240, 180));
+    expResult.put(WEST, new Point(180, 200));
+    expResult.put(SOUTH, new Point(200, 220));
+    expResult.put(EAST, new Point(260, 200));
 
     Map<Orientation, Point> result = instance.getEdgePoints();
     assertEquals(expResult, result);
   }
 
-  //@Test
+  @Test
   public void testGetEdgePointsNL() {
     System.out.println("testGetEdgePointsNL");
     Tile instance = TileCache.createTile(CROSS_SWITCH, NORTH, LEFT, 200, 200);
 
     Map<Orientation, Point> expResult = new HashMap<>();
 
-    expResult.put(NORTH, new Point(200, 120));
-    expResult.put(WEST, new Point(160, 160));
-    expResult.put(SOUTH, new Point(200, 240));
-    expResult.put(EAST, new Point(120, 60));
+    expResult.put(NORTH, new Point(200, 140));
+    expResult.put(WEST, new Point(180, 160));
+    expResult.put(SOUTH, new Point(200, 220));
+    expResult.put(EAST, new Point(220, 200));
+
+    Map<Orientation, Point> result = instance.getEdgePoints();
+    assertEquals(expResult, result);
+  }
+
+  @Test
+  public void testGetEdgePointsSL() {
+    System.out.println("testGetEdgePointsSL");
+    Tile instance = TileCache.createTile(CROSS_SWITCH, SOUTH, LEFT, 200, 200);
+
+    Map<Orientation, Point> expResult = new HashMap<>();
+
+    expResult.put(NORTH, new Point(200, 180));
+    expResult.put(WEST, new Point(180, 200));
+    expResult.put(SOUTH, new Point(200, 260));
+    expResult.put(EAST, new Point(220, 240));
+
+    Map<Orientation, Point> result = instance.getEdgePoints();
+    assertEquals(expResult, result);
+  }
+
+  @Test
+  public void testGetEdgePointsWR() {
+    System.out.println("testGetEdgePointsWR");
+    Tile instance = TileCache.createTile(CROSS_SWITCH, WEST, RIGHT, 200, 200);
+
+    Map<Orientation, Point> expResult = new HashMap<>();
+
+    expResult.put(WEST, new Point(140, 200));
+    expResult.put(EAST, new Point(220, 200));
+    expResult.put(NORTH, new Point(160, 180));
+    expResult.put(SOUTH, new Point(200, 220));
+
+    Map<Orientation, Point> result = instance.getEdgePoints();
+    assertEquals(expResult, result);
+  }
+
+  @Test
+  public void testGetEdgePointsER() {
+    System.out.println("testGetEdgePointsER");
+    Tile instance = TileCache.createTile(CROSS_SWITCH, EAST, RIGHT, 200, 200);
+
+    Map<Orientation, Point> expResult = new HashMap<>();
+
+    expResult.put(NORTH, new Point(200, 180));
+    expResult.put(WEST, new Point(180, 200));
+    expResult.put(SOUTH, new Point(240, 220));
+    expResult.put(EAST, new Point(260, 200));
+
+    Map<Orientation, Point> result = instance.getEdgePoints();
+    assertEquals(expResult, result);
+  }
+
+  @Test
+  public void testGetEdgePointsNR() {
+    System.out.println("testGetEdgePointsNR");
+    Tile instance = TileCache.createTile(CROSS_SWITCH, NORTH, RIGHT, 200, 200);
+
+    Map<Orientation, Point> expResult = new HashMap<>();
+
+    expResult.put(NORTH, new Point(200, 140));
+    expResult.put(WEST, new Point(180, 200));
+    expResult.put(SOUTH, new Point(200, 220));
+    expResult.put(EAST, new Point(220, 160));
+
+    Map<Orientation, Point> result = instance.getEdgePoints();
+    assertEquals(expResult, result);
+  }
+
+  @Test
+  public void testGetEdgePointsSR() {
+    System.out.println("testGetEdgePointsSR");
+    Tile instance = TileCache.createTile(CROSS_SWITCH, SOUTH, RIGHT, 200, 200);
+
+    Map<Orientation, Point> expResult = new HashMap<>();
+
+    expResult.put(NORTH, new Point(200, 180));
+    expResult.put(WEST, new Point(180, 240));
+    expResult.put(SOUTH, new Point(200, 260));
+    expResult.put(EAST, new Point(220, 200));
 
     Map<Orientation, Point> result = instance.getEdgePoints();
     assertEquals(expResult, result);
