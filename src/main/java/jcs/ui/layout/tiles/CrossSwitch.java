@@ -28,7 +28,9 @@ import jcs.commandStation.events.AccessoryEventListener;
 import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.TileBean;
 import jcs.entities.TileBean.Direction;
+import static jcs.entities.TileBean.Direction.RIGHT;
 import jcs.entities.TileBean.Orientation;
+import static jcs.entities.TileBean.Orientation.EAST;
 import static jcs.entities.TileBean.Orientation.NORTH;
 import static jcs.entities.TileBean.Orientation.SOUTH;
 import static jcs.entities.TileBean.Orientation.WEST;
@@ -103,32 +105,30 @@ public class CrossSwitch extends Switch implements AccessoryEventListener {
   }
 
   @Override
-  public Set<Point> getAllPoints(Point center) {
-    Set<Point> aps = getAltPoints(center);
-    aps.add(center);
+  public Set<Point> getAllPoints(Point p) {
+    Set<Point> aps = getAltPoints(p);
+    aps.add(getCenter());
     return aps;
   }
 
   @Override
   Set<Point> getAltPoints(Point center) {
     Set<Point> alts = new HashSet<>();
+    int cx = getCenterX();
+    int cy = getCenterY();
+
     switch (getOrientation()) {
       case SOUTH -> {
-        Point sp = new Point(center.x, (center.y + DEFAULT_HEIGHT));
-        alts.add(sp);
+        alts.add(new Point(cx, cy + 2 * GRID));
       }
       case WEST -> {
-        Point wp = new Point((center.x - DEFAULT_WIDTH), center.y);
-        alts.add(wp);
+        alts.add(new Point(cx - 2 * GRID, cy));
       }
       case NORTH -> {
-        Point np = new Point(center.x, (center.y - DEFAULT_HEIGHT));
-        alts.add(np);
+        alts.add(new Point(cx, cy - 2 * GRID));
       }
       default -> {
-        //East so default 
-        Point ep = new Point((center.x + DEFAULT_WIDTH), center.y);
-        alts.add(ep);
+        alts.add(new Point(cx + 2 * GRID, cy));
       }
     }
     return alts;
@@ -139,8 +139,8 @@ public class CrossSwitch extends Switch implements AccessoryEventListener {
     Map<Orientation, Point> neighbors = new HashMap<>();
     Orientation orientation = this.getOrientation();
     Direction direction = this.getDirection();
-    int cx = this.getCenterX();
-    int cy = this.getCenterY();
+    int cx = getCenterX();
+    int cy = getCenterY();
 
     switch (orientation) {
       case SOUTH -> {
@@ -207,14 +207,14 @@ public class CrossSwitch extends Switch implements AccessoryEventListener {
     switch (orientation) {
       case SOUTH -> {
         edgeConnections.put(Orientation.NORTH, new Point(cx, cy - GRID));
-        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + GRID * 3));
+        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + GRID));
 
         if (Direction.LEFT == direction) {
           edgeConnections.put(Orientation.EAST, new Point(cx + GRID, cy + GRID * 2));
           edgeConnections.put(Orientation.WEST, new Point(cx - GRID, cy));
         } else {
           edgeConnections.put(Orientation.EAST, new Point(cx + GRID, cy));
-          edgeConnections.put(Orientation.WEST, new Point(cx - GRID, cy + GRID * 2));
+          edgeConnections.put(Orientation.WEST, new Point(cx + GRID * 2, cy - GRID));
         }
       }
       case WEST -> {
@@ -225,7 +225,7 @@ public class CrossSwitch extends Switch implements AccessoryEventListener {
           edgeConnections.put(Orientation.NORTH, new Point(cx, cy - GRID));
           edgeConnections.put(Orientation.SOUTH, new Point(cx - GRID * 2, cy + GRID));
         } else {
-          edgeConnections.put(Orientation.NORTH, new Point(cx - GRID * 2, cy - GRID));
+          edgeConnections.put(Orientation.NORTH, new Point(cx - GRID, cy - GRID * 2));
           edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + GRID));
         }
       }
@@ -243,15 +243,15 @@ public class CrossSwitch extends Switch implements AccessoryEventListener {
       }
       default -> {
         //EAST
-        edgeConnections.put(Orientation.EAST, new Point(cx + GRID * 3, cy));
-        edgeConnections.put(Orientation.WEST, new Point(cx - GRID, cy));
+        edgeConnections.put(Orientation.EAST, new Point(cx + GRID * 4, cy));
+        edgeConnections.put(Orientation.WEST, new Point(cx - GRID * 2, cy));
 
         if (Direction.LEFT == direction) {
-          edgeConnections.put(Orientation.NORTH, new Point(cx + GRID * 2, cy - GRID));
+          edgeConnections.put(Orientation.NORTH, new Point(cx + 2 * GRID, cy - GRID));
           edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + GRID));
         } else {
           edgeConnections.put(Orientation.NORTH, new Point(cx, cy - GRID));
-          edgeConnections.put(Orientation.SOUTH, new Point(cx + GRID * 2, cy + GRID));
+          edgeConnections.put(Orientation.SOUTH, new Point(cx + 2 * GRID, cy + 3 * GRID));
         }
       }
     }
@@ -261,7 +261,9 @@ public class CrossSwitch extends Switch implements AccessoryEventListener {
   @Override
   public AccessoryValue accessoryValueForRoute(Orientation from, Orientation to) {
     if (from != null && to != null && this.getDirection() != null) {
-      switch (this.getDirection()) {
+      Direction ownDirection = this.getDirection();
+
+      switch (ownDirection) {
         case LEFT -> {
           if (this.isHorizontal()) {
             if ((from == Orientation.WEST && to == Orientation.EAST) || (from == Orientation.EAST && to == Orientation.WEST)) {

@@ -25,7 +25,6 @@ import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.TileBean;
 import jcs.entities.TileBean.Direction;
 import jcs.entities.TileBean.Orientation;
-import static jcs.entities.TileBean.Orientation.EAST;
 import static jcs.entities.TileBean.Orientation.NORTH;
 import static jcs.entities.TileBean.Orientation.SOUTH;
 import static jcs.entities.TileBean.Orientation.WEST;
@@ -56,7 +55,6 @@ public class ThreeWaySwitch extends Switch implements AccessoryEventListener {
 
   protected ThreeWaySwitch(TileType tileType, Orientation orientation, Direction direction, int x, int y, int width, int height) {
     super(tileType, orientation, direction, x, y, width, height);
-    setModel(new DefaultTileModel(orientation));
     initUI();
   }
 
@@ -66,7 +64,6 @@ public class ThreeWaySwitch extends Switch implements AccessoryEventListener {
 
   protected ThreeWaySwitch(TileBean tileBean, int width, int height) {
     super(tileBean, width, height);
-    setModel(new DefaultTileModel(tileBean.getOrientation()));
     initUI();
   }
 
@@ -176,12 +173,13 @@ public class ThreeWaySwitch extends Switch implements AccessoryEventListener {
   }
 
   /**
-   * For South
-   * G R R2 \||/ \\|/ \|// 
-   *         ||   ||   ||
+   * For South G R R2 \||/ \\|/ \|// || || ||
    *
    * In Words Red is Right Red2 is Left
    *
+   * @param from
+   * @param to
+   * @return
    */
   @Override
   public AccessoryValue accessoryValueForRoute(Orientation from, Orientation to) {

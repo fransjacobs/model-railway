@@ -19,6 +19,7 @@ import java.awt.Point;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.UIManager;
+import jcs.entities.AccessoryBean;
 import jcs.entities.TileBean;
 import jcs.entities.TileBean.Orientation;
 import static jcs.entities.TileBean.Orientation.NORTH;
@@ -38,7 +39,6 @@ public class Curved extends Tile {
 
   public Curved(TileBean tileBean) {
     super(tileBean, DEFAULT_WIDTH, DEFAULT_HEIGHT);
-    setModel(new DefaultTileModel(tileBean.getOrientation()));
     initUI();
   }
 
@@ -52,7 +52,6 @@ public class Curved extends Tile {
 
   public Curved(Orientation orientation, int x, int y, int width, int height) {
     super(TileType.CURVED, orientation, x, y, width, height);
-    setModel(new DefaultTileModel(orientation));
     initUI();
   }
 
@@ -134,6 +133,11 @@ public class Curved extends Tile {
       }
     }
     return edgeConnections;
+  }
+
+  @Override
+  public AccessoryBean.AccessoryValue accessoryValueForRoute(Orientation from, Orientation to) {
+    return AccessoryBean.AccessoryValue.OFF;
   }
 
 }

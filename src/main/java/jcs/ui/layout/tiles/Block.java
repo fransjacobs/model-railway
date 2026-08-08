@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.TransferHandler;
 import javax.swing.UIManager;
+import jcs.entities.AccessoryBean;
 import jcs.entities.BlockBean;
 import jcs.entities.BlockBean.BlockState;
 import jcs.entities.LocomotiveBean;
@@ -58,7 +59,6 @@ public class Block extends Tile {
 
   public Block(TileBean tileBean) {
     super(tileBean);
-    setModel(new DefaultTileModel(tileBean.getOrientation()));
     populateModel();
 
     if (this.blockBean == null) {
@@ -78,7 +78,6 @@ public class Block extends Tile {
 
   public Block(Orientation orientation, int x, int y, int width, int height) {
     super(TileType.BLOCK, orientation, x, y, width, height);
-    setModel(new DefaultTileModel(orientation));
 
     if (blockBean == null) {
       createBlockBean();
@@ -364,8 +363,7 @@ public class Block extends Tile {
    * In case a block is drawn in the East orientation, the departure suffix is in the Block orientation direction<br>
    * East or +.<br>
    *
-   * @param tileOrientation the orientation of the Tile (E,S,W or N)
-   * @param reverseArrival whether the block direction is reversed
+   * @param blockOrientation the orientation of the Tile (E,S,W or N)
    * @param direction the Locomotive direction
    * @return
    */
@@ -411,7 +409,6 @@ public class Block extends Tile {
    * East or +.<br>
    *
    * @param tileOrientation the orientation of the Tile (E,S,W or N)
-   * @param reverseArrival whether the block direction is reversed
    * @param direction the Locomotive direction
    * @return
    */
@@ -573,4 +570,8 @@ public class Block extends Tile {
     }
   }
 
+  @Override
+  public AccessoryBean.AccessoryValue accessoryValueForRoute(Orientation from, Orientation to) {
+    return AccessoryBean.AccessoryValue.OFF;
+  }
 }

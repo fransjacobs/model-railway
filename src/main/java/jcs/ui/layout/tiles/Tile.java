@@ -138,9 +138,9 @@ public abstract class Tile extends JComponent implements Serializable {
     this.tileDirection = direction;
     this.tileX = x;
     this.tileY = y;
+    setModel(new DefaultTileModel((orientation != null ? orientation : Orientation.EAST)));
 
-    this.
-            setLayout(null);
+    this.setLayout(null);
     Dimension d = new Dimension(width, height);
     setSize(d);
     setPreferredSize(d);
@@ -151,13 +151,14 @@ public abstract class Tile extends JComponent implements Serializable {
   }
 
   protected Tile(TileBean tileBean, int width, int height) {
+    super();
     this.tileBean = tileBean;
     id = tileBean.getId();
     tileType = tileBean.getTileType();
     tileDirection = tileBean.getDirection();
     tileX = tileBean.getX();
     tileY = tileBean.getY();
-
+    setModel(new DefaultTileModel(tileBean.getOrientation()));
     accessoryId = tileBean.getAccessoryId();
     accessoryBean = tileBean.getAccessoryBean();
 
@@ -188,7 +189,7 @@ public abstract class Tile extends JComponent implements Serializable {
     return model;
   }
 
-  public void setModel(TileModel newModel) {
+  private void setModel(TileModel newModel) {
     TileModel oldModel = getModel();
 
     if (oldModel != null) {
@@ -268,7 +269,7 @@ public abstract class Tile extends JComponent implements Serializable {
     }
   }
 
-  public TileBean getTileBean() {
+  public final TileBean getTileBean() {
     if (tileBean == null) {
       tileBean = new TileBean();
     }
@@ -944,9 +945,7 @@ public abstract class Tile extends JComponent implements Serializable {
     return true;
   }
 
-  public AccessoryValue accessoryValueForRoute(Orientation from, Orientation to) {
-    return AccessoryValue.OFF;
-  }
+  public abstract AccessoryValue accessoryValueForRoute(Orientation from, Orientation to);
 
   public boolean isDiagonalOpposite(Orientation from, Orientation to) {
     return false;
