@@ -49,10 +49,39 @@ public class AStar {
   }
 
   public List<List<Node>> getAllBlockToBlockNodes() {
-    List<List<Node>> fromToList = new ArrayList<>();
+    List<List<Node>> fromToList = new LinkedList<>();
 
     List<Node> fromNodes = graph.getBlockNodes();
     List<Node> toNodes = graph.getBlockNodes();
+
+//    //Debug issue #172    
+//    //only block 32
+//    List<Node> filteredFromNodes =  new ArrayList<>();
+//    for(Node n : fromNodes) {
+//      if(n.isBlock() && "bk-32".equals(n.getId())) {
+//        filteredFromNodes.add(n);
+//      }
+//    }
+//    
+//    //zou naar bk-1,2,3,4,5 kunnen
+//    List<Node> filteredToNodes =  new ArrayList<>();
+//    for(Node n : toNodes) {
+//      if(n.isBlock() && "bk-1".equals(n.getId())) {
+//        filteredToNodes.add(n);
+//      } else if(n.isBlock() && "bk-2".equals(n.getId())) {
+//        filteredToNodes.add(n);
+//      } else if(n.isBlock() && "bk-3".equals(n.getId())) {
+//        filteredToNodes.add(n);
+//      } else if(n.isBlock() && "bk-4".equals(n.getId())) {
+//        filteredToNodes.add(n);
+//      } else if(n.isBlock() && "bk-5".equals(n.getId())) {
+//        filteredToNodes.add(n);
+//      }
+//    }
+
+//    fromNodes = filteredFromNodes;
+//    toNodes = filteredToNodes;
+    ////    
 
     for (Node from : fromNodes) {
       boolean fromBlock = from.isBlock();

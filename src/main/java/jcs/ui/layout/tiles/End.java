@@ -19,6 +19,7 @@ import java.awt.Point;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.UIManager;
+import jcs.entities.AccessoryBean;
 import jcs.entities.TileBean;
 import jcs.entities.TileBean.Orientation;
 import static jcs.entities.TileBean.Orientation.NORTH;
@@ -40,7 +41,6 @@ public class End extends Tile {
 
   public End(TileBean tileBean) {
     super(tileBean, DEFAULT_WIDTH, DEFAULT_HEIGHT);
-    setModel(new DefaultTileModel(tileBean.getOrientation()));
     initUI();
   }
 
@@ -54,7 +54,6 @@ public class End extends Tile {
 
   public End(Orientation orientation, int x, int y, int width, int height) {
     super(TileType.END, orientation, x, y, width, height);
-    setModel(new DefaultTileModel(orientation));
     initUI();
   }
 
@@ -112,5 +111,10 @@ public class End extends Tile {
         edgeConnections.put(Orientation.EAST, new Point(cx - GRID, cy));
     }
     return edgeConnections;
+  }
+
+  @Override
+  public AccessoryBean.AccessoryValue accessoryValueForRoute(Orientation from, Orientation to) {
+    return AccessoryBean.AccessoryValue.OFF;
   }
 }

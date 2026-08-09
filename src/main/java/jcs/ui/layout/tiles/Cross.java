@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.UIManager;
+import jcs.entities.AccessoryBean;
 import jcs.entities.TileBean;
 import jcs.entities.TileBean.Orientation;
 import static jcs.entities.TileBean.Orientation.EAST;
@@ -51,16 +52,12 @@ public class Cross extends Tile {
 
   public Cross(Orientation orientation, int x, int y, int width, int height) {
     super(TileType.CROSS, orientation, x, y, width, height);
-    setModel(new DefaultTileModel(orientation));
-
     changeRenderSizeAndOffsets();
     initUI();
   }
 
   public Cross(TileBean tileBean) {
     super(tileBean, tileWidth(tileBean.getOrientation(), TileType.CROSS), tileHeight(tileBean.getOrientation(), TileType.CROSS));
-    setModel(new DefaultTileModel(tileBean.getOrientation()));
-
     changeRenderSizeAndOffsets();
     initUI();
   }
@@ -152,12 +149,6 @@ public class Cross extends Tile {
         neighbors.put(Orientation.SOUTH, new Point(cx, cy + GRID * 2));
       }
       case NORTH -> {
-//        neighbors.put(Orientation.EAST, new Point(cx + GRID * 2, cy));
-//        neighbors.put(Orientation.WEST, new Point(cx - GRID * 2, cy + GRID * 2));
-//
-//        neighbors.put(Orientation.NORTH, new Point(cx - GRID * 2, cy));
-//        neighbors.put(Orientation.SOUTH, new Point(cx + GRID * 2, cy + GRID * 2));
-
         neighbors.put(Orientation.EAST, new Point(cx + GRID * 2, cy));
         neighbors.put(Orientation.WEST, new Point(cx - GRID * 2, cy - GRID * 2));
 
@@ -200,18 +191,12 @@ public class Cross extends Tile {
 
       }
       case NORTH -> {
-//        edgeConnections.put(Orientation.EAST, new Point(cx + GRID, cy));
-//        edgeConnections.put(Orientation.WEST, new Point(cx - GRID, cy + GRID * 2));
-//
-//        edgeConnections.put(Orientation.NORTH, new Point(cx - GRID, cy));
-//        edgeConnections.put(Orientation.SOUTH, new Point(cx + GRID, cy + GRID * 2));
-        
         edgeConnections.put(Orientation.EAST, new Point(cx + GRID, cy));
         edgeConnections.put(Orientation.WEST, new Point(cx - GRID, cy - GRID * 2));
 
         edgeConnections.put(Orientation.NORTH, new Point(cx + GRID, cy - GRID * 2));
         edgeConnections.put(Orientation.SOUTH, new Point(cx - GRID, cy));
-        
+
       }
       default -> {
         //EAST
@@ -234,56 +219,6 @@ public class Cross extends Tile {
     }
   }
 
-//  @Override
-//  public Rectangle getTileBounds() {
-//    LayoutScale scale = LayoutScale.getInstance();
-//    int grid = scale.scaledGrid();
-//
-//    Orientation tileOrientation = model.getTileOrienation();
-//    int xx, yy, w, h, multiplier;
-//    if (model.isScaleImage()) {
-//      w = tileWidth(tileOrientation, TileType.CROSS);
-//      h = tileHeight(tileOrientation, TileType.CROSS);
-//
-//      multiplier = 1;
-//    } else {
-//      int renderWidth = getUI().getRenderWidth();
-//      int renderHeight = getUI().getRenderHeight();
-//
-//      w = renderWidth;
-//      h = renderHeight;
-//      multiplier = 10;
-//    }
-//
-//    switch (tileOrientation) {
-//      case SOUTH -> {
-//        xx = tileX - grid * multiplier;
-//        yy = tileY - grid * multiplier;
-//      }
-//      case WEST -> {
-//        xx = tileX - grid * multiplier;
-//        yy = tileY - grid * multiplier;
-//      }
-//      case NORTH -> {
-//        xx = tileX - grid * multiplier;
-//        yy = tileY - grid * multiplier;
-//      }
-//      default -> {
-//        //East
-//        xx = tileX - grid * multiplier;
-//        yy = tileY - grid * multiplier;
-//      }
-//    }
-//
-//    if (model.isScaleImage()) {
-//      return new Rectangle(xx, yy, w, h);
-//    } else {
-//      int renderWidth = getUI().getRenderWidth();
-//      int renderHeight = getUI().getRenderHeight();
-//
-//      return new Rectangle(xx, yy, renderWidth, renderHeight);
-//    }
-//  }
   @Override
   public Rectangle getTileBounds() {
     LayoutScale scale = LayoutScale.getInstance();
@@ -337,22 +272,6 @@ public class Cross extends Tile {
     }
   }
 
-//  @Override
-//  public Orientation rotate() {
-//    super.rotate();
-//
-//    Orientation tileOrientation = model.getTileOrienation();
-//    int w = tileWidth(tileOrientation, TileType.CROSS);
-//    int h = tileHeight(tileOrientation, TileType.CROSS);
-//
-//    Dimension d = new Dimension(w, h);
-//    setPreferredSize(d);
-//    setSize(d);
-//    changeRenderSizeAndOffsets();
-//
-//    setBounds(getTileBounds());
-//    return tileOrientation;
-//  }
   @Override
   public Orientation rotate() {
     super.rotate();
@@ -366,10 +285,13 @@ public class Cross extends Tile {
     Dimension d = new Dimension(w, h);
     setPreferredSize(d);
     setSize(d);
-    //changeRenderSizeAndOffsets();
 
     setBounds(getTileBounds());
     return tileOrientation;
   }
 
+  @Override
+  public AccessoryBean.AccessoryValue accessoryValueForRoute(Orientation from, Orientation to) {
+    return AccessoryBean.AccessoryValue.OFF;
+  }
 }

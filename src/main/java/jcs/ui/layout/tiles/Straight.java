@@ -21,6 +21,7 @@ import java.awt.Point;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.UIManager;
+import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.TileBean;
 import jcs.entities.TileBean.Orientation;
 import jcs.entities.TileBean.TileType;
@@ -35,7 +36,6 @@ public class Straight extends Tile {
 
   public Straight(TileBean tileBean) {
     super(tileBean, DEFAULT_WIDTH, DEFAULT_HEIGHT);
-    setModel(new DefaultTileModel(tileBean.getOrientation()));
     initUI();
   }
 
@@ -49,7 +49,6 @@ public class Straight extends Tile {
 
   public Straight(Orientation orientation, int x, int y, int width, int height) {
     super(TileType.STRAIGHT, orientation, x, y, width, height);
-    setModel(new DefaultTileModel(orientation));
     initUI();
   }
 
@@ -107,4 +106,9 @@ public class Straight extends Tile {
     return edgeConnections;
   }
 
+  @Override
+  public AccessoryValue accessoryValueForRoute(Orientation from, Orientation to) {
+    return AccessoryValue.OFF;
+  }
+  
 }
