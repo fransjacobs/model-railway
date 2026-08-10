@@ -592,7 +592,11 @@ public class TileCache {
   }
 
   public static boolean contains(Point p) {
-    return centerPointMap.containsKey(p);
+    boolean found = centerPointMap.containsKey(p);
+    if(!found) {
+      found = altPointMap.containsKey(p);
+    }
+    return found;
   }
 
   public static boolean canMoveTo(Tile tile, Point p) {
@@ -761,17 +765,4 @@ public class TileCache {
       }
     }
   }
-
-  public static void main(String[] a) {
-    long now = System.currentTimeMillis();
-    long start = now;
-
-    List<Tile> tiles = loadTiles(true);
-
-    long end = System.currentTimeMillis();
-
-    Logger.info("Loaded {} tiles in {} ms", tiles.size(), (end - start));
-
-  }
-
 }

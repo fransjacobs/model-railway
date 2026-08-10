@@ -153,6 +153,8 @@ public class Node implements Comparable<Node> {
   }
 
   public static Orientation getOppositeSide(Orientation inComming) {
+    //this for a tile.. where the side are -- or |
+    //does this work for a cross which is X?
     return switch (inComming) {
       case WEST ->
         Orientation.EAST;

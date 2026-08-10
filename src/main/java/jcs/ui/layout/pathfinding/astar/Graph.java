@@ -51,13 +51,13 @@ public class Graph {
     }
     if (from.getPreviousNode() != null && from.getPreviousNode().equals(to)) {
       //Skip going around...
-      //Logger.trace("Skip from: " + from.getPreviousNode().getId() + " via " + from.getId() + " to " + to.getId());
+      Logger.trace("Skip from: {} via {} to {}", from.getPreviousNode().getId(), from.getId(), to.getId());
       return false;
     }
 
     if (from.getPreviousNode() != null && from.getTile().isJunction()) {
       AccessoryValue routeValue = from.getAccessoryStatus(from, to);
-      Logger.trace("From: " + from.getPreviousNode().getId() + " via " + from.getId() + (AccessoryValue.OFF == routeValue ? " Not possible" : " Using " + routeValue) + " to " + to.getId());
+      Logger.trace("From: {} via {} {} to {}", from.getPreviousNode().getId(), from.getId(), (AccessoryValue.OFF == routeValue ? " Not possible" : " Using " + routeValue), to.getId());
 
       return AccessoryValue.OFF != routeValue;
     } else if (from.getPreviousNode() != null && from.isDirectional()) {
@@ -120,7 +120,7 @@ public class Graph {
   }
 
   List<Node> findPath(Node start, String startSuffix, Node destination, String destSuffix) {
-    Logger.trace("Searching for a route from: " + start.getId() + startSuffix + " to: " + destination.getId() + destSuffix);
+    Logger.trace("Searching for a route from: {}{} to: {}{}", start.getId(), startSuffix, destination.getId(), destSuffix);
     List<Node> path = new ArrayList<>();
 
     nodes.values().forEach(node -> {
@@ -136,11 +136,11 @@ public class Graph {
 
     while (!activeNodes.isEmpty()) {
       Node current = activeNodes.poll();
-      Logger.trace("Polled " + current.getId() + " from activeNodes. Size: " + activeNodes.size());
+      Logger.trace("Polled {} from activeNodes. Size: {}", current.getId(), activeNodes.size());
 
       if (current == destination) {
         current.setSuffix(destSuffix);
-        Logger.trace("Target node " + destination.getId() + destSuffix + " found");
+        Logger.trace("Target node {}{} found", destination.getId(), destSuffix);
         path.clear();
         destination.retrievePath(path);
         return path;
@@ -154,13 +154,17 @@ public class Graph {
         currentEdges = current.getEdges();
       }
 
-//      Logger.trace("Current Node " + current.getId() + " has " + currentEdges.size() + " edges...");
-//      for (Edge edge : currentEdges) {
-//        Logger.trace(current.getId() + " -> " + edge);
-//      }
+      Logger.trace("Current Node " + current.getId() + " has " + currentEdges.size() + " edges...");
+      for (Edge edge : currentEdges) {
+        Logger.trace(current.getId() + " -> " + edge);
+      }
+
       for (Edge edge : currentEdges) {
         Node neighbor = edge.getOpposite(current);
+        
         if (neighbor != null) {
+        Logger.trace("Neighbor: {} ", neighbor.getId() );
+          
           boolean noBlockOrTarget = neighbor.equals(destination) || !neighbor.isBlock();
           boolean noBlockOrTargetSide = !neighbor.isBlock() || (neighbor.equals(destination) && (destSuffix.equals(edge.getToSuffix()) || destSuffix.equals(edge.getFromSuffix())));
 
@@ -179,6 +183,8 @@ public class Graph {
               activeNodes.add(neighbor);
             }
           }
+        } else {
+          Logger.trace("Edge has no neigbors. From {} To: {}", edge.getFrom().getId(), edge.getTo().getId());
         }
       }
     }

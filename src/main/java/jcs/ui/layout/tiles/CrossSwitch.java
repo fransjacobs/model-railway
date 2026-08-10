@@ -30,13 +30,10 @@ import jcs.entities.TileBean;
 import jcs.entities.TileBean.Direction;
 import static jcs.entities.TileBean.Direction.RIGHT;
 import jcs.entities.TileBean.Orientation;
-import static jcs.entities.TileBean.Orientation.EAST;
 import static jcs.entities.TileBean.Orientation.NORTH;
 import static jcs.entities.TileBean.Orientation.SOUTH;
 import static jcs.entities.TileBean.Orientation.WEST;
 import jcs.entities.TileBean.TileType;
-import static jcs.ui.layout.tiles.LayoutScale.DEFAULT_HEIGHT;
-import static jcs.ui.layout.tiles.LayoutScale.DEFAULT_WIDTH;
 import static jcs.ui.layout.tiles.LayoutScale.GRID;
 import static jcs.ui.layout.tiles.Tile.tileHeight;
 import static jcs.ui.layout.tiles.Tile.tileWidth;
@@ -48,8 +45,6 @@ import jcs.ui.layout.tiles.ui.TileUI;
  */
 public class CrossSwitch extends Switch implements AccessoryEventListener {
 
-  //public static final int CROSS_SWITCH_WIDTH = DEFAULT_WIDTH * 2;
-  //public static final int CROSS_SWITCH_HEIGHT = DEFAULT_HEIGHT * 2;
   public static final Color VERY_LIGHT_RED = new Color(255, 102, 102);
   public static final Color LIGHT_RED = new Color(255, 51, 51);
   public static final Color DARK_RED = new Color(204, 0, 0);

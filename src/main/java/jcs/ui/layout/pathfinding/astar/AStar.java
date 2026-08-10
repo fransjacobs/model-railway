@@ -78,7 +78,6 @@ public class AStar {
 //        filteredToNodes.add(n);
 //      }
 //    }
-
 //    fromNodes = filteredFromNodes;
 //    toNodes = filteredToNodes;
     ////    
@@ -242,14 +241,15 @@ public class AStar {
               //if ("bk-1+".equals(fid) && "bk-2-".equals(tid)) {
               //|| ("bk-1-".equals(fid) && "bk-2-".equals(tid))) {
               //if ("bk-1+".equals(fid) && "bk-4+".equals(tid)) {
-              List<Node> path = findPath(from, fromSuffix, to, toSuffix);
+              //if ("bk-2+".equals(fid) && "bk-9+".equals(tid)) {
+                List<Node> path = findPath(from, fromSuffix, to, toSuffix);
 
-              if (path.isEmpty()) {
-                Logger.debug("No Path from " + fid + " to " + tid);
-              } else {
-                RouteBean routeBean = createRouteBeanFromNodePath(path);
-                routes.put(routeBean.getId(), routeBean);
-              }
+                if (path.isEmpty()) {
+                  Logger.debug("No Path from " + fid + " to " + tid);
+                } else {
+                  RouteBean routeBean = createRouteBeanFromNodePath(path);
+                  routes.put(routeBean.getId(), routeBean);
+                }
 
               //}
             }
@@ -275,11 +275,15 @@ public class AStar {
     //Create the links or connection between the Nodes
     for (Node node : graph.getNodes()) {
       Collection<Point> neighborPoints = node.getTile().getNeighborPoints().values();
-      Logger.trace("Node: " + node.getId() + " has " + neighborPoints.size() + " neighbors " + (node.isBlock() ? "[Block]" : "") + (node.isJunction() ? "[Junction]" : ""));
+      Logger.trace("Node: {} has {} neighbor points. {}{}{} id: {} ", neighborPoints.size(), (node.isBlock() ? "[Block]" : ""), (node.isJunction() ? "[Junction]" : ""), (node.isCross() ? "[Cross]" : ""), node.getId());
 
       for (Point p : neighborPoints) {
+        Logger.trace("Node {} check NeighborPoint: ({},{})", node.getTile().getId(), p.x, p.y);
+
         if (TileCache.contains(p)) {
           Node neighbor = graph.getNode(TileCache.findTile(p).getId());
+
+          Logger.trace("Node {} NeighborPoint: ({},{}) -> {}", node.getTile().getId(), p.x, p.y, neighbor.getId());
 
           if (node.getTile().isAdjacent(neighbor.getTile())) {
             double distance;
@@ -291,13 +295,15 @@ public class AStar {
               if (neighbor.isBlock()) {
                 String toSuffix = neighbor.getTile().getIdSuffix(node.getTile());
                 Point altPoint = neighbor.getAltPoint(toSuffix);
-                distance = Graph.manhattanDistance(altPoint, node.getAltPoint(null));
+                distance = Graph.manhattanDistance(altPoint, node.getAltPoint(null));              
               } else {
                 distance = Graph.manhattanDistance(node, neighbor);
               }
             }
             //Logger.trace("Neighbor: " + neighbor.getId() + " Distance: " + distance);
             graph.link(node, neighbor, distance);
+          } else {
+            Logger.trace("Node {} Neighbor {} is Not adjacent", node.getTile().getId(), neighbor.getId());
           }
         }
       }
