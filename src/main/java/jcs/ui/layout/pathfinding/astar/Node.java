@@ -19,6 +19,7 @@ import java.awt.Point;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import jcs.entities.AccessoryBean.AccessoryValue;
@@ -34,6 +35,7 @@ import org.tinylog.Logger;
 public class Node implements Comparable<Node> {
 
   private final Tile tile;
+  private final String id;
   private String suffix;
   private AccessoryValue accessoryState;
 
@@ -46,7 +48,13 @@ public class Node implements Comparable<Node> {
   private Orientation incomingSide;
 
   public Node(Tile tile) {
+    this(tile, null);
+  }
+
+  public Node(Tile tile, String suffix) {
     this.tile = tile;
+    this.id = tile.getId();
+    this.suffix = suffix;
   }
 
   public Tile getTile() {
@@ -54,7 +62,11 @@ public class Node implements Comparable<Node> {
   }
 
   public String getId() {
-    return tile.getId();
+    if (isCrossing()) {
+      return id + "-" + suffix;
+    } else {
+      return id;
+    }
   }
 
   public int getX() {
@@ -140,7 +152,7 @@ public class Node implements Comparable<Node> {
   }
 
   public Orientation getConnectingSide(Point connectingPoint) {
-    return tile.getEdgeOrientations().get(connectingPoint);
+    return tile.getSidePointOrientation(connectingPoint, true);
   }
 
   public Orientation getIncomingSide() {
@@ -291,6 +303,28 @@ public class Node implements Comparable<Node> {
   @Override
   public String toString() {
     return "Node id: " + getId() + " inComing: " + incomingSide + ", g: " + g + ", h: " + h + ", prevId: " + (previousNode != null ? previousNode.getId() : "") + (accessoryState != null ? " [" + accessoryState + "]" : "");
+  }
+
+  @Override
+  public int hashCode() {
+    int hash = 3;
+    hash = 13 * hash + Objects.hashCode(this.id);
+    return hash;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    final Node other = (Node) obj;
+    return Objects.equals(this.id, other.id);
   }
 
 }

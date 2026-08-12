@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 frans.
+ * Copyright 2023 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,6 @@ import org.tinylog.Logger;
 /**
  * Build a Graph from Layout and calculate the paths from Block to block
  *
- * @author frans
  */
 public class AStar {
 
@@ -43,44 +42,20 @@ public class AStar {
   private final Map<String, RouteBean> routes;
 
   public AStar() {
-    //this.tileCache = new TileCache();
     this.routes = new HashMap<>();
     this.graph = new Graph();
   }
 
-  public List<List<Node>> getAllBlockToBlockNodes() {
+  @SuppressWarnings("unused")
+  Graph getGraph() {
+    return graph;
+  }
+
+  List<List<Node>> getAllBlockToBlockNodes() {
     List<List<Node>> fromToList = new LinkedList<>();
 
     List<Node> fromNodes = graph.getBlockNodes();
     List<Node> toNodes = graph.getBlockNodes();
-
-//    //Debug issue #172    
-//    //only block 32
-//    List<Node> filteredFromNodes =  new ArrayList<>();
-//    for(Node n : fromNodes) {
-//      if(n.isBlock() && "bk-32".equals(n.getId())) {
-//        filteredFromNodes.add(n);
-//      }
-//    }
-//    
-//    //zou naar bk-1,2,3,4,5 kunnen
-//    List<Node> filteredToNodes =  new ArrayList<>();
-//    for(Node n : toNodes) {
-//      if(n.isBlock() && "bk-1".equals(n.getId())) {
-//        filteredToNodes.add(n);
-//      } else if(n.isBlock() && "bk-2".equals(n.getId())) {
-//        filteredToNodes.add(n);
-//      } else if(n.isBlock() && "bk-3".equals(n.getId())) {
-//        filteredToNodes.add(n);
-//      } else if(n.isBlock() && "bk-4".equals(n.getId())) {
-//        filteredToNodes.add(n);
-//      } else if(n.isBlock() && "bk-5".equals(n.getId())) {
-//        filteredToNodes.add(n);
-//      }
-//    }
-//    fromNodes = filteredFromNodes;
-//    toNodes = filteredToNodes;
-    ////    
 
     for (Node from : fromNodes) {
       boolean fromBlock = from.isBlock();
@@ -104,7 +79,7 @@ public class AStar {
     return fromToList;
   }
 
-  public String pathToString(List<Node> path) {
+  String pathToString(List<Node> path) {
     if (path.isEmpty()) {
       return "";
     }
@@ -155,7 +130,7 @@ public class AStar {
 
     String routeId = "[" + fromId + fromSuffix + "]->[" + toId + toSuffix + "]";
     RouteBean route = new RouteBean(routeId, fromId, fromSuffix, toId, toSuffix);
-    Logger.trace("From " + fromId + " to: " + toId + " route id " + routeId + "; " + route);
+    Logger.trace("From {} to: {} route id {}; {}", fromId, toId, routeId, route);
 
     List<RouteElementBean> rel = new LinkedList<>();
 
@@ -189,7 +164,7 @@ public class AStar {
         bb.setAlwaysStop(true);
         bb.setMinWaitTime(10);
       } else {
-        Logger.trace("Using existing BlockBean: " + bb);
+        Logger.trace("Using existing BlockBean: {}", bb);
         if (bb.getMinWaitTime() == null) {
           bb.setMinWaitTime(10);
         }
@@ -198,7 +173,7 @@ public class AStar {
     }
   }
 
-  public RouteBean getRoute(String id) {
+  RouteBean getRoute(String id) {
     return this.routes.get(id);
   }
 
@@ -206,20 +181,20 @@ public class AStar {
     return this.routes;
   }
 
-  public List<Node> findPath(String fromNodeId, String fromSuffix, String toNodeId, String toSuffix) {
+  List<Node> findPath(String fromNodeId, String fromSuffix, String toNodeId, String toSuffix) {
     Node from = graph.getNode(fromNodeId);
     Node to = graph.getNode(toNodeId);
     return findPath(from, fromSuffix, to, toSuffix);
   }
 
-  public List<Node> findPath(Node from, String fromSuffix, Node to, String toSuffix) {
+  List<Node> findPath(Node from, String fromSuffix, Node to, String toSuffix) {
     return graph.findPath(from, fromSuffix, to, toSuffix);
   }
 
   public List<RouteBean> routeAll() {
     routes.clear();
     List<List<Node>> blockToBlockList = getAllBlockToBlockNodes();
-    Logger.trace("Try to route " + blockToBlockList.size() * 2 * 2 + " Possible block to block routes");
+    Logger.trace("Try to route {} Possible block to block routes...", (blockToBlockList.size() * 2 * 2));
     Logger.trace("=============================================================================");
 
     for (List<Node> fromTo : blockToBlockList) {
@@ -241,15 +216,15 @@ public class AStar {
               //if ("bk-1+".equals(fid) && "bk-2-".equals(tid)) {
               //|| ("bk-1-".equals(fid) && "bk-2-".equals(tid))) {
               //if ("bk-1+".equals(fid) && "bk-4+".equals(tid)) {
-              //if ("bk-2+".equals(fid) && "bk-9+".equals(tid)) {
-                List<Node> path = findPath(from, fromSuffix, to, toSuffix);
+              //if ("bk-1+".equals(fid) && "bk-6+".equals(tid)) {
+              List<Node> path = findPath(from, fromSuffix, to, toSuffix);
 
-                if (path.isEmpty()) {
-                  Logger.debug("No Path from " + fid + " to " + tid);
-                } else {
-                  RouteBean routeBean = createRouteBeanFromNodePath(path);
-                  routes.put(routeBean.getId(), routeBean);
-                }
+              if (path.isEmpty()) {
+                Logger.debug("No Path from " + fid + " to " + tid);
+              } else {
+                RouteBean routeBean = createRouteBeanFromNodePath(path);
+                routes.put(routeBean.getId(), routeBean);
+              }
 
               //}
             }
@@ -262,26 +237,44 @@ public class AStar {
     return this.routes.values().stream().collect(Collectors.toList());
   }
 
-  public void buildGraph(List<Tile> tiles) {
+  public Graph buildGraph(List<Tile> tiles) {
     graph.clear();
-    //Every Tile becomes a node
+    //Every Tile becomes atlease 1 node
     for (Tile tile : tiles) {
-      Node n = new Node(tile);
-      graph.addNode(n);
+      if (tile.isCrossing()) {
+        graph.addNode(new Node(tile, "v"));
+        graph.addNode(new Node(tile, "h"));
+      } else {
+        graph.addNode(new Node(tile));
+      }  
     }
 
     Logger.trace("Graph has " + graph.size() + " nodes...");
 
     //Create the links or connection between the Nodes
     for (Node node : graph.getNodes()) {
-      Collection<Point> neighborPoints = node.getTile().getNeighborPoints().values();
-      Logger.trace("Node: {} has {} neighbor points. {}{}{} id: {} ", neighborPoints.size(), (node.isBlock() ? "[Block]" : ""), (node.isJunction() ? "[Junction]" : ""), (node.isCross() ? "[Cross]" : ""), node.getId());
+      Collection<Point> neighborPoints;
+      if (node.isCrossing()) {
+        if ("h".equals(node.getSuffix())) {
+          //get only the horizontal points
+          neighborPoints = node.getTile().getEdgeConnections(false).values();
+        } else {
+          //get only the versticalpoints
+          neighborPoints = node.getTile().getEdgeConnections(true).values();
+        }
+      } else {
+        neighborPoints = node.getTile().getNeighborPoints().values();
+      }
+
+      Logger.trace("Node: {} has {} neighbor points. {}{}{}{} id: {} ", node.getId(), neighborPoints.size(), (node.isBlock() ? "[Block]" : ""), (node.isJunction() ? "[Junction]" : ""), (node.isCross() ? "[Cross]" : ""), (node.isCrossing() ? "[Crossing]" : ""), node.getId());
 
       for (Point p : neighborPoints) {
         Logger.trace("Node {} check NeighborPoint: ({},{})", node.getTile().getId(), p.x, p.y);
-
+        
         if (TileCache.contains(p)) {
-          Node neighbor = graph.getNode(TileCache.findTile(p).getId());
+          Tile to = TileCache.findTile(p);          
+          //Node neighbor = graph.getNode(TileCache.findTile(p).getId());
+          Node neighbor = graph.getNode(node, to, p);
 
           Logger.trace("Node {} NeighborPoint: ({},{}) -> {}", node.getTile().getId(), p.x, p.y, neighbor.getId());
 
@@ -290,14 +283,17 @@ public class AStar {
             if (node.isBlock()) {
               String fromSuffix = node.getTile().getIdSuffix(neighbor.getTile());
               Point altPoint = node.getAltPoint(fromSuffix);
-              distance = Graph.manhattanDistance(altPoint, neighbor.getAltPoint(null));
+              //distance = Graph.manhattanDistance(altPoint, neighbor.getAltPoint(null));
+              distance = Graph.shortestDistance(altPoint, neighbor.getAltPoint(null));
             } else {
               if (neighbor.isBlock()) {
                 String toSuffix = neighbor.getTile().getIdSuffix(node.getTile());
                 Point altPoint = neighbor.getAltPoint(toSuffix);
-                distance = Graph.manhattanDistance(altPoint, node.getAltPoint(null));              
+                //distance = Graph.manhattanDistance(altPoint, node.getAltPoint(null));
+                distance = Graph.shortestDistance(altPoint, node.getAltPoint(null));
               } else {
-                distance = Graph.manhattanDistance(node, neighbor);
+                //distance = Graph.manhattanDistance(node, neighbor);
+                distance = Graph.shortestDistance(node, neighbor);
               }
             }
             //Logger.trace("Neighbor: " + neighbor.getId() + " Distance: " + distance);
@@ -308,9 +304,10 @@ public class AStar {
         }
       }
     }
+    return graph;
   }
 
-  public List<Node> getNodes() {
+  List<Node> getNodes() {
     return graph.getNodes();
   }
 
