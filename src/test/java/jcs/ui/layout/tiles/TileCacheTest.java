@@ -20,7 +20,6 @@ import java.awt.Point;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import jcs.entities.BlockBean;
 import jcs.entities.TileBean;
 import static jcs.entities.TileBean.Direction.LEFT;
 import jcs.entities.TileBean.Orientation;
@@ -32,7 +31,6 @@ import jcs.persistence.util.PersistenceTestHelper;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -229,7 +227,7 @@ public class TileCacheTest {
     assertTrue(TileCache.contains(expCenterPoint));
     assertTrue(TileCache.contains(expAltPoint));
 
-    assertTrue(TileCache.contains(new Point(260,260)));
+    assertTrue(TileCache.contains(new Point(260, 260)));
   }
 
   @Test
@@ -237,48 +235,14 @@ public class TileCacheTest {
     System.out.println("incomingPointsIncomingPoints");
     Tile crossing2 = TileCache.findTile("cr-2");
     Tile crossing3 = TileCache.findTile("cr-3");
-    
+
     assertNotNull(crossing2);
     assertNotNull(crossing3);
 
-    assertEquals(new Point(340,500), crossing2.getCenter());
-    assertEquals(new Point(380,500), crossing3.getCenter());
+    assertEquals(new Point(340, 500), crossing2.getCenter());
+    assertEquals(new Point(380, 500), crossing3.getCenter());
     assertEquals(NORTH, crossing2.getOrientation());
     assertEquals(NORTH, crossing2.getOrientation());
-    
-    // ->] | [->] | [ ->
-    //incoming point is (340,480) -> N maar het zou W moeten zijn...
-    //assertEquals()  crossing2.getIncomingSide()
-    
-
-    
   }
-  
-  
-//TRACE	2026-08-12 16:25:00.265 [main] Graph.findPath(): Check cr-2 -> cr-3 
-//TRACE	2026-08-12 16:25:00.265 [main] Graph.canTravelTo(): From cr-2 isCrossing true
-//TRACE	2026-08-12 16:25:01.453 [main] Graph.canTravelTo(): From cr-2 inComing point: (340,480) incoming side: North exit side: South toInComingPoint: (340,520) 
-//TRACE	2026-08-12 16:25:01.453 [main] Graph.canTravelTo(): To cr-3 edge points (size: 4) contain point: (340,520): false) 
-//TRACE	2026-08-12 16:25:01.453 [main] Graph.findPath(): ##Can't travel from cr-2 to cr-3
-  
-//TRACE	2026-08-12 16:25:04.109 [main] Graph.findPath(): Check cr-2 -> st-22 
-//TRACE	2026-08-12 16:25:04.109 [main] Graph.canTravelTo(): From cr-2 isCrossing true
-//TRACE	2026-08-12 16:27:25.643 [main] Graph.canTravelTo(): From cr-2 inComing point: (340,480) incoming side: North exit side: South toInComingPoint: (340,520) 
-//TRACE	2026-08-12 16:27:25.643 [main] Graph.canTravelTo(): To st-22 edge points (size: 2) contain point: (340,520): false) 
-//TRACE	2026-08-12 16:27:25.643 [main] Graph.findPath(): ##Can't travel from cr-2 to st-22
-  
-  
-  
-  
-  
-//TRACE	2026-08-12 14:45:08.034 [main] Graph.findPath(): Check cr-2 -> cr-3 
-//TRACE	2026-08-12 14:45:08.034 [main] Graph.canTravelTo(): From cr-2 isCrossing true
-//TRACE	2026-08-12 14:45:08.034 [main] Graph.canTravelTo(): From cr-2 inComing point: (340,480) incoming side: North exit side: South toInComingPoint: (340,520) 
-//TRACE	2026-08-12 14:45:08.034 [main] Graph.canTravelTo(): To cr-3 edge points (size: 4) contain point: (340,520): false) 
-//TRACE	2026-08-12 14:45:08.035 [main] Graph.findPath(): ##Can't travel from cr-2 to cr-3
-//TRACE	2026-08-12 14:45:08.035 [main] Graph.canTravelTo(): From cr-2 isCrossing true
-//TRACE	2026-08-12 14:45:08.035 [main] Graph.canTravelTo(): From cr-2 inComing point: (340,480) incoming side: North exit side: South toInComingPoint: (340,520) 
-//TRACE	2026-08-12 14:45:08.035 [main] Graph.canTravelTo(): To cr-3 edge points (size: 4) contain point: (340,520): false) 
- 
- 
+
 }

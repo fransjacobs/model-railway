@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 frans.
+ * Copyright 2026 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import jcs.entities.TileBean;
 import java.awt.Point;
 import java.util.Map;
 import java.util.HashMap;
-import jcs.entities.TileBean.Orientation;
 import static jcs.entities.TileBean.Orientation.EAST;
 import static jcs.entities.TileBean.Orientation.NORTH;
 import static jcs.entities.TileBean.Orientation.SOUTH;
@@ -34,7 +33,6 @@ import org.junit.jupiter.api.BeforeEach;
 
 /**
  *
- * @author frans
  */
 public class CrossingTest {
 
@@ -194,34 +192,32 @@ public class CrossingTest {
     Map<TileBean.Orientation, Point> expResultV = new HashMap<>();
     expResultV.put(NORTH, new Point(200, 180));
     expResultV.put(SOUTH, new Point(200, 220));
-    
+
     Map<TileBean.Orientation, Point> resultH = instance.getEdgeConnections(false);
     Map<TileBean.Orientation, Point> resultV = instance.getEdgeConnections(true);
-    
+
     assertEquals(expResultH, resultH);
     assertEquals(expResultV, resultV);
-    
-    
-    Map<Point, Orientation> expResult2 = new HashMap<>();
-    expResult2.put(new Point(200, 180), NORTH);
-    expResult2.put(new Point(180, 200), WEST);
-    expResult2.put(new Point(200, 220), SOUTH);
-    expResult2.put(new Point(220, 200), EAST);
-    
-    //Map<Point, Orientation> result = instance.getEdgeOrientations();
-
-    //assertEquals(expResult, result);
   }
 
-//Point inComingEdgePoint = from.getIncomingPoint();
-//
-//      TileBean.Orientation inComingSide = from.getConnectingSide(inComingEdgePoint);
-//      //find the connection edge point on the opposite side
-//      TileBean.Orientation exitSide = Node.getOppositeSide(inComingSide);
-//
-//      Point toInComingPoint = from.getTile().getEdgePoints().get(exitSide);
-//      Logger.trace("From {} inComing point: ({},{}) incoming side: {} exit side: {} toInComingPoint: ({},{}) ", from.getId(), inComingEdgePoint.x, inComingEdgePoint.y, inComingSide.getOrientation(), exitSide.getOrientation(), toInComingPoint.x, toInComingPoint.y);
-//
-//      Map<TileBean.Orientation, Point> toEgdePoints = to.getTile().getEdgePoints();
-//      boolean cont = toEgdePoints.containsValue(toInComingPoint);
+  @Test
+  public void testGetNeighborsHV() {
+    System.out.println("getNeighborsHV");
+
+    Tile instance = TileCache.createTile(CROSSING, EAST, 200, 200);
+
+    Map<TileBean.Orientation, Point> expResultH = new HashMap<>();
+    expResultH.put(WEST, new Point(160, 200));
+    expResultH.put(EAST, new Point(240, 200));
+
+    Map<TileBean.Orientation, Point> expResultV = new HashMap<>();
+    expResultV.put(NORTH, new Point(200, 160));
+    expResultV.put(SOUTH, new Point(200, 240));
+
+    Map<TileBean.Orientation, Point> resultH = instance.getNeighbors(false);
+    Map<TileBean.Orientation, Point> resultV = instance.getNeighbors(true);
+
+    assertEquals(expResultH, resultH);
+    assertEquals(expResultV, resultV);
+  }
 }

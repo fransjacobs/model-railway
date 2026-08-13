@@ -23,7 +23,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import jcs.entities.BlockBean;
 import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
@@ -38,8 +37,8 @@ import org.tinylog.Logger;
  */
 public class AStar {
 
-  private final Graph graph;
-  private final Map<String, RouteBean> routes;
+  protected final Graph graph;
+  protected final Map<String, RouteBean> routes;
 
   public AStar() {
     this.routes = new HashMap<>();
@@ -118,7 +117,7 @@ public class AStar {
     return sb.toString();
   }
 
-  private RouteBean createRouteBeanFromNodePath(List<Node> path) {
+  protected RouteBean createRouteBeanFromNodePath(List<Node> path) {
     Node first = path.get(0);
     Node last = path.get(path.size() - 1);
 
@@ -139,7 +138,8 @@ public class AStar {
     int elementOrder = 1;
     for (Node n : path) {
       String nodeId = n.getId() + (n.getSuffix() != null ? n.getSuffix() : "");
-      RouteElementBean re = new RouteElementBean(routeId, nodeId, n.getId(), n.getAccessoryState(), elementOrder);
+      RouteElementBean re = new RouteElementBean(routeId, nodeId, n.getTile().getId(), n.getAccessoryState(), elementOrder);
+
       re.setIncomingOrientation(n.getIncomingSide());
       elementOrder++;
       rel.add(re);
@@ -164,7 +164,7 @@ public class AStar {
         bb.setAlwaysStop(true);
         bb.setMinWaitTime(10);
       } else {
-        Logger.trace("Using existing BlockBean: {}", bb);
+        //Logger.trace("Using existing BlockBean: {}", bb);
         if (bb.getMinWaitTime() == null) {
           bb.setMinWaitTime(10);
         }
@@ -195,7 +195,7 @@ public class AStar {
     routes.clear();
     List<List<Node>> blockToBlockList = getAllBlockToBlockNodes();
     Logger.trace("Try to route {} Possible block to block routes...", (blockToBlockList.size() * 2 * 2));
-    Logger.trace("=============================================================================");
+    //Logger.trace("=============================================================================");
 
     for (List<Node> fromTo : blockToBlockList) {
       Node from = fromTo.get(0);
@@ -213,10 +213,6 @@ public class AStar {
               String fid = from.getId() + fromSuffix;
               String tid = to.getId() + toSuffix;
 
-              //if ("bk-1+".equals(fid) && "bk-2-".equals(tid)) {
-              //|| ("bk-1-".equals(fid) && "bk-2-".equals(tid))) {
-              //if ("bk-1+".equals(fid) && "bk-4+".equals(tid)) {
-              //if ("bk-1+".equals(fid) && "bk-6+".equals(tid)) {
               List<Node> path = findPath(from, fromSuffix, to, toSuffix);
 
               if (path.isEmpty()) {
@@ -225,8 +221,6 @@ public class AStar {
                 RouteBean routeBean = createRouteBeanFromNodePath(path);
                 routes.put(routeBean.getId(), routeBean);
               }
-
-              //}
             }
           }
         }
@@ -234,7 +228,7 @@ public class AStar {
     }
 
     Logger.trace("Found " + routes.size() + " routes");
-    return this.routes.values().stream().collect(Collectors.toList());
+    return new ArrayList<>(routes.values());
   }
 
   public Graph buildGraph(List<Tile> tiles) {
@@ -246,7 +240,7 @@ public class AStar {
         graph.addNode(new Node(tile, "h"));
       } else {
         graph.addNode(new Node(tile));
-      }  
+      }
     }
 
     Logger.trace("Graph has " + graph.size() + " nodes...");
@@ -255,28 +249,26 @@ public class AStar {
     for (Node node : graph.getNodes()) {
       Collection<Point> neighborPoints;
       if (node.isCrossing()) {
+        //A crossing is can be seen a 2 separate straights but in one tile
         if ("h".equals(node.getSuffix())) {
           //get only the horizontal points
-          neighborPoints = node.getTile().getEdgeConnections(false).values();
+          neighborPoints = node.getTile().getNeighbors(false).values();
         } else {
-          //get only the versticalpoints
-          neighborPoints = node.getTile().getEdgeConnections(true).values();
+          //get only the verticalpoints
+          neighborPoints = node.getTile().getNeighbors(true).values();
         }
       } else {
         neighborPoints = node.getTile().getNeighborPoints().values();
       }
 
       Logger.trace("Node: {} has {} neighbor points. {}{}{}{} id: {} ", node.getId(), neighborPoints.size(), (node.isBlock() ? "[Block]" : ""), (node.isJunction() ? "[Junction]" : ""), (node.isCross() ? "[Cross]" : ""), (node.isCrossing() ? "[Crossing]" : ""), node.getId());
-
       for (Point p : neighborPoints) {
-        Logger.trace("Node {} check NeighborPoint: ({},{})", node.getTile().getId(), p.x, p.y);
-        
-        if (TileCache.contains(p)) {
-          Tile to = TileCache.findTile(p);          
-          //Node neighbor = graph.getNode(TileCache.findTile(p).getId());
-          Node neighbor = graph.getNode(node, to, p);
+        //Logger.trace("Node {} check NeighborPoint: ({},{})", node.getId(), p.x, p.y);
 
-          Logger.trace("Node {} NeighborPoint: ({},{}) -> {}", node.getTile().getId(), p.x, p.y, neighbor.getId());
+        if (TileCache.contains(p)) {
+          Tile to = TileCache.findTile(p);
+          Node neighbor = graph.getNode(node, to, p);
+          //Logger.trace("Node {} NeighborPoint: ({},{}) -> {}", node.getId(), p.x, p.y, neighbor.getId());
 
           if (node.getTile().isAdjacent(neighbor.getTile())) {
             double distance;
@@ -296,12 +288,16 @@ public class AStar {
                 distance = Graph.shortestDistance(node, neighbor);
               }
             }
-            //Logger.trace("Neighbor: " + neighbor.getId() + " Distance: " + distance);
+            Logger.trace("Neighbor: " + neighbor.getId() + " Distance: " + distance);
             graph.link(node, neighbor, distance);
-          } else {
-            Logger.trace("Node {} Neighbor {} is Not adjacent", node.getTile().getId(), neighbor.getId());
           }
+          //else {
+          //  Logger.trace("Node {} Neighbor {} is Not adjacent", node.getId(), neighbor.getId());
+          //}
         }
+        //else {
+        //  Logger.trace("No Tile for Point ({}{})", p.x, p.y);
+        //}
       }
     }
     return graph;
@@ -309,25 +305,5 @@ public class AStar {
 
   List<Node> getNodes() {
     return graph.getNodes();
-  }
-
-  public static void main(String[] a) {
-    List<Tile> tiles = TileCache.loadTiles();
-
-    AStar gb = new AStar();
-    gb.buildGraph(tiles);
-
-    List<RouteBean> routes = gb.routeAll();
-
-    //gb.persistRoutes();
-    Logger.trace("#########");
-    if (1 == 2) {
-      gb.persistRoutes();
-      routes = PersistenceFactory.getService().getRoutes();
-    }
-    for (RouteBean r : routes) {
-      Logger.trace(r.toLogString());
-    }
-
   }
 }

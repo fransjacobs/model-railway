@@ -729,6 +729,28 @@ public abstract class Tile extends JComponent implements Serializable {
     return filteredEdgePoints;
   }
 
+  public Map<Orientation, Point> getNeighbors(boolean vertical) {
+    Map<Orientation, Point> neighborPoints = getNeighborPoints();
+
+    Map<Orientation, Point> filteredNeighborPoints = new HashMap<>();
+    if (vertical) {
+      if (neighborPoints.containsKey(Orientation.NORTH)) {
+        filteredNeighborPoints.put(Orientation.NORTH, neighborPoints.get(Orientation.NORTH));
+      }
+      if (neighborPoints.containsKey(Orientation.SOUTH)) {
+        filteredNeighborPoints.put(Orientation.SOUTH, neighborPoints.get(Orientation.SOUTH));
+      }
+    } else {
+      if (neighborPoints.containsKey(Orientation.EAST)) {
+        filteredNeighborPoints.put(Orientation.EAST, neighborPoints.get(Orientation.EAST));
+      }
+      if (neighborPoints.containsKey(Orientation.WEST)) {
+        filteredNeighborPoints.put(Orientation.WEST, neighborPoints.get(Orientation.WEST));
+      }
+    }
+    return filteredNeighborPoints;
+  }
+
   public void setIncomingSide(Orientation incomingSide) {
     model.setIncomingSide(incomingSide);
   }
