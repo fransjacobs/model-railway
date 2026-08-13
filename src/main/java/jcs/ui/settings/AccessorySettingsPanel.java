@@ -821,6 +821,7 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
     this.accessoryListModel.add(newAccessory);
     this.accessoryList.setSelectedValue(newAccessory, true);
     this.selectedAccessory = newAccessory;
+    this.typeCB.setSelectedItem(new KeyValuePair("null", ""));
 
     setFieldValues();
   }//GEN-LAST:event_newBtnActionPerformed
@@ -834,10 +835,12 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
 
       //check address 2
       int address = selectedAccessory.getAddress();
-      int address2 = selectedAccessory.getAddress2();
-      if (address2 == 0 || address2 == address || address2 < address) {
-        selectedAccessory.setAddress2(null);
-        selectedAccessory.setStates(2);
+      if (selectedAccessory.getAddress2() != null) {
+        int address2 = selectedAccessory.getAddress2();
+        if (address2 == 0 || address2 == address || address2 < address) {
+          selectedAccessory.setAddress2(null);
+          selectedAccessory.setStates(2);
+        }
       }
 
       Logger.trace("Saving: " + selectedAccessory.toLogString());
@@ -1004,7 +1007,7 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
     kvl.add(new KeyValuePair("std_gruen", "Green only"));
     kvl.add(new KeyValuePair("rechtsweiche", "Turnout Right"));
     kvl.add(new KeyValuePair("linksweiche", "Turnout Left"));
-    kvl.add(new KeyValuePair("y_weiche", "Cross"));
+    //kvl.add(new KeyValuePair("y_weiche", "Cross"));
     kvl.add(new KeyValuePair("dkw_1antrieb", "Cross"));
     kvl.add(new KeyValuePair("dreiwegweiche", "3 way Turnout"));
     kvl.add(new KeyValuePair("entkupplungsgleis", "Decoupler"));

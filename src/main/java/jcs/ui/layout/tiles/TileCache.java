@@ -16,7 +16,6 @@
 package jcs.ui.layout.tiles;
 
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
@@ -28,7 +27,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.swing.JComponent;
 import jcs.JCS;
 import jcs.commandStation.events.AccessoryEvent;
 import jcs.commandStation.events.AccessoryEventListener;
@@ -594,7 +592,11 @@ public class TileCache {
   }
 
   public static boolean contains(Point p) {
-    return centerPointMap.containsKey(p);
+    boolean found = centerPointMap.containsKey(p);
+    if(!found) {
+      found = altPointMap.containsKey(p);
+    }
+    return found;
   }
 
   public static boolean canMoveTo(Tile tile, Point p) {
@@ -763,17 +765,4 @@ public class TileCache {
       }
     }
   }
-
-  public static void main(String[] a) {
-    long now = System.currentTimeMillis();
-    long start = now;
-
-    List<Tile> tiles = loadTiles(true);
-
-    long end = System.currentTimeMillis();
-
-    Logger.info("Loaded {} tiles in {} ms", tiles.size(), (end - start));
-
-  }
-
 }

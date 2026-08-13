@@ -419,9 +419,6 @@ public class DefaultTileModel implements TileModel {
     }
   }
 
-//  public ItemListener[] getItemListeners() {
-//    return listenerList.getListeners(ItemListener.class);
-//  }
   @Override
   public void addActionListener(ActionListener l) {
     listenerList.add(ActionListener.class, l);
@@ -448,9 +445,6 @@ public class DefaultTileModel implements TileModel {
     // those that are interested in this event
     for (int i = listeners.length - 2; i >= 0; i -= 2) {
       if (listeners[i] == ActionListener.class) {
-
-        // if (changeEvent == null)
-        // changeEvent = new ChangeEvent(this);
         ((ActionListener) listeners[i + 1]).actionPerformed(e);
       }
     }

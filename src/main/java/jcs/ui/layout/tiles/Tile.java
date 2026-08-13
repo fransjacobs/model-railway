@@ -27,6 +27,7 @@ import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -138,9 +139,9 @@ public abstract class Tile extends JComponent implements Serializable {
     this.tileDirection = direction;
     this.tileX = x;
     this.tileY = y;
+    setModel(new DefaultTileModel((orientation != null ? orientation : Orientation.EAST)));
 
-    this.
-            setLayout(null);
+    this.setLayout(null);
     Dimension d = new Dimension(width, height);
     setSize(d);
     setPreferredSize(d);
@@ -151,13 +152,14 @@ public abstract class Tile extends JComponent implements Serializable {
   }
 
   protected Tile(TileBean tileBean, int width, int height) {
+    super();
     this.tileBean = tileBean;
     id = tileBean.getId();
     tileType = tileBean.getTileType();
     tileDirection = tileBean.getDirection();
     tileX = tileBean.getX();
     tileY = tileBean.getY();
-
+    setModel(new DefaultTileModel(tileBean.getOrientation()));
     accessoryId = tileBean.getAccessoryId();
     accessoryBean = tileBean.getAccessoryBean();
 
@@ -188,7 +190,7 @@ public abstract class Tile extends JComponent implements Serializable {
     return model;
   }
 
-  public void setModel(TileModel newModel) {
+  private void setModel(TileModel newModel) {
     TileModel oldModel = getModel();
 
     if (oldModel != null) {
@@ -268,7 +270,7 @@ public abstract class Tile extends JComponent implements Serializable {
     }
   }
 
-  public TileBean getTileBean() {
+  public final TileBean getTileBean() {
     if (tileBean == null) {
       tileBean = new TileBean();
     }
@@ -648,6 +650,107 @@ public abstract class Tile extends JComponent implements Serializable {
     return model.getIncomingSide();
   }
 
+  @Deprecated
+  public Map<Point, Orientation> getNeighborOrientations() {
+    Map<Point, Orientation> edgeOrientations = new HashMap<>();
+
+    Map<Orientation, Point> neighborPoints = getNeighborPoints();
+
+    for (Orientation o : Orientation.values()) {
+      edgeOrientations.put(neighborPoints.get(o), o);
+    }
+    return edgeOrientations;
+  }
+
+  public Map<Point, Orientation> getEdgeOrNeighborOrientations(boolean edge) {
+    Map<Orientation, Point> orientationPoints;
+    if (edge) {
+      orientationPoints = getEdgePoints();
+    } else {
+      orientationPoints = getNeighborPoints();
+    }
+
+    Map<Point, Orientation> pointOrientations = new HashMap<>();
+
+    orientationPoints.forEach((orientation, point) -> {
+      pointOrientations.put(point, orientation);
+    });
+    return pointOrientations;
+  }
+
+  public Orientation getSidePointOrientation(Point point, boolean edge) {
+    Map<Point, Orientation> pointOrientations = getEdgeOrNeighborOrientations(edge);
+
+    Orientation sideOrientation = pointOrientations.get(point);
+    return sideOrientation;
+  }
+
+  public Point getSharingPoint(Tile other) {
+    List<Point> edges = new ArrayList(getEdgePoints().values());
+
+    List<Point> otherEdges = new ArrayList(other.getEdgePoints().values());
+
+    Point mutual = null;
+    for (Point edge : edges) {
+      if (otherEdges.contains(edge)) {
+        mutual = edge;
+        break;
+      }
+    }
+    if (mutual != null) {
+      //on which side is the point
+      Orientation thisSide = getSidePointOrientation(mutual, true);
+      Orientation otherSide = other.getSidePointOrientation(mutual, true);
+      Logger.trace("Mutual Point ({},{} this {} side {}  other {} side {}", mutual.x, mutual.y, id, thisSide, other.id, otherSide);
+    }
+
+    return mutual;
+  }
+
+  public Map<Orientation, Point> getEdgeConnections(boolean vertical) {
+    Map<Orientation, Point> edgePoints = getEdgePoints();
+
+    Map<Orientation, Point> filteredEdgePoints = new HashMap<>();
+    if (vertical) {
+      if (edgePoints.containsKey(Orientation.NORTH)) {
+        filteredEdgePoints.put(Orientation.NORTH, edgePoints.get(Orientation.NORTH));
+      }
+      if (edgePoints.containsKey(Orientation.SOUTH)) {
+        filteredEdgePoints.put(Orientation.SOUTH, edgePoints.get(Orientation.SOUTH));
+      }
+    } else {
+      if (edgePoints.containsKey(Orientation.EAST)) {
+        filteredEdgePoints.put(Orientation.EAST, edgePoints.get(Orientation.EAST));
+      }
+      if (edgePoints.containsKey(Orientation.WEST)) {
+        filteredEdgePoints.put(Orientation.WEST, edgePoints.get(Orientation.WEST));
+      }
+    }
+    return filteredEdgePoints;
+  }
+
+  public Map<Orientation, Point> getNeighbors(boolean vertical) {
+    Map<Orientation, Point> neighborPoints = getNeighborPoints();
+
+    Map<Orientation, Point> filteredNeighborPoints = new HashMap<>();
+    if (vertical) {
+      if (neighborPoints.containsKey(Orientation.NORTH)) {
+        filteredNeighborPoints.put(Orientation.NORTH, neighborPoints.get(Orientation.NORTH));
+      }
+      if (neighborPoints.containsKey(Orientation.SOUTH)) {
+        filteredNeighborPoints.put(Orientation.SOUTH, neighborPoints.get(Orientation.SOUTH));
+      }
+    } else {
+      if (neighborPoints.containsKey(Orientation.EAST)) {
+        filteredNeighborPoints.put(Orientation.EAST, neighborPoints.get(Orientation.EAST));
+      }
+      if (neighborPoints.containsKey(Orientation.WEST)) {
+        filteredNeighborPoints.put(Orientation.WEST, neighborPoints.get(Orientation.WEST));
+      }
+    }
+    return filteredNeighborPoints;
+  }
+
   public void setIncomingSide(Orientation incomingSide) {
     model.setIncomingSide(incomingSide);
   }
@@ -893,28 +996,6 @@ public abstract class Tile extends JComponent implements Serializable {
     return "";
   }
 
-  public Map<Point, Orientation> getNeighborOrientations() {
-    Map<Point, Orientation> edgeOrientations = new HashMap<>();
-
-    Map<Orientation, Point> neighborPoints = getNeighborPoints();
-
-    for (Orientation o : Orientation.values()) {
-      edgeOrientations.put(neighborPoints.get(o), o);
-    }
-    return edgeOrientations;
-  }
-
-  public Map<Point, Orientation> getEdgeOrientations() {
-    Map<Point, Orientation> edgeOrientations = new HashMap<>();
-
-    Map<Orientation, Point> edgeConnections = getEdgePoints();
-
-    for (Orientation o : Orientation.values()) {
-      edgeOrientations.put(edgeConnections.get(o), o);
-    }
-    return edgeOrientations;
-  }
-
   public boolean isAdjacent(Tile other) {
     boolean adjacent = false;
 
@@ -944,9 +1025,7 @@ public abstract class Tile extends JComponent implements Serializable {
     return true;
   }
 
-  public AccessoryValue accessoryValueForRoute(Orientation from, Orientation to) {
-    return AccessoryValue.OFF;
-  }
+  public abstract AccessoryValue accessoryValueForRoute(Orientation from, Orientation to);
 
   public boolean isDiagonalOpposite(Orientation from, Orientation to) {
     return false;
