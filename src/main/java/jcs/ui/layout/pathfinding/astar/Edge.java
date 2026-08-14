@@ -15,6 +15,7 @@
  */
 package jcs.ui.layout.pathfinding.astar;
 
+import java.util.Objects;
 import jcs.entities.AccessoryBean.AccessoryValue;
 
 public class Edge<T> {
@@ -84,7 +85,45 @@ public class Edge<T> {
 
   @Override
   public String toString() {
-    return "Edge from:" + from.getId() + (fromSuffix != null ? fromSuffix : "") + ", to: " + to.getId() + (toSuffix != null ? toSuffix : "") + " distance: " + distance;
+    return "Edge from: " + from.getId() + (fromSuffix != null ? fromSuffix : "") + " to: " + to.getId() + (toSuffix != null ? toSuffix : "") + ", distance: " + distance;
+  }
+
+  @Override
+  public int hashCode() {
+    int hash = 7;
+    hash = 97 * hash + Objects.hashCode(this.from);
+    hash = 97 * hash + Objects.hashCode(this.fromSuffix);
+    hash = 97 * hash + Objects.hashCode(this.to);
+    hash = 97 * hash + Objects.hashCode(this.toSuffix);
+    hash = 97 * hash + Objects.hashCode(this.pointValue);
+    return hash;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    final Edge<?> other = (Edge<?>) obj;
+    if (!Objects.equals(this.fromSuffix, other.fromSuffix)) {
+      return false;
+    }
+    if (!Objects.equals(this.toSuffix, other.toSuffix)) {
+      return false;
+    }
+    if (!Objects.equals(this.from, other.from)) {
+      return false;
+    }
+    if (!Objects.equals(this.to, other.to)) {
+      return false;
+    }
+    return this.pointValue == other.pointValue;
   }
 
 }
