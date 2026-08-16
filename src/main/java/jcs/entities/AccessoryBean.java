@@ -45,6 +45,7 @@ public class AccessoryBean {
   private String source;
   private String commandStationId;
   private boolean synchronize;
+  private boolean on;
 
   //private boolean locked;
   public AccessoryBean() {
@@ -364,6 +365,15 @@ public class AccessoryBean {
 
   public void setSynchronize(boolean synchronize) {
     this.synchronize = synchronize;
+  }
+
+  @Transient
+  public boolean isOn() {
+    return on;
+  }
+
+  public void setOn(boolean on) {
+    this.on = on;
   }
 
   public void copyInto(AccessoryBean other) {

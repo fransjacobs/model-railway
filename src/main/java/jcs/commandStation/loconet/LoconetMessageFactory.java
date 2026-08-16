@@ -15,6 +15,8 @@
  */
 package jcs.commandStation.loconet;
 
+import jcs.entities.AccessoryBean.AccessoryValue;
+
 /**
  * Factory for creating common Opcodes messages.
  */
@@ -39,6 +41,127 @@ public final class LoconetMessageFactory {
     return new LoconetMessage(LoconetMessage.OPC_BUSY);
   }
 
+  public static LoconetMessage switchAccessory(int address, AccessoryValue value, boolean on) {
+    if (address < 1 || address > 2048) {
+      throw new IllegalArgumentException("Accessory address must be in range 1..2048: " + address);
+    }
+    int zeroBasedAddress = address - 1;
+
+    int sw1 = zeroBasedAddress & 0x7F;        // A6..A0
+    int sw2 = (zeroBasedAddress >> 7) & 0x0F; // A10..A7
+
+    if (value == AccessoryValue.GREEN) {
+      sw2 |= 0x20; // DIR: 1 = closed / green
+    }
+
+    if (on) {
+      sw2 |= 0x10; // ON: 1 = output active
+    }
+    return new LoconetMessage(LoconetMessage.OPC_SW_REQ, sw1, sw2);
+  }
+
+  public static LoconetMessage queryAccessory(int address) {
+    if (address < 1 || address > 2048) {
+      throw new IllegalArgumentException("Accessory address must be in range 1..2048: " + address);
+    }
+    int zeroBasedAddress = address - 1;
+
+    int sw1 = zeroBasedAddress & 0x7F;        // A6..A0
+    int sw2 = (zeroBasedAddress >> 7) & 0x0F; // A10..A7
+
+//    if (value == AccessoryValue.GREEN) {
+//      sw2 |= 0x20; // DIR: 1 = closed / green
+//    }
+//
+//    if (on) {
+//      sw2 |= 0x10; // ON: 1 = output active
+//    }
+    return new LoconetMessage(LoconetMessage.OPC_SW_STATE, sw1, sw2);
+  }
+
+  public static LoconetMessage longAcknowlegde(int lopc, int ack1) {
+    return new LoconetMessage(LoconetMessage.OPC_LONG_ACK, lopc, ack1);
+  }
+
+// 1 rood:
+//RX: 0xb0 0x00 0x10 0x5f Opcode: B0 Lenght: 4 On en rood 
+//RX: 0xb0 0x00 0x00 0x4f Opcode: B0 Lenght: 4 off en rood
+//  1 groen
+//RX: 0xb0 0x00 0x30 0x7f Opcode: B0 Lenght: 4 on en groen
+//RX: 0xb0 0x00 0x20 0x6f Opcode: B0 Lenght: 4 off en groen
+//8 rood groen
+//RX: 0xb0 0x05 0x10 0x5a Opcode: B0 Lenght: 4 80 moet er geschoven worden?
+//RX: 0xb0 0x05 0x00 0x4a Opcode: B0 Lenght: 4
+//RX: 0xb0 0x05 0x30 0x7a Opcode: B0 Lenght: 4
+//RX: 0xb0 0x05 0x20 0x6a Opcode: B0 Lenght: 4        
+//  
+// Addres 2
+//TRACE	2026-08-15 16:25:11.051 [INBX-LN-RX] IntelliboxConnectionImpl$LoconetMessageReceiver.run(): RX: 0xb0 0x01 0x10 0x5e
+//TRACE	2026-08-15 16:25:11.051 [IB-LN-MSG-HANDLER] Intellibox2Impl$EventMessageHandler.run(): RX: 0xb0 0x01 0x10 0x5e Opcode: B0 Lenght: 4
+//TRACE	2026-08-15 16:25:11.051 [IB-LN-MSG-HANDLER] Intellibox2Impl$EventMessageHandler.run(): AccessoryEvent RX: 0xb0 0x01 0x10 0x5e
+//TRACE	2026-08-15 16:25:11.051 [IB-LN-MSG-HANDLER] AccessoryManager.update(): Accessory: 2 Value: RED
+//TRACE	2026-08-15 16:25:11.054 [INBX-LN-RX] IntelliboxConnectionImpl$LoconetMessageReceiver.run(): RX: 0xb4 0x30 0x00 0x7b
+//TRACE	2026-08-15 16:25:11.054 [IB-LN-MSG-HANDLER] Intellibox2Impl$EventMessageHandler.run(): RX: 0xb4 0x30 0x00 0x7b Opcode: B4 Lenght: 4
+//TRACE	2026-08-15 16:25:11.300 [INBX-LN-RX] IntelliboxConnectionImpl$LoconetMessageReceiver.run(): RX: 0xb0 0x01 0x00 0x4e
+//TRACE	2026-08-15 16:25:11.300 [IB-LN-MSG-HANDLER] Intellibox2Impl$EventMessageHandler.run(): RX: 0xb0 0x01 0x00 0x4e Opcode: B0 Lenght: 4
+//TRACE	2026-08-15 16:25:11.300 [IB-LN-MSG-HANDLER] Intellibox2Impl$EventMessageHandler.run(): AccessoryEvent RX: 0xb0 0x01 0x00 0x4e
+//TRACE	2026-08-15 16:25:11.303 [INBX-LN-RX] IntelliboxConnectionImpl$LoconetMessageReceiver.run(): RX: 0xb4 0x30 0x00 0x7b
+//TRACE	2026-08-15 16:25:11.304 [IB-LN-MSG-HANDLER] Intellibox2Impl$EventMessageHandler.run(): RX: 0xb4 0x30 0x00 0x7b Opcode: B4 Lenght: 4
+//TRACE	2026-08-15 16:25:12.595 [INBX-LN-RX] IntelliboxConnectionImpl$LoconetMessageReceiver.run(): RX: 0xb0 0x01 0x30 0x7e
+//TRACE	2026-08-15 16:25:12.595 [IB-LN-MSG-HANDLER] Intellibox2Impl$EventMessageHandler.run(): RX: 0xb0 0x01 0x30 0x7e Opcode: B0 Lenght: 4
+//TRACE	2026-08-15 16:25:12.595 [IB-LN-MSG-HANDLER] Intellibox2Impl$EventMessageHandler.run(): AccessoryEvent RX: 0xb0 0x01 0x30 0x7e
+//TRACE	2026-08-15 16:25:12.595 [IB-LN-MSG-HANDLER] AccessoryManager.update(): Accessory: 3 Value: GREEN
+//TRACE	2026-08-15 16:25:12.599 [INBX-LN-RX] IntelliboxConnectionImpl$LoconetMessageReceiver.run(): RX: 0xb4 0x30 0x00 0x7b
+//TRACE	2026-08-15 16:25:12.599 [IB-LN-MSG-HANDLER] Intellibox2Impl$EventMessageHandler.run(): RX: 0xb4 0x30 0x00 0x7b Opcode: B4 Lenght: 4
+//TRACE	2026-08-15 16:25:12.764 [INBX-LN-RX] IntelliboxConnectionImpl$LoconetMessageReceiver.run(): RX: 0xb0 0x01 0x20 0x6e
+//TRACE	2026-08-15 16:25:12.764 [IB-LN-MSG-HANDLER] Intellibox2Impl$EventMessageHandler.run(): RX: 0xb0 0x01 0x20 0x6e Opcode: B0 Lenght: 4
+//TRACE	2026-08-15 16:25:12.764 [IB-LN-MSG-HANDLER] Intellibox2Impl$EventMessageHandler.run(): AccessoryEvent RX: 0xb0 0x01 0x20 0x6e
+//TRACE	2026-08-15 16:25:12.768 [INBX-LN-RX] IntelliboxConnectionImpl$LoconetMessageReceiver.run(): RX: 0xb4 0x30 0x00 0x7b
+//TRACE	2026-08-15 16:25:12.768 [IB-LN-MSG-HANDLER] Intellibox2Impl$EventMessageHandler.run(): RX: 0xb4 0x30 0x00 0x7b Opcode: B4 Lenght: 4
+  //public static LoconetMessage switchAccessory(int address, AccessoryValue value, boolean on, int switchTime) {
+  //      
+  //  
+  //}
+  //Switches
+//  OPC_SW_ACK
+//  OPC_SW_STATE
+//  OPC_SW_REP
+//  OPC_SW_REQ
+  /**
+   * Encodes Loconet switch address and control bits.
+   *
+   * Assumes public turnout addresses are 1-based.
+   */
+  private static int[] encodeSwitch(int turnoutAddress, boolean closedGreen, boolean outputOn) {
+    if (turnoutAddress < 1 || turnoutAddress > 2040) {
+      throw new IllegalArgumentException("turnoutAddress must be in range 1..2040: " + turnoutAddress);
+    }
+
+    int address = turnoutAddress - 1;
+
+    int sw1 = address & 0x7F;
+
+    int sw2 = (address >> 7) & 0x0F;
+    if (closedGreen) {
+      sw2 |= 0x20;
+    }
+    if (outputOn) {
+      sw2 |= 0x10;
+    }
+
+    return new int[]{sw1, sw2};
+  }
+
+//  public static LoconetMessage switchRequest(int turnoutAddress, boolean closedGreen, boolean outputOn) {
+//    return switchMessage(Opcodes.Opcode.OPC_SW_REQ, turnoutAddress, closedGreen, outputOn);
+//  }
+//  public static LoconetMessage switchRequestWithAck(int turnoutAddress, boolean closedGreen, boolean outputOn) {
+//    return switchMessage(Opcodes.Opcode.OPC_SW_ACK, turnoutAddress, closedGreen, outputOn);
+//  }
+//  public static LoconetMessage requestSwitchState(int turnoutAddress) {
+//    int[] sw = encodeSwitch(turnoutAddress, false, false);
+//    return fixed(Opcodes.Opcode.OPC_SW_STATE, sw[0], sw[1]);
+//  }
 //  public static LoconetMessage requestLocoAddress(int locomotiveAddress) {
 //    validateLocomotiveAddress(locomotiveAddress);
 //
@@ -47,31 +170,26 @@ public final class LoconetMessageFactory {
 //
 //    return fixed(Opcodes.Opcode.OPC_LOCO_ADR, adrHigh, adrLow);
 //  }
-
 //  public static LoconetMessage requestSlotData(int slot) {
 //    Opcodes.require7Bit("slot", slot);
 //    return fixed(Opcodes.Opcode.OPC_RQ_SL_DATA, slot, 0x00);
 //  }
-
 //  public static LoconetMessage dispatchPut(int slot) {
 //    Opcodes.require7Bit("slot", slot);
 //
 //    // Move source slot to destination slot 0.
 //    return fixed(Opcodes.Opcode.OPC_MOVE_SLOTS, slot, 0x00);
 //  }
-
 //  public static LoconetMessage dispatchGet() {
 //    // Source slot 0 means dispatch get.
 //    return fixed(Opcodes.Opcode.OPC_MOVE_SLOTS, 0x00, 0x00);
 //  }
-
 //  public static LoconetMessage changeLocomotiveSpeedBySlot(int slot, int speed) {
 //    Opcodes.require7Bit("slot", slot);
 //    validateSpeed(speed);
 //
 //    return fixed(Opcodes.Opcode.OPC_LOCO_SPD, slot, speed);
 //  }
-
   /**
    * Creates the first message in the speed-change workflow.
    *
@@ -80,14 +198,12 @@ public final class LoconetMessageFactory {
 //  public static List<LoconetMessage> beginChangeLocomotiveSpeed(int locomotiveAddress) {
 //    return List.of(requestLocoAddress(locomotiveAddress));
 //  }
-
   /**
    * Creates the follow-up speed message after the command station has replied with OPC_SL_RD_DATA and the slot has been extracted.
    */
 //  public static LoconetMessage finishChangeLocomotiveSpeed(int slotFromReply, int speed) {
 //    return changeLocomotiveSpeedBySlot(slotFromReply, speed);
 //  }
-
 //  public static LoconetMessage setDirectionAndFunctions(
 //          int slot,
 //          boolean forward,
@@ -122,7 +238,6 @@ public final class LoconetMessageFactory {
 //
 //    return fixed(Opcodes.Opcode.OPC_LOCO_DIRF, slot, dirf);
 //  }
-
 //  public static LoconetMessage setSoundFunctions(
 //          int slot,
 //          boolean f5,
@@ -149,20 +264,6 @@ public final class LoconetMessageFactory {
 //
 //    return fixed(Opcodes.Opcode.OPC_LOCO_SND, slot, snd);
 //  }
-
-//  public static LoconetMessage switchRequest(int turnoutAddress, boolean closedGreen, boolean outputOn) {
-//    return switchMessage(Opcodes.Opcode.OPC_SW_REQ, turnoutAddress, closedGreen, outputOn);
-//  }
-
-//  public static LoconetMessage switchRequestWithAck(int turnoutAddress, boolean closedGreen, boolean outputOn) {
-//    return switchMessage(Opcodes.Opcode.OPC_SW_ACK, turnoutAddress, closedGreen, outputOn);
-//  }
-
-//  public static LoconetMessage requestSwitchState(int turnoutAddress) {
-//    int[] sw = encodeSwitch(turnoutAddress, false, false);
-//    return fixed(Opcodes.Opcode.OPC_SW_STATE, sw[0], sw[1]);
-//  }
-
 //  public static LoconetMessage writeSlotData(
 //          int slot,
 //          int stat1,
@@ -197,7 +298,6 @@ public final class LoconetMessageFactory {
 //
 //    return variable(Opcodes.Opcode.OPC_WR_SL_DATA, payload);
 //  }
-
 //  public static LoconetMessage immediatePacket(int repetitions, int... packetBytes) {
 //    if (packetBytes == null || packetBytes.length < 1 || packetBytes.length > 5) {
 //      throw new IllegalArgumentException("Immediate packet must contain 1 to 5 DCC packet bytes");
@@ -230,7 +330,6 @@ public final class LoconetMessageFactory {
 //            im[4]
 //    );
 //  }
-
 //  private static LoconetMessage switchMessage(
 //          Opcodes.Opcode opcode,
 //          int turnoutAddress,
@@ -240,32 +339,6 @@ public final class LoconetMessageFactory {
 //    int[] sw = encodeSwitch(turnoutAddress, closedGreen, outputOn);
 //    return fixed(opcode, sw[0], sw[1]);
 //  }
-
-  /**
-   * Encodes Loconet switch address and control bits.
-   *
-   * Assumes public turnout addresses are 1-based.
-   */
-  private static int[] encodeSwitch(int turnoutAddress, boolean closedGreen, boolean outputOn) {
-    if (turnoutAddress < 1 || turnoutAddress > 2040) {
-      throw new IllegalArgumentException("turnoutAddress must be in range 1..2040: " + turnoutAddress);
-    }
-
-    int address = turnoutAddress - 1;
-
-    int sw1 = address & 0x7F;
-
-    int sw2 = (address >> 7) & 0x0F;
-    if (closedGreen) {
-      sw2 |= 0x20;
-    }
-    if (outputOn) {
-      sw2 |= 0x10;
-    }
-
-    return new int[]{sw1, sw2};
-  }
-
 //  private static LoconetMessage fixed(Opcodes.Opcode opcode, int... args) {
 //    int expectedLength = opcode.fixedLength();
 //
@@ -294,7 +367,6 @@ public final class LoconetMessageFactory {
 //    return new LoconetMessage(opcode, bytes);
 //  }
 //
-
 //  private static LoconetMessage variable(Opcodes.Opcode opcode, int... payloadIncludingCount) {
 //    if (opcode.lengthKind() != Opcodes.MessageLengthKind.VARIABLE) {
 //      throw new IllegalArgumentException(opcode.name() + " is not a variable-length opcode");
@@ -334,7 +406,6 @@ public final class LoconetMessageFactory {
 //      );
 //    }
 //  }
-
   private static void validateSpeed(int speed) {
     if (speed < 0 || speed > 127) {
       throw new IllegalArgumentException("speed must be in range 0..127: " + speed);

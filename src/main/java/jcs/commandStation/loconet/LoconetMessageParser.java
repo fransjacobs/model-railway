@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 import static jcs.commandStation.loconet.Opcodes.BYTE_MASK;
 import static jcs.commandStation.loconet.Opcodes.DATA_MASK;
+import jcs.entities.AccessoryBean;
 import jcs.entities.SensorBean;
 import org.tinylog.Logger;
 
@@ -154,6 +155,23 @@ public class LoconetMessageParser implements Opcodes {
     return (xor & BYTE_MASK) == 0xFF;
   }
 
+  private static Integer calculateDeviceId(int address) {
+    int deviceId = (address + 1) / 16 + 1;
+    return deviceId;
+  }
+
+  private static int calculateContactId(int address) {
+    int module = (address + 1) / 16 + 1;
+    int mport = address + 1 - (module - 1) * 16;
+    return mport;
+  }
+
+  private static int calculateContactId(int module, int port) {
+    module = module - 1;
+    int contactId = module * 16;
+    return contactId + port;
+  }
+
   /**
    * Parses a raw 4-byte LocoNet sensor message.
    *
@@ -192,21 +210,48 @@ public class LoconetMessageParser implements Opcodes {
     return new SensorBean(id, deviceId, contactId, 0, (value ? 1 : 0), (value ? 0 : 1), COMMAND_STATION_ID, 0);
   }
 
-  private static Integer calculateDeviceId(int address) {
-    int deviceId = (address + 1) / 16 + 1;
-    return deviceId;
-  }
+  /**
+   * Parses a raw 4-byte LocoNet accessory message.
+   *
+   * @param opcode expected 0xB2
+   * @param sw1 address low byte (a6..a0)
+   * @param sw2 address high nibble + flags (0, dir, on, a10..a7)
+   * @param chk checksum byte
+   * @return the decoded Accessory event
+   * @throws IllegalArgumentException if opcode or checksum is invalid
+   */
+  public static AccessoryBean parseSwitchEvent(LoconetMessage message) {
+    if (!message.isChecksumValid()) {
+      throw new IllegalArgumentException(String.format("Checksum mismatch for message {}", message.toString()));
+    }
+    if (!message.isExpectedsOpcode(OPC_SW_REQ)) {
+      throw new IllegalArgumentException(String.format("Not a sensor message, opcode={}", message.getHexOpcode()));
+    }
 
-  private static int calculateContactId(int address) {
-    int module = (address + 1) / 16 + 1;
-    int mport = address + 1 - (module - 1) * 16;
-    return mport;
-  }
+    int sw1 = message.getByte(1);
+    int sw2 = message.getByte(2);
 
-  private static int calculateContactId(int module, int port) {
-    module = module - 1;
-    int contactId = module * 16;
-    return contactId + port;
+    int addrLow = sw1 & 0x7F;   // a6..a0
+    int addrHigh = sw2 & 0x0F;  // a10..a7
+    int zeroBasedAddress = (addrHigh << 7) | addrLow;
+    int displayAddress = zeroBasedAddress + 1;
+
+    boolean green = (sw2 & 0x20) != 0; // DIR: 1=closed/green, 0=thrown/red
+    boolean outputOn = (sw2 & 0x10) != 0; // ON: 1=coil/output active, 0=off
+
+    String id = Integer.toString(displayAddress);
+
+    Integer address2 = null;
+    String name = null;
+    String type = null;
+    int state = green ? 1 : 0;
+    Integer states = null;
+    Integer switchTime = null;
+    String protocol = null;
+
+    AccessoryBean ab = new AccessoryBean(id, displayAddress, address2, name, type, state, states, switchTime, protocol, COMMAND_STATION_ID);
+    ab.setOn(outputOn);
+    return ab;
   }
 
 }

@@ -16,6 +16,7 @@
 package jcs.commandStation.loconet;
 
 import java.awt.Image;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
@@ -28,12 +29,15 @@ import static jcs.commandStation.automation.RailController.TAG;
 import jcs.commandStation.entities.Device;
 import jcs.commandStation.entities.FeedbackModule;
 import jcs.commandStation.entities.InfoBean;
+import jcs.commandStation.events.AccessoryEventListener;
+import jcs.commandStation.events.AllSensorEventsListener;
 import jcs.commandStation.events.ConnectionEvent;
 import jcs.commandStation.events.ConnectionEventListener;
 import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.loconet.connection.LoconetConnection;
 import jcs.commandStation.loconet.connection.LoconetConnectionFactory;
 import jcs.entities.AccessoryBean;
+import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.CommandStationBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.SensorBean;
@@ -45,9 +49,11 @@ import org.tinylog.Logger;
  */
 public class Intellibox2Impl extends AbstractController implements DecoderController, AccessoryController, FeedbackController, ConnectionEventListener {
 
-  private LoconetConnection loconet;
+  LoconetConnection loconet;
   private ThreadGroup threadGroup;
   private EventMessageHandler eventMessageHandler;
+
+  private final AccessoryManager accessoryManager;
 
   public Intellibox2Impl(CommandStationBean commandStationBean) {
     this(commandStationBean, false);
@@ -57,6 +63,8 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
     super(autoConnect, commandStationBean);
     threadGroup = new ThreadGroup("INTELLIBOX2");
     this.executor = Executors.newCachedThreadPool();
+    this.accessoryManager = new AccessoryManager(this);
+
   }
 
   @Override
@@ -75,7 +83,7 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
   @Override
   public void disconnect() {
     eventMessageHandler.quit();
-    
+
     LoconetConnectionFactory.closeConnection();
   }
 
@@ -138,8 +146,20 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
     return false;
   }
 
+  List<AccessoryEventListener> getAccessoryEventListeners() {
+    return this.accessoryEventListeners;
+  }
+
+//  @Override
+//  public void switchAccessory(Integer address, String protocol, AccessoryBean.AccessoryValue value, Integer switchTime) {
+//  }
   @Override
   public void switchAccessory(Integer address, String protocol, AccessoryBean.AccessoryValue value, Integer switchTime) {
+    if (power && connected) {
+      accessoryManager.switchAccessory(address, protocol, value, switchTime);
+    } else {
+      Logger.warn("Trackpower is OFF! Can't switch Accessory: " + address + " to: " + value + "!");
+    }
   }
 
   @Override
@@ -148,7 +168,11 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
   }
 
   @Override
-  public void fireAllSensorEventsListeners(SensorEvent sensorEvent) {
+  public void fireAllSensorEventsListeners(final SensorEvent sensorEvent) {
+    List<AllSensorEventsListener> snapshot = new ArrayList<>(allSensorEventsListeners);
+    for (AllSensorEventsListener listener : snapshot) {
+      listener.onSensorChange(sensorEvent);
+    }
   }
 
   @Override
@@ -202,22 +226,27 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
               int opcode = message.getOpcode();
               int length = message.getLength();
 
-              Logger.trace("RX: {} Opcode: {} Lenght: {}", message.toString(), message.getHexOpcode(), length);
-
+              //Logger.trace("RX: {} Opcode: {} Lenght: {}", message.toString(), message.getHexOpcode(), length);
               switch (opcode) {
                 case LoconetMessage.OPC_GPON -> {
+                  Logger.trace("Power On Event RX: {}", message);
+
                   //Power ON
 //                      PowerEvent spe = PowerEventParser.parse(eventMessage);
 //                      notifyPowerEventListeners(spe);
 
                 }
                 case LoconetMessage.OPC_GPOFF -> {
+                  Logger.trace("Power Off Event RX: {}", message);
+
                   //Power off
 //                      PowerEvent gpe = PowerEventParser.parse(eventMessage);
 //                      notifyPowerEventListeners(gpe);
 
                 }
                 case LoconetMessage.OPC_IDLE -> {
+                  Logger.trace("Idle (HALT) Event RX: {}", message);
+
                   //Idle -> STOP - HALT
 //                      PowerEvent gpe = PowerEventParser.parse(eventMessage);
 //                      notifyPowerEventListeners(gpe);
@@ -226,14 +255,19 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
 //                      notifyPowerEventListeners(gpe);
                 }
                 case LoconetMessage.OPC_BUSY -> {
-                  //Master busy nothing to do
+                  Logger.trace("Master Busy Event RX: {}", message);
+                }
+                case LoconetMessage.OPC_SW_REQ -> {
+                  //Switch has changed
+                  Logger.trace("AccessoryEvent RX: {}", message);
+                  AccessoryBean ab = LoconetMessageParser.parseSwitchEvent(message);
+                  accessoryManager.update(ab);
                 }
                 case LoconetMessage.OPC_INPUT_REP -> {
-                  //Sensor message
                   Logger.trace("SensorEvent RX: {}", message);
                   SensorBean sb = LoconetMessageParser.parseSensorEvent(message);
                   if (sb != null) {
-                    Logger.trace("Sensor " + sb.getId() + " value " + sb.getStatus());
+                    Logger.trace("Sensor: {} Value: {} ", sb.getId(), sb.getStatus());
                     SensorEvent sme = new SensorEvent(sb);
                     fireAllSensorEventsListeners(sme);
                   }
@@ -253,25 +287,8 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
 //"C"= 0 if "Closed" ouput line is OFF, 1="closed" output line is ON (sink current)
 //"T"=0 if "Thrown" output line is OFF, 1="thrown" output line is ON (sink I)
 
-//                    SensorBean sb = FeedbackEventMessage.parse(eventMessage, new Date());
-//                    SensorEvent sme = new SensorEvent(sb);
-//                    if (sme.getSensorBean() != null) {
-//                      fireAllSensorEventsListeners(sme);
-//                    }
                 }
 
-//                case CanMessage.ACCESSORY_SWITCHING -> {
-//                  //Logger.trace("AccessorySwitching RX: " + eventMessage);
-//                }
-//                case CanMessage.ACCESSORY_SWITCHING_RESP -> {
-//                  AccessoryEvent ae = AccessoryMessage.parse(eventMessage);
-//                  if (!ae.isPower()) {
-//                    Logger.trace("AccessorySwitching RX: " + eventMessage);
-//                    //Only notify when the power of the accessory is turned off, so the action should has been done.
-//                    //notifyAccessoryEventListeners(ae);
-//                    accessoryManager.update(ae);
-//                  }
-//                }
 //                case CanMessage.LOC_VELOCITY -> {
 //                  Logger.trace("VelocityChange# " + eventMessage);
 //
@@ -298,6 +315,12 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
 //                default -> {
 //                }
 //              }
+                case LoconetMessage.OPC_LONG_ACK -> {
+                  Logger.trace("Aknowlegde RX: {}", message);
+                }
+                default -> {
+                  Logger.trace("%RX: {} Opcode: {} Lenght: {}", message.toString(), message.getHexOpcode(), length);
+                }
               }
             }
           } catch (InterruptedException ex) {
@@ -321,8 +344,8 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
 
     CommandStationBean csb = new CommandStationBean();
     csb.setId("intellibox2");
-    csb.setDescription("Uhlenbrock Intellibox II");
-    csb.setShortName("loconet");
+    csb.setDescription("Uhlenbrock Intellibox 2");
+    csb.setShortName("Loconet");
     csb.setClassName("jcs.commandStation.loconet.Intellibox2Impl");
     csb.setConnectVia("SERIAL");
     csb.setSerialPort("AUTO");
@@ -352,10 +375,15 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
 
       intellibox2.pause(2000);
 
-      //Lets power Off
-      intellibox2.power(false);
+      intellibox2.switchAccessory(1, "dcc", AccessoryValue.GREEN, 100);
+      intellibox2.pause(2000);
+      intellibox2.switchAccessory(1, "dcc", AccessoryValue.RED, 100);
+      
+      
 
       intellibox2.pause(200000);
+      //Lets power Off
+      intellibox2.power(false);
 
       intellibox2.disconnect();
 
