@@ -33,6 +33,8 @@ import jcs.commandStation.events.AccessoryEventListener;
 import jcs.commandStation.events.AllSensorEventsListener;
 import jcs.commandStation.events.ConnectionEvent;
 import jcs.commandStation.events.ConnectionEventListener;
+import jcs.commandStation.events.PowerEvent;
+import jcs.commandStation.events.PowerEventListener;
 import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.loconet.connection.LoconetConnection;
 import jcs.commandStation.loconet.connection.LoconetConnectionFactory;
@@ -114,6 +116,13 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
     return power;
   }
 
+  void notifyPowerEventListeners(final PowerEvent powerEvent) {
+    power = powerEvent.isPower();
+    for (PowerEventListener listener : powerEventListeners) {
+      listener.onPowerChange(powerEvent);
+    }
+  }
+
   @Override
   public void changeDirection(int locUid, LocomotiveBean.Direction direction) {
   }
@@ -150,9 +159,6 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
     return this.accessoryEventListeners;
   }
 
-//  @Override
-//  public void switchAccessory(Integer address, String protocol, AccessoryBean.AccessoryValue value, Integer switchTime) {
-//  }
   @Override
   public void switchAccessory(Integer address, String protocol, AccessoryBean.AccessoryValue value, Integer switchTime) {
     if (power && connected) {
@@ -226,33 +232,21 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
               int opcode = message.getOpcode();
               int length = message.getLength();
 
-              //Logger.trace("RX: {} Opcode: {} Lenght: {}", message.toString(), message.getHexOpcode(), length);
               switch (opcode) {
                 case LoconetMessage.OPC_GPON -> {
                   Logger.trace("Power On Event RX: {}", message);
-
-                  //Power ON
-//                      PowerEvent spe = PowerEventParser.parse(eventMessage);
-//                      notifyPowerEventListeners(spe);
-
+                  PowerEvent spe = LoconetMessageParser.parsePowerEvent(message);
+                  notifyPowerEventListeners(spe);
                 }
                 case LoconetMessage.OPC_GPOFF -> {
                   Logger.trace("Power Off Event RX: {}", message);
-
-                  //Power off
-//                      PowerEvent gpe = PowerEventParser.parse(eventMessage);
-//                      notifyPowerEventListeners(gpe);
-
+                  PowerEvent spe = LoconetMessageParser.parsePowerEvent(message);
+                  notifyPowerEventListeners(spe);
                 }
                 case LoconetMessage.OPC_IDLE -> {
                   Logger.trace("Idle (HALT) Event RX: {}", message);
-
-                  //Idle -> STOP - HALT
-//                      PowerEvent gpe = PowerEventParser.parse(eventMessage);
-//                      notifyPowerEventListeners(gpe);
-
-//                      PowerEvent gpe = OverloadEventParser.parse(eventMessage);
-//                      notifyPowerEventListeners(gpe);
+                  PowerEvent spe = LoconetMessageParser.parsePowerEvent(message);
+                  notifyPowerEventListeners(spe);
                 }
                 case LoconetMessage.OPC_BUSY -> {
                   Logger.trace("Master Busy Event RX: {}", message);
@@ -318,6 +312,9 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
                 case LoconetMessage.OPC_LONG_ACK -> {
                   Logger.trace("Aknowlegde RX: {}", message);
                 }
+                case LoconetMessage.OPC_LOCO_SPD -> {
+                  //for now ignore it
+                }
                 default -> {
                   Logger.trace("%RX: {} Opcode: {} Lenght: {}", message.toString(), message.getHexOpcode(), length);
                 }
@@ -378,8 +375,6 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
       intellibox2.switchAccessory(1, "dcc", AccessoryValue.GREEN, 100);
       intellibox2.pause(2000);
       intellibox2.switchAccessory(1, "dcc", AccessoryValue.RED, 100);
-      
-      
 
       intellibox2.pause(200000);
       //Lets power Off

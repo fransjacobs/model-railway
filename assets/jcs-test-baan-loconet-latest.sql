@@ -107,13 +107,13 @@ CREATE CACHED TABLE "jcs"."accessories"(
 ALTER TABLE "jcs"."accessories" ADD CONSTRAINT "jcs"."acce_pk" PRIMARY KEY("id");              
 -- 7 +/- SELECT COUNT(*) FROM jcs.accessories; 
 INSERT INTO "jcs"."accessories" VALUES
-('20005', 8, 'S8', 'lichtsignal_HP01', 0, 2, 100, 'dcc', NULL, NULL, '23', NULL, 'ECoS', 'esu-ecos', TRUE, NULL),
-('20004', 7, 'S7', 'lichtsignal_HP01', 1, 2, 100, 'dcc', NULL, NULL, '23', NULL, 'ECoS', 'esu-ecos', TRUE, NULL),
-('20003', 6, 'S6', 'lichtsignal_HP01', 0, 2, 100, 'dcc', NULL, NULL, '9', NULL, 'ECoS', 'esu-ecos', TRUE, NULL),
-('20002', 5, 'S5', 'lichtsignal_HP01', 1, 2, 100, 'dcc', NULL, NULL, '9', NULL, 'ECoS', 'esu-ecos', TRUE, NULL),
-('20001', 2, 'W2', 'rechtsweiche', 0, 2, 100, 'dcc', NULL, NULL, '1', NULL, 'ECoS', 'esu-ecos', TRUE, NULL),
-('20000', 1, 'W1', 'linksweiche', 0, 2, 100, 'dcc', NULL, NULL, '0', NULL, 'ECoS', 'esu-ecos', TRUE, NULL),
-('20008', 50, 'W50', 'dreiwegweiche', 2, 3, 100, 'mm', NULL, NULL, '2', NULL, 'ECoS', 'esu-ecos', TRUE, 51);             
+('20005', 8, 'S8', 'lichtsignal_HP01', 0, 2, 100, 'dcc', NULL, NULL, '23', NULL, 'ECoS', 'intellibox2', TRUE, NULL),
+('20004', 7, 'S7', 'lichtsignal_HP01', 1, 2, 100, 'dcc', NULL, NULL, '23', NULL, 'ECoS', 'intellibox2', TRUE, NULL),
+('20003', 6, 'S6', 'lichtsignal_HP01', 0, 2, 100, 'dcc', NULL, NULL, '9', NULL, 'ECoS', 'intellibox2', TRUE, NULL),
+('20002', 5, 'S5', 'lichtsignal_HP01', 1, 2, 100, 'dcc', NULL, NULL, '9', NULL, 'ECoS', 'intellibox2', TRUE, NULL),
+('20001', 2, 'W2', 'rechtsweiche', 1, 2, 100, 'dcc', NULL, NULL, '1', NULL, 'ECoS', 'intellibox2', TRUE, NULL),
+('20000', 1, 'W1', 'linksweiche', 1, 2, 100, 'dcc', NULL, NULL, '0', NULL, 'ECoS', 'intellibox2', TRUE, NULL),
+('20008', 50, 'W50', 'dreiwegweiche', 2, 3, 100, 'mm', NULL, NULL, '2', NULL, 'ECoS', 'intellibox2', TRUE, 51);        
 CREATE UNIQUE NULLS DISTINCT INDEX "jcs"."acce_address_un_idx" ON "jcs"."accessories"("address" NULLS FIRST, "protocol" NULLS FIRST, "command_station_id" NULLS FIRST);        
 CREATE UNIQUE NULLS DISTINCT INDEX "jcs"."acce_pk_idx" ON "jcs"."accessories"("id" NULLS FIRST);               
 CREATE CACHED TABLE "jcs"."blocks"(
@@ -139,10 +139,10 @@ CREATE CACHED TABLE "jcs"."blocks"(
 ALTER TABLE "jcs"."blocks" ADD CONSTRAINT "jcs"."bloc_pk" PRIMARY KEY("id");   
 -- 4 +/- SELECT COUNT(*) FROM jcs.blocks;      
 INSERT INTO "jcs"."blocks" VALUES
-('bk-1', 'bk-1', 'Blok 1', 0, 1, NULL, '20003', 1003, TRUE, 'Occupied', NULL, 10, NULL, FALSE, TRUE, TRUE, 'Forwards', TRUE),
+('bk-1', 'bk-1', 'Blok 1', 0, 1, NULL, '20003', NULL, TRUE, 'Free', NULL, 10, NULL, FALSE, TRUE, TRUE, NULL, TRUE),
 ('bk-2', 'bk-2', 'Blok 2', 3, 2, '20002', NULL, NULL, TRUE, 'Free', NULL, 10, NULL, FALSE, TRUE, TRUE, NULL, TRUE),
 ('bk-3', 'bk-3', 'Blok 3', 9, 8, NULL, '20005', NULL, TRUE, 'Free', NULL, 10, NULL, FALSE, TRUE, TRUE, NULL, TRUE),
-('bk-4', 'bk-4', 'Blok 4', 10, 11, '20004', NULL, 1005, TRUE, 'Occupied', NULL, 10, NULL, FALSE, TRUE, TRUE, 'Forwards', TRUE);        
+('bk-4', 'bk-4', 'Blok 4', 10, 11, '20004', NULL, NULL, TRUE, 'Free', NULL, 10, NULL, FALSE, TRUE, TRUE, NULL, TRUE);            
 CREATE UNIQUE NULLS DISTINCT INDEX "jcs"."bloc_pk_idx" ON "jcs"."blocks"("id" NULLS FIRST);    
 CREATE UNIQUE NULLS DISTINCT INDEX "jcs"."bloc_tile_idx" ON "jcs"."blocks"("tile_id" NULLS FIRST);             
 CREATE CACHED TABLE "jcs"."sensors"(
@@ -707,19 +707,19 @@ INSERT INTO "jcs"."locomotives" VALUES
 (1000, '193 304-3 DB AG', 1000, 0, '/home/frans/jcs/cache/ecos/loco_type_e-image_type_int-36.png', 'mfx', 126, NULL, 0, TRUE, 'ECoS', FALSE, FALSE, 'esu-ecos', NULL, 'BACKWARDS', NULL, NULL, NULL, NULL),
 (1001, 'SNCB/NMBS HLE 27', 3, 3, '/home/frans/jcs/cache/ecos/loco_type_e-image_type_int-2.png', 'dcc', 126, 0, 0, TRUE, 'Manual Updated', FALSE, FALSE, 'esu-ecos', NULL, 'FORWARDS', NULL, NULL, NULL, NULL),
 (1002, 'FS236-002', 14, 14, '/home/frans/jcs/cache/ecos/loco_type_diesel-image_type_int-14.png', 'dcc', 126, NULL, 0, TRUE, 'ECoS', FALSE, FALSE, 'esu-ecos', NULL, 'FORWARDS', NULL, NULL, NULL, NULL),
-(1003, 'NS 6505', 8, 8, '/Users/fransjacobs/jcs/cache/cs/ns dhg 6505.png', 'dcc', 126, 0, 0, TRUE, 'Manual Updated', TRUE, TRUE, 'esu-ecos', NULL, 'FORWARDS', NULL, NULL, NULL, NULL),
+(1003, 'NS 6505', 8, 8, '/Users/fransjacobs/jcs/cache/cs/ns dhg 6505.png', 'dcc', 126, 0, 0, TRUE, 'Manual Updated', TRUE, FALSE, 'esu-ecos', NULL, 'FORWARDS', NULL, NULL, NULL, NULL),
 (1004, 'NS 1205', 11, 11, '/home/frans/jcs/cache/ecos/loco_type_e-image_type_int-46.png', 'dcc', 126, NULL, 0, TRUE, 'ECoS', FALSE, FALSE, 'esu-ecos', NULL, 'FORWARDS', NULL, NULL, NULL, NULL),
-(1005, 'DB-141-015-8', 12, 12, '/Users/fransjacobs/jcs/cache/cs/db br 141 136-2.png', 'mm', 126, 0, 0, TRUE, 'Manual Updated', TRUE, TRUE, 'esu-ecos', NULL, 'FORWARDS', NULL, NULL, NULL, NULL),
+(1005, 'DB-141-015-8', 12, 12, '/Users/fransjacobs/jcs/cache/cs/db br 141 136-2.png', 'mm', 126, 0, 0, FALSE, 'Manual Updated', TRUE, TRUE, 'intellibox2', NULL, 'FORWARDS', NULL, NULL, NULL, NULL),
 (1006, 'BR-81-002', 2, 2, '/home/frans/jcs/cache/ecos/loco_type_steam-image_type_int-77.png', 'mm', 126, NULL, 0, TRUE, 'ECoS', FALSE, FALSE, 'esu-ecos', NULL, 'FORWARDS', NULL, NULL, NULL, NULL),
 (1007, 'NS 1139', 5, 5, '/home/frans/jcs/cache/ecos/loco_type_e-image_type_int-37.png', 'dcc', 126, NULL, 0, TRUE, 'ECoS', FALSE, FALSE, 'esu-ecos', NULL, 'BACKWARDS', NULL, NULL, NULL, NULL),
 (1008, 'NS 1309', 68, 68, '/home/frans/jcs/cache/ecos/loco_type_e-image_type_int-35.png', 'dcc', 126, NULL, 0, TRUE, 'ECoS', FALSE, FALSE, 'esu-ecos', NULL, 'FORWARDS', NULL, NULL, NULL, NULL),
 (1009, 'Plan V', 7, 7, '/home/frans/jcs/cache/ecos/loco_type_e-image_type_int-53.png', 'dcc', 126, NULL, 0, TRUE, 'ECoS', FALSE, FALSE, 'esu-ecos', NULL, 'FORWARDS', NULL, NULL, NULL, NULL),
 (1011, '247 047-4 DB', 1011, 0, '/home/frans/jcs/cache/ecos/loco_type_diesel-image_type_int-21.png', 'mfx', 126, NULL, 0, TRUE, 'ECoS', FALSE, FALSE, 'esu-ecos', NULL, 'FORWARDS', NULL, NULL, NULL, NULL),
-(1013, 'BR 216 059-6', 1013, 0, '/home/frans/jcs/cache/ecos/loco_type_diesel-image_type_int-8.png', 'mfx', 126, NULL, 0, TRUE, 'ECoS', FALSE, FALSE, 'esu-ecos', NULL, 'FORWARDS', NULL, NULL, NULL, NULL),
+(1013, 'BR 216 059-6', 72, 72, '/Users/fransjacobs/jcs/cache/cs/db br 216 059-6.png', 'mm', 126, 0, 0, FALSE, 'Manual Updated', TRUE, TRUE, 'intellibox2', NULL, 'FORWARDS', NULL, NULL, NULL, NULL),
 (1014, 'E 186 007-8 NS', 0, 0, '/home/frans/jcs/cache/ecos/loco_type_e-image_type_int-2.png', 'mfx', 126, NULL, 0, TRUE, 'ECoS', FALSE, FALSE, 'esu-ecos', NULL, 'BACKWARDS', NULL, NULL, NULL, NULL),
 (1017, '193 733-3 NS', 1017, 0, '/home/frans/jcs/cache/ecos/loco_type_e-image_type_int-2.png', 'mfx', 126, NULL, 0, TRUE, 'ECoS', FALSE, FALSE, 'esu-ecos', NULL, 'BACKWARDS', NULL, NULL, NULL, NULL),
 (1018, 'RE 460 004-5', 69, 69, 'LOCO_TYPE_E,IMAGE_TYPE_INT,129', 'dcc', 126, 0, 0, TRUE, 'Manual Updated', FALSE, FALSE, 'esu-ecos', NULL, 'FORWARDS', NULL, NULL, NULL, NULL),
-(1022, 'BR 81-002', 78, 78, '/home/frans/jcs/cache/ecos/loco_type_steam-image_type_int-75.png', 'dcc', 126, NULL, 0, TRUE, 'ECoS', FALSE, FALSE, 'esu-ecos', NULL, 'BACKWARDS', NULL, NULL, NULL, NULL); 
+(1022, 'BR 81-002', 78, 78, '/home/frans/jcs/cache/ecos/loco_type_steam-image_type_int-75.png', 'dcc', 126, NULL, 0, TRUE, 'ECoS', FALSE, FALSE, 'esu-ecos', NULL, 'BACKWARDS', NULL, NULL, NULL, NULL);  
 CREATE UNIQUE NULLS DISTINCT INDEX "jcs"."loco_pk_idx" ON "jcs"."locomotives"("id" NULLS FIRST);               
 CREATE CACHED TABLE "jcs"."command_stations"(
     "id" CHARACTER VARYING(255) NOT NULL,

@@ -15,10 +15,7 @@
  */
 package jcs.commandStation.loconet.connection;
 
-import java.time.Duration;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Predicate;
 import jcs.commandStation.loconet.LoconetMessage;
 
 /**
@@ -28,16 +25,16 @@ public interface LoconetConnection extends AutoCloseable {
 
   LoconetMessage sendMessage(LoconetMessage message);
 
-  CompletableFuture<LoconetMessage> sendAndAwaitEcho(
-          LoconetMessage message,
-          Duration timeout
-  );
+//  CompletableFuture<LoconetMessage> sendAndAwaitEcho(
+//          LoconetMessage message,
+//          Duration timeout
+//  );
 
-  CompletableFuture<LoconetMessage> sendAndAwait(
-          LoconetMessage message,
-          Predicate<LoconetMessage> matcher,
-          Duration timeout
-  );
+//  CompletableFuture<LoconetMessage> sendAndAwait(
+//          LoconetMessage message,
+//          Predicate<LoconetMessage> matcher,
+//          Duration timeout
+//  );
 
   void addMessageListener(LoconetMessageListener listener);
 

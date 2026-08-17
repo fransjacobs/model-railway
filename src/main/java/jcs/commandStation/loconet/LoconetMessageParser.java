@@ -19,6 +19,7 @@ import com.fazecast.jSerialComm.SerialPortTimeoutException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import jcs.commandStation.events.PowerEvent;
 import static jcs.commandStation.loconet.Opcodes.BYTE_MASK;
 import static jcs.commandStation.loconet.Opcodes.DATA_MASK;
 import jcs.entities.AccessoryBean;
@@ -170,6 +171,38 @@ public class LoconetMessageParser implements Opcodes {
     module = module - 1;
     int contactId = module * 16;
     return contactId + port;
+  }
+
+  /**
+   * Parses a raw 2-byte LocoNet sensor message.
+   *
+   * @param opcode expected 0xB2
+   * @param in1 address low byte (a6..a0)
+   * @param in2 address high nibble + flags (X, I, L, a10..a7)
+   * @param chk checksum byte
+   * @return the decoded sensor event
+   * @throws IllegalArgumentException if opcode or checksum is invalid
+   */
+  public static PowerEvent parsePowerEvent(LoconetMessage message) {
+    if (!message.isChecksumValid()) {
+      throw new IllegalArgumentException(String.format("Checksum mismatch for message {}", message.toString()));
+    }
+    if (!(message.isExpectedsOpcode(OPC_GPON)
+            || message.isExpectedsOpcode(OPC_GPOFF)
+            || message.isExpectedsOpcode(OPC_IDLE))) {
+      throw new IllegalArgumentException(String.format("Not a power message, opcode={}", message.getHexOpcode()));
+    }
+
+    int opcode = message.getOpcode();
+
+    boolean power;
+    power = switch (opcode) {
+      case OPC_GPON -> true;
+      case OPC_GPOFF -> false;
+      default -> false;
+    }; //Halt emegency stop, switch off power
+
+    return new PowerEvent(power);
   }
 
   /**

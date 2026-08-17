@@ -169,6 +169,8 @@ class AccessoryManager {
 
   void fireAccessoryEventListeners(final AccessoryEvent accessoryEvent) {
     List<AccessoryEventListener> snapshot = new ArrayList<>(intelliboxImpl.getAccessoryEventListeners());
+    
+    Logger.trace("Firing {} Accessory listeners for {} value {}",snapshot.size(),accessoryEvent.getId(), accessoryEvent.getValue() );
 
     for (AccessoryEventListener listener : snapshot) {
       if (accessoryEvent.getAccessoryBean().isSignal()) {
