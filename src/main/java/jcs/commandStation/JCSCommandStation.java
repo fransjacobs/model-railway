@@ -1136,7 +1136,9 @@ public class JCSCommandStation {
 
     @Override
     public void onFunctionChange(LocomotiveFunctionEvent functionEvent) {
-      jcsCommandStation.locomotiveEventQueue.offer(functionEvent);
+      if (functionEvent != null) {
+        jcsCommandStation.locomotiveEventQueue.offer(functionEvent);
+      }
     }
   }
 
