@@ -26,6 +26,10 @@ import org.tinylog.Logger;
 public class LocomotiveFunctionEventParser {
 
   public static LocomotiveFunctionEvent parseMessage(CanMessage message) {
+    if (message == null) {
+      Logger.warn("message is null !");
+      return null;
+    }
     CanMessage resp;
     if (!message.isResponseMessage()) {
       resp = message.getResponse();
