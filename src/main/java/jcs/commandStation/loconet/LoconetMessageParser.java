@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import jcs.commandStation.events.PowerEvent;
+import static jcs.commandStation.loconet.Intellibox2Impl.COMMAND_STATION_ID;
 import static jcs.commandStation.loconet.Opcodes.BYTE_MASK;
 import static jcs.commandStation.loconet.Opcodes.DATA_MASK;
 import jcs.entities.AccessoryBean;
@@ -27,8 +28,6 @@ import jcs.entities.SensorBean;
 import org.tinylog.Logger;
 
 public class LoconetMessageParser implements Opcodes {
-
-  private static final String COMMAND_STATION_ID = "intellibox2";
 
   private final boolean validateChecksum;
 

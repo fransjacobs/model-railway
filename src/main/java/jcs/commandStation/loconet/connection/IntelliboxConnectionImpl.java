@@ -97,10 +97,12 @@ class IntelliboxConnectionImpl implements LoconetConnection {
   @Override
   public LoconetMessage sendMessage(LoconetMessage message) {
     try {
-      Logger.trace("TX: {}", message.toString());
+      if (output != null) {
+        Logger.trace("TX: {}", message.toString());
 
-      output.write(message.getMessageBytes());
-      output.flush();
+        output.write(message.getMessageBytes());
+        output.flush();
+      }
     } catch (IOException ex) {
       Logger.error(ex);
     }

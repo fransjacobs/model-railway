@@ -22,11 +22,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import jcs.commandStation.events.AccessoryEvent;
 import jcs.commandStation.events.AccessoryEventListener;
+import static jcs.commandStation.loconet.Intellibox2Impl.COMMAND_STATION_ID;
 import jcs.entities.AccessoryBean;
 import jcs.entities.AccessoryBean.AccessoryValue;
-import static jcs.entities.AccessoryBean.AccessoryValue.GREEN2;
-import static jcs.entities.AccessoryBean.AccessoryValue.RED;
-import static jcs.entities.AccessoryBean.AccessoryValue.RED2;
+import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
 /**
@@ -169,8 +168,8 @@ class AccessoryManager {
 
   void fireAccessoryEventListeners(final AccessoryEvent accessoryEvent) {
     List<AccessoryEventListener> snapshot = new ArrayList<>(intelliboxImpl.getAccessoryEventListeners());
-    
-    Logger.trace("Firing {} Accessory listeners for {} value {}",snapshot.size(),accessoryEvent.getId(), accessoryEvent.getValue() );
+
+    Logger.trace("Firing {} Accessory listeners for {} value {}", snapshot.size(), accessoryEvent.getId(), accessoryEvent.getValue());
 
     for (AccessoryEventListener listener : snapshot) {
       if (accessoryEvent.getAccessoryBean().isSignal()) {
@@ -178,6 +177,14 @@ class AccessoryManager {
       }
       listener.onAccessoryChange(accessoryEvent);
     }
+  }
+
+  List<AccessoryBean> obtainAccessories() {
+    //Not sure yet whether a ccessory list is obtainable from the Intellibox.
+    //So in the meanwhile let get the accessories from the persistent store
+    List<AccessoryBean> allAccessories = PersistenceFactory.getService().getAccessoriesByCommandStationId(COMMAND_STATION_ID);
+
+    return allAccessories;
   }
 
 }

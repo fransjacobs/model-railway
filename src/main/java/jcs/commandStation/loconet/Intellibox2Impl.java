@@ -57,6 +57,8 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
 
   private final AccessoryManager accessoryManager;
 
+  static final String COMMAND_STATION_ID = "intellibox2";
+
   public Intellibox2Impl(CommandStationBean commandStationBean) {
     this(commandStationBean, false);
   }
@@ -107,10 +109,12 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
   @Override
   public boolean power(boolean on) {
     power = on;
-    if (power) {
-      loconet.sendMessage(LoconetMessageFactory.powerOn());
-    } else {
-      loconet.sendMessage(LoconetMessageFactory.powerOff());
+    if (this.loconet != null) {
+      if (power) {
+        loconet.sendMessage(LoconetMessageFactory.powerOn());
+      } else {
+        loconet.sendMessage(LoconetMessageFactory.powerOff());
+      }
     }
     Logger.tag(TAG).debug("CommandStation Track Power is {}", (power ? "On" : "Off"));
     return power;
