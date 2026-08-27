@@ -196,9 +196,12 @@ public class LoconetMessageParser implements Opcodes {
 
     boolean power;
     power = switch (opcode) {
-      case OPC_GPON -> true;
-      case OPC_GPOFF -> false;
-      default -> false;
+      case OPC_GPON ->
+        true;
+      case OPC_GPOFF ->
+        false;
+      default ->
+        false;
     }; //Halt emegency stop, switch off power
 
     return new PowerEvent(power);
@@ -222,8 +225,8 @@ public class LoconetMessageParser implements Opcodes {
       throw new IllegalArgumentException(String.format("Not a sensor message, opcode={}", message.getHexOpcode()));
     }
 
-    int in1 = message.getByte(1);
-    int in2 = message.getByte(2);
+    int in1 = message.getArgument(1);
+    int in2 = message.getArgument(2);
 
     int addrLow = in1 & 0x7F;   // a6..a0
     int addrHigh = in2 & 0x0F;  // a10..a7
@@ -243,7 +246,7 @@ public class LoconetMessageParser implements Opcodes {
   }
 
   /**
-   * Parses a raw 4-byte LocoNet accessory message.
+   * Parses a raw 4-byte LocoNet accessory request message.
    *
    * @param opcode expected 0xB2
    * @param sw1 address low byte (a6..a0)
@@ -257,11 +260,11 @@ public class LoconetMessageParser implements Opcodes {
       throw new IllegalArgumentException(String.format("Checksum mismatch for message {}", message.toString()));
     }
     if (!message.isExpectedsOpcode(OPC_SW_REQ)) {
-      throw new IllegalArgumentException(String.format("Not a sensor message, opcode={}", message.getHexOpcode()));
+      throw new IllegalArgumentException(String.format("Not a accessory message, opcode={}", message.getHexOpcode()));
     }
 
-    int sw1 = message.getByte(1);
-    int sw2 = message.getByte(2);
+    int sw1 = message.getArgument(1);
+    int sw2 = message.getArgument(2);
 
     int addrLow = sw1 & 0x7F;   // a6..a0
     int addrHigh = sw2 & 0x0F;  // a10..a7
@@ -270,6 +273,86 @@ public class LoconetMessageParser implements Opcodes {
 
     boolean green = (sw2 & 0x20) != 0; // DIR: 1=closed/green, 0=thrown/red
     boolean outputOn = (sw2 & 0x10) != 0; // ON: 1=coil/output active, 0=off
+
+    String id = Integer.toString(displayAddress);
+
+    Integer address2 = null;
+    String name = null;
+    String type = null;
+    int state = green ? 1 : 0;
+    Integer states = null;
+    Integer switchTime = null;
+    String protocol = null;
+
+    AccessoryBean ab = new AccessoryBean(id, displayAddress, address2, name, type, state, states, switchTime, protocol, COMMAND_STATION_ID);
+    ab.setOn(outputOn);
+    return ab;
+  }
+
+  /**
+   * Parses a raw 4-byte LocoNet accessory status message.
+   *
+   * @param opcode expected 0xB2
+   * @param sn1 address low byte (a6..a0)
+   * @param sn2 address high nibble + flags (0, dir, on, a10..a7)
+   * @param chk checksum byte
+   * @return the decoded Accessory event
+   * @throws IllegalArgumentException if opcode or checksum is invalid
+   */
+  public static AccessoryBean parseSwitchStateEvent(LoconetMessage message) {
+    if (!message.isChecksumValid()) {
+      throw new IllegalArgumentException(String.format("Checksum mismatch for message %s", message.toString()));
+    }
+    if (!message.isExpectedsOpcode(OPC_SW_REP)) {
+      throw new IllegalArgumentException(String.format("Not a sensor message, opcode=%s", message.getHexOpcode()));
+    }
+
+    int sn1 = message.getArgument(1);
+    int sn2 = message.getArgument(2);
+
+    int addrLow = sn1 & 0x7F;   // a6..a0
+    int addrHigh = sn2 & 0x0F;  // a10..a7
+    int zeroBasedAddress = (addrHigh << 7) | addrLow;
+    int displayAddress = zeroBasedAddress + 1;
+
+    boolean green = (sn2 & 0x20) != 0; // DIR: 1=closed/green, 0=thrown/red
+    boolean outputOn = (sn2 & 0x10) != 0; // ON: 1=coil/output active, 0=off
+
+    String id = Integer.toString(displayAddress);
+
+    Integer address2 = null;
+    String name = null;
+    String type = null;
+    int state = green ? 1 : 0;
+    Integer states = null;
+    Integer switchTime = null;
+    String protocol = null;
+
+    AccessoryBean ab = new AccessoryBean(id, displayAddress, address2, name, type, state, states, switchTime, protocol, COMMAND_STATION_ID);
+    ab.setOn(outputOn);
+    return ab;
+  }
+
+  public static AccessoryBean parseSwitchReportEvent(LoconetMessage message) {
+    if (!message.isChecksumValid()) {
+      throw new IllegalArgumentException(String.format("Checksum mismatch for message %s", message)
+      );
+    }
+
+    if (!message.isExpectedsOpcode(OPC_SW_REP)) {
+      throw new IllegalArgumentException(String.format("Not an OPC_SW_REP message, opcode=%s", message.getHexOpcode()));
+    }
+
+    int sn1 = message.getArgument(1);
+    int sn2 = message.getArgument(2);
+
+    int addrLow = sn1 & 0x7F;   // a6..a0
+    int addrHigh = sn2 & 0x0F;  // a10..a7
+    int zeroBasedAddress = (addrHigh << 7) | addrLow;
+    int displayAddress = zeroBasedAddress + 1;
+
+    boolean green = (sn2 & 0x20) != 0; // DIR: 1=closed/green, 0=thrown/red
+    boolean outputOn = (sn2 & 0x10) != 0; // ON: 1=coil/output active, 0=off
 
     String id = Integer.toString(displayAddress);
 

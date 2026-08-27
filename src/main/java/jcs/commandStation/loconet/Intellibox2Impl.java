@@ -19,6 +19,7 @@ import java.awt.Image;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import jcs.commandStation.AbstractController;
@@ -52,12 +53,13 @@ import org.tinylog.Logger;
 public class Intellibox2Impl extends AbstractController implements DecoderController, AccessoryController, FeedbackController, ConnectionEventListener {
 
   LoconetConnection loconet;
-  private ThreadGroup threadGroup;
+  ThreadGroup threadGroup;
   private EventMessageHandler eventMessageHandler;
 
   private final AccessoryManager accessoryManager;
 
   static final String COMMAND_STATION_ID = "intellibox2";
+  
 
   public Intellibox2Impl(CommandStationBean commandStationBean) {
     this(commandStationBean, false);
@@ -66,10 +68,22 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
   public Intellibox2Impl(CommandStationBean commandStationBean, boolean autoConnect) {
     super(autoConnect, commandStationBean);
     threadGroup = new ThreadGroup("INTELLIBOX2");
-    this.executor = Executors.newCachedThreadPool();
-    this.accessoryManager = new AccessoryManager(this);
 
+//    this.executor = Executors.newSingleThreadExecutor(runnable -> {
+//      Thread thread = new Thread(runnable, "INBX-LN-TX");
+//      thread.setDaemon(true);
+//      return thread;
+//    });
+
+    this.accessoryManager = new AccessoryManager(this);
   }
+
+//  private final ExecutorService txExecutor
+//          = Executors.newSingleThreadExecutor(runnable -> {
+//            Thread thread = new Thread(runnable, "INBX-LN-TX");
+//            thread.setDaemon(true);
+//            return thread;
+//          });
 
   @Override
   public boolean connect() {
@@ -79,6 +93,11 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
     if (connected) {
       eventMessageHandler = new EventMessageHandler(loconet);
       eventMessageHandler.start();
+
+      accessoryManager.start();
+      //refresh the accessories in the background
+      executor.execute(() -> this.accessoryManager.refresh());
+
     }
 
     return connected;
@@ -86,11 +105,22 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
 
   @Override
   public void disconnect() {
-    eventMessageHandler.quit();
+    if (eventMessageHandler != null) {
+      eventMessageHandler.quit();
+      try {
+        eventMessageHandler.join(1000L);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
+      eventMessageHandler = null;
+    }
+
+    accessoryManager.shutdown();
 
     LoconetConnectionFactory.closeConnection();
+    connected = false;
   }
-
+  
   @Override
   public InfoBean getCommandStationInfo() {
     return null;
@@ -110,10 +140,16 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
   public boolean power(boolean on) {
     power = on;
     if (this.loconet != null) {
+      LoconetMessage reply = null;
       if (power) {
-        loconet.sendMessage(LoconetMessageFactory.powerOn());
+        reply = loconet.sendMessage(LoconetMessageFactory.powerOn());
       } else {
-        loconet.sendMessage(LoconetMessageFactory.powerOff());
+        reply = loconet.sendMessage(LoconetMessageFactory.powerOff());
+      }
+      if (reply != null) {
+        Logger.trace("Processing reply {}", reply.toString());
+        PowerEvent spe = LoconetMessageParser.parsePowerEvent(reply);
+        notifyPowerEventListeners(spe);
       }
     }
     Logger.tag(TAG).debug("CommandStation Track Power is {}", (power ? "On" : "Off"));
@@ -271,20 +307,10 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
                   }
                 }
                 case LoconetMessage.OPC_SW_REP -> {
-//                  0xB1 ;Turnout SENSOR state REPORT NO
-//; <0xB1>,<SN1>,<SN2>,<CHK> SENSOR state REPORT
-//<SN1> <SN2> =<0,A6,A5,A4- A3,A2,A1,A0>, 7 ls adr bits. A1,A0 select 1 of 4 input pairs in a DS54
-//=<0,1,I,L- A10,A9,A8,A7> Report/status bits and 4 MS adr bits.
-//this <B1> opcode encodes input levels for turnout feedback
-//"I" =0 for "aux" inputs (normally not feedback), 1 for "switch" input used for turnout
-//feedback for DS54 ouput/turnout # encoded by A0-A10
-//"L" = 0 for this input 0V (LO), 1= this input > +6V (HI)
-//alternately;
-//<SN2> =<0,0,C,T- A10,A9,A8,A7> Report/status bits and 4 MS adr bits.
-//this <B1> opcode encodes current OUTPUT levels
-//"C"= 0 if "Closed" ouput line is OFF, 1="closed" output line is ON (sink current)
-//"T"=0 if "Thrown" output line is OFF, 1="thrown" output line is ON (sink I)
-
+                  //Switch State Report
+                  Logger.trace("Accessory State RX: {}", message);
+                  AccessoryBean ab = LoconetMessageParser.parseSwitchStateEvent(message);
+                  accessoryManager.update(ab);
                 }
 
 //                case CanMessage.LOC_VELOCITY -> {
@@ -375,11 +401,14 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
       intellibox2.power(true);
 
       intellibox2.pause(2000);
+      //Lets power Off
+      //intellibox2.power(false);
+      //intellibox2.pause(2000);
 
+      //intellibox2.accessoryManager.queryAccessory(1);
       intellibox2.switchAccessory(1, "dcc", AccessoryValue.GREEN, 100);
       intellibox2.pause(2000);
       intellibox2.switchAccessory(1, "dcc", AccessoryValue.RED, 100);
-
       intellibox2.pause(200000);
       //Lets power Off
       intellibox2.power(false);

@@ -16,6 +16,7 @@
 package jcs.commandStation.loconet.connection;
 
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CompletableFuture;
 import jcs.commandStation.loconet.LoconetMessage;
 
 /**
@@ -25,26 +26,16 @@ public interface LoconetConnection extends AutoCloseable {
 
   LoconetMessage sendMessage(LoconetMessage message);
 
-//  CompletableFuture<LoconetMessage> sendAndAwaitEcho(
-//          LoconetMessage message,
-//          Duration timeout
-//  );
+  CompletableFuture<LoconetMessage> sendMessageAsyncAwaitEcho(LoconetMessage message);
 
-//  CompletableFuture<LoconetMessage> sendAndAwait(
-//          LoconetMessage message,
-//          Predicate<LoconetMessage> matcher,
-//          Duration timeout
-//  );
+  void sendMessageNoWait(LoconetMessage message);
 
-  void addMessageListener(LoconetMessageListener listener);
+  void sendMessageNoWaitConsumeEcho(LoconetMessage message);
 
-  void removeMessageListener(LoconetMessageListener listener);
+  BlockingQueue<LoconetMessage> getMessageQueue();
 
   boolean isConnected();
 
   @Override
   void close();
-
-  BlockingQueue<LoconetMessage> getMessageQueue();
-
 }

@@ -19,7 +19,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import jcs.commandStation.events.AccessoryEvent;
 import jcs.commandStation.events.AccessoryEventListener;
 import static jcs.commandStation.loconet.Intellibox2Impl.COMMAND_STATION_ID;
@@ -41,6 +45,8 @@ class AccessoryManager {
   private final Map<Integer, AccessoryBean> accessoryEvents;
   private final Intellibox2Impl intelliboxImpl;
 
+  private ScheduledExecutorService scheduler;
+
   private final int defaultSwitchTime;
 
   AccessoryManager(Intellibox2Impl intelliboxImpl) {
@@ -51,8 +57,34 @@ class AccessoryManager {
     defaultSwitchTime = Integer.getInteger("default.switchtime", 100);
   }
 
-  void refreshAccessories(List<AccessoryBean> accessoryList) {
+  private ScheduledExecutorService createScheduler() {
+    return Executors.newSingleThreadScheduledExecutor(runnable -> {
+      Thread thread = new Thread(runnable, "INBX-LN-SCHED");
+      thread.setDaemon(true);
+      return thread;
+    });
+  }
+
+  void start() {
+    if (scheduler == null || scheduler.isShutdown()) {
+      scheduler = createScheduler();
+    }
+  }
+
+  void shutdown() {
+    if (scheduler != null) {
+      scheduler.shutdownNow();
+    }
+  }
+
+  void refresh() {
+    refreshAccessories(PersistenceFactory.getService().getAccessoriesByCommandStationId(COMMAND_STATION_ID));
+  }
+
+  synchronized void refreshAccessories(List<AccessoryBean> accessoryList) {
     accessories.clear();
+    accessories2.clear();
+    accessoryEvents.clear();
 
     for (AccessoryBean ac : accessoryList) {
       Integer address = ac.getAddress();
@@ -60,7 +92,7 @@ class AccessoryManager {
       //Check is a switchtime is set, is not set a default
       Integer switchTime = ac.getSwitchTime();
       if (switchTime == null || switchTime == 0) {
-        switchTime = defaultSwitchTime / 10;
+        switchTime = defaultSwitchTime;
         ac.setSwitchTime(switchTime);
       }
 
@@ -69,13 +101,10 @@ class AccessoryManager {
       if (ac.isBiAddress()) {
         Integer address2 = ac.getAddress2();
         accessories2.put(address2, ac);
-        Logger.trace("Added accessory " + ac.getId() + ", " + ac.getName() + " with address: " + ac.getAddress() + " and address2: " + ac.getAddress2());
-      }
-
-      if (address == 25 || address == 27 || address == 29 || address == 31) {
-        Logger.trace("Outgoing signal " + ac);
+        Logger.trace("Added accessory {}, {} with address: {} and address2: {}", ac.getId(), ac.getName(), ac.getAddress(), ac.getAddress2());
       }
     }
+    Logger.trace("There are {} accessories and {} bi-address accessories.", accessories.size(), accessories2.size());
   }
 
   AccessoryBean getAccessory(Integer address) {
@@ -83,11 +112,24 @@ class AccessoryManager {
   }
 
   void update(final AccessoryBean accessoryBean) {
-    //AccessoryBean ab = accessories.get(accessoryEvent.getAddress());
+
     if (accessoryBean != null && accessoryBean.isOn()) {
       Logger.trace("Accessory: {} Value: {}", accessoryBean.getId(), accessoryBean.getAccessoryValue());
 
-      fireAccessoryEventListeners(new AccessoryEvent(accessoryBean));
+      AccessoryBean registered = accessories.get(accessoryBean.getAddress());
+
+      if (registered == null) {
+        registered = accessories2.get(accessoryBean.getAddress());
+      }
+
+      if (registered == null) {
+        Logger.warn("AccessoryEvent from unknown accessory address: {}", accessoryBean.getAddress());
+        return;
+      }
+
+      registered.setAccessoryValue(accessoryBean.getAccessoryValue());
+
+      fireAccessoryEventListeners(new AccessoryEvent(registered));
     }
 
 //    if (ab == null) {
@@ -126,44 +168,61 @@ class AccessoryManager {
   }
 
   void switchAccessory(Integer address, String protocol, AccessoryValue value, Integer switchTime) {
-    Logger.trace("Try to switch accessory " + protocol + " " + address + " to " + value + " Switchtime: " + switchTime);
+    Logger.trace("Try to switch accessory {} {} to {} Switchtime: {}", protocol, address, value, switchTime);
 
-    //TODO obtain the accessory
-//    AccessoryBean accessory = accessories.get(address);
-//    if (accessory == null) {
-//      accessory = accessories2.get(address);
-//    }
-//
-//    if (accessory == null) {
-//      Logger.warn("Try to switch an unknown Accessory with address: " + protocol + " " + address + " and Value " + value + " Skipping!");
-//      return;
-//    }
-    Integer st;
-    if (switchTime != null) {
+    AccessoryBean accessory = accessories.get(address);
+    if (accessory == null) {
+      accessory = accessories2.get(address);
+    }
+
+    if (accessory == null) {
+      Logger.warn("Requested to switch an unregistered Accessory with protocol/address: {}/{} and Value {}. Skipping!", protocol, address, value);
+      return;
+    }
+
+    int st;
+    if (switchTime != null && switchTime > 0) {
       st = switchTime;
+    } else if (accessory.getSwitchTime() != null && accessory.getSwitchTime() > 0) {
+      st = accessory.getSwitchTime();
     } else {
       st = defaultSwitchTime;
     }
 
-    //TODO how to hande biAddress accessories?
-    //TODO how to hande the protocol?    
     LoconetMessage changeAccessoryOn = LoconetMessageFactory.switchAccessory(address, value, true);
+
     LoconetMessage changeAccessoryOff = LoconetMessageFactory.switchAccessory(address, value, false);
 
-    LoconetMessage acknowledge = LoconetMessageFactory.longAcknowlegde(0, 0);
+    CompletableFuture<LoconetMessage> onEchoFuture = this.intelliboxImpl.loconet.sendMessageAsyncAwaitEcho(changeAccessoryOn);
 
-    this.intelliboxImpl.loconet.sendMessage(changeAccessoryOn);
-    pause(st);
-    this.intelliboxImpl.loconet.sendMessage(changeAccessoryOff);
+    scheduler.schedule(() -> {
+      try {
+        Logger.trace("Sending Accessory Off: {}", changeAccessoryOff);
 
-  }
+        /*
+         * Use no-wait here so the magnet OFF timing is not affected by echo wait.
+         */
+        this.intelliboxImpl.loconet.sendMessageNoWaitConsumeEcho(changeAccessoryOff);
 
-  protected void pause(long millis) {
-    try {
-      Thread.sleep(millis);
-    } catch (InterruptedException ex) {
-      Logger.error(ex);
-    }
+      } catch (Exception ex) {
+        Logger.error("Could not send accessory OFF message: {}", ex.getMessage());
+      }
+    }, st, TimeUnit.MILLISECONDS);
+
+    onEchoFuture.thenAccept(reply -> {
+      if (reply == null) {
+        Logger.trace("No echo received for accessory ON message: {}", changeAccessoryOn);
+        return;
+      }
+
+      try {
+        Logger.trace("AccessoryReply: {}", reply);
+        AccessoryBean ab = LoconetMessageParser.parseSwitchEvent(reply);
+        update(ab);
+      } catch (Exception ex) {
+        Logger.error("Could not process accessory ON echo: {}", ex.getMessage());
+      }
+    });
   }
 
   void fireAccessoryEventListeners(final AccessoryEvent accessoryEvent) {
@@ -177,14 +236,6 @@ class AccessoryManager {
       }
       listener.onAccessoryChange(accessoryEvent);
     }
-  }
-
-  List<AccessoryBean> obtainAccessories() {
-    //Not sure yet whether a ccessory list is obtainable from the Intellibox.
-    //So in the meanwhile let get the accessories from the persistent store
-    List<AccessoryBean> allAccessories = PersistenceFactory.getService().getAccessoriesByCommandStationId(COMMAND_STATION_ID);
-
-    return allAccessories;
   }
 
 }

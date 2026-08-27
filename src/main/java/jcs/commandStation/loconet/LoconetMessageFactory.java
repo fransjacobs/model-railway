@@ -40,7 +40,7 @@ public final class LoconetMessageFactory {
   public static LoconetMessage busy() {
     return new LoconetMessage(LoconetMessage.OPC_BUSY);
   }
-
+  
   public static LoconetMessage switchAccessory(int address, AccessoryValue value, boolean on) {
     if (address < 1 || address > 2048) {
       throw new IllegalArgumentException("Accessory address must be in range 1..2048: " + address);
@@ -58,25 +58,6 @@ public final class LoconetMessageFactory {
       sw2 |= 0x10; // ON: 1 = output active
     }
     return new LoconetMessage(LoconetMessage.OPC_SW_REQ, sw1, sw2);
-  }
-
-  public static LoconetMessage queryAccessory(int address) {
-    if (address < 1 || address > 2048) {
-      throw new IllegalArgumentException("Accessory address must be in range 1..2048: " + address);
-    }
-    int zeroBasedAddress = address - 1;
-
-    int sw1 = zeroBasedAddress & 0x7F;        // A6..A0
-    int sw2 = (zeroBasedAddress >> 7) & 0x0F; // A10..A7
-
-//    if (value == AccessoryValue.GREEN) {
-//      sw2 |= 0x20; // DIR: 1 = closed / green
-//    }
-//
-//    if (on) {
-//      sw2 |= 0x10; // ON: 1 = output active
-//    }
-    return new LoconetMessage(LoconetMessage.OPC_SW_STATE, sw1, sw2);
   }
 
   public static LoconetMessage longAcknowlegde(int lopc, int ack1) {

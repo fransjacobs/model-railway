@@ -101,8 +101,10 @@ public class LoconetMessage implements Opcodes {
   }
 
   protected LoconetMessage(int[] frame) {
-    this.message = frame;
-    calculateChecksum();
+    if (frame == null) {
+      throw new IllegalArgumentException("Frame may not be null");
+    }
+    this.message = Arrays.copyOf(frame, frame.length);
     String chk = checkMessage();
     if (chk != null) {
       throw new IllegalArgumentException(chk);
@@ -143,7 +145,36 @@ public class LoconetMessage implements Opcodes {
     }
   }
 
-  protected final String checkMessage() {
+  /**
+   * Returns {@code true} when opcode bit D3 is set.
+   * <p>
+   * In the LocoNet Personal Use specification D3 indicates that a follow-on message/reply is expected. This method only inspects the opcode byte; it does not guarantee that a concrete reply will be
+   * received on the bus.
+   *
+   * @return true if this message opcode has D3 set
+   */
+  public boolean hasFollowup() {
+    return hasFollowup(getOpcode());
+  }
+
+  /**
+   * Returns {@code true} when opcode bit D3 is set.
+   *
+   * @param opcode LocoNet opcode byte
+   * @return true if opcode bit D3 is set
+   * @throws IllegalArgumentException if {@code opcode} is not an opcode byte
+   */
+  public static boolean hasFollowup(int opcode) {
+    int normalizedOpcode = opcode & 0xFF;
+
+    if (!getMsb(normalizedOpcode)) {
+      throw new IllegalArgumentException("Not a LocoNet opcode byte: " + getByteHex(normalizedOpcode));
+    }
+
+    return (normalizedOpcode & 0x08) != 0;
+  }
+
+  public final String checkMessage() {
     if (message.length < 2) {
       return "Message too short";
     }
@@ -193,9 +224,20 @@ public class LoconetMessage implements Opcodes {
   }
 
   public void setMessage(int[] message, int length) {
-    this.message = message;
+    if (message == null) {
+      throw new IllegalArgumentException("Message may not be null");
+    }
     if (message.length != length) {
-      throw new IllegalArgumentException("Data array length (" + message.length + ") is not equal to " + length + "!");
+      throw new IllegalArgumentException(
+              "Data array length (" + message.length + ") is not equal to " + length + "!"
+      );
+    }
+
+    this.message = Arrays.copyOf(message, length);
+
+    String chk = checkMessage();
+    if (chk != null) {
+      throw new IllegalArgumentException(chk);
     }
   }
 
@@ -211,15 +253,12 @@ public class LoconetMessage implements Opcodes {
     return (getOpcode() & 0xFF) == expected;
   }
 
-  public int getByte(int pos) {
-    if (pos == 0) {
-      return -1;
+  public int getArgument(int index) {
+    if (index < 1 || index > getNumOfData()) {
+      throw new IndexOutOfBoundsException("Argument index: " + index);
     }
-    if (pos < (message.length - 1)) {
-      return message[pos];
-    } else {
-      return -1;
-    }
+
+    return message[index] & 0x7F;
   }
 
   public int getNumOfData() {
