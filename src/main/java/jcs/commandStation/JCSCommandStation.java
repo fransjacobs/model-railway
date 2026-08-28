@@ -410,7 +410,9 @@ public class JCSCommandStation {
       pl.onPowerChange(pe);
     }
 
-    if (!signalsRestored) {
+    
+    //Restor is only possible when the power is on
+    if (!signalsRestored && this.isPowerOn()) {
       restoreSignalValues();
     }
 

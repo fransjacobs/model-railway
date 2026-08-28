@@ -28,6 +28,7 @@ import static jcs.commandStation.loconet.Intellibox2Impl.COMMAND_STATION_ID;
 import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
 import jcs.persistence.PersistenceFactory;
+import org.tinylog.Logger;
 
 /**
  *
@@ -38,15 +39,68 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
   private final Intellibox2Impl intelliboxImpl;
 
   private final Map<Long, LocomotiveBean> locomotives;
+  private final Map<Integer, Long> locomotiveAddresses;
+  private final Map<Integer, Long> locomotiveSlots;
 
   LocomotiveManager(Intellibox2Impl intelliboxImpl) {
     this.intelliboxImpl = intelliboxImpl;
     locomotives = new HashMap<>();
+    locomotiveAddresses = new HashMap<>();
+    locomotiveSlots = new HashMap<>();
   }
 
+  void refresh() {
+    refreshLocomotives(PersistenceFactory.getService().getLocomotivesByCommandStationId(COMMAND_STATION_ID));
+  }
 
+  synchronized void refreshLocomotives(List<LocomotiveBean> locomotiveList) {
+    locomotives.clear();
+    locomotiveAddresses.clear();
+    locomotiveSlots.clear();
+
+    for (LocomotiveBean loc : locomotiveList) {
+      Long id = loc.getId();
+      Integer address = loc.getAddress();
+
+      locomotives.put(id, loc);
+      locomotiveAddresses.put(address, id);
+
+    }
+    Logger.trace("There are {} locomotives.", locomotives.size());
+  }
+
+  //Workflow when a locomotive change is requeste is to check whether the locomotive has a slow.
+  //when not try to obtain a slot.
+  //may be obtain a slow for the locomotives whci are shown as there are engoug slots avalable
+  void registerSlots() {
+    for (LocomotiveBean locomotive : locomotives.values()) {
+      if (locomotive.isShow()) {
+        //obtain the slot
+        int address = locomotive.getAddress();
+
+        requestAddress(address);
+      }
+    }
+  }
+
+  void requestAddress(Integer address) {
+    LoconetMessage obtainSlot = LoconetMessageFactory.requestLocoAddress(address);
+
+    this.intelliboxImpl.loconet.sendMessage(obtainSlot);
+  }
+
+//  ; FORMAT = <OPC>,<ARG1>,<ARG2>,<CKSUM>
+//;
+//OPC_LOCO_ADR 0xBF ;REQ loco ADR ; <0xBF>,<0>,<ADR>,<CHK> REQ loco ADR
+//;DATA return <E7>, is SLOT#,DATA that ADR was found in
+//;IF ADR not found, MASTER puts ADR in FREE slot
+//;and sends DATA/STATUS return <E7>......
+//;IF no FREE slot,Fail LACK,0 is returned [<B4>,<3F>,<0>,<CHK>]
   void update(LoconetMessage message) {
-    ///parse(message);
+
+  
+
+  ///parse(message);
   }
 
   int getSize() {
@@ -56,7 +110,6 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
   Map<Long, LocomotiveBean> getLocomotives() {
     return locomotives;
   }
-
 
   @Override
   public void onSpeedChange(LocomotiveSpeedEvent velocityEvent) {
@@ -83,15 +136,6 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
         fb.setValue((locomotiveFunctionEvent.isOn() ? 1 : 0));
       }
     }
-  }
-  
-  List<LocomotiveBean> obtainLocomotives() {
-    //Not sure yet whether a loc lict is obbtable from the ntellibox. so in the meanwhile let get the locomotives from the persistent store
-    // should this be dano is a lose API manner?.
-    
-    List<LocomotiveBean> allLocomotives = PersistenceFactory.getService().getLocomotivesByCommandStationId(COMMAND_STATION_ID);
-    
-    return allLocomotives;
   }
 
 }

@@ -27,7 +27,7 @@ alter table routes add departure_signal_value varchar(255);
 update tiles set tile_type = 'CrossSwitch' where tile_type = 'Cross';
 
 insert into command_stations(id, description, short_name, class_name, connect_via, serial_port, ip_address, network_port, ip_auto_conf, supports_decoder_control, supports_accessory_control, supports_feedback, supports_loco_synch, supports_accessory_synch, supports_loco_image_synch, supports_loco_function_synch, protocols, default_cs, enabled, last_used_serial, sup_conn_types, feedback_module_id, feedback_bus_count, feedback_bus_0_module_count, feedback_bus_1_module_count, feedback_bus_2_module_count, feedback_bus_3_module_count, virtual)
-values('intellibox2', 'Uhlenbrock Intellibox 2', 'Loconet', 'jcs.commandStation.loconet.Intellibox2Impl', 'SERIAL', null, 'AUTO', null, true, true, true, false, false, false, false, false, 'DCC,MM', false, true, '1', 'SERIAL', '0', 0, 0, 0, 0, 0, false);
+values('intellibox2', 'Uhlenbrock Intellibox 2', 'Loconet', 'jcs.commandStation.loconet.Intellibox2Impl', 'SERIAL', null, 'AUTO', null, false, true, true, true, false, false, false, false, 'DCC,MM', false, true, '1', 'SERIAL', '0', 0, 0, 0, 0, 0, false);
 commit;
 
 update jcs_version set db_version = '0.0.4', app_version = '0.0.4';
