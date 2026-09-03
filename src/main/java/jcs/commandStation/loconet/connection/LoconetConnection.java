@@ -17,16 +17,21 @@ package jcs.commandStation.loconet.connection;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Predicate;
 import jcs.commandStation.loconet.LoconetMessage;
 
 /**
- *
+ * Loconet connection
  */
 public interface LoconetConnection extends AutoCloseable {
 
   LoconetMessage sendMessage(LoconetMessage message);
 
   CompletableFuture<LoconetMessage> sendMessageAsyncAwaitEcho(LoconetMessage message);
+
+  LoconetMessage sendMessageAwaitEchoAndReply(LoconetMessage message, Predicate<LoconetMessage> replyMatcher, long replyTimeoutMillis);
+
+  CompletableFuture<LoconetMessage> sendMessageAsyncAwaitEchoAndReply(LoconetMessage message, Predicate<LoconetMessage> replyMatcher, long replyTimeoutMillis);
 
   void sendMessageNoWait(LoconetMessage message);
 

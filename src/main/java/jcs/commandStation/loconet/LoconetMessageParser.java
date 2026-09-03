@@ -19,6 +19,7 @@ import com.fazecast.jSerialComm.SerialPortTimeoutException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.function.Predicate;
 import jcs.commandStation.events.PowerEvent;
 import static jcs.commandStation.loconet.Intellibox2Impl.COMMAND_STATION_ID;
 import static jcs.commandStation.loconet.Opcodes.BYTE_MASK;
@@ -367,6 +368,49 @@ public class LoconetMessageParser implements Opcodes {
     AccessoryBean ab = new AccessoryBean(id, displayAddress, address2, name, type, state, states, switchTime, protocol, COMMAND_STATION_ID);
     ab.setOn(outputOn);
     return ab;
+  }
+
+  public static Predicate<LoconetMessage> replyForLocoAddressRequest(LoconetMessage request) {
+    if (!request.isExpectedsOpcode(OPC_LOCO_ADDR)) {
+      throw new IllegalArgumentException(String.format("Expected OPC_LOCO_ADDR but got %s", request.getHexOpcode()));
+    }
+
+    int requestedAdrHigh = request.getArgument(1);
+    int requestedAdrLow = request.getArgument(2);
+    int requestedLopc = request.getOpcode() & 0x7F;
+
+    return received -> {
+      if (received == null) {
+        return false;
+      }
+
+      if (received.isExpectedsOpcode(OPC_LONG_ACK)) {
+        int lopc = received.getArgument(1);
+        return lopc == requestedLopc;
+      }
+
+      if (received.isExpectedsOpcode(OPC_SL_RD_DATA)) {
+        /*
+       * OPC_SL_RD_DATA layout:
+       * arg1  = count, usually 0x0E
+       * arg2  = slot
+       * arg3  = STAT1
+       * arg4  = ADR low
+       * arg5  = SPD
+       * arg6  = DIRF
+       * arg7  = TRK
+       * arg8  = SS2
+       * arg9  = ADR2 high
+         */
+        int slotAdrLow = received.getArgument(4);
+        int slotAdrHigh = received.getArgument(9);
+
+        return slotAdrLow == requestedAdrLow
+                && slotAdrHigh == requestedAdrHigh;
+      }
+
+      return false;
+    };
   }
 
 }

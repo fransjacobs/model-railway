@@ -110,6 +110,7 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
       eventMessageHandler = null;
     }
     
+    locomotiveManager.shutdown();
     accessoryManager.shutdown();
     
     LoconetConnectionFactory.closeConnection();

@@ -27,6 +27,11 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import jcs.commandStation.loconet.LoconetMessage;
 import jcs.commandStation.loconet.LoconetMessageParser;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Predicate;
 import org.tinylog.Logger;
 
 /**
@@ -37,6 +42,7 @@ class IntelliboxConnectionImpl implements LoconetConnection {
   private final SerialPort serialPort;
 
   private static final long DEFAULT_ECHO_TIMEOUT_MS = Long.getLong("loconet.echo.timeout.ms", 250L);
+  private static final long DEFAULT_REPLY_TIMEOUT_MS = Long.getLong("loconet.reply.timeout.ms", 500L);
   private static final boolean DEBUG = System.getProperty("message.debug", "false").equalsIgnoreCase("true");
 
   private OutputStream output;
@@ -47,13 +53,17 @@ class IntelliboxConnectionImpl implements LoconetConnection {
   private LoconetMessage expectedEcho;
   private LoconetMessage receivedEcho;
 
-  private ExecutorService txExecutor;
+  private final ExecutorService txExecutor;
   private final Object writeMonitor = new Object();
+
+  private final List<PendingMessage> pendingMessages;
 
   IntelliboxConnectionImpl(SerialPort serialPort) {
     this.messagesQueue = new LinkedBlockingQueue<>();
     this.serialPort = serialPort;
     output = serialPort.getOutputStream();
+    pendingMessages = new CopyOnWriteArrayList<>();
+
     initReceiver();
 
     this.txExecutor = Executors.newSingleThreadExecutor(runnable -> {
@@ -135,27 +145,27 @@ class IntelliboxConnectionImpl implements LoconetConnection {
       return null;
     }
 
-    try {
-      Logger.trace("TX: {}", message);
+    PendingMessage echoPending = null;
 
-      registerExpectedEcho(message);
+    try {
+      echoPending = registerPendingMessage(received -> received.sameMessage(message), true, DEFAULT_ECHO_TIMEOUT_MS);
+
+      Logger.trace("TX: {}", message);
 
       synchronized (writeMonitor) {
         output.write(message.getMessageBytes());
         output.flush();
       }
 
-      LoconetMessage echo = waitForEcho(DEFAULT_ECHO_TIMEOUT_MS);
-      if (echo == null) {
-        Logger.trace("No echo received within {} ms for TX: {}", DEFAULT_ECHO_TIMEOUT_MS, message);
-      }
+      return echoPending.future.get(DEFAULT_ECHO_TIMEOUT_MS + 50, TimeUnit.MILLISECONDS);
 
-      return echo;
-
-    } catch (IOException ex) {
-      clearPendingEcho();
-      Logger.error(ex);
+    } catch (IOException | InterruptedException | ExecutionException | TimeoutException ex) {
+      Logger.error("Could not send LocoNet message: {}", ex.getMessage());
       return null;
+    } finally {
+      if (echoPending != null) {
+        pendingMessages.remove(echoPending);
+      }
     }
   }
 
@@ -199,7 +209,7 @@ class IntelliboxConnectionImpl implements LoconetConnection {
   }
 
   @Override
-  public synchronized void sendMessageNoWaitConsumeEcho(LoconetMessage message) {
+  public void sendMessageNoWaitConsumeEcho(LoconetMessage message) {
     if (message == null) {
       throw new IllegalArgumentException("message may not be null");
     }
@@ -210,15 +220,16 @@ class IntelliboxConnectionImpl implements LoconetConnection {
     }
 
     try {
+      registerPendingMessage(received -> received.sameMessage(message), true, DEFAULT_ECHO_TIMEOUT_MS);
+
       Logger.trace("TX no-wait consume-echo: {}", message);
 
-      registerExpectedEcho(message);
-
-      output.write(message.getMessageBytes());
-      output.flush();
+      synchronized (writeMonitor) {
+        output.write(message.getMessageBytes());
+        output.flush();
+      }
 
     } catch (IOException ex) {
-      clearPendingEcho();
       Logger.error("Could not send LocoNet message: {}", ex.getMessage());
     }
   }
@@ -259,11 +270,80 @@ class IntelliboxConnectionImpl implements LoconetConnection {
     }
   }
 
+  @Override
+  public LoconetMessage sendMessageAwaitEchoAndReply(LoconetMessage message, Predicate<LoconetMessage> replyMatcher, long replyTimeoutMillis) {
+    if (message == null) {
+      throw new IllegalArgumentException("message may not be null");
+    }
+
+    if (replyMatcher == null) {
+      throw new IllegalArgumentException("replyMatcher may not be null");
+    }
+
+    if (output == null || !isConnected()) {
+      Logger.warn("Cannot send LocoNet message; connection is not open.");
+      return null;
+    }
+
+    PendingMessage echoPending = null;
+    PendingMessage replyPending = null;
+
+    try {
+      echoPending = registerPendingMessage(received -> received.sameMessage(message), true, DEFAULT_ECHO_TIMEOUT_MS);
+
+      replyPending = registerPendingMessage(replyMatcher, true, replyTimeoutMillis > 0 ? replyTimeoutMillis : DEFAULT_REPLY_TIMEOUT_MS);
+
+      Logger.trace("TX: {}", message);
+
+      synchronized (writeMonitor) {
+        output.write(message.getMessageBytes());
+        output.flush();
+      }
+
+      LoconetMessage echo = echoPending.future.get(DEFAULT_ECHO_TIMEOUT_MS + 50, TimeUnit.MILLISECONDS);
+
+      if (echo == null) {
+        Logger.trace("No echo received within {} ms for TX: {}", DEFAULT_ECHO_TIMEOUT_MS, message);
+      } else {
+        Logger.trace("TX echo confirmed: {}", echo);
+      }
+
+      LoconetMessage reply = replyPending.future.get(replyTimeoutMillis > 0 ? replyTimeoutMillis + 50 : DEFAULT_REPLY_TIMEOUT_MS + 50, TimeUnit.MILLISECONDS);
+
+      if (reply == null) {
+        Logger.trace("No follow-up reply received for TX: {}", message);
+      }
+
+      return reply;
+
+    } catch (IOException | InterruptedException | ExecutionException | TimeoutException ex) {
+      Logger.error("Could not complete LocoNet request/reply transaction: {}", ex.getMessage());
+      return null;
+
+    } finally {
+      if (echoPending != null) {
+        pendingMessages.remove(echoPending);
+      }
+      if (replyPending != null) {
+        pendingMessages.remove(replyPending);
+      }
+    }
+  }
+
+  @Override
+  public CompletableFuture<LoconetMessage> sendMessageAsyncAwaitEchoAndReply(LoconetMessage message, Predicate<LoconetMessage> replyMatcher, long replyTimeoutMillis) {
+    return CompletableFuture.supplyAsync(() -> sendMessageAwaitEchoAndReply(message, replyMatcher, replyTimeoutMillis), txExecutor);
+  }
+
   private void messageReceived(LoconetMessage received) {
     Logger.trace("RX: {}", received.toString());
 
-    if (consumeIfExpectedEcho(received)) {
-      Logger.trace("RX echo consumed: {}", received.toString());
+//    if (consumeIfExpectedEcho(received)) {
+//      Logger.trace("RX echo consumed: {}", received.toString());
+//      return;
+//    }
+    if (completePendingMessage(received)) {
+      Logger.trace("RX consumed by pending transaction: {}", received);
       return;
     }
 
@@ -282,14 +362,40 @@ class IntelliboxConnectionImpl implements LoconetConnection {
     }
   }
 
-//  @Override
-//  public void addMessageListener(LoconetMessageListener listener) {
-//    throw new UnsupportedOperationException("Not supported yet.");
-//  }
-//  @Override
-//  public void removeMessageListener(LoconetMessageListener listener) {
-//    throw new UnsupportedOperationException("Not supported yet.");
-//  }
+  private PendingMessage registerPendingMessage(Predicate<LoconetMessage> matcher, boolean consume, long timeoutMillis) {
+    PendingMessage pending = new PendingMessage(matcher, consume);
+    pendingMessages.add(pending);
+
+    CompletableFuture.delayedExecutor(timeoutMillis, TimeUnit.MILLISECONDS).execute(() -> {
+      if (pendingMessages.remove(pending)) {
+        pending.future.complete(null);
+      }
+    });
+
+    return pending;
+  }
+
+  private boolean completePendingMessage(LoconetMessage received) {
+    for (PendingMessage pending : pendingMessages) {
+      boolean matches;
+
+      try {
+        matches = pending.matcher.test(received);
+      } catch (Exception ex) {
+        Logger.error("Pending LocoNet matcher failed: {}", ex.getMessage());
+        matches = false;
+      }
+
+      if (matches) {
+        pendingMessages.remove(pending);
+        pending.future.complete(received);
+        return pending.consume;
+      }
+    }
+
+    return false;
+  }
+
   private class LoconetMessageReceiver extends Thread {
 
     private volatile boolean running = false;
@@ -348,6 +454,19 @@ class IntelliboxConnectionImpl implements LoconetConnection {
       } catch (IOException ex) {
         Logger.error("Error closing input stream", ex);
       }
+    }
+  }
+
+  private static final class PendingMessage {
+
+    final Predicate<LoconetMessage> matcher;
+    final CompletableFuture<LoconetMessage> future;
+    final boolean consume;
+
+    PendingMessage(Predicate<LoconetMessage> matcher, boolean consume) {
+      this.matcher = matcher;
+      this.consume = consume;
+      this.future = new CompletableFuture<>();
     }
   }
 }
