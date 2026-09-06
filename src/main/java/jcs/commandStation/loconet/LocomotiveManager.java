@@ -18,6 +18,7 @@ package jcs.commandStation.loconet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import jcs.commandStation.events.LocomotiveDirectionEvent;
 import jcs.commandStation.events.LocomotiveDirectionEventListener;
 import jcs.commandStation.events.LocomotiveFunctionEvent;
@@ -27,6 +28,7 @@ import jcs.commandStation.events.LocomotiveSpeedEventListener;
 import static jcs.commandStation.loconet.Intellibox2Impl.COMMAND_STATION_ID;
 import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
+import jcs.entities.LocomotiveBean.Direction;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
@@ -41,12 +43,14 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
   private final Map<Long, LocomotiveBean> locomotives;
   private final Map<Integer, Long> locomotiveAddresses;
   private final Map<Integer, Long> locomotiveSlots;
+  private final Map<Long, Integer> locomotiveSlotsReverse;
 
   LocomotiveManager(Intellibox2Impl intelliboxImpl) {
     this.intelliboxImpl = intelliboxImpl;
-    locomotives = new HashMap<>();
+    locomotives = new ConcurrentHashMap<>();
     locomotiveAddresses = new HashMap<>();
     locomotiveSlots = new HashMap<>();
+    locomotiveSlotsReverse = new HashMap<>();
   }
 
   void refresh() {
@@ -60,6 +64,7 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
     locomotives.clear();
     locomotiveAddresses.clear();
     locomotiveSlots.clear();
+    locomotiveSlotsReverse.clear();
 
     for (LocomotiveBean loc : locomotiveList) {
       Long id = loc.getId();
@@ -67,9 +72,69 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
 
       locomotives.put(id, loc);
       locomotiveAddresses.put(address, id);
-
     }
     Logger.trace("There are {} locomotives.", locomotives.size());
+
+    registerSlots();
+
+  }
+
+  void changeVelocity(int address, int speed, LocomotiveBean.Direction direction) {
+    if (locomotiveAddresses.containsKey(address)) {
+      Long id = locomotiveAddresses.get(address);
+      LocomotiveBean locomotive = locomotives.get(id);
+
+      locomotive.setDirection(direction);
+      int slot = locomotiveSlotsReverse.get(id);
+
+      LoconetMessage tx = LoconetMessageFactory.changeLocomotiveSpeed(slot, speed);
+      intelliboxImpl.loconet.sendMessageNoWaitConsumeEcho(tx);
+
+    }
+
+  }
+
+  void changeDirection(int address, Direction direction) {
+    if (locomotiveAddresses.containsKey(address)) {
+      Long id = locomotiveAddresses.get(address);
+      LocomotiveBean locomotive = locomotives.get(id);
+
+      locomotive.setDirection(direction);
+      int slot = locomotiveSlotsReverse.get(id);
+      Map<Integer, FunctionBean> functionValues = locomotive.getFunctions();
+      boolean f0 = functionValues.get(0).isOn();
+      boolean f1 = functionValues.get(1).isOn();
+      boolean f2 = functionValues.get(2).isOn();
+      boolean f3 = functionValues.get(3).isOn();
+      boolean f4 = functionValues.get(4).isOn();
+
+      LoconetMessage tx = LoconetMessageFactory.setDirectionAndFunctions(slot, direction, f0, f1, f2, f3, f4);
+      intelliboxImpl.loconet.sendMessageNoWaitConsumeEcho(tx);
+    }
+  }
+
+  void changeFunctionValue(int address, int functionNumber, boolean flag) {
+    if (locomotiveAddresses.containsKey(address)) {
+      Long id = locomotiveAddresses.get(address);
+      LocomotiveBean locomotive = locomotives.get(id);
+
+      locomotive.setFunctionValue(functionNumber, flag);
+      Direction dir = locomotive.getDirection();
+      int slot = locomotiveSlotsReverse.get(id);
+      if (functionNumber < 5) {
+        Map<Integer, FunctionBean> functionValues = locomotive.getFunctions();
+        boolean f0 = functionValues.get(0).isOn();
+        boolean f1 = functionValues.get(1).isOn();
+        boolean f2 = functionValues.get(2).isOn();
+        boolean f3 = functionValues.get(3).isOn();
+        boolean f4 = functionValues.get(4).isOn();
+
+        LoconetMessage tx = LoconetMessageFactory.setDirectionAndFunctions(slot, dir, f0, f1, f2, f3, f4);
+        intelliboxImpl.loconet.sendMessageNoWaitConsumeEcho(tx);
+      }
+
+    }
+
   }
 
   //Workflow when a locomotive change is requeste is to check whether the locomotive has a slow.
@@ -79,16 +144,19 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
     for (LocomotiveBean locomotive : locomotives.values()) {
       if (locomotive.isShow()) {
         //obtain the slot
-        int address = locomotive.getAddress();
-
-        requestAddress(address);
+        requestSlotData(locomotive);
+        Logger.debug("Slot# {} Locomotive {}, address: {}, Id: {}", locomotiveSlotsReverse.get(locomotive.getId()), locomotive.getName(), locomotive.getAddress(), locomotive.getId());
       }
     }
   }
 
-  void requestAddress(Integer address) {
+  void requestSlotData(LocomotiveBean locomotive
+  ) {
+    if (locomotive.getAddress() == null) {
+      return;
+    }
+    int address = locomotive.getAddress();
     LoconetMessage request = LoconetMessageFactory.requestLocoAddress(address);
-
     LoconetMessage reply = intelliboxImpl.loconet.sendMessageAwaitEchoAndReply(request, LoconetMessageParser.replyForLocoAddressRequest(request), 500);
 
     if (reply == null) {
@@ -106,6 +174,9 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
       Logger.warn("Locomotive address request failed: {}", reply);
     }
 
+    parseSlotData(reply, locomotive);
+
+    //Persist changes
   }
 
 //  ; FORMAT = <OPC>,<ARG1>,<ARG2>,<CKSUM>
@@ -115,7 +186,8 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
 //;IF ADR not found, MASTER puts ADR in FREE slot
 //;and sends DATA/STATUS return <E7>......
 //;IF no FREE slot,Fail LACK,0 is returned [<B4>,<3F>,<0>,<CHK>]
-  void update(LoconetMessage message) {
+  void update(LoconetMessage message
+  ) {
 
   
 
@@ -126,7 +198,8 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
     return this.size;
   }
 
-  void parseSlotData(LoconetMessage message) {
+  LocomotiveBean parseSlotData(LoconetMessage message, LocomotiveBean locomotive
+  ) {
 
 //TX: 0xbf 0x00 0x48 0x08
 //RX: 0xbf 0x00 0x48 0x08
@@ -211,6 +284,232 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
 //; 01/00 to 7F/01 -ID shows PC usage.Lo nibble is TYP PC# (PC can use hi values)
 //; 00/02 to 7F/03 -SYSTEM reserved
 //; 00/04 to 7F/7E -NORMAL throttle RANGE
+    if (message == null) {
+      throw new IllegalArgumentException("message may not be null");
+    }
+
+    if (!message.isChecksumValid()) {
+      throw new IllegalArgumentException("Checksum mismatch for message " + message);
+    }
+
+    if (!message.isExpectedsOpcode(LoconetMessage.OPC_SL_RD_DATA)) {
+      throw new IllegalArgumentException("Not an OPC_SL_RD_DATA message, opcode=" + message.getHexOpcode());
+    }
+
+    if (message.getLength() < 14) {
+      throw new IllegalArgumentException("OPC_SL_RD_DATA message too short: " + message);
+    }
+
+    int count = message.getArgument(1);
+    int slot = message.getArgument(2);
+    int stat1 = message.getArgument(3);
+    int addressLow = message.getArgument(4);
+    int speedByte = message.getArgument(5);
+    int dirf = message.getArgument(6);
+    int track = message.getArgument(7);
+    int stat2 = message.getArgument(8);
+    int addressHigh = message.getArgument(9);
+    int sound = message.getArgument(10);
+    int id1 = message.getArgument(11);
+    int id2 = message.getArgument(12);
+
+    if (count != message.getLength()) {
+      Logger.warn("OPC_SL_RD_DATA count byte {} does not match message length {} for {}", count, message.getLength(), message);
+    }
+
+    int address = ((addressHigh & 0x7F) << 7) | (addressLow & 0x7F);
+    if (locomotive == null && locomotiveAddresses.containsKey(address)) {
+      Long locomotiveId = locomotiveAddresses.get(address);
+      locomotive = locomotives.get(locomotiveId);
+      if (locomotive != null) {
+        Logger.trace("Obtained Locomotive {} with id {} and address {} from cached locomotives.", locomotive.getName(), locomotive.getId(), locomotive.getAddress());
+      }
+    }
+
+    if (locomotive == null && locomotiveSlots.containsKey(slot)) {
+      Long locomotiveId = locomotiveSlots.get(slot);
+      locomotive = locomotives.get(locomotiveId);
+      if (locomotive != null) {
+        Logger.trace("Obtained Locomotive {} with id {} and address {} via slot {} from cached locomotives.", locomotive.getName(), locomotive.getId(), locomotive.getAddress(), slot);
+      }
+    }
+
+    if (locomotive == null) {
+      locomotive = new LocomotiveBean();
+
+      locomotive.setAddress(address);
+      Logger.warn("Received slot data for unknown locomotive address {} in slot {}: {}", address, slot, message);
+    }
+
+    if (locomotive.getId() != null) {
+      locomotiveSlots.put(slot, locomotive.getId());
+      locomotiveSlotsReverse.put(locomotive.getId(), slot);
+      Logger.trace("Mapped slot# {} to Id: {}, Address: {} name: {}", slot, locomotive.getId(), locomotive.getAddress(), locomotive.getName());
+    } else {
+      locomotive.setAddress(address);
+      Logger.trace("Can't Map slot# {} as Id is null", slot);
+    }
+
+    int velocity = decodeSlotSpeed(speedByte);
+    LocomotiveBean.Direction direction = decodeSlotDirection(dirf);
+
+    locomotive.setVelocity(velocity);
+    locomotive.setDirection(direction);
+
+    updateSlotFunctions(locomotive, dirf, sound);
+
+    int throttleId = ((id2 & 0x7F) << 7) | (id1 & 0x7F);
+    boolean trackPower = (track & 0x01) != 0;
+    boolean trackIdle = (track & 0x02) != 0;
+    boolean slotInUse = isSlotInUse(stat1);
+
+    Logger.trace("Updated locomotive {} address {} from slot# {}: speed: {}, direction: {}, slotInUse: {}, stat1: {}, stat2: {}, trackPower: {}, trackIdle: {}, throttleId: {}",
+            locomotive.getId(),
+            address,
+            slot,
+            velocity,
+            direction,
+            slotInUse,
+            LoconetMessage.getByteHex(stat1),
+            LoconetMessage.getByteHex(stat2),
+            trackPower,
+            trackIdle,
+            throttleId
+    );
+
+    return locomotive;
+  }
+
+  boolean parseLongAck(LoconetMessage message, LoconetMessage request
+  ) {
+    if (message == null) {
+      throw new IllegalArgumentException("message may not be null");
+    }
+
+    if (!message.isChecksumValid()) {
+      throw new IllegalArgumentException("Checksum mismatch for message " + message);
+    }
+
+    if (!message.isExpectedsOpcode(LoconetMessage.OPC_LONG_ACK)) {
+      throw new IllegalArgumentException("Not an OPC_LONG_ACK message, opcode=" + message.getHexOpcode());
+    }
+
+    int lopc = message.getArgument(1);
+    int ack1 = message.getArgument(2);
+    int expectedLopc = request != null ? request.getOpcode() & 0x7F : -1;
+
+    if (request != null && lopc != expectedLopc) {
+      Logger.warn("LONG_ACK {} does not belong to request {}. LOPC={}, expected={}",
+              message,
+              request,
+              LoconetMessage.getByteHex(lopc),
+              LoconetMessage.getByteHex(expectedLopc));
+      return false;
+    }
+
+    if (ack1 == 0x00) {
+      Logger.warn("LocoNet LONG_ACK failure for request opcode {}: {}", LoconetMessage.getByteHex(lopc), message);
+      return false;
+    }
+
+    Logger.trace("LocoNet LONG_ACK success for request opcode {} ACK1={}",
+            LoconetMessage.getByteHex(lopc),
+            LoconetMessage.getByteHex(ack1));
+    return true;
+  }
+  //OPC_SLOT_STAT1 0xB5 ;WRITE slot stat1 ; <0xB5>,<SLOT>,<STAT1>,<CHK> WRITE stat1
+  //OPC_RQ_SL_DATA 0xBB ;Request SLOT DATA/status block YES <E7>SLOT READ; <0xBB>,<SLOT>,<0>,<CHK> Request SLOT DATA/status block
+  //OPC_WR_SL_DATA 0xEF ;WRITE SLOT DATA, 10 bytes YES LACK ; <0xEF>,<0E>,<SLOT#>,<STAT>,<ADR>,<SPD>,<DIRF>,<TRK> ;<SS2>,<ADR2>,<SND>,<ID1>,<ID2>,<CHK>
+  //; SLOT DATA WRITE, 10 bytes data /14 byte MSG
+  //OPC_SL_RD_DATA 0xE7 ;SLOT DATA return, 10 bytes NO
+  //; <0xE7>,<0E>,<SLOT#>,<STAT>,<ADR>,<SPD>,<DIRF>,<TRK>
+  //;<SS2>,<ADR2>,<SND>,<ID1>,<ID2>,<CHK>
+  //; SLOT DATA READ, 10 bytes data /14 byte MSG
+  //;NOTE; If STAT2.2=0 EX1/EX2 encodes an ID#,[if STAT2.2=1 the STAT.3=0 means EX1/EX2 are ALIAS]
+  //;ID1/ID2 are two 7 bit values encoding a 14 bit unique DEVICE usage ID
+  //;ID1/ID2#'s 00/00 -means NO ID being used
+  // ; 01/00 to 7F/01 -ID shows PC usage.Lo nibble is TYP PC# (PC can use hi values)
+  //; 00/02 to 7F/03 -SYSTEM reserved
+  //; 00/04 to 7F/7E -NORMAL throttle RANGE
+  //OPC_LOCO_DIRF 0xA1 ;SET SLOT dir,F0-4 state NO
+
+  private int decodeSlotSpeed(int speedByte) {
+    /*
+     * LocoNet slot speed:
+     *   0x00 = stop
+     *   0x01 = emergency stop
+     *   0x02..0x7F = normal speed values
+     *
+     * Keep the normal slot speed value as-is for now. If the UI later needs
+     * a strict 0..126 range, change this to "speedByte - 1" for values >= 2.
+     */
+    if (speedByte <= 0x01) {
+      return 0;
+    }
+    return speedByte;
+  }
+
+  private boolean isSlotInUse(int stat1) {
+    /*
+     * STAT1 bits D5/D4 indicate slot activity:
+     *   11 = in-use/refreshed
+     *   10 = idle/not refreshed
+     *   01 = common/refreshed
+     *   00 = free/no valid data
+     */
+    return (stat1 & 0x30) != 0;
+  }
+
+  private LocomotiveBean.Direction decodeSlotDirection(int dirf) {
+    boolean forwards = (dirf & 0x20) != 0;
+    return forwards ? LocomotiveBean.Direction.FORWARDS : LocomotiveBean.Direction.BACKWARDS;
+  }
+
+  private void updateSlotFunctions(LocomotiveBean locomotive, int dirf, int sound) {
+    if (!locomotive.hasFunction(0)) {
+      locomotive.addFunction(new FunctionBean(0, locomotive.getId()));
+    }
+    locomotive.setFunctionValue(0, (dirf & 0x10) != 0);
+
+    if (!locomotive.hasFunction(1)) {
+      locomotive.addFunction(new FunctionBean(1, locomotive.getId()));
+    }
+    locomotive.setFunctionValue(1, (dirf & 0x01) != 0);
+
+    if (!locomotive.hasFunction(2)) {
+      locomotive.addFunction(new FunctionBean(2, locomotive.getId()));
+    }
+    locomotive.setFunctionValue(2, (dirf & 0x02) != 0);
+
+    if (!locomotive.hasFunction(3)) {
+      locomotive.addFunction(new FunctionBean(3, locomotive.getId()));
+    }
+    locomotive.setFunctionValue(3, (dirf & 0x04) != 0);
+
+    if (!locomotive.hasFunction(4)) {
+      locomotive.addFunction(new FunctionBean(4, locomotive.getId()));
+    }
+    locomotive.setFunctionValue(4, (dirf & 0x08) != 0);
+
+    if (!locomotive.hasFunction(5)) {
+      locomotive.addFunction(new FunctionBean(5, locomotive.getId()));
+    }
+    locomotive.setFunctionValue(5, (sound & 0x01) != 0);
+
+    if (!locomotive.hasFunction(6)) {
+      locomotive.addFunction(new FunctionBean(6, locomotive.getId()));
+    }
+    locomotive.setFunctionValue(6, (sound & 0x02) != 0);
+
+    if (!locomotive.hasFunction(7)) {
+      locomotive.addFunction(new FunctionBean(7, locomotive.getId()));
+    }
+    locomotive.setFunctionValue(7, (sound & 0x04) != 0);
+
+    if (!locomotive.hasFunction(8)) {
+      locomotive.addFunction(new FunctionBean(8, locomotive.getId()));
+    }
+    locomotive.setFunctionValue(8, (sound & 0x08) != 0);
   }
 
   Map<Long, LocomotiveBean> getLocomotives() {

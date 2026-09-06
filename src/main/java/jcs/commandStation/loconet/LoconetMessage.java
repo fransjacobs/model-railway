@@ -20,7 +20,7 @@ import jcs.util.ByteUtil;
 
 /**
  * Loconet Message.<br>
- * Inspired on the work from Thomas Kurz in 2007
+ * Inspired on the work from Thomas Kurz in 2007 (https://loconetovertcp.sourceforge.net/Client/index.html)
  */
 public class LoconetMessage implements Opcodes {
 
@@ -100,7 +100,7 @@ public class LoconetMessage implements Opcodes {
     }
   }
 
-  protected LoconetMessage(int[] frame) {
+  LoconetMessage(int[] frame) {
     if (frame == null) {
       throw new IllegalArgumentException("Frame may not be null");
     }
@@ -367,4 +367,24 @@ public class LoconetMessage implements Opcodes {
   public boolean sameMessage(LoconetMessage other) {
     return other != null && Arrays.equals(this.message, other.message);
   }
+
+  /**
+   * Create a LoconetMessage from a String. This method is used to ease testing.<br>
+   * The message should be in the format:<br>
+   * 0x00 0x00 0x07 0x69 0x04 0x00 0x00 0x00 0x00 0x00 0xab 0x00 0xfc
+   *
+   * @param message a Loconet message with content as in the given String
+   */
+  public static LoconetMessage parse(String message) {
+    String[] splittedMessage = message.split(" ");
+    int[] frame = new int[splittedMessage.length];
+    for (int i = 0; i < frame.length; i++) {
+      String bs = splittedMessage[i];
+      bs = bs.replace("0x", "");
+      frame[i] = Integer.parseUnsignedInt(bs, 16);
+
+    }
+    return LoconetMessage.fromReceived(frame);
+  }
+
 }

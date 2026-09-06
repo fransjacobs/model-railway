@@ -670,7 +670,7 @@ public class JCSCommandStation {
     int address = resolveAddress(locomotive);
 
     if (decoderController != null && !SwingUtilities.isEventDispatchThread()) {
-      //Marklin CS does not need a zero velocity. ths is handle by the CS
+      //Marklin CS does not need a zero velocity. this is handled by the CS
       if (!"marklin.cs".equals(this.commandStation.getId())) {
         decoderController.changeVelocity(address, 0, locomotive.getDirection());
       }

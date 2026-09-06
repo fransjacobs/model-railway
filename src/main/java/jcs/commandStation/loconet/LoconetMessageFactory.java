@@ -16,6 +16,7 @@
 package jcs.commandStation.loconet;
 
 import jcs.entities.AccessoryBean.AccessoryValue;
+import jcs.entities.LocomotiveBean.Direction;
 
 /**
  * Factory for creating common Opcodes messages.
@@ -74,10 +75,45 @@ public final class LoconetMessageFactory {
     return new LoconetMessage(LoconetMessage.OPC_LOCO_ADDR, adrHigh, adrLow);
   }
 
-//  public static LoconetMessage requestSlotData(int slot) {
-//    Opcodes.require7Bit("slot", slot);
-//    return fixed(Opcodes.Opcode.OPC_RQ_SL_DATA, slot, 0x00);
-//  }
+  public static LoconetMessage requestSlotData(int slot) {
+    int slt = slot & 0x7F;
+    return new LoconetMessage(LoconetMessage.OPC_RQ_SL_DATA, slt, 0x00);
+  }
+
+  public static LoconetMessage setDirectionAndFunctions(int slot, Direction direction, boolean f0, boolean f1, boolean f2, boolean f3, boolean f4) {
+    int slt = slot & 0x7F;
+    int dirf = 0;
+    if (Direction.FORWARDS == direction) {
+      dirf |= 0x20;
+    }
+    if (f0) {
+      dirf |= 0x10;
+    }
+    if (f4) {
+      dirf |= 0x08;
+    }
+    if (f3) {
+      dirf |= 0x04;
+    }
+    if (f2) {
+      dirf |= 0x02;
+    }
+    if (f1) {
+      dirf |= 0x01;
+    }
+    return new LoconetMessage(LoconetMessage.OPC_LOCO_DIRF, slot, dirf);
+  }
+
+  //0x00=SPEED 0 ,STOP
+  //0x01=SPEED 0 EMERGENCY stop
+  //0x02-0x7F increasing SPEED,0x7F=MAX speed
+  public static LoconetMessage changeLocomotiveSpeed(int slot, int speed) {
+    int slt = slot & 0x7F;
+    int spd = speed & 0x7F;
+
+    return new LoconetMessage(LoconetMessage.OPC_LOCO_SPD, slt, spd);
+  }
+
 //  public static LoconetMessage dispatchPut(int slot) {
 //    Opcodes.require7Bit("slot", slot);
 //
@@ -87,12 +123,6 @@ public final class LoconetMessageFactory {
 //  public static LoconetMessage dispatchGet() {
 //    // Source slot 0 means dispatch get.
 //    return fixed(Opcodes.Opcode.OPC_MOVE_SLOTS, 0x00, 0x00);
-//  }
-//  public static LoconetMessage changeLocomotiveSpeedBySlot(int slot, int speed) {
-//    Opcodes.require7Bit("slot", slot);
-//    validateSpeed(speed);
-//
-//    return fixed(Opcodes.Opcode.OPC_LOCO_SPD, slot, speed);
 //  }
   /**
    * Creates the first message in the speed-change workflow.
