@@ -410,7 +410,6 @@ public class JCSCommandStation {
       pl.onPowerChange(pe);
     }
 
-    
     //Restor is only possible when the power is on
     if (!signalsRestored && this.isPowerOn()) {
       restoreSignalValues();
@@ -1025,7 +1024,7 @@ public class JCSCommandStation {
   private void handleLocomotiveEvent(LocomotiveEvent event) {
     LocomotiveBean lb = event.getLocomotiveBean();
     LocomotiveBean dblb = null;
-    if ("marklin.cs".equals(lb.getCommandStationId()) || "esu-ecos".equals(lb.getCommandStationId())) {
+    if ("marklin.cs".equals(lb.getCommandStationId()) || "esu-ecos".equals(lb.getCommandStationId()) || "intellibox2".equals(lb.getCommandStationId())) {
       dblb = PersistenceFactory.getService().getLocomotiveById(lb.getId(), lb.getCommandStationId());
     } else {
       Integer address;
@@ -1050,7 +1049,7 @@ public class JCSCommandStation {
     }
 
     if (dblb == null) {
-      if ("marklin.cs".equals(lb.getCommandStationId()) || "esu-ecos".equals(lb.getCommandStationId())) {
+      if ("marklin.cs".equals(lb.getCommandStationId()) || "esu-ecos".equals(lb.getCommandStationId()) || "intellibox2".equals(lb.getCommandStationId())) {
         Logger.error("No loc with id " + lb.getId() + ", " + lb.getCommandStationId() + " found in Database");
       } else {
         Logger.error("No loc found for " + lb.getId() + " / " + lb.getCommandStationId() + " found in Database");

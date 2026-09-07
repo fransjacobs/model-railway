@@ -114,16 +114,19 @@ public final class LoconetMessageFactory {
     return new LoconetMessage(LoconetMessage.OPC_LOCO_SPD, slt, spd);
   }
 
-//  public static LoconetMessage dispatchPut(int slot) {
-//    Opcodes.require7Bit("slot", slot);
-//
-//    // Move source slot to destination slot 0.
-//    return fixed(Opcodes.Opcode.OPC_MOVE_SLOTS, slot, 0x00);
-//  }
-//  public static LoconetMessage dispatchGet() {
-//    // Source slot 0 means dispatch get.
-//    return fixed(Opcodes.Opcode.OPC_MOVE_SLOTS, 0x00, 0x00);
-//  }
+  public static LoconetMessage activateSlot(int slot, boolean active) {
+    int src = slot & 0x7F;
+
+    int dst;
+    if (active) {
+      dst = slot & 0x7F;
+    } else {
+      dst = 0;
+    }
+
+    return new LoconetMessage(LoconetMessage.OPC_MOVE_SLOTS, src, dst);
+  }
+
   /**
    * Creates the first message in the speed-change workflow.
    *

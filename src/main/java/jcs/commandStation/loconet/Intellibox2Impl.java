@@ -227,19 +227,19 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
     }
   }
 
-  private void notifyLocomotiveFunctionEventListeners(final LocomotiveFunctionEvent functionEvent) {
+  void notifyLocomotiveFunctionEventListeners(final LocomotiveFunctionEvent functionEvent) {
     for (LocomotiveFunctionEventListener listener : this.locomotiveFunctionEventListeners) {
       listener.onFunctionChange(functionEvent);
     }
   }
 
-  private void notifyLocomotiveDirectionEventListeners(final LocomotiveDirectionEvent directionEvent) {
+  void notifyLocomotiveDirectionEventListeners(final LocomotiveDirectionEvent directionEvent) {
     for (LocomotiveDirectionEventListener listener : this.locomotiveDirectionEventListeners) {
       listener.onDirectionChange(directionEvent);
     }
   }
 
-  private void notifyLocomotiveSpeedEventListeners(final LocomotiveSpeedEvent speedEvent) {
+  void notifyLocomotiveSpeedEventListeners(final LocomotiveSpeedEvent speedEvent) {
     for (LocomotiveSpeedEventListener listener : this.locomotiveSpeedEventListeners) {
       listener.onSpeedChange(speedEvent);
     }

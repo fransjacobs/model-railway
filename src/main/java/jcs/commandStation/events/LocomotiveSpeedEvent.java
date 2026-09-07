@@ -23,40 +23,16 @@ import jcs.entities.LocomotiveBean;
  */
 public class LocomotiveSpeedEvent extends LocomotiveEvent implements Serializable {
 
-  //private LocomotiveBean locomotiveBean;
+  private static final long serialVersionUID = -4061796906171317470L;
+
   public LocomotiveSpeedEvent(LocomotiveBean locomotiveBean) {
     super(locomotiveBean);
-    //this.locomotiveBean = locomotiveBean;
   }
 
   public LocomotiveSpeedEvent(long locomotiveBeanId, String commandStationId, Integer velocity) {
     super(locomotiveBeanId, commandStationId);
     this.locomotiveBean.setVelocity(velocity);
   }
-
-//  public LocomotiveSpeedEvent(int address, LocomotiveBean.DecoderType decoderType, String commandStationId, int velocity) {
-//    super(address, decoderType, commandStationId);
-//    locomotiveBean.setVelocity(velocity);
-//  }
-
-//  private void createLocomotiveBean(long locomotiveBeanId, Integer speed, String commandStationId) {
-//    locomotiveBean = new LocomotiveBean();
-//    locomotiveBean.setId(locomotiveBeanId);
-//    locomotiveBean.setCommandStationId(commandStationId);
-//    locomotiveBean.setVelocity(speed);
-//  }
-
-//  public LocomotiveBean getLocomotiveBean() {
-//    return locomotiveBean;
-//  }
-
-//  public void setLocomotiveBean(LocomotiveBean locomotiveBean) {
-//    this.locomotiveBean = locomotiveBean;
-//  }
-
-//  public boolean isValid() {
-//    return this.locomotiveBean != null && this.locomotiveBean.getId() != null;
-//  }
 
   public Integer getVelocity() {
     if (locomotiveBean != null) {
@@ -66,32 +42,4 @@ public class LocomotiveSpeedEvent extends LocomotiveEvent implements Serializabl
     }
   }
 
-//  public boolean isEventFor(LocomotiveBean locomotive) {
-//    if (locomotive != null) {
-//      Long id = locomotiveBean.getId();
-//
-//      String csId = locomotiveBean.getCommandStationId();
-//      int address = locomotiveBean.getAddress();
-//      DecoderType decoderType = locomotiveBean.getDecoderType();
-//
-//      if (Objects.equals(id, locomotive.getId())) {
-//        return true;
-//      } else {
-//        //Check also the logical key
-//        if (!Objects.equals(csId, locomotive.getCommandStationId())) {
-//          return false;
-//        }
-//        if (!Objects.equals(decoderType, locomotive.getDecoderType())) {
-//          return false;
-//        }
-//        return Objects.equals(address, locomotive.getAddress());
-//      }
-//    } else {
-//      return false;
-//    }
-//  }
-
-//  public Long getId() {
-//    return this.locomotiveBean.getId();
-//  }
 }

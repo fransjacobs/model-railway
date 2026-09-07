@@ -90,6 +90,8 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
       LoconetMessage tx = LoconetMessageFactory.changeLocomotiveSpeed(slot, speed);
       intelliboxImpl.loconet.sendMessageNoWaitConsumeEcho(tx);
 
+      LocomotiveSpeedEvent lse = new LocomotiveSpeedEvent(locomotive);
+      intelliboxImpl.notifyLocomotiveSpeedEventListeners(lse);
     }
 
   }
@@ -110,6 +112,9 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
 
       LoconetMessage tx = LoconetMessageFactory.setDirectionAndFunctions(slot, direction, f0, f1, f2, f3, f4);
       intelliboxImpl.loconet.sendMessageNoWaitConsumeEcho(tx);
+
+      LocomotiveDirectionEvent lde = new LocomotiveDirectionEvent(locomotive);
+      intelliboxImpl.notifyLocomotiveDirectionEventListeners(lde);
     }
   }
 
@@ -131,8 +136,14 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
 
         LoconetMessage tx = LoconetMessageFactory.setDirectionAndFunctions(slot, dir, f0, f1, f2, f3, f4);
         intelliboxImpl.loconet.sendMessageNoWaitConsumeEcho(tx);
+
+      } else {
+        //other functions.... TODO
       }
 
+      FunctionBean changedFunction = locomotive.getFunctionBean(functionNumber);
+      LocomotiveFunctionEvent lfe = new LocomotiveFunctionEvent(changedFunction);
+      intelliboxImpl.notifyLocomotiveFunctionEventListeners(lfe);
     }
 
   }
@@ -176,7 +187,18 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
 
     parseSlotData(reply, locomotive);
 
-    //Persist changes
+    //update the loco
+    LocomotiveDirectionEvent lde = new LocomotiveDirectionEvent(locomotive);
+    intelliboxImpl.notifyLocomotiveDirectionEventListeners(lde);
+
+    LocomotiveSpeedEvent lse = new LocomotiveSpeedEvent(locomotive);
+    intelliboxImpl.notifyLocomotiveSpeedEventListeners(lse);
+
+    for (int f = 0; f < 9; f++) {
+      FunctionBean fn = locomotive.getFunctionBean(f);
+      LocomotiveFunctionEvent lfe = new LocomotiveFunctionEvent(fn);
+      intelliboxImpl.notifyLocomotiveFunctionEventListeners(lfe);
+    }
   }
 
 //  ; FORMAT = <OPC>,<ARG1>,<ARG2>,<CKSUM>
@@ -186,8 +208,7 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
 //;IF ADR not found, MASTER puts ADR in FREE slot
 //;and sends DATA/STATUS return <E7>......
 //;IF no FREE slot,Fail LACK,0 is returned [<B4>,<3F>,<0>,<CHK>]
-  void update(LoconetMessage message
-  ) {
+  void update(LoconetMessage message) {
 
   
 
@@ -198,8 +219,7 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
     return this.size;
   }
 
-  LocomotiveBean parseSlotData(LoconetMessage message, LocomotiveBean locomotive
-  ) {
+  LocomotiveBean parseSlotData(LoconetMessage message, LocomotiveBean locomotive) {
 
 //TX: 0xbf 0x00 0x48 0x08
 //RX: 0xbf 0x00 0x48 0x08
@@ -310,6 +330,7 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
     int stat2 = message.getArgument(8);
     int addressHigh = message.getArgument(9);
     int sound = message.getArgument(10);
+
     int id1 = message.getArgument(11);
     int id2 = message.getArgument(12);
 
@@ -377,11 +398,15 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
             throttleId
     );
 
+    if (!slotInUse) {
+      LoconetMessage tx = LoconetMessageFactory.activateSlot(slot, true);
+      intelliboxImpl.loconet.sendMessageNoWaitConsumeEcho(tx);
+    }
+
     return locomotive;
   }
 
-  boolean parseLongAck(LoconetMessage message, LoconetMessage request
-  ) {
+  boolean parseLongAck(LoconetMessage message, LoconetMessage request) {
     if (message == null) {
       throw new IllegalArgumentException("message may not be null");
     }

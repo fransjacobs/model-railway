@@ -240,7 +240,7 @@ public class LoconetMessageParser implements Opcodes {
     // I bit distinguishes the two sensors sharing this raw pair address
     int address = (rawAddress << 1) | (i ? 1 : 0);
 
-    Integer id = address + 1;
+    Integer id = address; // + 1;
     Integer deviceId = calculateDeviceId(address);
     Integer contactId = calculateContactId(address);
     return new SensorBean(id, deviceId, contactId, 0, (value ? 1 : 0), (value ? 0 : 1), COMMAND_STATION_ID, 0);
