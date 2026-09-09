@@ -25,6 +25,8 @@ import jcs.commandStation.AbstractController;
 import jcs.commandStation.AccessoryController;
 import jcs.commandStation.DecoderController;
 import jcs.commandStation.FeedbackController;
+import jcs.commandStation.automation.DriveSimulator;
+import jcs.commandStation.automation.RailController;
 import static jcs.commandStation.automation.RailController.TAG;
 import jcs.commandStation.entities.Device;
 import jcs.commandStation.entities.FeedbackModule;
@@ -65,6 +67,8 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
 
   static final String COMMAND_STATION_ID = "intellibox2";
 
+  private DriveSimulator simulator;
+
   public Intellibox2Impl(CommandStationBean commandStationBean) {
     this(commandStationBean, false);
   }
@@ -98,6 +102,11 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
       executor.execute(() -> accessoryManager.refresh());
       //refresh the locomotives in the background
       executor.execute(() -> locomotiveManager.refresh());
+
+      if (isVirtual()) {
+        simulator = new DriveSimulator();
+        Logger.info("Inellibox 2 Virtual Mode Enabled!");
+      }
     }
 
     return connected;
@@ -174,6 +183,13 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
   @Override
   public void changeVelocity(int address, int speed, LocomotiveBean.Direction direction) {
     locomotiveManager.changeVelocity(address, speed, direction);
+
+    if (isVirtual()) {
+      //When a locomotive has a speed change (> 0) check if AutoMode is on.
+      if (RailController.getInstance().isAutoModeActive() && speed > 0 && simulator != null) {
+        simulator.simulateDriving(address, speed, direction);
+      }
+    }
   }
 
   @Override

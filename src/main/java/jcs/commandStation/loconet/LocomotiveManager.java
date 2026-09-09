@@ -79,21 +79,33 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
 
   }
 
-  void changeVelocity(int address, int speed, LocomotiveBean.Direction direction) {
+  void changeVelocity(int address, int speed, Direction direction) {
+    Logger.trace("Changing speed for locomotive address {} to {}. Direction {}.", address, speed, direction);
+
+    //Scale the speedstep
+    // max scale of JCS is 1024 Intellibox 127 so roughly divede by 8
+    int speedstep = speed / 8;
+
     if (locomotiveAddresses.containsKey(address)) {
       Long id = locomotiveAddresses.get(address);
       LocomotiveBean locomotive = locomotives.get(id);
 
-      locomotive.setDirection(direction);
-      int slot = locomotiveSlotsReverse.get(id);
+      int slot;
+      if (locomotiveSlotsReverse.containsKey(id)) {
+        slot = locomotiveSlotsReverse.get(id);
+      } else {
+        slot = requestSlotDataByAddress(locomotive);
+      }
 
-      LoconetMessage tx = LoconetMessageFactory.changeLocomotiveSpeed(slot, speed);
+      locomotive.setDirection(direction);
+      locomotive.setVelocity(speed);
+
+      LoconetMessage tx = LoconetMessageFactory.changeLocomotiveSpeed(slot, speedstep);
       intelliboxImpl.loconet.sendMessageNoWaitConsumeEcho(tx);
 
       LocomotiveSpeedEvent lse = new LocomotiveSpeedEvent(locomotive);
       intelliboxImpl.notifyLocomotiveSpeedEventListeners(lse);
     }
-
   }
 
   void changeDirection(int address, Direction direction) {
@@ -101,8 +113,14 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
       Long id = locomotiveAddresses.get(address);
       LocomotiveBean locomotive = locomotives.get(id);
 
+      int slot;
+      if (locomotiveSlotsReverse.containsKey(id)) {
+        slot = locomotiveSlotsReverse.get(id);
+      } else {
+        slot = requestSlotDataByAddress(locomotive);
+      }
+
       locomotive.setDirection(direction);
-      int slot = locomotiveSlotsReverse.get(id);
       Map<Integer, FunctionBean> functionValues = locomotive.getFunctions();
       boolean f0 = functionValues.get(0).isOn();
       boolean f1 = functionValues.get(1).isOn();
@@ -123,9 +141,15 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
       Long id = locomotiveAddresses.get(address);
       LocomotiveBean locomotive = locomotives.get(id);
 
+      int slot;
+      if (locomotiveSlotsReverse.containsKey(id)) {
+        slot = locomotiveSlotsReverse.get(id);
+      } else {
+        slot = requestSlotDataByAddress(locomotive);
+      }
+
       locomotive.setFunctionValue(functionNumber, flag);
       Direction dir = locomotive.getDirection();
-      int slot = locomotiveSlotsReverse.get(id);
       if (functionNumber < 5) {
         Map<Integer, FunctionBean> functionValues = locomotive.getFunctions();
         boolean f0 = functionValues.get(0).isOn();
@@ -136,7 +160,6 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
 
         LoconetMessage tx = LoconetMessageFactory.setDirectionAndFunctions(slot, dir, f0, f1, f2, f3, f4);
         intelliboxImpl.loconet.sendMessageNoWaitConsumeEcho(tx);
-
       } else {
         //other functions.... TODO
       }
@@ -148,21 +171,66 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
 
   }
 
-  //Workflow when a locomotive change is requeste is to check whether the locomotive has a slow.
+  //When a locomotive change is requested check whether the locomotive has a slot#.
   //when not try to obtain a slot.
   //may be obtain a slow for the locomotives whci are shown as there are engoug slots avalable
   void registerSlots() {
     for (LocomotiveBean locomotive : locomotives.values()) {
       if (locomotive.isShow()) {
         //obtain the slot
-        requestSlotData(locomotive);
+        requestSlotDataByAddress(locomotive);
         Logger.debug("Slot# {} Locomotive {}, address: {}, Id: {}", locomotiveSlotsReverse.get(locomotive.getId()), locomotive.getName(), locomotive.getAddress(), locomotive.getId());
       }
     }
   }
 
-  void requestSlotData(LocomotiveBean locomotive
-  ) {
+  int requestSlotDataByAddress(LocomotiveBean locomotive) {
+    if (locomotive.getAddress() == null) {
+      return -1;
+    }
+    int address = locomotive.getAddress();
+    LoconetMessage request = LoconetMessageFactory.requestLocoAddress(address);
+    LoconetMessage reply = intelliboxImpl.loconet.sendMessageAwaitEchoAndReply(request, LoconetMessageParser.replyForLocoAddressRequest(request), 500);
+
+    if (reply == null) {
+      Logger.warn("No slot reply received for locomotive address {}", address);
+      return -1;
+    }
+
+    if (reply.isExpectedsOpcode(LoconetMessage.OPC_SL_RD_DATA)) {
+      // Happy flow: parse slot data and continue.
+      Logger.trace("Received slot data: {}", reply);
+    }
+
+    if (reply.isExpectedsOpcode(LoconetMessage.OPC_LONG_ACK)) {
+      // Failure flow: parse ACK1.
+      Logger.warn("Locomotive address request failed: {}", reply);
+    }
+    parseSlotData(reply, locomotive, false);
+
+//    //update the loco
+    //LocomotiveSpeedEvent lse = new LocomotiveSpeedEvent(locomotive);
+    //intelliboxImpl.notifyLocomotiveSpeedEventListeners(lse);
+//    LocomotiveDirectionEvent lde = new LocomotiveDirectionEvent(locomotive);
+//    intelliboxImpl.notifyLocomotiveDirectionEventListeners(lde);
+//
+//    for (int f = 0; f < 9; f++) {
+//      FunctionBean fn = locomotive.getFunctionBean(f);
+//      LocomotiveFunctionEvent lfe = new LocomotiveFunctionEvent(fn);
+//      intelliboxImpl.notifyLocomotiveFunctionEventListeners(lfe);
+//    }
+    int slot;
+    if (locomotiveSlotsReverse.containsKey(locomotive.getId())) {
+      slot = locomotiveSlotsReverse.get(locomotive.getId());
+    } else {
+      slot = -1;
+      Logger.debug("No valid slot found for locomotive id {}, name {} and address {}!", locomotive.getId(), locomotive.getName(), locomotive.getAddress());
+    }
+
+    return slot;
+  }
+
+  void requestSlotDataBySlot(LocomotiveBean locomotive) {
     if (locomotive.getAddress() == null) {
       return;
     }
@@ -184,21 +252,20 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
       // Failure flow: parse ACK1.
       Logger.warn("Locomotive address request failed: {}", reply);
     }
+    parseSlotData(reply, locomotive, false);
 
-    parseSlotData(reply, locomotive);
-
-    //update the loco
-    LocomotiveDirectionEvent lde = new LocomotiveDirectionEvent(locomotive);
-    intelliboxImpl.notifyLocomotiveDirectionEventListeners(lde);
-
+//    //update the loco
     LocomotiveSpeedEvent lse = new LocomotiveSpeedEvent(locomotive);
     intelliboxImpl.notifyLocomotiveSpeedEventListeners(lse);
 
-    for (int f = 0; f < 9; f++) {
-      FunctionBean fn = locomotive.getFunctionBean(f);
-      LocomotiveFunctionEvent lfe = new LocomotiveFunctionEvent(fn);
-      intelliboxImpl.notifyLocomotiveFunctionEventListeners(lfe);
-    }
+//    LocomotiveDirectionEvent lde = new LocomotiveDirectionEvent(locomotive);
+//    intelliboxImpl.notifyLocomotiveDirectionEventListeners(lde);
+//
+//    for (int f = 0; f < 9; f++) {
+//      FunctionBean fn = locomotive.getFunctionBean(f);
+//      LocomotiveFunctionEvent lfe = new LocomotiveFunctionEvent(fn);
+//      intelliboxImpl.notifyLocomotiveFunctionEventListeners(lfe);
+//    }
   }
 
 //  ; FORMAT = <OPC>,<ARG1>,<ARG2>,<CKSUM>
@@ -219,91 +286,7 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
     return this.size;
   }
 
-  LocomotiveBean parseSlotData(LoconetMessage message, LocomotiveBean locomotive) {
-
-//TX: 0xbf 0x00 0x48 0x08
-//RX: 0xbf 0x00 0x48 0x08
-//RX echo consumed: 0xbf 0x00 0x48 0x08
-//slotread
-//RX: 0xe7 0x0e 0x08 0x32 0x48 0x00 0x30 0x07 0x00 0x00 0x00 0x00 0x00 0x53
-//
-//
-//  OPC_SL_RD_DATA 0xE7 ;SLOT DATA return, 10 bytes NO
-// <0xE7>  -> OPC_SL_RD_DATA
-// ,<0E>   -> len totaal 14 bytes
-//  <SLOT#> -> slot nr "8"  SLOT NUMBER: ;0-7FH, 0 is special SLOT, 070H-07FH DIGITRAX reserved.
-//  ,<STAT> 1) SLOT STATUS1:
-//          2) SLOT LOCO ADR: 
-//          3) SLOT SPEED: 
-//   D7-SL_SPURGE 
-//   D6-SL_CONUP ;1=SLOT purge en, ALSO adrSEL (INTERNAL use only) //; (not seen on NET!)
-//                   CONDN/CONUP: bit encoding-Control double linked Consist List
-//                11=LOGICAL MID CONSIST , Linked up AND down
-//                10=LOGICAL CONSIST TOP, Only linked downwards
-//                01=LOGICAL CONSIST SUB-MEMBER, Only linked upwards
-//                00=FREE locomotive, no CONSIST indirection/linking number is now SLOT adr of SPD/DIR and STATUS of consist. i.e. is an Indirect pointer.
-//                           This Slot has same BUSY/ACTIVE bits as TOP of Consist.
-//                           TOP is loco with SPD/DIR for whole consist. (top of list). BUSY/ACTIVE: bit encoding for SLOT activity
-//   D5-SL_BUSY   ;11=IN_USE loco adr in SLOT -REFRESHED
-//   D4-SL_ACTIVE ;10=IDLE loco adr in SLOT -NOT refreshed ;
-//                 01=COMMON loco adr IN SLOT -refreshed
-//                 00=FREE SLOT, no valid DATA -not refreshed
-//   D3-SL_CONDN ; shows other SLOT Consist linked INTO this slot,see SL_CONUP
-//   D2-SL_SPDEX ; 3 BITS for Decoder TYPE encoding for this SLOT
-//   D1-SL_SPD14 ;011=send 128 speed mode packets
-//   D0-SL_SPD28 ;010=14 step MODE
-//               ;001=28 step. Generate Trinary packets for this Mobile ADR
-//               ;000=28 step/ 3 BYTE PKT regular mode
-//               ;111=128 Step decoder, Allow Advanced DCC consisting
-//               ;100=28 Step decoder ,Allow Advanced DCC consisting
-//
-//                  7|6|5|4|3|2|1|0
-//    waarde 0x32:  0 0 1 1 0 0 2 0
-//    14 STEP MODE in use refreshed data valid
-//
-//  ,<ADR> address low 0x48 -> 72
-//  ,<SPD> sprre = 0
-//  ,<DIRF> 
-//           D7-0 ;always 0
-//           D6-SL_XCNT ; reserved , set 0
-//           D5-SL_DIR ;1=loco direction FORWARD
-//           D4-SL_F0 ;1=Directional lighting ON
-//           D3-SL_F4 ;1=F4 ON
-//           D2-SL_F3 ;1=F3 ON
-//           D1-SL_F2 ;1=F2 ON
-//           D0-SL_F1 ;1=F1 ON
-//  waarde 0x30   7|6|5|4|3|2|1|0
-//                0 0 1 1 0 0 0 0   -> forwards F0 on F1..4 off
-//  ,<TRK>  (GLOBAL system /track status)
-//         D7-D4 Reserved
-//         D3 GTRK_PROG_BUSY 1=Programming TRACK in this Master is BUSY.
-//         D2 GTRK_MLOK1 , 1=This Master IMPLEMENTS LocoNet 1.1 capability
-//                       , 0=Master is DT200
-//         D1 GTRK_IDLE ; 0=TRACK is PAUSED, B'cast EMERG STOP.
-//         D0 GTRK_POWER ; 1=DCC packets are ON in MASTER, Global POWER up
-// waarde 0x07 7|6|5|4|3|2|1|0
-//             0 0 0 0 0 1 1 1 ->master LN 1.1, Power On DCC is on
-//  ,<SS2> SLOT STATUS2:
-//   D3- 1=expansion IN ID1/2, 0=ENCODED alias
-//   D2- 1=Expansion ID1/2 is NOT ID usage
-//   D0- 1=this slot has SUPPRESSED ADV consist-
-// waarde 0x00 
-//  ,<ADR2>  high address byte
-//  ,<SND>  0x00 
-//SLOT SOUND: Slot sound/ Accesory Function mode II packets. F5-F8 (byte also sent as ARG2 in SND opcode)
-//     D7-D4 reserved
-//     D3-SL_SND4/F8
-//     D2-SL_SND3/F7
-//     D1-SL_SND2/F6
-//     D0-SL_SND1/F5 ;1= SLOT Sound 1 function 1active (accessory 2)
-//  ,<ID1>,<ID2> uid 0x00 not in use
-//  ,<CHK>  
-//; SLOT DATA READ, 10 bytes data /14 byte MSG
-//;NOTE; If STAT2.2=0 EX1/EX2 encodes an ID#,[if STAT2.2=1 the STAT.3=0 means EX1/EX2 are ALIAS]
-//;ID1/ID2 are two 7 bit values encoding a 14 bit unique DEVICE usage ID. ID1/ID2#'s 00/00 -means NO ID being used
-//; 01/00 to 7F/01 -ID shows PC usage.Lo nibble is TYP PC# (PC can use hi values)
-//; 00/02 to 7F/03 -SYSTEM reserved
-//; 00/04 to 7F/7E -NORMAL throttle RANGE
+  LocomotiveBean parseSlotData(LoconetMessage message, LocomotiveBean locomotive, boolean updateDirAndFunc) {
     if (message == null) {
       throw new IllegalArgumentException("message may not be null");
     }
@@ -375,9 +358,10 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
     LocomotiveBean.Direction direction = decodeSlotDirection(dirf);
 
     locomotive.setVelocity(velocity);
-    locomotive.setDirection(direction);
-
-    updateSlotFunctions(locomotive, dirf, sound);
+    if (updateDirAndFunc) {
+      locomotive.setDirection(direction);
+      updateSlotFunctions(locomotive, dirf, sound);
+    }
 
     int throttleId = ((id2 & 0x7F) << 7) | (id1 & 0x7F);
     boolean trackPower = (track & 0x01) != 0;
@@ -442,21 +426,6 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
             LoconetMessage.getByteHex(ack1));
     return true;
   }
-  //OPC_SLOT_STAT1 0xB5 ;WRITE slot stat1 ; <0xB5>,<SLOT>,<STAT1>,<CHK> WRITE stat1
-  //OPC_RQ_SL_DATA 0xBB ;Request SLOT DATA/status block YES <E7>SLOT READ; <0xBB>,<SLOT>,<0>,<CHK> Request SLOT DATA/status block
-  //OPC_WR_SL_DATA 0xEF ;WRITE SLOT DATA, 10 bytes YES LACK ; <0xEF>,<0E>,<SLOT#>,<STAT>,<ADR>,<SPD>,<DIRF>,<TRK> ;<SS2>,<ADR2>,<SND>,<ID1>,<ID2>,<CHK>
-  //; SLOT DATA WRITE, 10 bytes data /14 byte MSG
-  //OPC_SL_RD_DATA 0xE7 ;SLOT DATA return, 10 bytes NO
-  //; <0xE7>,<0E>,<SLOT#>,<STAT>,<ADR>,<SPD>,<DIRF>,<TRK>
-  //;<SS2>,<ADR2>,<SND>,<ID1>,<ID2>,<CHK>
-  //; SLOT DATA READ, 10 bytes data /14 byte MSG
-  //;NOTE; If STAT2.2=0 EX1/EX2 encodes an ID#,[if STAT2.2=1 the STAT.3=0 means EX1/EX2 are ALIAS]
-  //;ID1/ID2 are two 7 bit values encoding a 14 bit unique DEVICE usage ID
-  //;ID1/ID2#'s 00/00 -means NO ID being used
-  // ; 01/00 to 7F/01 -ID shows PC usage.Lo nibble is TYP PC# (PC can use hi values)
-  //; 00/02 to 7F/03 -SYSTEM reserved
-  //; 00/04 to 7F/7E -NORMAL throttle RANGE
-  //OPC_LOCO_DIRF 0xA1 ;SET SLOT dir,F0-4 state NO
 
   private int decodeSlotSpeed(int speedByte) {
     /*
