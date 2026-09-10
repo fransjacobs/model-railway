@@ -429,7 +429,7 @@
                     <runnableJar>${project.build.directory}/${project.build.finalName}.jar</runnableJar>
                     <displayName>jcs</displayName>
                     <organizationName>JCS Train Projects</organizationName>
-                    <vmArgs>-Dtinylog.writer.level=trace -Xms256m -Xmx1024m</vmArgs> 
+                    <vmArgs>-Dtinylog.writer.level=trace -Xms256m -Xmx1024m --enable-native-access=com.fazecast.jSerialComm</vmArgs> 
                     <licenseFile>${project.basedir}/LICENSE</licenseFile>
                     <url>https://github.com/fransjacobs/model-railway</url>
                     <createZipball>false</createZipball>

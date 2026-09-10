@@ -63,7 +63,7 @@ public class SerialPortUtil {
   public static void logComports() {
     SerialPort[] ports = listComPorts();
     for (int i = 0; i < ports.length; i++) {
-      Logger.trace(i + ": " + ports[i].getDescriptivePortName() + "; " + ports[i].getSystemPortName()
+      Logger.info(i + ": " + ports[i].getDescriptivePortName() + "; " + ports[i].getSystemPortName()
               + "; Vendor: " + ports[i].getVendorID() + "; Manufacturer: " + ports[i].getManufacturer()
               + "; ProductID: " + ports[i].getProductID() + "; Open: " + ports[i].isOpen()
               + "; Device Read/Write BufferSize: " + ports[i].getDeviceReadBufferSize() + "/" + ports[i].getDeviceWriteBufferSize());

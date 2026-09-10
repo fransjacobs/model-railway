@@ -23,10 +23,12 @@ import java.util.Set;
 import jcs.entities.TileBean;
 import jcs.entities.TileBean.Direction;
 import jcs.entities.TileBean.Orientation;
+import jcs.persistence.util.PersistenceTestHelper;
 import static jcs.ui.layout.tiles.LayoutScale.GRID;
 import jcs.ui.layout.tiles.Tile;
 import jcs.ui.layout.tiles.TileCache;
 import static org.junit.Assert.*;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -35,7 +37,13 @@ import org.junit.Test;
 public class TileTest {
 
   public TileTest() {
+    //System.setProperty("persistenceService", "jcs.persistence.TestH2PersistenceService");
+  }
+
+  @BeforeClass
+  public static void setUpClass() {
     System.setProperty("persistenceService", "jcs.persistence.TestH2PersistenceService");
+    PersistenceTestHelper.getInstance();
   }
 
   @Test

@@ -188,7 +188,6 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
           if (isVirtual()) {
             simulator = new DriveSimulator();
             Logger.info("ECoS Virtual Mode Enabled!");
-
           }
 
         } else {
@@ -502,7 +501,7 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
       //When a locomotive has a speed change (>0) check if Auto mode is on.
       //When in Auto mode try to simulate the first sensor the locomotive is suppose to hit.
       //if (AutoPilot.isAutoModeActive() && speed > 0) {
-      if (RailController.getInstance().isAutoModeActive() && speed > 0) {
+      if (RailController.getInstance().isAutoModeActive() && speed > 0 && simulator != null) {
         simulator.simulateDriving(locUid, speed, direction);
       }
     }

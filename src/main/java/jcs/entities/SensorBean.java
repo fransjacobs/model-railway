@@ -44,6 +44,7 @@ public class SensorBean {
     this(null, null, null, null, null, null, null, 0);
   }
 
+  
   public SensorBean(Integer id, Integer deviceId, Integer contactId, Integer nodeId, Integer status, Integer previousStatus, String commandStationId, Integer busNr) {
     this(id, null, deviceId, contactId, nodeId, status, previousStatus, (Integer) null, (Long) null, commandStationId, busNr);
   }

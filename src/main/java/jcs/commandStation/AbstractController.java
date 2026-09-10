@@ -38,7 +38,7 @@ import jcs.commandStation.events.MeasurementEventListener;
 public abstract class AbstractController implements GenericController {
 
   protected CommandStationBean commandStationBean;
-  protected boolean connected = false;
+  protected volatile boolean connected = false;
 
   protected final List<PowerEventListener> powerEventListeners;
   protected final List<AccessoryEventListener> accessoryEventListeners;
@@ -57,7 +57,7 @@ public abstract class AbstractController implements GenericController {
 
   protected int defaultSwitchTime;
 
-  protected boolean power;
+  protected volatile boolean power;
   protected boolean debug = false;
   protected boolean virtual = false;
 

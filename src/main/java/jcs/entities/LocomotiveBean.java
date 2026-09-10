@@ -404,11 +404,18 @@ public class LocomotiveBean implements Serializable {
   }
 
   public void addFunction(FunctionBean function) {
+    if (function.getLocomotiveId() == null) {
+      function.setLocomotiveId(this.id);
+    }
     this.functions.put(function.getNumber(), function);
   }
 
   public void addAllFunctions(List<FunctionBean> functions) {
     for (FunctionBean function : functions) {
+      if (function.getLocomotiveId() == null) {
+        function.setLocomotiveId(this.id);
+      }
+
       this.functions.put(function.getNumber(), function);
     }
   }
@@ -416,7 +423,9 @@ public class LocomotiveBean implements Serializable {
   public void setFunctions(List<FunctionBean> functions) {
     this.functions.clear();
     for (FunctionBean function : functions) {
-      //function.setLocomotiveId(id);
+      if (function.getLocomotiveId() == null) {
+        function.setLocomotiveId(this.id);
+      }
       this.functions.put(function.getNumber(), function);
     }
   }

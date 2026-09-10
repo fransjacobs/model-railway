@@ -23,6 +23,8 @@ import jcs.entities.FunctionBean;
  */
 public class LocomotiveFunctionEvent extends LocomotiveEvent implements Serializable {
 
+  private static final long serialVersionUID = 4981446964396833650L;
+
   private FunctionBean function;
 
   public LocomotiveFunctionEvent(FunctionBean changedFunction) {
@@ -42,12 +44,6 @@ public class LocomotiveFunctionEvent extends LocomotiveEvent implements Serializ
   public void setFunctionBean(FunctionBean function) {
     this.function = function;
   }
-
-//  @Override
-//  @Deprecated
-//  public boolean isValid() {
-//    return this.function != null && this.function.getLocomotiveId() != null && this.function.getNumber() != null;
-//  }
 
   public boolean isEventFor(FunctionBean function) {
     if (function != null) {

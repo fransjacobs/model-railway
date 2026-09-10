@@ -61,7 +61,7 @@ public class SensorMonitorTest {
 
   @BeforeEach
   public void setUp() {
-    if (JCS.getJcsCommandStation().connect()) {
+    if (JCS.getJcsCommandStation() != null && JCS.getJcsCommandStation().connect()) {
 
       JCS.getJcsCommandStation().switchPower(true);
       tiles = TileCache.loadTiles(true);
