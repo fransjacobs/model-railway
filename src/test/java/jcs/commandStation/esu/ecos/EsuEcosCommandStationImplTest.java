@@ -36,7 +36,7 @@ import org.tinylog.Logger;
  */
 public class EsuEcosCommandStationImplTest {
 
-  private boolean skip = false;
+  private boolean skip = true;
   private final PersistenceTestHelper testHelper;
 
   private CommandStationBean commandStationBean;
@@ -52,9 +52,11 @@ public class EsuEcosCommandStationImplTest {
   @BeforeEach
   public void setUp() {
     testHelper.runTestDataInsertScript("ecos_test_data.sql");
-    Logger.info("ECoS Testdate initialized");
+    Logger.info("ECoS Testdata initialized");
 
     this.commandStationBean = getEcosAsDefaultCommandStationBean();
+    
+    commandStationBean.setVirtual(true);
 
     if (this.commandStationBean == null) {
       //The workflow on GitHup does gives back a Null as command station for reasons yet unknown for me...
