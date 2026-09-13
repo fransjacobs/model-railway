@@ -206,13 +206,18 @@ public class EcosConnectionFactory {
     return connection != null && connection.isConnected() ? connection : null;
   }
 
+  public static InetAddress discoverEcos() {
+    EcosConnectionFactory factory = EcosConnectionFactory.getInstance();
+    return factory.discoverEcosMdns();
+  }
+
   /**
    * Try to Automatically discover the ESU ECoS IP Address on the local network.<br>
    * mDNS is used to discover the ECoS
    *
    * @return the IP Address of the ECoS of null if not discovered.
    */
-  InetAddress discoverEcos() {
+  private InetAddress discoverEcosMdns() {
     InetAddress ecosIp = null;
 
     try {
@@ -353,11 +358,11 @@ public class EcosConnectionFactory {
               ecosAddress = resolveAddress(ecosConnectionFactory.ipAddress);
               if (ecosAddress == null || !Ping.isReachable(ecosConnectionFactory.ipAddress, LAST_IP_PING_TIMEOUT_MS)) {
                 Logger.trace("Last known ESU ECoS IP address {} is not reachable. Trying to discover it...", ecosConnectionFactory.ipAddress);
-                ecosAddress = ecosConnectionFactory.discoverEcos();
+                ecosAddress = ecosConnectionFactory.discoverEcosMdns();
               }
             } else {
               Logger.trace("Trying to discover ESU ECoS using mDNS...");
-              ecosAddress = ecosConnectionFactory.discoverEcos();
+              ecosAddress = ecosConnectionFactory.discoverEcosMdns();
             }
           }
 
