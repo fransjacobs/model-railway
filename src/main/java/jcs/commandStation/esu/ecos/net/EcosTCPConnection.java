@@ -22,6 +22,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.concurrent.BlockingQueue;
@@ -40,7 +41,7 @@ import org.tinylog.Logger;
 class EcosTCPConnection implements EcosConnection {
 
   private final InetAddress ecosAddress;
-  private Socket clientSocket;
+  private volatile Socket clientSocket;
   private Writer writer;
 
   // Carries completed REPLY messages from the receiver thread to sendMessage().
@@ -49,7 +50,7 @@ class EcosTCPConnection implements EcosConnection {
   // Carries completed EVENT messages to the application event consumer.
   private final BlockingQueue<EcosMessage> eventQueue;
 
-  private ClientMessageReceiver messageReceiver;
+  private volatile ClientMessageReceiver messageReceiver;
   private static final boolean DEBUG = Boolean.getBoolean("message.debug");
   private static final long TIMEOUT_MS = 500L;
 
@@ -61,19 +62,31 @@ class EcosTCPConnection implements EcosConnection {
   }
 
   private void checkConnection() {
+    Socket socket = null;
     try {
       if (clientSocket == null || !clientSocket.isConnected()
               || (messageReceiver != null && !messageReceiver.isRunning())) {
 
-        clientSocket = new Socket(ecosAddress, DEFAULT_NETWORK_PORT);
-        clientSocket.setKeepAlive(true);
-        clientSocket.setTcpNoDelay(true);
+        socket = new Socket();
+        socket.connect(new InetSocketAddress(ecosAddress, DEFAULT_NETWORK_PORT),DEFAULT_CONNECT_TIMEOUT_MS );
+        socket.setKeepAlive(true);
+        socket.setTcpNoDelay(true);
+
+        clientSocket = socket;
         writer = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
 
         messageReceiver = new ClientMessageReceiver(clientSocket);
         messageReceiver.start();
       }
     } catch (IOException ex) {
+      if (socket != null) {
+        try {
+          socket.close();
+        } catch (IOException closeEx) {
+          Logger.trace("Could not close failed socket: {}", closeEx.getMessage());
+        }
+      }
+
       clientSocket = null;
       writer = null;
       messageReceiver = null;
@@ -187,6 +200,11 @@ class EcosTCPConnection implements EcosConnection {
   @Override
   public boolean isConnected() {
     return messageReceiver != null && messageReceiver.isRunning();
+  }
+
+  @Override
+  public boolean isVirtual() {
+    return false;
   }
 
   @Override

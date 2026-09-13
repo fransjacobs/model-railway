@@ -108,97 +108,61 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
   @Override
   public final synchronized boolean connect() {
-    if (!connected) {
-      Logger.trace("Connecting to a " + (virtual ? "Virtual " : "") + "ESU ECoS Command Station...");
-      if (executor == null || executor.isShutdown()) {
-        executor = Executors.newCachedThreadPool();
-      }
-
-      if (commandStationBean == null) {
-        Logger.error("ESU ECoS Command Station Configuration NOT set!");
-        return false;
-      } else {
-        Logger.trace("Connect using " + commandStationBean.getConnectionType());
-      }
-
-      CommandStationBean.ConnectionType conType = commandStationBean.getConnectionType();
-
-      boolean canConnect;
-      if (conType == CommandStationBean.ConnectionType.NETWORK) {
-        try {
-          InetAddress ecosAddr;
-          if (virtual) {
-            ecosAddr = InetAddress.getLocalHost();
-          } else {
-            ecosAddr = InetAddress.getByName(commandStationBean.getIpAddress());
-          }
-          commandStationBean.setIpAddress(ecosAddr.getHostAddress());
-          canConnect = ecosAddr.getHostAddress() != null;
-        } catch (UnknownHostException ex) {
-          Logger.error("Invalid ip address : " + commandStationBean.getIpAddress());
-          return false;
-        }
-      } else {
-        if (virtual) {
-          canConnect = true;
-        } else {
-          canConnect = Ping.isReachable(commandStationBean.getIpAddress());
-        }
-      }
-
-      if (!canConnect) {
-        Logger.error("Can't connect to " + (commandStationBean.getIpAddress() == null ? "ip Address not set" : "can't reach ip " + commandStationBean.getIpAddress()));
-        return false;
-      }
-
-      connection = EcosConnectionFactory.getConnection(commandStationBean);
-
-      if (connection != null) {
-        long now = System.currentTimeMillis();
-        long timeout = now + 5000L;
-
-        while (!connected && now < timeout) {
-          connected = connection.isConnected();
-          now = System.currentTimeMillis();
-        }
-        if (!connected && now > timeout) {
-          Logger.error("Could not establish a connection");
-        }
-
-        if (connected) {
-          //Start the EventHandler
-          eventMessageHandler = new EventHandler(connection);
-          eventMessageHandler.start();
-
-          //Obtain some info about the ECoS
-          initBaseObject();
-
-          initLocomotiveManager();
-          Logger.trace("There are " + locomotiveManager.getSize() + " locomotives");
-
-          initAccessoryManager();
-          Logger.trace("There are " + accessoryManager.getSize() + " accessories");
-
-          initFeedbackManager();
-          Logger.trace("There are " + feedbackManager.getSize() + " feedback modules");
-
-          initBoosterManager();
-          Logger.trace("There are " + boosterManager.getSize() + " boosters");
-
-          if (isVirtual()) {
-            simulator = new DriveSimulator();
-            Logger.info("ECoS Virtual Mode Enabled!");
-          }
-
-        } else {
-          Logger.warn("Can't connect with a ESU ECoS Command Station!");
-          JCS.logProgress("Can't connect with ESU ECoS Command Station!");
-        }
-      }
-
+    if (connected) {
+      return true;
     }
-//            Logger.trace("Connected with: " + (this.mainDevice != null ? this.mainDevice.getName() : "Unknown"));
-//            JCS.logProgress("Power is " + (this.power ? "On" : "Off"));
+
+    Logger.trace("Connecting to a " + (virtual ? "Virtual " : "") + "ESU ECoS Command Station...");
+
+    if (executor == null || executor.isShutdown()) {
+      executor = Executors.newCachedThreadPool();
+    }
+
+    if (commandStationBean == null) {
+      Logger.error("ESU ECoS Command Station Configuration NOT set!");
+      return false;
+    }
+
+    String ipAddress = commandStationBean.getIpAddress();
+    virtual = commandStationBean.isVirtual();
+
+    connection = EcosConnectionFactory.getConnection(ipAddress, virtual);
+    connected = connection != null && connection.isConnected();
+
+    if (!connected) {
+      Logger.warn("Can't connect with a ESU ECoS Command Station within {} ms!", EcosConnection.DEFAULT_CONNECT_TIMEOUT_MS);
+      JCS.logProgress("Can't connect with ESU ECoS Command Station!");
+      return false;
+    }
+
+    if (connection.getControllerAddress() != null) {
+      commandStationBean.setIpAddress(connection.getControllerAddress().getHostAddress());
+    }
+
+    //Start the EventHandler
+    eventMessageHandler = new EventHandler(connection);
+    eventMessageHandler.start();
+
+    //Obtain some info about the ECoS
+    initBaseObject();
+
+    initLocomotiveManager();
+    Logger.trace("There are " + locomotiveManager.getSize() + " locomotives");
+
+    initAccessoryManager();
+    Logger.trace("There are " + accessoryManager.getSize() + " accessories");
+
+    initFeedbackManager();
+    Logger.trace("There are " + feedbackManager.getSize() + " feedback modules");
+
+    initBoosterManager();
+    Logger.trace("There are " + boosterManager.getSize() + " boosters");
+
+    if (isVirtual()) {
+      simulator = new DriveSimulator();
+      Logger.info("ECoS Virtual Mode Enabled!");
+    }
+
     return connected;
   }
 
@@ -319,7 +283,7 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
         connected = false;
       }
 
-      EcosConnectionFactory.disconnectAll();
+      EcosConnectionFactory.disconnect();
     } catch (Exception ex) {
       Logger.error(ex);
     }
@@ -794,8 +758,8 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
     System.setProperty("message.debug", "true");
     //Discover the ECoS using mdns
-    InetAddress ecosAddr = EcosConnectionFactory.discoverEcos();
-    String ip = ecosAddr.getHostAddress();
+    //InetAddress ecosAddr = EcosConnectionFactory.discoverEcos();
+    //String ip = ecosAddr.getHostAddress();
 
     if (1 == 1) {
       CommandStationBean csb = new CommandStationBean();
@@ -804,7 +768,7 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
       csb.setClassName("jcs.commandStation.esu.ecos.EsuEcosCommandStationImpl");
       csb.setConnectVia("NETWORK");
       //csb.setIpAddress("192.168.1.110");
-      csb.setIpAddress(ip);
+      //csb.setIpAddress(ip);
       csb.setNetworkPort(EcosConnection.DEFAULT_NETWORK_PORT);
 
       csb.setDefault(true);
@@ -843,13 +807,13 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 //
 //        cs.pause(1000);
 //
-        List<FeedbackModule> feedbackModules = cs.getFeedbackModules();
-        Logger.trace("There are " + feedbackModules + " Feedback Modules");
-        for (FeedbackModule fm : feedbackModules) {
-          Logger.trace("Module id: " + fm.getId() + " Module nr: " + fm.getModuleNumber() + " ports: " + fm.getPortCount() + " NodeId: " + fm.getIdentifier() + " BusNr: " + fm.getBusNumber());
-          Logger.trace("FBModule id: " + fm.getId() + " S 1 id:" + fm.getSensor(0).getId() + " contactId: " + fm.getSensor(0).getContactId() + " ModuleNr: " + fm.getSensor(0).getDeviceId() + " Name " + fm.getSensor(0).getName());
-          Logger.trace("FBModule id: " + fm.getId() + " S 15 id:" + fm.getSensor(15).getId() + " contactId: " + fm.getSensor(15).getContactId() + " ModuleNr: " + fm.getSensor(15).getDeviceId() + " Name " + fm.getSensor(15).getName());
-        }
+//        List<FeedbackModule> feedbackModules = cs.getFeedbackModules();
+//        Logger.trace("There are " + feedbackModules + " Feedback Modules");
+//        for (FeedbackModule fm : feedbackModules) {
+//          Logger.trace("Module id: " + fm.getId() + " Module nr: " + fm.getModuleNumber() + " ports: " + fm.getPortCount() + " NodeId: " + fm.getIdentifier() + " BusNr: " + fm.getBusNumber());
+//          Logger.trace("FBModule id: " + fm.getId() + " S 1 id:" + fm.getSensor(0).getId() + " contactId: " + fm.getSensor(0).getContactId() + " ModuleNr: " + fm.getSensor(0).getDeviceId() + " Name " + fm.getSensor(0).getName());
+//          Logger.trace("FBModule id: " + fm.getId() + " S 15 id:" + fm.getSensor(15).getId() + " contactId: " + fm.getSensor(15).getContactId() + " ModuleNr: " + fm.getSensor(15).getDeviceId() + " Name " + fm.getSensor(15).getName());
+//        }
 //        power = cs.power(true);
 //        Logger.trace("4 Power is " + (power ? "On" : "Off"));
         //EcosMessage reply = cs.connection.sendMessage(new EcosMessage("queryObjects(26)"));
@@ -926,7 +890,6 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 //         //reply = cs.connection.sendMessage(new EcosMessage("help(65000,attribute)"));
 //        //Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
 //        
-
 //        
 //        reply = cs.connection.sendMessage(new EcosMessage("request(65000,volt"));
 //        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());

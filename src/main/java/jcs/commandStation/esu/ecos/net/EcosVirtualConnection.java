@@ -36,7 +36,7 @@ import org.tinylog.Logger;
 
 /**
  *
- * @author Frans Jacobs
+ * A Virtual ECoS Connection for simulation and Testing
  */
 class EcosVirtualConnection implements EcosConnection, VirtualConnection {
 
@@ -47,7 +47,7 @@ class EcosVirtualConnection implements EcosConnection, VirtualConnection {
 
   private EcosMessageListener messageListener;
   private boolean debug = false;
-  
+
   private static String ESU_ECOS_ID = "esu-ecos";
 
   EcosVirtualConnection(InetAddress address) {
@@ -356,6 +356,11 @@ class EcosVirtualConnection implements EcosConnection, VirtualConnection {
   @Override
   public boolean isConnected() {
     return this.connected;
+  }
+
+  @Override
+  public boolean isVirtual() {
+    return true;
   }
 
   @Override
