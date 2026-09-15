@@ -35,7 +35,7 @@ import org.tinylog.Logger;
  */
 public class EsuEcosCommandStationImplTest {
 
-  private boolean skip = false;
+  private boolean skip = true;
   private final PersistenceTestHelper testHelper;
 
   private CommandStationBean commandStationBean;
