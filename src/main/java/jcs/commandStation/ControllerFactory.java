@@ -50,13 +50,12 @@ public class ControllerFactory {
     return instance;
   }
 
-  
   static void reset() {
     decoderController = null;
     accessoryControllers.clear();
     feedbackControllers.clear();
   }
-  
+
   public static DecoderController getDecoderController() {
     return ControllerFactory.getDecoderController(null, false);
   }
@@ -80,7 +79,7 @@ public class ControllerFactory {
 
     if ((decoderController == null && commandStationBean != null)
             || (decoderController != null && !decoderController.getCommandStationBean().equals(commandStationBean))) {
-      decoderController = instantiateDecoderController(commandStationBean, autoConnect);
+      decoderController = instantiateDecoderController(commandStationBean);
     }
     return decoderController;
   }
@@ -107,7 +106,7 @@ public class ControllerFactory {
     return new ArrayList<>(feedbackControllers.values());
   }
 
-  private static DecoderController instantiateDecoderController(CommandStationBean commandStationBean, boolean autoConnect) {
+  private static DecoderController instantiateDecoderController(CommandStationBean commandStationBean) {
     CommandStationBean bean;
     if (commandStationBean != null) {
       bean = commandStationBean;
@@ -122,8 +121,8 @@ public class ControllerFactory {
       Logger.trace("Invoking decoderController: " + className);
 
       try {
-        Constructor c = Class.forName(className).getConstructor(CommandStationBean.class, Boolean.TYPE);
-        decoderController = (DecoderController) c.newInstance(commandStationBean, autoConnect);
+        Constructor c = Class.forName(className).getConstructor(CommandStationBean.class);
+        decoderController = (DecoderController) c.newInstance(commandStationBean);
       } catch (ClassNotFoundException | InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException ex) {
         Logger.error("Can't instantiate a '" + className + "' " + ex.getMessage());
       }

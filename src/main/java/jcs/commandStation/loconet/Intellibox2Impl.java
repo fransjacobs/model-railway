@@ -89,7 +89,7 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
 
   @Override
   public boolean connect() {
-    loconet = LoconetConnectionFactory.aquireConnection();
+    loconet = LoconetConnectionFactory.acquireConnection(2000);
     this.connected = loconet != null && loconet.isConnected();
 
     if (connected) {

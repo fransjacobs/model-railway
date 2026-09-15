@@ -20,8 +20,8 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Set;
-import jcs.entities.CommandStationBean;
 import jcs.util.NetworkUtil;
+import jcs.util.Ping;
 import net.straylightlabs.hola.dns.Domain;
 import net.straylightlabs.hola.sd.Instance;
 import net.straylightlabs.hola.sd.Query;
@@ -35,81 +35,182 @@ public class EcosConnectionFactory {
 
   private static final String ESU_MRTP_SERVICE = "_esu-mrtp._tcp";
 
-  private static EcosConnection controllerConnection;
+  private static EcosConnectionFactory ecosConnectionFactory;
 
-  private static EcosHTTPConnection httpConnection;
+  private volatile boolean autoReAcquireConnection = true;
+
+  private static final long DEFAULT_ACQUIRE_TIMEOUT_MS = EcosConnection.DEFAULT_CONNECT_TIMEOUT_MS;
+  private static final int LAST_IP_PING_TIMEOUT_MS = 500;
+
+  private volatile EcosConnection controllerConnection;
+
+  private volatile EcosHTTPConnection httpConnection;
 
   private static InetAddress controllerHost;
   private static boolean forceVirtual = false;
-  private static boolean virtual;
+
+  private volatile String ipAddress;
+  private volatile boolean virtual;
+
+  private volatile EcosConnector ecosConnector;
 
   static {
     forceVirtual = "true".equals(System.getProperty("connection.always.virtual", "false"));
   }
 
-  public static EcosConnection getConnection(CommandStationBean commandStation) {
-    return getConnection(commandStation, (virtual != commandStation.isVirtual()));
+  private EcosConnectionFactory() {
+
   }
 
-  public static EcosConnection getConnection(CommandStationBean commandStation, boolean reconnect) {
-    if (reconnect) {
-      disconnectAll();
+  public static EcosConnectionFactory getInstance() {
+    if (ecosConnectionFactory == null) {
+      ecosConnectionFactory = new EcosConnectionFactory();
     }
+    return ecosConnectionFactory;
+  }
 
-    virtual = commandStation.isVirtual();
-    if (!virtual && forceVirtual) {
-      virtual = forceVirtual;
-      Logger.info("Forcing a virtual connection!");
-    }
+  public static InetAddress getControllerHost() {
+    return controllerHost;
+  }
 
-    try {
-      if (virtual) {
-        controllerHost = InetAddress.getLocalHost();
-      } else {
-        controllerHost = InetAddress.getByName(commandStation.getIpAddress());
-      }
-    } catch (UnknownHostException ex) {
-      Logger.error("Invalid ip address : " + commandStation.getIpAddress());
-      return null;
-    }
+  public static void setControllerHost(InetAddress controllerHost) {
+    EcosConnectionFactory.controllerHost = controllerHost;
+  }
 
-    if (controllerConnection == null) {
-      if (virtual) {
-        controllerConnection = new EcosVirtualConnection(controllerHost);
-      } else {
-        controllerConnection = new EcosTCPConnection(controllerHost);
-      }
+  public boolean isVirtual() {
+    return virtual;
+  }
+
+  public void setVirtual(boolean virtual) {
+    this.virtual = virtual;
+  }
+
+  public boolean isAutoReAcquireConnection() {
+    return autoReAcquireConnection;
+  }
+
+  public void setAutoReAcquireConnection(boolean autoReAcquireConnection) {
+    this.autoReAcquireConnection = autoReAcquireConnection;
+  }
+
+  public void stopConnectionAcquire() {
+    setAutoReAcquireConnection(false);
+    if (ecosConnector != null && ecosConnector.isRunning()) {
+      ecosConnector.quit();
     }
+  }
+
+  public EcosConnection getConnection() {
     return controllerConnection;
   }
 
-  public static EcosHTTPConnection getHttpConnection() {
-    if (httpConnection == null) {
-      httpConnection = new EcosHTTPConnection(controllerHost);
-    }
+  public EcosHTTPConnection getHttpConnection() {
     return httpConnection;
   }
 
-  public static void disconnectAll() {
+  public void setIpAddress(String ipAddress) {
+    this.ipAddress = ipAddress;
+  }
+
+  public String getIpAddress() {
+    return ipAddress;
+  }
+
+  public boolean isConnected() {
+    return controllerConnection != null && controllerConnection.isConnected();
+  }
+
+  public synchronized void startEcosConnector() {
+    EcosConnection current = controllerConnection;
+    boolean virt = forceVirtual || virtual;
+
+    if (current != null && current.isConnected() && current.isVirtual() == virt) {
+      return;
+    }
+
+    if (ecosConnector != null && ecosConnector.isRunning()) {
+      Logger.trace("ECoS connector thread is already running...");
+      return;
+    }
+
+    ecosConnector = new EcosConnector(this);
+    ecosConnector.start();
+  }
+
+  public static void disconnect() {
+    EcosConnectionFactory factory = EcosConnectionFactory.getInstance();
+    factory.disconnectAll();
+  }
+
+  public synchronized void disconnectAll() {
+    setAutoReAcquireConnection(false);
+    EcosConnector connector = ecosConnector;
+    ecosConnector = null;
+
+    if (connector != null && connector.isRunning()) {
+      connector.quit();
+      connector.interrupt();
+      try {
+        connector.join(1000L);
+      } catch (InterruptedException ex) {
+        Thread.currentThread().interrupt();
+      }
+    }
+
     httpConnection = null;
 
-    if (controllerConnection != null) {
+    EcosConnection connection = controllerConnection;
+    controllerConnection = null;
+    controllerHost = null;
+
+    if (connection != null) {
       try {
-        controllerConnection.close();
+        connection.close();
       } catch (Exception ex) {
         Logger.trace("Error during disconnect " + ex);
       }
     }
-    controllerConnection = null;
-    controllerHost = null;
   }
 
-  public static String getControllerIp() {
-    if (controllerHost != null) {
-      return controllerHost.getHostAddress();
-    } else {
-      return "Unknown";
+  public String getControllerIp() {
+    return ipAddress;
+  }
+
+  public EcosConnection awaitConnection(long timeoutMillis) {
+    long now = System.currentTimeMillis();
+    long timeout = now + Math.max(1L, timeoutMillis);
+
+    while (now < timeout) {
+      EcosConnection connection = controllerConnection;
+      if (connection != null && connection.isConnected()) {
+        return connection;
+      }
+      zleep(10);
+      now = System.currentTimeMillis();
     }
+
+    EcosConnection connection = controllerConnection;
+
+    if (connection != null && connection.isConnected()) {
+      if (ecosConnector != null) {
+        if (ecosConnector.isRunning()) {
+          ecosConnector.quit();
+          try {
+            ecosConnector.join(1000L);
+          } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+          }
+          ecosConnector = null;
+        }
+      }
+    }
+
+    return connection != null && connection.isConnected() ? connection : null;
+  }
+
+  public static InetAddress discoverEcos() {
+    EcosConnectionFactory factory = EcosConnectionFactory.getInstance();
+    return factory.discoverEcosMdns();
   }
 
   /**
@@ -118,7 +219,7 @@ public class EcosConnectionFactory {
    *
    * @return the IP Address of the ECoS of null if not discovered.
    */
-  public static InetAddress discoverEcos() {
+  private InetAddress discoverEcosMdns() {
     InetAddress ecosIp = null;
 
     try {
@@ -152,9 +253,169 @@ public class EcosConnectionFactory {
     return ecosIp;
   }
 
-//  public static void writeLastUsedIpAddressProperty(String ipAddress) {
-//    if (ipAddress != null) {
-//      RunUtil.writeProperty(LAST_USED_IP_PROP_FILE, "ip-address", ipAddress);
-//    }
-//  }
+  private void zleep(long millis) {
+    try {
+      Thread.sleep(millis);
+    } catch (InterruptedException ex) {
+      Thread.currentThread().interrupt();
+    }
+  }
+
+  private static InetAddress resolveAddress(String ipAddress) {
+    if (ipAddress == null || ipAddress.isBlank()) {
+      return null;
+    }
+
+    try {
+      return InetAddress.getByName(ipAddress);
+    } catch (UnknownHostException ex) {
+      Logger.warn("Invalid ESU ECoS IP address '{}': {}", ipAddress, ex.getMessage());
+      return null;
+    }
+  }
+
+  private EcosConnection createConnection(InetAddress address, boolean useVirtual) {
+    EcosConnection connection = null;
+
+    try {
+      long now = System.currentTimeMillis();
+      long timeout = now + Math.max(1L, DEFAULT_ACQUIRE_TIMEOUT_MS);
+
+      connection = useVirtual ? new EcosVirtualConnection(address) : new EcosTCPConnection(address, this::onConnectionLost);
+
+      while (!connection.isConnected() && now < timeout) {
+        zleep(50);
+        now = System.currentTimeMillis();
+      }
+
+      if (connection.isConnected()) {
+        controllerHost = connection.getControllerAddress();
+        controllerConnection = connection;
+        Logger.info("Connected to ESU ECoS at {}", controllerHost.getHostAddress());
+
+        return connection;
+      }
+
+      Logger.warn("Created ESU ECoS connection for {} but it is not connected", address.getHostAddress());
+      connection.close();
+      return null;
+
+    } catch (Exception ex) {
+      Logger.error("Could not create ESU ECoS connection to {}: {}", address.getHostAddress(), ex.getMessage());
+      if (connection != null) {
+        try {
+          connection.close();
+        } catch (Exception closeEx) {
+          Logger.trace("Error closing failed ESU ECoS connection: {}", closeEx.getMessage());
+        }
+      }
+      return null;
+    }
+  }
+
+  private EcosHTTPConnection createHttpConnection(InetAddress host) {
+    if (host == null) {
+      Logger.warn("Cannot create ECoS HTTP connection because controller host is unknown");
+      return null;
+    }
+
+    if (httpConnection == null) {
+      httpConnection = new EcosHTTPConnection(host);
+    }
+    return httpConnection;
+  }
+
+  void onConnectionLost(EcosConnection lostConnection) {
+    Logger.warn("ECoS connection lost.");
+
+    if (controllerConnection == lostConnection) {
+      controllerConnection = null;
+      controllerHost = null;
+      httpConnection = null;
+    }
+
+    if (autoReAcquireConnection) {
+      startEcosConnector();
+    }
+  }
+
+  private static class EcosConnector extends Thread {
+
+    private final EcosConnectionFactory ecosConnectionFactory;
+    private volatile boolean running;
+
+    EcosConnector(EcosConnectionFactory ecosConnectionFactory) {
+      super("ECOS-CONNECTION-CONNECTOR");
+      this.ecosConnectionFactory = ecosConnectionFactory;
+      setDaemon(true);
+    }
+
+    boolean isRunning() {
+      return running;
+    }
+
+    void quit() {
+      running = false;
+    }
+
+    @Override
+    public void run() {
+      running = true;
+      Logger.trace("ECoS Connector thread is starting...");
+      InetAddress ecosAddress;
+
+      while (running && ecosConnectionFactory.controllerConnection == null) {
+        try {
+          if (ecosConnectionFactory.virtual) {
+            ecosAddress = InetAddress.getLocalHost();
+          } else {
+            if (ecosConnectionFactory.ipAddress != null) {
+              Logger.trace("Trying last known ESU ECoS IP address {}", ecosConnectionFactory.ipAddress);
+              ecosAddress = resolveAddress(ecosConnectionFactory.ipAddress);
+              if (ecosAddress == null || !Ping.isReachable(ecosConnectionFactory.ipAddress, LAST_IP_PING_TIMEOUT_MS)) {
+                Logger.trace("Last known ESU ECoS IP address {} is not reachable. Trying to discover it...", ecosConnectionFactory.ipAddress);
+                ecosAddress = ecosConnectionFactory.discoverEcosMdns();
+              }
+            } else {
+              Logger.trace("Trying to discover ESU ECoS using mDNS...");
+              ecosAddress = ecosConnectionFactory.discoverEcosMdns();
+            }
+          }
+
+          if (ecosAddress != null) {
+            ecosConnectionFactory.ipAddress = ecosAddress.getHostAddress();
+            Logger.trace("Trying to establish a connection with ip: {}", ecosConnectionFactory.ipAddress);
+
+            ecosConnectionFactory.controllerConnection = ecosConnectionFactory.createConnection(ecosAddress, ecosConnectionFactory.virtual);
+            ecosConnectionFactory.httpConnection = ecosConnectionFactory.createHttpConnection(ecosAddress);
+          } else {
+            Logger.warn("Could not discover an ESU ECoS on the local network");
+          }
+        } catch (UnknownHostException ex) {
+          Logger.error("ESU ECoS connection attempt failed: {}", ex.getMessage());
+        }
+
+        if (ecosConnectionFactory.controllerConnection == null) {
+          Logger.trace("No connection yet...");
+          ecosConnectionFactory.zleep(1000);
+        } else {
+          running = false;
+        }
+      }
+      Logger.trace("ECoS Connector thread is finished...");
+    }
+  }
+
+  public static void main(String[] a) {
+
+    EcosConnectionFactory factory = EcosConnectionFactory.getInstance();
+
+    factory.setAutoReAcquireConnection(true);
+
+    factory.startEcosConnector();
+
+    factory.zleep(800000);
+
+  }
+
 }

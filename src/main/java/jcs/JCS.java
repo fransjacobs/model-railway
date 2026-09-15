@@ -228,23 +228,23 @@ public class JCS {
       jcsCommandStation = getJcsCommandStation();
 
       if (persistentStore != null) {
-        if ("true".equalsIgnoreCase(System.getProperty("commandStation.autoconnect", "false"))) {
-          if (jcsCommandStation != null) {
-            boolean connected = jcsCommandStation.connectInBackground();
-            if (connected) {
-              logProgress("Connected with Command Station...");
-
-              boolean power = jcsCommandStation.isPowerOn();
-              logProgress("Track Power is " + (power ? "on" : "off"));
-              Logger.info("Track Power is " + (power ? "on" : "off"));
-              jcsCommandStation.addPowerEventListener(new JCS.Powerlistener());
-            } else {
-              logProgress("Could NOT connect with Command Station...");
-            }
-          } else {
-            logProgress("NO Default Command Station found...");
-          }
-        }
+//        if ("true".equalsIgnoreCase(System.getProperty("commandStation.autoconnect", "false"))) {
+//          if (jcsCommandStation != null) {
+//            boolean connected = jcsCommandStation.connectInBackground();
+//            if (connected) {
+//              logProgress("Connected with Command Station...");
+//
+//              boolean power = jcsCommandStation.isPowerOn();
+//              logProgress("Track Power is " + (power ? "on" : "off"));
+//              Logger.info("Track Power is " + (power ? "on" : "off"));
+//              jcsCommandStation.addPowerEventListener(new JCS.Powerlistener());
+//            } else {
+//              logProgress("Could NOT connect with Command Station...");
+//            }
+//          } else {
+//            logProgress("NO Default Command Station found...");
+//          }
+//        }
 
         logProgress("Starting UI...");
 
@@ -252,11 +252,11 @@ public class JCS {
 
         jcs.startGui();
 
-        //check the connection to the command station
-        if (!JCS.getJcsCommandStation().isConnected()) {
-          Logger.info("Not connected to command station...");
-          //JCS.getJcsCommandStation().connectInBackground();
-        }
+//        //check the connection to the command station
+//        if (!JCS.getJcsCommandStation().isConnected()) {
+//          Logger.info("Not connected to command station...");
+//          //JCS.getJcsCommandStation().connectInBackground();
+//        }
 
       } else {
         Logger.error("Could not obtain a Persistent store. Quitting....");
