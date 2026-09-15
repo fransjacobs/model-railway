@@ -31,12 +31,11 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.tinylog.Logger;
 
 /**
- *
- * @author fransjacobs
+ * TODO Should use the virtual connection...
  */
 public class EsuEcosCommandStationImplTest {
 
-  private boolean skip = true;
+  private boolean skip = false;
   private final PersistenceTestHelper testHelper;
 
   private CommandStationBean commandStationBean;

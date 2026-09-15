@@ -26,11 +26,17 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.LinkedTransferQueue;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TransferQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import jcs.commandStation.esu.ecos.EcosMessage;
+import jcs.commandStation.esu.ecos.EcosMessageFactory;
 import jcs.commandStation.events.ConnectionEvent;
 import org.tinylog.Logger;
 
@@ -54,11 +60,41 @@ class EcosTCPConnection implements EcosConnection {
   private static final boolean DEBUG = Boolean.getBoolean("message.debug");
   private static final long TIMEOUT_MS = 500L;
 
-  EcosTCPConnection(InetAddress address) {
+  private static final long HEARTBEAT_INTERVAL_MS = Long.getLong("ecos.heartbeat.interval.ms", 5000L);
+
+  private static final int MAX_MISSED_HEARTBEATS = Integer.getInteger("ecos.heartbeat.max.missed", 2);
+
+  private volatile ScheduledFuture<?> heartbeatTask;
+  private volatile int missedHeartbeats;
+  private final AtomicBoolean disconnectNotified = new AtomicBoolean(false);
+  private final Consumer<EcosConnection> disconnectCallback;
+
+  private final ScheduledExecutorService heartbeatExecutor
+          = Executors.newSingleThreadScheduledExecutor(runnable -> {
+            Thread thread = new Thread(runnable, "ECoS-HEARTBEAT");
+            thread.setDaemon(true);
+            return thread;
+          });
+
+  EcosTCPConnection(InetAddress address, Consumer<EcosConnection> disconnectCallback) {
     ecosAddress = address;
+    this.disconnectCallback = disconnectCallback;
     replyQueue = new LinkedTransferQueue<>();
     eventQueue = new LinkedBlockingQueue<>();
     checkConnection();
+  }
+
+  private synchronized void startHeartbeat() {
+    if (heartbeatTask != null && !heartbeatTask.isCancelled() && !heartbeatTask.isDone()) {
+      return;
+    }
+
+    heartbeatTask = heartbeatExecutor.scheduleWithFixedDelay(
+            this::heartbeat,
+            HEARTBEAT_INTERVAL_MS,
+            HEARTBEAT_INTERVAL_MS,
+            TimeUnit.MILLISECONDS
+    );
   }
 
   private void checkConnection() {
@@ -68,7 +104,7 @@ class EcosTCPConnection implements EcosConnection {
               || (messageReceiver != null && !messageReceiver.isRunning())) {
 
         socket = new Socket();
-        socket.connect(new InetSocketAddress(ecosAddress, DEFAULT_NETWORK_PORT),DEFAULT_CONNECT_TIMEOUT_MS );
+        socket.connect(new InetSocketAddress(ecosAddress, DEFAULT_NETWORK_PORT), DEFAULT_CONNECT_TIMEOUT_MS);
         socket.setKeepAlive(true);
         socket.setTcpNoDelay(true);
 
@@ -77,6 +113,11 @@ class EcosTCPConnection implements EcosConnection {
 
         messageReceiver = new ClientMessageReceiver(clientSocket);
         messageReceiver.start();
+
+        disconnectNotified.set(false);
+        missedHeartbeats = 0;
+        startHeartbeat();
+
       }
     } catch (IOException ex) {
       if (socket != null) {
@@ -96,6 +137,11 @@ class EcosTCPConnection implements EcosConnection {
   }
 
   private void disconnect() {
+    if (heartbeatTask != null) {
+      heartbeatTask.cancel(true);
+      heartbeatTask = null;
+    }
+
     if (messageReceiver == null) {
       return;
     }
@@ -144,6 +190,7 @@ class EcosTCPConnection implements EcosConnection {
     }
 
     try {
+      replyQueue.clear();
       writer.write(message.getMessage());
       writer.flush();
 
@@ -170,12 +217,16 @@ class EcosTCPConnection implements EcosConnection {
         }
       }
     } catch (IOException ex) {
-      Logger.error("I/O error sending message: " + ex.getMessage());
-      notifyDisconnect();
+      Logger.error("I/O error sending message: {}", ex.getMessage());
+      markDisconnected("I/O error sending message: " + ex.getMessage());
+
+      //notifyDisconnect();
     } catch (InterruptedException ex) {
       Thread.currentThread().interrupt();
-      Logger.error("Interrupted while waiting for reply: " + ex.getMessage());
-      notifyDisconnect();
+      Logger.error("Interrupted while waiting for reply: {}", ex.getMessage());
+      markDisconnected("Interrupted while waiting for reply: " + ex.getMessage());
+
+      //notifyDisconnect();
     }
 
     return message;
@@ -184,22 +235,52 @@ class EcosTCPConnection implements EcosConnection {
   /**
    * Notifies the registered listener of a disconnection and shuts down the receiver.
    */
-  private void notifyDisconnect() {
-    if (messageReceiver != null) {
+//  private void notifyDisconnect() {
+//    if (messageReceiver != null) {
+//      String host = ecosAddress.getHostName();
+//      messageReceiver.notifyDisconnect(new ConnectionEvent(host, false, false));
+//      messageReceiver.quit();
+//    }
+//  }
+  private void markDisconnected(String reason) {
+    if (!disconnectNotified.compareAndSet(false, true)) {
+      return;
+    }
+
+    Logger.warn("ECoS connection lost: {}", reason);
+
+    ClientMessageReceiver receiver = messageReceiver;
+    if (receiver != null) {
       String host = ecosAddress.getHostName();
-      messageReceiver.notifyDisconnect(new ConnectionEvent(host, false, false));
-      messageReceiver.quit();
+      receiver.notifyDisconnect(new ConnectionEvent(host, false, false));
+      receiver.quit();
+    }
+
+    disconnect();
+
+    if (disconnectCallback != null) {
+      disconnectCallback.accept(this);
     }
   }
 
   @Override
   public void close() {
     disconnect();
+    heartbeatExecutor.shutdownNow();
   }
 
   @Override
   public boolean isConnected() {
-    return messageReceiver != null && messageReceiver.isRunning();
+    //return messageReceiver != null && messageReceiver.isRunning();
+    Socket socket = clientSocket;
+    return socket != null
+            && socket.isConnected()
+            && !socket.isClosed()
+            && !socket.isInputShutdown()
+            && !socket.isOutputShutdown()
+            && messageReceiver != null
+            && messageReceiver.isRunning()
+            && !disconnectNotified.get();
   }
 
   @Override
@@ -210,6 +291,37 @@ class EcosTCPConnection implements EcosConnection {
   @Override
   public BlockingQueue<EcosMessage> getEventQueue() {
     return eventQueue;
+  }
+
+  private void heartbeat() {
+    if (!isConnected()) {
+      markDisconnected("Heartbeat found connection not connected");
+      return;
+    }
+
+    try {
+      EcosMessage heartbeat = EcosMessageFactory.getPowerStatus();
+      EcosMessage reply = sendMessage(heartbeat);
+
+      if (reply == null || !reply.isResponseComplete()) {
+        int missed = ++missedHeartbeats;
+        Logger.warn("ECoS heartbeat missed {}/{}", missed, MAX_MISSED_HEARTBEATS);
+
+        if (missed >= MAX_MISSED_HEARTBEATS) {
+          markDisconnected("ECoS heartbeat failed");
+        }
+      } else {
+        missedHeartbeats = 0;
+      }
+
+    } catch (Exception ex) {
+      int missed = ++missedHeartbeats;
+      Logger.warn("ECoS heartbeat error {}/{}: {}", missed, MAX_MISSED_HEARTBEATS, ex.getMessage());
+
+      if (missed >= MAX_MISSED_HEARTBEATS) {
+        markDisconnected("ECoS heartbeat exception: " + ex.getMessage());
+      }
+    }
   }
 
   /**
@@ -321,14 +433,17 @@ class EcosTCPConnection implements EcosConnection {
           }
         } catch (SocketException se) {
           if (running) {
-            Logger.error("Socket error: " + se.getMessage());
+            Logger.error("Socket error: {}", se.getMessage());
+            markDisconnected("Socket error: " + se.getMessage());
             notifyDisconnect(new ConnectionEvent(ecosAddress.getHostName(), false, false));
             quit();
           }
         } catch (IOException ex) {
           if (running) {
-            Logger.error("I/O error in receiver: " + ex.getMessage());
-            Logger.trace(ex);
+//            Logger.error("I/O error in receiver: " + ex.getMessage());
+//            Logger.trace(ex);
+            Logger.warn("Stream closed unexpectedly — disconnecting.");
+            markDisconnected("Stream closed unexpectedly");
           }
         } catch (InterruptedException ex) {
           Thread.currentThread().interrupt();

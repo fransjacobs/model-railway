@@ -69,6 +69,22 @@ public class EcosConnectionFactory {
     return ecosConnectionFactory;
   }
 
+  public static InetAddress getControllerHost() {
+    return controllerHost;
+  }
+
+  public static void setControllerHost(InetAddress controllerHost) {
+    EcosConnectionFactory.controllerHost = controllerHost;
+  }
+
+  public boolean isVirtual() {
+    return virtual;
+  }
+
+  public void setVirtual(boolean virtual) {
+    this.virtual = virtual;
+  }
+
   public boolean isAutoReAcquireConnection() {
     return autoReAcquireConnection;
   }
@@ -84,41 +100,27 @@ public class EcosConnectionFactory {
     }
   }
 
-  public EcosConnection getControllerConnection() {
+  public EcosConnection getConnection() {
     return controllerConnection;
   }
 
-  public EcosHTTPConnection getEcosHttpConnection() {
+  public EcosHTTPConnection getHttpConnection() {
     return httpConnection;
+  }
+
+  public void setIpAddress(String ipAddress) {
+    this.ipAddress = ipAddress;
   }
 
   public String getIpAddress() {
     return ipAddress;
   }
 
-  public static EcosConnection getConnection(String ipAddress, boolean virtual) {
-    EcosConnectionFactory factory = EcosConnectionFactory.getInstance();
-
-    boolean virt = forceVirtual || virtual;
-
-    if (factory.getControllerConnection() == null || !factory.getControllerConnection().isConnected() || factory.virtual != virt) {
-      factory.startEcosConnector();
-    }
-    return factory.awaitConnection(EcosConnection.DEFAULT_CONNECT_TIMEOUT_MS);
+  public boolean isConnected() {
+    return controllerConnection != null && controllerConnection.isConnected();
   }
 
-  public static EcosHTTPConnection getHttpConnection() {
-    EcosConnectionFactory factory = EcosConnectionFactory.getInstance();
-
-    if (factory.getControllerConnection() == null || !factory.getControllerConnection().isConnected()) {
-      factory.startEcosConnector();
-    }
-    factory.awaitConnection(EcosConnection.DEFAULT_CONNECT_TIMEOUT_MS);
-
-    return factory.getEcosHttpConnection();
-  }
-
-  private synchronized void startEcosConnector() {
+  public synchronized void startEcosConnector() {
     EcosConnection current = controllerConnection;
     boolean virt = forceVirtual || virtual;
 
@@ -174,7 +176,7 @@ public class EcosConnectionFactory {
     return ipAddress;
   }
 
-  private EcosConnection awaitConnection(long timeoutMillis) {
+  public EcosConnection awaitConnection(long timeoutMillis) {
     long now = System.currentTimeMillis();
     long timeout = now + Math.max(1L, timeoutMillis);
 
@@ -279,7 +281,7 @@ public class EcosConnectionFactory {
       long now = System.currentTimeMillis();
       long timeout = now + Math.max(1L, DEFAULT_ACQUIRE_TIMEOUT_MS);
 
-      connection = useVirtual ? new EcosVirtualConnection(address) : new EcosTCPConnection(address);
+      connection = useVirtual ? new EcosVirtualConnection(address) : new EcosTCPConnection(address, this::onConnectionLost);
 
       while (!connection.isConnected() && now < timeout) {
         zleep(50);
@@ -321,6 +323,20 @@ public class EcosConnectionFactory {
       httpConnection = new EcosHTTPConnection(host);
     }
     return httpConnection;
+  }
+
+  void onConnectionLost(EcosConnection lostConnection) {
+    Logger.warn("ECoS connection lost.");
+
+    if (controllerConnection == lostConnection) {
+      controllerConnection = null;
+      controllerHost = null;
+      httpConnection = null;
+    }
+
+    if (autoReAcquireConnection) {
+      startEcosConnector();
+    }
   }
 
   private static class EcosConnector extends Thread {
