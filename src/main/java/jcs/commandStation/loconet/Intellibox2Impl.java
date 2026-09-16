@@ -352,38 +352,27 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
                   AccessoryBean ab = LoconetMessageParser.parseSwitchStateEvent(message);
                   accessoryManager.update(ab);
                 }
+                case LoconetMessage.OPC_LOCO_DIRF -> {
+                  //Locomotive direction and functions
+                  Logger.trace("LocomotiveDIRF: {}", message);
+                  locomotiveManager.updateLocomotiveDirf(message);
+                }
+                case LoconetMessage.OPC_LOCO_SND -> {
+                  //Locomotive and functions
+                  Logger.trace("LocomotiveSND: {}", message);
+                  locomotiveManager.updateLocomotiveSnd(message);
+                }
+                case LoconetMessage.OPC_LOCO_SPD -> {
+                  //Locomotive direction and functions
+                  Logger.trace("LocomotiveSPD: {}", message);
+                  locomotiveManager.updateLocomotiveSpeed(message);
+                }
 
-//                case CanMessage.LOC_VELOCITY -> {
-//                  Logger.trace("VelocityChange# " + eventMessage);
-//
-//                }
-//                case CanMessage.LOC_VELOCITY_RESP -> {
-//                  Logger.trace("VelocityChange " + eventMessage);
-//                  notifyLocomotiveSpeedEventListeners(LocomotiveVelocityMessage.parse(eventMessage));
-//                }
-//                case CanMessage.LOC_DIRECTION -> {
-//                  Logger.trace("DirectionChange# " + eventMessage);
-//
-//                }
-//                case CanMessage.LOC_DIRECTION_RESP -> {
-//                  Logger.trace("DirectionChange " + eventMessage);
-//                  notifyLocomotiveDirectionEventListeners(LocomotiveDirectionEventParser.parse(eventMessage));
-//                }
-//                case CanMessage.LOC_FUNCTION -> {
-//
-//                }
-//                case CanMessage.LOC_FUNCTION_RESP -> {
-//                  Logger.trace("FunctionChange " + eventMessage);
-//                  notifyLocomotiveFunctionEventListeners(LocomotiveFunctionEventParser.parseMessage(eventMessage));
-//                }
 //                default -> {
 //                }
 //              }
                 case LoconetMessage.OPC_LONG_ACK -> {
                   Logger.trace("Aknowlegde RX: {}", message);
-                }
-                case LoconetMessage.OPC_LOCO_SPD -> {
-                  //for now ignore it
                 }
                 default -> {
                   Logger.trace("%RX: {} Opcode: {} Lenght: {}", message.toString(), message.getHexOpcode(), length);

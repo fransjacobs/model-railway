@@ -405,17 +405,4 @@ public class EcosConnectionFactory {
       Logger.trace("ECoS Connector thread is finished...");
     }
   }
-
-  public static void main(String[] a) {
-
-    EcosConnectionFactory factory = EcosConnectionFactory.getInstance();
-
-    factory.setAutoReAcquireConnection(true);
-
-    factory.startEcosConnector();
-
-    factory.zleep(800000);
-
-  }
-
 }
