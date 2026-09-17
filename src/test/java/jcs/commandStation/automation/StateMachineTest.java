@@ -28,6 +28,7 @@ import jcs.persistence.PersistenceService;
 import jcs.persistence.util.PersistenceTestHelper;
 import jcs.ui.layout.tiles.Tile;
 import jcs.ui.layout.tiles.TileCache;
+import org.junit.BeforeClass;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
@@ -84,8 +85,11 @@ public class StateMachineTest {
     }
   }
 
+  // @BeforeClass
   @BeforeAll
   public static void setUpClass() {
+    System.setProperty("persistenceService", "jcs.persistence.TestH2PersistenceService");
+    PersistenceTestHelper.getInstance();
   }
 
   @AfterAll
@@ -498,7 +502,7 @@ public class StateMachineTest {
     //Departure -> Running
     stateMachine.executeState();
     assertEquals("Running", stateMachine.getCurrentStateName());
-    
+
     pause(100);
 
     assertEquals(NS_1631, block2.getLocomotiveId());
@@ -608,7 +612,7 @@ public class StateMachineTest {
     block4 = ps.getBlockByTileId("bk-4");
     assertEquals(BlockBean.BlockState.OUTBOUND, block4.getBlockState());
     assertEquals(NS_1631, block4.getLocomotiveId());
-    
+
     //Destination
     block2 = ps.getBlockByTileId("bk-2");
     assertEquals(BlockBean.BlockState.INBOUND, block2.getBlockState());
@@ -617,7 +621,7 @@ public class StateMachineTest {
     //Arrived -> Departing
     stateMachine.executeState();
     assertEquals("Departing", stateMachine.getCurrentStateName());
-    
+
     pause(100);
 
     assertNotNull(ns1631.getRouteBean());
