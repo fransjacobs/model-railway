@@ -81,11 +81,24 @@ public class TileCache {
   private static final AtomicInteger maxX = new AtomicInteger(0);
   private static final AtomicInteger maxY = new AtomicInteger(0);
 
-  private static final PersistenceService persistenceService;
+  private static volatile PersistenceService persistenceService;
 
   static {
-    persistenceService = PersistenceFactory.getService();
     actionEventQueueHandler.start();
+  }
+
+  private static PersistenceService persistenceService() {
+    PersistenceService service = persistenceService;
+    if (service == null) {
+      synchronized (TileCache.class) {
+        service = persistenceService;
+        if (service == null) {
+          service = PersistenceFactory.getService();
+          persistenceService = service;
+        }
+      }
+    }
+    return service;
   }
 
   private TileCache() {
@@ -412,10 +425,6 @@ public class TileCache {
     endIdSeq.set(0);
   }
 
-  public static List<Tile> loadTiles() {
-    return loadTiles(false);
-  }
-
   public static List<Tile> getTiles() {
     return new ArrayList<>(idMap.values());
   }
@@ -432,6 +441,10 @@ public class TileCache {
     }
   }
 
+  public static List<Tile> loadTiles() {
+    return loadTiles(false);
+  }
+
   public static List<Tile> loadTiles(boolean showvalues) {
     long now = System.currentTimeMillis();
     long start = now;
@@ -442,7 +455,7 @@ public class TileCache {
     maxX.set(0);
     maxY.set(0);
 
-    List<TileBean> tileBeans = persistenceService.getTileBeans();
+    List<TileBean> tileBeans = persistenceService().getTileBeans();
 
     long end = System.currentTimeMillis();
     long start2 = end;
@@ -593,7 +606,7 @@ public class TileCache {
 
   public static boolean contains(Point p) {
     boolean found = centerPointMap.containsKey(p);
-    if(!found) {
+    if (!found) {
       found = altPointMap.containsKey(p);
     }
     return found;

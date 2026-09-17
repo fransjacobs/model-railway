@@ -19,12 +19,16 @@ import com.dieselpoint.norm.Database;
 import java.io.File;
 import jcs.persistence.sqlmakers.H2SqlMaker;
 import jcs.persistence.util.H2DatabaseUtil;
+import jcs.persistence.util.PersistenceTestHelper;
 import org.tinylog.Logger;
 
 /**
  * Persistence service to use during unit testing
  */
 public class TestH2PersistenceService extends H2PersistenceService {
+
+  private static final Object INIT_LOCK = new Object();
+  private static boolean initialized;
 
   public TestH2PersistenceService() {
     super();
@@ -35,6 +39,13 @@ public class TestH2PersistenceService extends H2PersistenceService {
    */
   @Override
   protected void connect() {
+    synchronized (INIT_LOCK) {
+      if (!initialized) {
+        PersistenceTestHelper.getInstance();
+        initialized = true;
+      }
+    }
+
     String jdbcUrl = H2DatabaseUtil.JDBC_PRE + System.getProperty("user.home") + File.separator + "jcs" + File.separator + "test-" + H2DatabaseUtil.JCS_DB_NAME + H2DatabaseUtil.DB_MODE + H2DatabaseUtil.SCHEMA;
     System.setProperty("norm.jdbcUrl", jdbcUrl);
 
@@ -42,12 +53,5 @@ public class TestH2PersistenceService extends H2PersistenceService {
     database = new Database();
     database.setSqlMaker(new H2SqlMaker());
   }
-
-//  protected void setJCSPropertiesAsSystemProperties() {
-//    List<JCSPropertyBean> props = getProperties();
-//    props.forEach(p -> {
-//      System.setProperty(p.getKey(), p.getValue());
-//    });
-//  }
 
 }
