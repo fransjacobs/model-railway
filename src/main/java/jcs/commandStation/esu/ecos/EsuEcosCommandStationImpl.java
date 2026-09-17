@@ -64,7 +64,6 @@ import org.tinylog.Logger;
 
 public class EsuEcosCommandStationImpl extends AbstractController implements DecoderController, AccessoryController, FeedbackController, ConnectionEventListener {
 
-  //EcosConnection connection;
   EcosConnectionFactory factory;
   private EventHandler eventMessageHandler;
 
@@ -88,7 +87,6 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
   @Override
   public void setVirtual(boolean flag) {
-    //this.virtual = flag;
     factory.setVirtual(flag);
     Logger.info("Switching Virtual Mode " + (flag ? "On" : "Off"));
 

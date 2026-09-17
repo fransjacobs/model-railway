@@ -133,12 +133,40 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
 
   @Override
   public InfoBean getCommandStationInfo() {
-    return null;
+    InfoBean ib = new InfoBean(commandStationBean);
+
+//    if (ecosManager != null) {
+//      ib.setArticleNumber();
+//      ib.setDescription();
+//      ib.setArticleNumber();
+//      ib.setSerialNumber();
+//      ib.setProductName();
+//      ib.setHardwareVersion();
+//      ib.setSoftwareVersion();
+//      ib.setHostname(getIp());
+//    } else {
+//      ib.setDescription("Not Connected");
+//      ib.setHostname("Not Connected");
+//      Logger.warn("NOT Connected!");
+//    }
+    return ib;
   }
 
   @Override
   public List<Device> getDevices() {
-    return null;
+
+    List<Device> devices = new ArrayList<>();
+    Device ib = new Device();
+//    ib.setId("");
+//    ib.setName();
+//    ib.setSerialNumber();
+//    ib.setHardwareVersion();
+//    ib.setSoftwareVersion();
+    devices.add(ib);
+//
+
+    return devices;
+
   }
 
   @Override
@@ -268,11 +296,18 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
 
   @Override
   public SensorBean getSensorStatus(SensorBean sensorBean) {
+    //TODO
     return null;
+//        Integer sensorId = sensorBean.getId();
+//    return feedbackManager.getSensor(sensorId);
+
   }
 
   @Override
   public void simulateSensor(SensorEvent sensorEvent) {
+//    if (isVirtual() virtualConnection) {
+//      virtualConnection.sendEvent(sensorEvent);
+//    }
   }
 
   @Override
