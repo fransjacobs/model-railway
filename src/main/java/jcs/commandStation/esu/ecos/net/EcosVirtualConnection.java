@@ -18,6 +18,7 @@ package jcs.commandStation.esu.ecos.net;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TransferQueue;
 import jcs.commandStation.esu.ecos.Ecos;
@@ -31,6 +32,7 @@ import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.SensorBean;
 import jcs.persistence.PersistenceFactory;
+import jcs.persistence.PersistenceService;
 import jcs.util.NetworkUtil;
 import org.tinylog.Logger;
 
@@ -40,25 +42,32 @@ import org.tinylog.Logger;
  */
 class EcosVirtualConnection implements EcosConnection, VirtualConnection {
 
-  private boolean connected;
-
+  //private volatile boolean connected;
   private final TransferQueue<String> transferQueue;
-  private final TransferQueue<EcosMessage> eventQueue;
+  private final BlockingQueue<EcosMessage> eventQueue;
+
+  private final PersistenceService db;
 
   private EcosMessageListener messageListener;
   private boolean debug = false;
 
-  private static String ESU_ECOS_ID = "esu-ecos";
+  private static final String ESU_ECOS_ID = "esu-ecos";
+  
+  private boolean connected;
 
   EcosVirtualConnection(InetAddress address) {
     debug = System.getProperty("message.debug", "false").equalsIgnoreCase("true");
     transferQueue = new LinkedTransferQueue<>();
     eventQueue = new LinkedTransferQueue<>();
-    this.connected = true;
+    db = PersistenceFactory.getService();
+    connected = true;
   }
 
   private void disconnect() {
-    this.connected = false;
+    //this.connected = false;
+    transferQueue.clear();
+    eventQueue.clear();
+    EcosConnectionFactory.getInstance().disconnectAll();
   }
 
   @Override
@@ -113,7 +122,7 @@ class EcosVirtualConnection implements EcosConnection, VirtualConnection {
       }
       case EcosMessageFactory.QUERY_LOCOMOTIVES -> {
         //Query the locomotives from the database
-        List<LocomotiveBean> locos = PersistenceFactory.getService().getLocomotivesByCommandStationId(ESU_ECOS_ID);
+        List<LocomotiveBean> locos = db.getLocomotivesByCommandStationId(ESU_ECOS_ID);
 
         for (LocomotiveBean loco : locos) {
           //name,addr,protocol
@@ -141,7 +150,7 @@ class EcosVirtualConnection implements EcosConnection, VirtualConnection {
 
       }
       case EcosMessageFactory.QUERY_ACCESSORIES -> {
-        List<AccessoryBean> accessories = PersistenceFactory.getService().getAccessories();
+        List<AccessoryBean> accessories = db.getAccessories();
         for (AccessoryBean accessory : accessories) {
           replyBuilder.append(accessory.getId());
           replyBuilder.append(" name1[");
@@ -171,7 +180,7 @@ class EcosVirtualConnection implements EcosConnection, VirtualConnection {
         }
       }
       case EcosMessageFactory.FEEDBACK_MODULES_SIZE -> {
-        List<SensorBean> sensors = PersistenceFactory.getService().getSensors();
+        List<SensorBean> sensors = db.getSensors();
         int size = sensors.size() / 16;
         replyBuilder.append(" size[");
         replyBuilder.append(size);
@@ -207,7 +216,8 @@ class EcosVirtualConnection implements EcosConnection, VirtualConnection {
           switch (cmd) {
             case Ecos.CMD_GET -> {
               //Locomotive details
-              LocomotiveBean loco = PersistenceFactory.getService().getLocomotive(Long.parseLong(message.getId()));
+              Long lid = Long.parseLong(message.getId());
+              LocomotiveBean loco = db.getLocomotiveById(lid, "esu-ecos");
               replyBuilder.append(loco.getId());
               replyBuilder.append(" name[\"");
               replyBuilder.append(loco.getName());
@@ -279,7 +289,7 @@ class EcosVirtualConnection implements EcosConnection, VirtualConnection {
 
           }
         } else if (objId >= 20000 && objId < 20999) {
-          AccessoryBean accessory = PersistenceFactory.getService().getAccessory(id);
+          AccessoryBean accessory = db.getAccessory(id);
           replyBuilder.append(accessory.getId());
           replyBuilder.append(" name1[");
           replyBuilder.append(accessory.getName());
@@ -355,17 +365,17 @@ class EcosVirtualConnection implements EcosConnection, VirtualConnection {
 
   @Override
   public boolean isConnected() {
-    return this.connected;
+    return connected;
   }
 
   @Override
   public boolean isVirtual() {
-    return true;
+    return EcosConnectionFactory.getInstance().isVirtual();
   }
 
   @Override
-  public TransferQueue<EcosMessage> getEventQueue() {
-    return this.eventQueue;
+  public BlockingQueue<EcosMessage> getEventQueue() {
+    return eventQueue;
   }
 
   @Override
