@@ -162,13 +162,19 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
         LoconetMessage tx = LoconetMessageFactory.setDirectionAndFunctions(slot, dir, f0, f1, f2, f3, f4);
         intelliboxImpl.loconet.sendMessageNoWaitConsumeEcho(tx);
       } else {
-        boolean f5 = functionValues.get(5).isOn();
-        boolean f6 = functionValues.get(6).isOn();
-        boolean f7 = functionValues.get(7).isOn();
-        boolean f8 = functionValues.get(8).isOn();
+        try {
+          boolean f5 = functionValues.get(5).isOn();
+          boolean f6 = functionValues.get(6).isOn();
+          boolean f7 = functionValues.get(7).isOn();
+          boolean f8 = functionValues.get(8).isOn();
 
-        LoconetMessage tx = LoconetMessageFactory.setFunctions(slot, f5, f5, f7, f8);
-        intelliboxImpl.loconet.sendMessageNoWaitConsumeEcho(tx);
+          LoconetMessage tx = LoconetMessageFactory.setFunctions(slot, f5, f5, f7, f8);
+          intelliboxImpl.loconet.sendMessageNoWaitConsumeEcho(tx);
+
+        } catch (Exception e) {
+          Logger.error(e.getMessage());
+        }
+
         //other functions.... TODO
       }
 
