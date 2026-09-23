@@ -153,27 +153,59 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
       Direction dir = locomotive.getDirection();
       Map<Integer, FunctionBean> functionValues = locomotive.getFunctions();
       if (functionNumber < 5) {
-        boolean f0 = functionValues.get(0).isOn();
-        boolean f1 = functionValues.get(1).isOn();
-        boolean f2 = functionValues.get(2).isOn();
-        boolean f3 = functionValues.get(3).isOn();
-        boolean f4 = functionValues.get(4).isOn();
+        boolean f0, f1, f2, f3, f4;
+        if (functionValues.containsKey(0)) {
+          f0 = functionValues.get(05).isOn();
+        } else {
+          f0 = false;
+        }
+        if (functionValues.containsKey(1)) {
+          f1 = functionValues.get(1).isOn();
+        } else {
+          f1 = false;
+        }
+        if (functionValues.containsKey(2)) {
+          f2 = functionValues.get(2).isOn();
+        } else {
+          f2 = false;
+        }
+        if (functionValues.containsKey(3)) {
+          f3 = functionValues.get(3).isOn();
+        } else {
+          f3 = false;
+        }
+        if (functionValues.containsKey(4)) {
+          f4 = functionValues.get(4).isOn();
+        } else {
+          f4 = false;
+        }
 
         LoconetMessage tx = LoconetMessageFactory.setDirectionAndFunctions(slot, dir, f0, f1, f2, f3, f4);
         intelliboxImpl.loconet.sendMessageNoWaitConsumeEcho(tx);
       } else {
-        try {
-          boolean f5 = functionValues.get(5).isOn();
-          boolean f6 = functionValues.get(6).isOn();
-          boolean f7 = functionValues.get(7).isOn();
-          boolean f8 = functionValues.get(8).isOn();
-
-          LoconetMessage tx = LoconetMessageFactory.setFunctions(slot, f5, f5, f7, f8);
-          intelliboxImpl.loconet.sendMessageNoWaitConsumeEcho(tx);
-
-        } catch (Exception e) {
-          Logger.error(e.getMessage());
+        boolean f5, f6, f7, f8;
+        if (functionValues.containsKey(5)) {
+          f5 = functionValues.get(5).isOn();
+        } else {
+          f5 = false;
         }
+        if (functionValues.containsKey(6)) {
+          f6 = functionValues.get(6).isOn();
+        } else {
+          f6 = false;
+        }
+        if (functionValues.containsKey(7)) {
+          f7 = functionValues.get(7).isOn();
+        } else {
+          f7 = false;
+        }
+        if (functionValues.containsKey(8)) {
+          f8 = functionValues.get(8).isOn();
+        } else {
+          f8 = false;
+        }
+        LoconetMessage tx = LoconetMessageFactory.setFunctions(slot, f5, f5, f7, f8);
+        intelliboxImpl.loconet.sendMessageNoWaitConsumeEcho(tx);
 
         //other functions.... TODO
       }
