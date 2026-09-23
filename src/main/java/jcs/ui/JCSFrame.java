@@ -61,6 +61,7 @@ import javax.swing.WindowConstants;
 import javax.swing.border.LineBorder;
 import jcs.JCS;
 import jcs.commandStation.automation.RailController;
+import static jcs.commandStation.automation.RailController.TAG;
 import jcs.commandStation.automation.RailControllerStatusListener;
 import jcs.commandStation.events.ConnectionEvent;
 import jcs.commandStation.events.PowerEvent;
@@ -391,11 +392,10 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   public void setVisible(boolean b) {
     Logger.debug("Showing main screen");
     super.setVisible(b);
-
-    if (!JCS.getJcsCommandStation().isConnected()) {
-      Logger.info("Try to connect with a command station...");
-      JCS.getJcsCommandStation().connectInBackground();
-    }
+//    if (!JCS.getJcsCommandStation().isConnected()) {
+//      Logger.info("Try to connect with a command station...");
+//      JCS.getJcsCommandStation().connectInBackground();
+//    }
   }
 
   /**
@@ -1499,26 +1499,29 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
 
   @Override
   public void onConnectionChange(ConnectionEvent event) {
-    if (event.isConnected()) {
-      java.awt.EventQueue.invokeLater(() -> {
-        connectMI.setText("DisConnect");
-        connectButton.setSelected(true);
-        if (JCS.getJcsCommandStation().isSupportVNC()) {
-          showVNCBtn.setEnabled(true);
-        } else {
-          showVNCBtn.setEnabled(false);
-        }
-        setTitle(getTitleString());
-      });
-    } else {
-      java.awt.EventQueue.invokeLater(() -> {
-        connectMI.setText("Connect");
-        connectButton.setSelected(false);
-        showVNCBtn.setEnabled(false);
-        setTitle(getTitleString());
-        JOptionPane.showMessageDialog(this, "CommandStation " + event.getSource() + " is not connected.", "Not Connected", JOptionPane.ERROR_MESSAGE);
-      });
-    }
+    Logger.tag(TAG).debug("Command Station {} is {}", event.getSource(), (event.isConnected() ? "Connected" : "DisConnected"));
+
+//    if (event.isConnected()) {
+//      
+//      java.awt.EventQueue.invokeLater(() -> {
+//        connectMI.setText("DisConnect");
+//        connectButton.setSelected(true);
+//        if (JCS.getJcsCommandStation().isSupportVNC()) {
+//          showVNCBtn.setEnabled(true);
+//        } else {
+//          showVNCBtn.setEnabled(false);
+//        }
+//        setTitle(getTitleString());
+//      });
+//    } else {
+//      java.awt.EventQueue.invokeLater(() -> {
+//        connectMI.setText("Connect");
+//        connectButton.setSelected(false);
+//        showVNCBtn.setEnabled(false);
+//        setTitle(getTitleString());
+//        JOptionPane.showMessageDialog(this, "CommandStation " + event.getSource() + " is not connected.", "Not Connected", JOptionPane.ERROR_MESSAGE);
+//      });
+//    }
   }
 
   @Override

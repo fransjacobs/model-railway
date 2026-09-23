@@ -685,12 +685,16 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
 
       //feedback settings
       List<FeedbackModule> modules = ((FeedbackController) controller).getFeedbackModules();
-
+      
+      if(modules == null) {
+        Logger.trace("No feedback modules found");
+        return;
+      }
       mainLbl.setVisible(true);
       mainSpinner.setVisible(true);
 
       updateBtn.setVisible(true);
-
+    
       for (FeedbackModule fbm : modules) {
         Integer busNr = fbm.getBusNumber();
         if (busNr == null) {

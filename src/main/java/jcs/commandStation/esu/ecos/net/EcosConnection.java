@@ -21,11 +21,12 @@ import jcs.commandStation.esu.ecos.EcosMessage;
 
 /**
  *
- * @author Frans Jacobs
  */
 public interface EcosConnection extends AutoCloseable {
 
   static final int DEFAULT_NETWORK_PORT = 15471;
+
+  static final int DEFAULT_CONNECT_TIMEOUT_MS = 2000;
 
   EcosMessage sendMessage(EcosMessage message);
 
@@ -34,6 +35,8 @@ public interface EcosConnection extends AutoCloseable {
   void setMessageListener(EcosMessageListener messageListener);
 
   boolean isConnected();
+
+  boolean isVirtual();
 
   InetAddress getControllerAddress();
 

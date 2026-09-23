@@ -114,6 +114,25 @@ public final class LoconetMessageFactory {
     return new LoconetMessage(LoconetMessage.OPC_LOCO_SPD, slt, spd);
   }
 
+  public static LoconetMessage setFunctions(int slot, boolean f5, boolean f6, boolean f7, boolean f8) {
+    int slt = slot & 0x7F;
+    int snd = 0;
+    if (f8) {
+      snd |= 0x08;
+    }
+    if (f7) {
+      snd |= 0x04;
+    }
+    if (f6) {
+      snd |= 0x02;
+    }
+    if (f5) {
+      snd |= 0x01;
+    }
+
+    return new LoconetMessage(LoconetMessage.OPC_LOCO_SND, slt, snd);
+  }
+
   public static LoconetMessage activateSlot(int slot, boolean active) {
     int src = slot & 0x7F;
 
