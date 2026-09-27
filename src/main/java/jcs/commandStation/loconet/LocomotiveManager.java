@@ -96,6 +96,10 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
         slot = locomotiveSlotsReverse.get(id);
       } else {
         slot = requestSlotDataByAddress(locomotive);
+        if (slot < 0) {
+          Logger.warn("Can't change locomotive {} because no slot is available", address);
+          return;
+        }
       }
 
       locomotive.setDirection(direction);
@@ -119,6 +123,10 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
         slot = locomotiveSlotsReverse.get(id);
       } else {
         slot = requestSlotDataByAddress(locomotive);
+        if (slot < 0) {
+          Logger.warn("Can't change locomotive {} because no slot is available", address);
+          return;
+        }
       }
 
       locomotive.setDirection(direction);
@@ -147,6 +155,10 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
         slot = locomotiveSlotsReverse.get(id);
       } else {
         slot = requestSlotDataByAddress(locomotive);
+        if (slot < 0) {
+          Logger.warn("Can't change locomotive {} because no slot is available", address);
+          return;
+        }
       }
 
       locomotive.setFunctionValue(functionNumber, flag);
@@ -155,7 +167,7 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
       if (functionNumber < 5) {
         boolean f0, f1, f2, f3, f4;
         if (functionValues.containsKey(0)) {
-          f0 = functionValues.get(05).isOn();
+          f0 = functionValues.get(0).isOn();
         } else {
           f0 = false;
         }
@@ -204,7 +216,7 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
         } else {
           f8 = false;
         }
-        LoconetMessage tx = LoconetMessageFactory.setFunctions(slot, f5, f5, f7, f8);
+        LoconetMessage tx = LoconetMessageFactory.setFunctions(slot, f5, f6, f7, f8);
         intelliboxImpl.loconet.sendMessageNoWaitConsumeEcho(tx);
 
         //other functions.... TODO
@@ -241,16 +253,16 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
       Logger.warn("No slot reply received for locomotive address {}", address);
       return -1;
     }
-
-    if (reply.isExpectedsOpcode(LoconetMessage.OPC_SL_RD_DATA)) {
-      // Happy flow: parse slot data and continue.
-      Logger.trace("Received slot data: {}", reply);
-    }
-
     if (reply.isExpectedsOpcode(LoconetMessage.OPC_LONG_ACK)) {
       // Failure flow: parse ACK1.
       Logger.warn("Locomotive address request failed: {}", reply);
+      return -1;
     }
+
+//    if (reply.isExpectedsOpcode(LoconetMessage.OPC_SL_RD_DATA)) {
+//      // Happy flow: parse slot data and continue.
+//      Logger.trace("Received slot data: {}", reply);
+//    }
     parseSlotData(reply, locomotive, false);
 
     int slot;

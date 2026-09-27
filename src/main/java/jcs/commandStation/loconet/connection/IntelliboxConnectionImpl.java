@@ -49,10 +49,9 @@ class IntelliboxConnectionImpl implements LoconetConnection {
   private LoconetMessageReceiver loconetMessageReceiver;
   private final BlockingQueue<LoconetMessage> messagesQueue;
 
-  private final Object echoMonitor = new Object();
-  private LoconetMessage expectedEcho;
-  private LoconetMessage receivedEcho;
-
+  //private final Object echoMonitor = new Object();
+  //private LoconetMessage expectedEcho;
+  //private LoconetMessage receivedEcho;
   private final ExecutorService txExecutor;
   private final Object writeMonitor = new Object();
 
@@ -104,7 +103,7 @@ class IntelliboxConnectionImpl implements LoconetConnection {
       txExecutor.shutdownNow();
 
       messagesQueue.clear();
-      clearPendingEcho();
+//      clearPendingEcho();
 
       if (output != null) {
         output.flush();
@@ -193,21 +192,19 @@ class IntelliboxConnectionImpl implements LoconetConnection {
     }
   }
 
-  private void registerExpectedEcho(LoconetMessage sent) {
-    synchronized (echoMonitor) {
-      expectedEcho = sent;
-      receivedEcho = null;
-    }
-  }
-
-  private void clearPendingEcho() {
-    synchronized (echoMonitor) {
-      expectedEcho = null;
-      receivedEcho = null;
-      echoMonitor.notifyAll();
-    }
-  }
-
+//  private void registerExpectedEcho(LoconetMessage sent) {
+//    synchronized (echoMonitor) {
+//      expectedEcho = sent;
+//      receivedEcho = null;
+//    }
+//  }
+//  private void clearPendingEcho() {
+//    synchronized (echoMonitor) {
+//      expectedEcho = null;
+//      receivedEcho = null;
+//      echoMonitor.notifyAll();
+//    }
+//  }
   @Override
   public void sendMessageNoWaitConsumeEcho(LoconetMessage message) {
     if (message == null) {
@@ -239,37 +236,36 @@ class IntelliboxConnectionImpl implements LoconetConnection {
     return CompletableFuture.supplyAsync(() -> sendMessage(message), txExecutor);
   }
 
-  private LoconetMessage waitForEcho(long timeoutMillis) {
-    long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(timeoutMillis);
-
-    synchronized (echoMonitor) {
-      while (receivedEcho == null) {
-        if (expectedEcho == null) {
-          return null;
-        }
-        long remainingNanos = deadline - System.nanoTime();
-        if (remainingNanos <= 0L) {
-          expectedEcho = null;
-          return null;
-        }
-
-        try {
-          TimeUnit.NANOSECONDS.timedWait(echoMonitor, remainingNanos);
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-          expectedEcho = null;
-          Logger.trace("Interrupted while waiting for LocoNet echo. {}", e.getMessage());
-          return null;
-        }
-      }
-
-      LoconetMessage echo = receivedEcho;
-      expectedEcho = null;
-      receivedEcho = null;
-      return echo;
-    }
-  }
-
+//  private LoconetMessage waitForEcho(long timeoutMillis) {
+//    long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(timeoutMillis);
+//
+//    synchronized (echoMonitor) {
+//      while (receivedEcho == null) {
+//        if (expectedEcho == null) {
+//          return null;
+//        }
+//        long remainingNanos = deadline - System.nanoTime();
+//        if (remainingNanos <= 0L) {
+//          expectedEcho = null;
+//          return null;
+//        }
+//
+//        try {
+//          TimeUnit.NANOSECONDS.timedWait(echoMonitor, remainingNanos);
+//        } catch (InterruptedException e) {
+//          Thread.currentThread().interrupt();
+//          expectedEcho = null;
+//          Logger.trace("Interrupted while waiting for LocoNet echo. {}", e.getMessage());
+//          return null;
+//        }
+//      }
+//
+//      LoconetMessage echo = receivedEcho;
+//      expectedEcho = null;
+//      receivedEcho = null;
+//      return echo;
+//    }
+//  }
   @Override
   public LoconetMessage sendMessageAwaitEchoAndReply(LoconetMessage message, Predicate<LoconetMessage> replyMatcher, long replyTimeoutMillis) {
     if (message == null) {
@@ -304,6 +300,7 @@ class IntelliboxConnectionImpl implements LoconetConnection {
 
       if (echo == null) {
         Logger.trace("No echo received within {} ms for TX: {}", DEFAULT_ECHO_TIMEOUT_MS, message);
+        return null;
       } else {
         Logger.trace("TX echo confirmed: {}", echo);
       }
@@ -338,10 +335,6 @@ class IntelliboxConnectionImpl implements LoconetConnection {
   private void messageReceived(LoconetMessage received) {
     Logger.trace("RX: {}", received.toString());
 
-//    if (consumeIfExpectedEcho(received)) {
-//      Logger.trace("RX echo consumed: {}", received.toString());
-//      return;
-//    }
     if (completePendingMessage(received)) {
       Logger.trace("RX consumed by pending transaction: {}", received);
       return;
@@ -350,18 +343,17 @@ class IntelliboxConnectionImpl implements LoconetConnection {
     messagesQueue.offer(received);
   }
 
-  private boolean consumeIfExpectedEcho(LoconetMessage received) {
-    synchronized (echoMonitor) {
-      if (expectedEcho != null && received.sameMessage(expectedEcho)) {
-        receivedEcho = received;
-        expectedEcho = null;
-        echoMonitor.notifyAll();
-        return true;
-      }
-      return false;
-    }
-  }
-
+//  private boolean consumeIfExpectedEcho(LoconetMessage received) {
+//    synchronized (echoMonitor) {
+//      if (expectedEcho != null && received.sameMessage(expectedEcho)) {
+//        receivedEcho = received;
+//        expectedEcho = null;
+//        echoMonitor.notifyAll();
+//        return true;
+//      }
+//      return false;
+//    }
+//  }
   private PendingMessage registerPendingMessage(Predicate<LoconetMessage> matcher, boolean consume, long timeoutMillis) {
     PendingMessage pending = new PendingMessage(matcher, consume);
     pendingMessages.add(pending);

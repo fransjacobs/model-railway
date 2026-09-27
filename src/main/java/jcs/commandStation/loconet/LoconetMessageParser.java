@@ -413,4 +413,85 @@ public class LoconetMessageParser implements Opcodes {
     };
   }
 
+  static boolean isIntelliboxPeerReply(LoconetMessage message, int replyId) {
+    return message != null
+            && message.isExpectedsOpcode(LoconetMessage.OPC_PEER_XFER)
+            && message.getLength() == 0x0F
+            && message.getArgument(2) == 0x00
+            && message.getArgument(3) == 0x49
+            && message.getArgument(4) == 0x4B
+            && message.getArgument(5) == replyId;
+  }
+
+  static int decodePeerDataByte(LoconetMessage message, int dataIndex) {
+    int pxct1 = message.getArgument(6);
+    int value = message.getArgument(7 + dataIndex) & 0x7F;
+
+    if ((pxct1 & (1 << dataIndex)) != 0) {
+      value |= 0x80;
+    }
+
+    return value;
+  }
+
+  static String parseSerialNumber(LoconetMessage message) {
+    if (!message.isExpectedsOpcode(OPC_PEER_XFER)) {
+      throw new IllegalArgumentException("Expected OPC_PEER_XFER: " + message);
+    }
+
+    int reqId = message.getArgument(5);
+    if (reqId != 0x09) {
+      throw new IllegalArgumentException(
+              String.format("Expected ReqId 0x09 but got 0x%02X", reqId)
+      );
+    }
+
+    int pxct1 = message.getArgument(6);
+
+    StringBuilder serial = new StringBuilder(10);
+
+    // D1..D5 are arguments 7..11
+    for (int i = 0; i < 5; i++) {
+      int value = message.getArgument(7 + i) & 0x7F;
+
+      // Restore bit 7 from PXCT1.
+      if ((pxct1 & (1 << i)) != 0) {
+        value |= 0x80;
+      }
+
+      int highNibble = (value >>> 4) & 0x0F;
+      int lowNibble = value & 0x0F;
+
+      if (highNibble > 9 || lowNibble > 9) {
+        throw new IllegalArgumentException(
+                String.format("Invalid BCD byte 0x%02X", value)
+        );
+      }
+
+      serial.append(highNibble);
+      serial.append(lowNibble);
+    }
+    return serial.toString();
+  }
+
+  static String parseSoftwareVersion(LoconetMessage message) {
+    if (!isIntelliboxPeerReply(message, 0x08)) {
+      throw new IllegalArgumentException("Expected Intellibox software-version reply: " + message);
+    }
+
+    int d1 = decodePeerDataByte(message, 0);
+    int d2 = decodePeerDataByte(message, 1);
+
+    int major = (d2 >>> 4) & 0x0F;
+    int digit1 = d2 & 0x0F;
+    int digit2 = (d1 >>> 4) & 0x0F;
+    int digit3 = d1 & 0x0F;
+
+    if (major > 9 || digit1 > 9 || digit2 > 9 || digit3 > 9) {
+      throw new IllegalArgumentException(String.format("Invalid BCD software version D2=0x%02X D1=0x%02X", d2, d1));
+    }
+
+    return String.format("%d.%d%d%d", major, digit1, digit2, digit3);
+  }
+
 }
