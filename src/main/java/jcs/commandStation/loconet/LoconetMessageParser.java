@@ -440,10 +440,8 @@ public class LoconetMessageParser implements Opcodes {
     }
 
     int reqId = message.getArgument(5);
-    if (reqId != 0x09) {
-      throw new IllegalArgumentException(
-              String.format("Expected ReqId 0x09 but got 0x%02X", reqId)
-      );
+    if (!isIntelliboxPeerReply(message, 0x09)) {
+      throw new IllegalArgumentException("Expected Intellibox serial-number reply: " + message);
     }
 
     int pxct1 = message.getArgument(6);
@@ -463,9 +461,7 @@ public class LoconetMessageParser implements Opcodes {
       int lowNibble = value & 0x0F;
 
       if (highNibble > 9 || lowNibble > 9) {
-        throw new IllegalArgumentException(
-                String.format("Invalid BCD byte 0x%02X", value)
-        );
+        throw new IllegalArgumentException(String.format("Invalid BCD byte 0x%02X", value));
       }
 
       serial.append(highNibble);

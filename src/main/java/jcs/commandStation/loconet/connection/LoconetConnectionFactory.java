@@ -95,6 +95,11 @@ public class LoconetConnectionFactory {
       LoconetConnection connection = loconetConnection;
 
       if (connection != null && connection.isConnected()) {
+
+        //Let clean the port connector thread if needed
+        if (this.portConnector != null && !this.portConnector.isAlive()) {
+          this.portConnector = null;
+        }
         return connection;
       }
 
@@ -144,41 +149,20 @@ public class LoconetConnectionFactory {
       return;
     }
 
-    if (portConnector != null && portConnector.isRunning()) {
+    if (portConnector != null && portConnector.isAlive()) {
       Logger.trace("Port Connector is running...");
       return;
     }
 
-    //if (portConnector != null && portConnector.isRunning()) {
-    //  Logger.trace("Port Connector is running...");
-    //} else if (portConnector == null && serialPort != null && serialPort.isOpen()) {
-    //  Logger.trace("SerialPort is connected...");
-    //} else {
     portConnector = new PortConnector(this);
     portConnector.start();
 
-//      //wait....
-//      while (loconetConnection == null && autoReAcquirePort) {
-//        zleep(1000);
-//      }
-//
-//      PortConnector connector = portConnector;
-//      if (connector != null) {
-//        connector.quit();
-//        try {
-//          connector.join(1000);
-//        } catch (InterruptedException e) {
-//          Thread.currentThread().interrupt();
-//        }
-//      }
-//      portConnector = null;
     if (serialPort != null) {
       String name = serialPort.getDescriptivePortName();
       String manu = serialPort.getManufacturer();
       String serial = serialPort.getSerialNumber();
       Logger.tag(TAG).debug("Aquired SerialPort {}. Manufacturer {}, Serial {} ", name, manu, serial);
     }
-    //}
   }
 
   private void zleep(long millis) {
@@ -297,7 +281,7 @@ public class LoconetConnectionFactory {
 
         //Not connected, sleep a while and try again...
         if (running) {
-          zleep(2000);
+          zleep(1000);
         }
       }
       if (loconetConnection != null) {
@@ -307,7 +291,6 @@ public class LoconetConnectionFactory {
         for (ConnectionEventListener listener : connectionEventListeners) {
           listener.onConnectionChange(ce);
         }
-
       } else {
         Logger.trace("Port NOT Connected!");
       }

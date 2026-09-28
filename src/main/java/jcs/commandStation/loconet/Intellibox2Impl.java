@@ -137,6 +137,11 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
       eventMessageHandler = null;
     }
 
+    if (connectionListenerRegistered) {
+      LoconetConnectionFactory.getInstance().unRegisterConnectionListener(this);
+      connectionListenerRegistered = false;
+    }
+
     locomotiveManager.shutdown();
     accessoryManager.shutdown();
 
@@ -381,8 +386,11 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
       connected = true;
       Logger.trace("Reconnected...");
     } else {
-      loconet = LoconetConnectionFactory.acquireConnection(1000);
       connected = false;
+      if (eventMessageHandler != null) {
+        eventMessageHandler.quit();
+        eventMessageHandler = null;
+      }
       Logger.warn("Disconnected...");
     }
   }

@@ -164,7 +164,7 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
       locomotive.setFunctionValue(functionNumber, flag);
       Direction dir = locomotive.getDirection();
       Map<Integer, FunctionBean> functionValues = locomotive.getFunctions();
-      if (functionNumber < 5) {
+      if (functionNumber <= 4) {
         boolean f0, f1, f2, f3, f4;
         if (functionValues.containsKey(0)) {
           f0 = functionValues.get(0).isOn();
@@ -194,7 +194,7 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
 
         LoconetMessage tx = LoconetMessageFactory.setDirectionAndFunctions(slot, dir, f0, f1, f2, f3, f4);
         intelliboxImpl.loconet.sendMessageNoWaitConsumeEcho(tx);
-      } else {
+      } else if (functionNumber <= 8) {
         boolean f5, f6, f7, f8;
         if (functionValues.containsKey(5)) {
           f5 = functionValues.get(5).isOn();
@@ -218,8 +218,10 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
         }
         LoconetMessage tx = LoconetMessageFactory.setFunctions(slot, f5, f6, f7, f8);
         intelliboxImpl.loconet.sendMessageNoWaitConsumeEcho(tx);
-
+      } else {
         //other functions.... TODO
+        Logger.warn("Locomotive functions above F8 not implemented: F{}", functionNumber);
+        return;
       }
 
       FunctionBean changedFunction = locomotive.getFunctionBean(functionNumber);
@@ -259,10 +261,6 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
       return -1;
     }
 
-//    if (reply.isExpectedsOpcode(LoconetMessage.OPC_SL_RD_DATA)) {
-//      // Happy flow: parse slot data and continue.
-//      Logger.trace("Received slot data: {}", reply);
-//    }
     parseSlotData(reply, locomotive, false);
 
     int slot;
@@ -276,33 +274,6 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
     return slot;
   }
 
-//  void requestSlotDataBySlot(LocomotiveBean locomotive) {
-//    if (locomotive.getAddress() == null) {
-//      return;
-//    }
-//    int address = locomotive.getAddress();
-//    LoconetMessage request = LoconetMessageFactory.requestLocoAddress(address);
-//    LoconetMessage reply = intelliboxImpl.loconet.sendMessageAwaitEchoAndReply(request, LoconetMessageParser.replyForLocoAddressRequest(request), 500);
-//
-//    if (reply == null) {
-//      Logger.warn("No slot reply received for locomotive address {}", address);
-//      return;
-//    }
-//
-//    if (reply.isExpectedsOpcode(LoconetMessage.OPC_SL_RD_DATA)) {
-//      // Happy flow: parse slot data and continue.
-//      Logger.trace("Received slot data: {}", reply);
-//    }
-//
-//    if (reply.isExpectedsOpcode(LoconetMessage.OPC_LONG_ACK)) {
-//      // Failure flow: parse ACK1.
-//      Logger.warn("Locomotive address request failed: {}", reply);
-//    }
-//    parseSlotData(reply, locomotive, false);
-//
-//    LocomotiveSpeedEvent lse = new LocomotiveSpeedEvent(locomotive);
-//    intelliboxImpl.notifyLocomotiveSpeedEventListeners(lse);
-//  }
   void updateLocomotiveSpeed(LoconetMessage message) {
     if (message == null) {
       throw new IllegalArgumentException("message may not be null");
@@ -321,8 +292,7 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
 
     if (locomotiveSlots.containsKey(slot)) {
       LocomotiveBean locomotive = locomotives.get(locomotiveSlots.get(slot));
-
-      int velocity = spd * 8;
+      int velocity = decodeSlotSpeed(spd);
 
       if (locomotive.getVelocity() != velocity) {
         locomotive.setVelocity(velocity);
@@ -438,7 +408,6 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
 
     if (locomotiveSlots.containsKey(slot)) {
       LocomotiveBean locomotive = locomotives.get(locomotiveSlots.get(slot));
-      LocomotiveBean.Direction direction = decodeSlotDirection(snd);
 
       boolean f5 = (snd & 0x01) != 0;
       boolean f6 = (snd & 0x02) != 0;
@@ -489,10 +458,6 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
     } else {
       Logger.trace("No registered locomotive for slot {}!", slot);
     }
-  }
-
-  int getSize() {
-    return this.size;
   }
 
   LocomotiveBean parseSlotData(LoconetMessage message, LocomotiveBean locomotive,
@@ -569,10 +534,6 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
     LocomotiveBean.Direction direction = decodeSlotDirection(dirf);
 
     locomotive.setVelocity(velocity);
-    //if (updateDirAndFunc) {
-    //  locomotive.setDirection(direction);
-    //updateSlotFunctions(locomotive, dirf, sound);
-    //}
 
     int throttleId = ((id2 & 0x7F) << 7) | (id1 & 0x7F);
     boolean trackPower = (track & 0x01) != 0;
@@ -652,7 +613,7 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
     if (speedByte <= 0x01) {
       return 0;
     }
-    return speedByte;
+    return speedByte * 8;
   }
 
   private boolean isSlotInUse(int stat1) {
@@ -671,52 +632,6 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
     return forwards ? LocomotiveBean.Direction.FORWARDS : LocomotiveBean.Direction.BACKWARDS;
   }
 
-//  private void updateSlotFunctions(LocomotiveBean locomotive, int dirf, int sound) {
-//    if (!locomotive.hasFunction(0)) {
-//      locomotive.addFunction(new FunctionBean(0, locomotive.getId()));
-//    }
-//    locomotive.setFunctionValue(0, (dirf & 0x10) != 0);
-//
-//    if (!locomotive.hasFunction(1)) {
-//      locomotive.addFunction(new FunctionBean(1, locomotive.getId()));
-//    }
-//    locomotive.setFunctionValue(1, (dirf & 0x01) != 0);
-//
-//    if (!locomotive.hasFunction(2)) {
-//      locomotive.addFunction(new FunctionBean(2, locomotive.getId()));
-//    }
-//    locomotive.setFunctionValue(2, (dirf & 0x02) != 0);
-//
-//    if (!locomotive.hasFunction(3)) {
-//      locomotive.addFunction(new FunctionBean(3, locomotive.getId()));
-//    }
-//    locomotive.setFunctionValue(3, (dirf & 0x04) != 0);
-//
-//    if (!locomotive.hasFunction(4)) {
-//      locomotive.addFunction(new FunctionBean(4, locomotive.getId()));
-//    }
-//    locomotive.setFunctionValue(4, (dirf & 0x08) != 0);
-//
-//    if (!locomotive.hasFunction(5)) {
-//      locomotive.addFunction(new FunctionBean(5, locomotive.getId()));
-//    }
-//    locomotive.setFunctionValue(5, (sound & 0x01) != 0);
-//
-//    if (!locomotive.hasFunction(6)) {
-//      locomotive.addFunction(new FunctionBean(6, locomotive.getId()));
-//    }
-//    locomotive.setFunctionValue(6, (sound & 0x02) != 0);
-//
-//    if (!locomotive.hasFunction(7)) {
-//      locomotive.addFunction(new FunctionBean(7, locomotive.getId()));
-//    }
-//    locomotive.setFunctionValue(7, (sound & 0x04) != 0);
-//
-//    if (!locomotive.hasFunction(8)) {
-//      locomotive.addFunction(new FunctionBean(8, locomotive.getId()));
-//    }
-//    locomotive.setFunctionValue(8, (sound & 0x08) != 0);
-//  }
   Map<Long, LocomotiveBean> getLocomotives() {
     return locomotives;
   }
