@@ -15,7 +15,6 @@
  */
 package jcs.commandStation.automation;
 
-import java.util.List;
 import jcs.JCS;
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.BlockBean;
@@ -26,9 +25,7 @@ import jcs.entities.StationBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.persistence.PersistenceService;
 import jcs.persistence.util.PersistenceTestHelper;
-import jcs.ui.layout.tiles.Tile;
 import jcs.ui.layout.tiles.TileCache;
-import org.junit.BeforeClass;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
@@ -51,12 +48,6 @@ public class StateMachineTest {
   protected final PersistenceTestHelper testHelper;
   protected final PersistenceService ps;
 
-  //private Dispatcher ns1631;
-  //private StateMachine stateMachine;
-  @SuppressWarnings("unused")
-  private List<Tile> tiles;
-  //private int eventCallbackCount = 0;
-
   SensorMonitor sensorMonitor;
   private RailController railwayController;
 
@@ -72,20 +63,9 @@ public class StateMachineTest {
     System.setProperty("state.machine.stepTest", "true");
 
     testHelper = PersistenceTestHelper.getInstance();
-    testHelper.runTestDataInsertScript("autopilot_queue_test.sql");
-
     ps = PersistenceFactory.getService();
-
-    if (JCS.getJcsCommandStation().connect()) {
-
-      JCS.getJcsCommandStation().switchPower(true);
-      tiles = TileCache.loadTiles(true);
-    } else {
-      Logger.error("###### Can't connect to command station! ########");
-    }
   }
 
-  // @BeforeClass
   @BeforeAll
   public static void setUpClass() {
     System.setProperty("persistenceService", "jcs.persistence.TestH2PersistenceService");
@@ -99,10 +79,13 @@ public class StateMachineTest {
   @BeforeEach
   public void setUp() {
     testHelper.runTestDataInsertScript("autopilot_queue_test.sql");
+    TileCache.loadTiles(true);
 
     if (JCS.getJcsCommandStation().connect()) {
       JCS.getJcsCommandStation().switchPower(true);
-      tiles = TileCache.loadTiles(true);
+      TileCache.loadTiles(true);
+    } else {
+      Logger.error("###### Can't connect to command station! ########");
     }
 
     // Move from constructor to here:

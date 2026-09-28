@@ -148,10 +148,9 @@ public class JCSCommandStation {
 
     sensorEventQueue = new LinkedBlockingQueue<>();
 
-    sensorEventHandlerThread = new EventHandlerThread<>(threadGroup, "SENSOR-EVENT-HANDLER", sensorEventQueue, this::handleSensorEvent);
-    accessoryEventHandlerThread = new EventHandlerThread<>(threadGroup, "ACCESSORY-EVENT-HANDLER", accessoryEventQueue, this::handleAccessoryEvent);
-    locomotiveEventHandlerThread = new EventHandlerThread<>(threadGroup, "LOCOMOTIVE-EVENT-HANDLER", locomotiveEventQueue, this::handleLocomotiveEvent);
-
+//    sensorEventHandlerThread = new EventHandlerThread<>(threadGroup, "SENSOR-EVENT-HANDLER", sensorEventQueue, this::handleSensorEvent);
+//    accessoryEventHandlerThread = new EventHandlerThread<>(threadGroup, "ACCESSORY-EVENT-HANDLER", accessoryEventQueue, this::handleAccessoryEvent);
+//    locomotiveEventHandlerThread = new EventHandlerThread<>(threadGroup, "LOCOMOTIVE-EVENT-HANDLER", locomotiveEventQueue, this::handleLocomotiveEvent);
     try {
       if (decoderController != null && (decoderController.getCommandStationBean() != null || !accessoryControllers.isEmpty() || !feedbackControllers.isEmpty())) {
         if (flag) {
@@ -226,7 +225,7 @@ public class JCSCommandStation {
     });
   }
 
-  public final boolean connect() {
+  public final synchronized boolean connect() {
     boolean decoderControllerConnected = false;
     boolean alreadyConnected = false;
 
@@ -329,36 +328,30 @@ public class JCSCommandStation {
     }
 
     if (decoderController != null && decoderController.isConnected()) {
-      decoderController.addConnectionEventListener(new ControllerConnectionListener(this));
-
-      decoderController.addPowerEventListener(new ControllerPowerListener(this));
-
-      if (!locomotiveEventHandlerThread.isRunning()) {
-        locomotiveEventHandlerThread.start();
-      }
-
-      measurementEventHandler = new MeasurementEventHandler(this);
-      decoderController.addMeasurementEventListener(measurementEventHandler);
+      startLocomotiveEventHandler();
     }
 
     if (accessoryCntrConnected > 0) {
-      if (!accessoryEventHandlerThread.isRunning()) {
-        accessoryEventHandlerThread.start();
-      }
+      startAccessoryEventHandler();
     }
 
     if (feedbackCntrConnected > 0) {
-      if (!sensorEventHandlerThread.isRunning()) {
-        sensorEventHandlerThread.start();
-      }
+      startSensorEventHandler();
     }
 
     Logger.debug("Connected Controllers:  Decoder: " + (decoderControllerConnected ? "Yes" : "No") + " Accessory: " + accessoryCntrConnected + " Feedback: " + feedbackCntrConnected);
 
     if (decoderControllerConnected && !alreadyConnected && decoderController != null) {
+      decoderController.addConnectionEventListener(new ControllerConnectionListener(this));
+
+      decoderController.addPowerEventListener(new ControllerPowerListener(this));
+
       decoderController.addLocomotiveFunctionEventListener(new LocomotiveFunctionChangeEventListener(this));
       decoderController.addLocomotiveDirectionEventListener(new LocomotiveDirectionChangeEventListener(this));
       decoderController.addLocomotiveSpeedEventListener(new LocomotiveSpeedChangeEventListener(this));
+
+      measurementEventHandler = new MeasurementEventHandler(this);
+      decoderController.addMeasurementEventListener(measurementEventHandler);
     }
 
     if (accessoryCntrConnected > 0 && !alreadyConnected) {
@@ -399,6 +392,36 @@ public class JCSCommandStation {
     return decoderControllerConnected;
   }
 
+  private synchronized void startLocomotiveEventHandler() {
+    if (locomotiveEventHandlerThread == null || locomotiveEventHandlerThread.getState() == Thread.State.TERMINATED) {
+      locomotiveEventHandlerThread = new EventHandlerThread<>(threadGroup, "LOCOMOTIVE-EVENT-HANDLER", locomotiveEventQueue, this::handleLocomotiveEvent);
+    }
+
+    if (locomotiveEventHandlerThread.getState() == Thread.State.NEW) {
+      locomotiveEventHandlerThread.start();
+    }
+  }
+
+  private synchronized void startAccessoryEventHandler() {
+    if (accessoryEventHandlerThread == null || accessoryEventHandlerThread.getState() == Thread.State.TERMINATED) {
+      accessoryEventHandlerThread = new EventHandlerThread<>(threadGroup, "ACCESSORY-EVENT-HANDLER", accessoryEventQueue, this::handleAccessoryEvent);
+    }
+
+    if (accessoryEventHandlerThread.getState() == Thread.State.NEW) {
+      accessoryEventHandlerThread.start();
+    }
+  }
+
+  private synchronized void startSensorEventHandler() {
+    if (sensorEventHandlerThread == null || sensorEventHandlerThread.getState() == Thread.State.TERMINATED) {
+      sensorEventHandlerThread = new EventHandlerThread<>(threadGroup, "SENSOR-EVENT-HANDLER", sensorEventQueue, this::handleSensorEvent);
+    }
+
+    if (sensorEventHandlerThread.getState() == Thread.State.NEW) {
+      sensorEventHandlerThread.start();
+    }
+  }
+
   public CommandStationBean getCommandStationBean() {
     if (decoderController != null) {
       return decoderController.getCommandStationBean();
@@ -412,6 +435,20 @@ public class JCSCommandStation {
       return decoderController.isConnected();
     } else {
       return false;
+    }
+  }
+
+  private void stopEventHandler(EventHandlerThread<?> thread) {
+    if (thread == null) {
+      return;
+    }
+
+    thread.quit();
+
+    try {
+      thread.join(1000);
+    } catch (InterruptedException ex) {
+      Thread.currentThread().interrupt();
     }
   }
 
@@ -429,6 +466,14 @@ public class JCSCommandStation {
     }
 
     this.executor.shutdown();
+
+    stopEventHandler(locomotiveEventHandlerThread);
+    stopEventHandler(accessoryEventHandlerThread);
+    stopEventHandler(sensorEventHandlerThread);
+
+    locomotiveEventHandlerThread = null;
+    accessoryEventHandlerThread = null;
+    sensorEventHandlerThread = null;
 
     if (decoderController != null) {
       if (measurementEventHandler != null) {
@@ -1236,6 +1281,7 @@ public class JCSCommandStation {
     @SuppressWarnings("unused")
     void quit() {
       running = false;
+      interrupt();
     }
 
     @Override
@@ -1251,7 +1297,7 @@ public class JCSCommandStation {
           }
         } catch (InterruptedException ex) {
           Thread.currentThread().interrupt();
-          Logger.error(ex);
+          Logger.error(ex.getMessage());
           break;
         } catch (Exception e) {
           Logger.error("Error in " + getName() + ". Cause: " + e.getMessage());

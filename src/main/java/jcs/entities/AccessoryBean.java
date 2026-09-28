@@ -148,7 +148,7 @@ public class AccessoryBean {
 
   @Transient
   public boolean isBiAddress() {
-    return this.states > 2;
+    return this.states != null && this.states > 2;
   }
 
   @Transient
