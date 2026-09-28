@@ -15,7 +15,6 @@
  */
 package jcs.commandStation.automation;
 
-import java.util.List;
 import jcs.JCS;
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.BlockBean;
@@ -26,7 +25,6 @@ import jcs.entities.StationBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.persistence.PersistenceService;
 import jcs.persistence.util.PersistenceTestHelper;
-import jcs.ui.layout.tiles.Tile;
 import jcs.ui.layout.tiles.TileCache;
 
 import org.junit.jupiter.api.Test;
@@ -50,12 +48,6 @@ public class StateMachineTest {
   protected final PersistenceTestHelper testHelper;
   protected final PersistenceService ps;
 
-  //private Dispatcher ns1631;
-  //private StateMachine stateMachine;
-  @SuppressWarnings("unused")
-  private List<Tile> tiles;
-  //private int eventCallbackCount = 0;
-
   SensorMonitor sensorMonitor;
   private RailController railwayController;
 
@@ -71,21 +63,13 @@ public class StateMachineTest {
     System.setProperty("state.machine.stepTest", "true");
 
     testHelper = PersistenceTestHelper.getInstance();
-    testHelper.runTestDataInsertScript("autopilot_queue_test.sql");
-
     ps = PersistenceFactory.getService();
-
-    if (JCS.getJcsCommandStation().connect()) {
-
-      JCS.getJcsCommandStation().switchPower(true);
-      tiles = TileCache.loadTiles(true);
-    } else {
-      Logger.error("###### Can't connect to command station! ########");
-    }
   }
 
   @BeforeAll
   public static void setUpClass() {
+    System.setProperty("persistenceService", "jcs.persistence.TestH2PersistenceService");
+    PersistenceTestHelper.getInstance();
   }
 
   @AfterAll
@@ -95,10 +79,13 @@ public class StateMachineTest {
   @BeforeEach
   public void setUp() {
     testHelper.runTestDataInsertScript("autopilot_queue_test.sql");
+    TileCache.loadTiles(true);
 
     if (JCS.getJcsCommandStation().connect()) {
       JCS.getJcsCommandStation().switchPower(true);
-      tiles = TileCache.loadTiles(true);
+      TileCache.loadTiles(true);
+    } else {
+      Logger.error("###### Can't connect to command station! ########");
     }
 
     // Move from constructor to here:
@@ -498,7 +485,7 @@ public class StateMachineTest {
     //Departure -> Running
     stateMachine.executeState();
     assertEquals("Running", stateMachine.getCurrentStateName());
-    
+
     pause(100);
 
     assertEquals(NS_1631, block2.getLocomotiveId());
@@ -608,7 +595,7 @@ public class StateMachineTest {
     block4 = ps.getBlockByTileId("bk-4");
     assertEquals(BlockBean.BlockState.OUTBOUND, block4.getBlockState());
     assertEquals(NS_1631, block4.getLocomotiveId());
-    
+
     //Destination
     block2 = ps.getBlockByTileId("bk-2");
     assertEquals(BlockBean.BlockState.INBOUND, block2.getBlockState());
@@ -617,7 +604,7 @@ public class StateMachineTest {
     //Arrived -> Departing
     stateMachine.executeState();
     assertEquals("Departing", stateMachine.getCurrentStateName());
-    
+
     pause(100);
 
     assertNotNull(ns1631.getRouteBean());

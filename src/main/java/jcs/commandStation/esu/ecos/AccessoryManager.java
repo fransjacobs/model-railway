@@ -406,7 +406,7 @@ class AccessoryManager implements AccessoryEventListener {
 
     if (accessoryAdded && getSize() <= newSize) {
       if (ecosCommandStation != null) {
-        EcosMessage reply = ecosCommandStation.getConnection().sendMessage(EcosMessageFactory.getAccessoryDetails(addedId));
+        EcosMessage reply = ecosCommandStation.factory.getConnection().sendMessage(EcosMessageFactory.getAccessoryDetails(addedId));
         Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
         //this.update(reply);
       }

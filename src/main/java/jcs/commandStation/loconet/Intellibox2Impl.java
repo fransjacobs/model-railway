@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import jcs.commandStation.AbstractController;
 import jcs.commandStation.AccessoryController;
 import jcs.commandStation.DecoderController;
@@ -69,6 +70,10 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
 
   private DriveSimulator simulator;
 
+  private final List<Device> devices;
+
+  private volatile boolean connectionListenerRegistered = false;
+
   public Intellibox2Impl(CommandStationBean commandStationBean) {
     this(commandStationBean, false);
   }
@@ -76,6 +81,7 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
   public Intellibox2Impl(CommandStationBean commandStationBean, boolean autoConnect) {
     super(autoConnect, commandStationBean);
     threadGroup = new ThreadGroup("INTELLIBOX2");
+    devices = new ArrayList<>();
 
     this.executor = Executors.newSingleThreadExecutor(runnable -> {
       Thread thread = new Thread(runnable, "INBX-LN-BG-QUERY");
@@ -89,7 +95,7 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
 
   @Override
   public boolean connect() {
-    loconet = LoconetConnectionFactory.aquireConnection();
+    loconet = LoconetConnectionFactory.acquireConnection(2000);
     this.connected = loconet != null && loconet.isConnected();
 
     if (connected) {
@@ -102,10 +108,16 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
       executor.execute(() -> accessoryManager.refresh());
       //refresh the locomotives in the background
       executor.execute(() -> locomotiveManager.refresh());
+      this.getDevices();
 
       if (isVirtual()) {
         simulator = new DriveSimulator();
-        Logger.info("Inellibox 2 Virtual Mode Enabled!");
+        Logger.info("Intellibox 2 Virtual Mode Enabled!");
+      } else {
+        if (!connectionListenerRegistered) {
+          LoconetConnectionFactory.getInstance().registerConnectionListener(this);
+          connectionListenerRegistered = true;
+        }
       }
     }
 
@@ -114,6 +126,7 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
 
   @Override
   public void disconnect() {
+    this.devices.clear();
     if (eventMessageHandler != null) {
       eventMessageHandler.quit();
       try {
@@ -122,6 +135,11 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
         Thread.currentThread().interrupt();
       }
       eventMessageHandler = null;
+    }
+
+    if (connectionListenerRegistered) {
+      LoconetConnectionFactory.getInstance().unRegisterConnectionListener(this);
+      connectionListenerRegistered = false;
     }
 
     locomotiveManager.shutdown();
@@ -133,12 +151,72 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
 
   @Override
   public InfoBean getCommandStationInfo() {
-    return null;
+    InfoBean ib = new InfoBean(commandStationBean);
+    if (connected && !devices.isEmpty()) {
+      Device intellibox2 = devices.get(0);
+      //ib.setArticleNumber();
+      ib.setDescription("Intellibox 2");
+      ib.setSerialNumber(intellibox2.getSerialNumber());
+      ib.setProductName("Intellibox 2");
+      ib.setSoftwareVersion(intellibox2.getSoftwareVersion());
+    } else {
+      ib.setDescription("Not Connected");
+      Logger.warn("NOT Connected!");
+    }
+    return ib;
+  }
+
+  String getSerialNumber() {
+    LoconetMessage request = LoconetMessageFactory.requestSerialNumber();
+
+    Predicate<LoconetMessage> serialNumberReplyMatcher = msg -> LoconetMessageParser.isIntelliboxPeerReply(msg, 0x09);
+    LoconetMessage reply = loconet.sendMessageAwaitEchoAndReply(request, serialNumberReplyMatcher, 500);
+
+    if (reply == null) {
+      Logger.warn("No reply received for Serial Number Request");
+      return null;
+    }
+    String serialNumber = LoconetMessageParser.parseSerialNumber(reply);
+
+    Logger.trace("SerialNumber: {}", serialNumber);
+    return serialNumber;
+  }
+
+  String getSoftwareVersion() {
+    LoconetMessage request = LoconetMessageFactory.requestSoftwareVersion();
+    Predicate<LoconetMessage> softwareVersionReplyMatcher = msg -> LoconetMessageParser.isIntelliboxPeerReply(msg, 0x08);
+
+    LoconetMessage reply = loconet.sendMessageAwaitEchoAndReply(request, softwareVersionReplyMatcher, 500);
+    if (reply == null) {
+      Logger.warn("No reply received for Software Version Request");
+      return null;
+    }
+
+    String softwareVersion = LoconetMessageParser.parseSoftwareVersion(reply);
+    Logger.trace("Sofware Version: {}", softwareVersion);
+    return softwareVersion;
   }
 
   @Override
   public List<Device> getDevices() {
-    return null;
+    if (devices.isEmpty()) {
+      Device ib = new Device();
+      ib.setId("intellibox2");
+      ib.setName("Intellibox 2");
+      devices.add(ib);
+    }
+
+    Device ib = devices.get(0);
+
+    if (ib.getSerialNumber() == null) {
+      ib.setSerialNumber(getSerialNumber());
+    }
+
+    if (ib.getSoftwareVersion() == null) {
+      ib.setSoftwareVersion(getSoftwareVersion());
+    }
+
+    return new ArrayList<>(devices);
   }
 
   @Override
@@ -268,15 +346,53 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
 
   @Override
   public SensorBean getSensorStatus(SensorBean sensorBean) {
+    //TODO
     return null;
+//        Integer sensorId = sensorBean.getId();
+//    return feedbackManager.getSensor(sensorId);
+
   }
 
   @Override
   public void simulateSensor(SensorEvent sensorEvent) {
+//    if (isVirtual() virtualConnection) {
+//      virtualConnection.sendEvent(sensorEvent);
+//    }
   }
 
   @Override
-  public void onConnectionChange(ConnectionEvent event) {
+  public synchronized void onConnectionChange(ConnectionEvent event) {
+    if (event.isConnected()) {
+
+      LoconetConnection newConnection = LoconetConnectionFactory.acquireConnection(1000);
+      if (newConnection == null || !newConnection.isConnected()) {
+        connected = false;
+        return;
+      }
+
+      if (eventMessageHandler != null) {
+        eventMessageHandler.quit();
+        try {
+          eventMessageHandler.join(1000);
+        } catch (InterruptedException ex) {
+          Thread.currentThread().interrupt();
+        }
+      }
+
+      loconet = newConnection;
+      eventMessageHandler = new EventMessageHandler(loconet);
+      eventMessageHandler.start();
+
+      connected = true;
+      Logger.trace("Reconnected...");
+    } else {
+      connected = false;
+      if (eventMessageHandler != null) {
+        eventMessageHandler.quit();
+        eventMessageHandler = null;
+      }
+      Logger.warn("Disconnected...");
+    }
   }
 
   private class EventMessageHandler extends Thread {
@@ -352,38 +468,27 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
                   AccessoryBean ab = LoconetMessageParser.parseSwitchStateEvent(message);
                   accessoryManager.update(ab);
                 }
+                case LoconetMessage.OPC_LOCO_DIRF -> {
+                  //Locomotive direction and functions
+                  Logger.trace("LocomotiveDIRF: {}", message);
+                  locomotiveManager.updateLocomotiveDirf(message);
+                }
+                case LoconetMessage.OPC_LOCO_SND -> {
+                  //Locomotive and functions
+                  Logger.trace("LocomotiveSND: {}", message);
+                  locomotiveManager.updateLocomotiveSnd(message);
+                }
+                case LoconetMessage.OPC_LOCO_SPD -> {
+                  //Locomotive direction and functions
+                  Logger.trace("LocomotiveSPD: {}", message);
+                  locomotiveManager.updateLocomotiveSpeed(message);
+                }
 
-//                case CanMessage.LOC_VELOCITY -> {
-//                  Logger.trace("VelocityChange# " + eventMessage);
-//
-//                }
-//                case CanMessage.LOC_VELOCITY_RESP -> {
-//                  Logger.trace("VelocityChange " + eventMessage);
-//                  notifyLocomotiveSpeedEventListeners(LocomotiveVelocityMessage.parse(eventMessage));
-//                }
-//                case CanMessage.LOC_DIRECTION -> {
-//                  Logger.trace("DirectionChange# " + eventMessage);
-//
-//                }
-//                case CanMessage.LOC_DIRECTION_RESP -> {
-//                  Logger.trace("DirectionChange " + eventMessage);
-//                  notifyLocomotiveDirectionEventListeners(LocomotiveDirectionEventParser.parse(eventMessage));
-//                }
-//                case CanMessage.LOC_FUNCTION -> {
-//
-//                }
-//                case CanMessage.LOC_FUNCTION_RESP -> {
-//                  Logger.trace("FunctionChange " + eventMessage);
-//                  notifyLocomotiveFunctionEventListeners(LocomotiveFunctionEventParser.parseMessage(eventMessage));
-//                }
 //                default -> {
 //                }
 //              }
                 case LoconetMessage.OPC_LONG_ACK -> {
                   Logger.trace("Aknowlegde RX: {}", message);
-                }
-                case LoconetMessage.OPC_LOCO_SPD -> {
-                  //for now ignore it
                 }
                 default -> {
                   Logger.trace("%RX: {} Opcode: {} Lenght: {}", message.toString(), message.getHexOpcode(), length);
@@ -449,91 +554,9 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
 //      intellibox2.switchAccessory(1, "dcc", AccessoryValue.GREEN, 100);
 //      intellibox2.pause(2000);
 //      intellibox2.switchAccessory(1, "dcc", AccessoryValue.RED, 100);
-      intellibox2.locomotiveManager.registerSlots();
+      //intellibox2.locomotiveManager.registerSlots();
+      intellibox2.getDevices();
 
-//TX: 0xbf 0x00 0x48 0x08
-//RX: 0xbf 0x00 0x48 0x08
-//RX echo consumed: 0xbf 0x00 0x48 0x08
-//slotread
-//RX: 0xe7 0x0e 0x08 0x32 0x48 0x00 0x30 0x07 0x00 0x00 0x00 0x00 0x00 0x53
-//
-//
-//  OPC_SL_RD_DATA 0xE7 ;SLOT DATA return, 10 bytes NO
-// <0xE7>  -> OPC_SL_RD_DATA
-// ,<0E>   -> len totaal 14 bytes
-//  <SLOT#> -> slot nr "8"  SLOT NUMBER: ;0-7FH, 0 is special SLOT, 070H-07FH DIGITRAX reserved.
-//  ,<STAT> 1) SLOT STATUS1:
-//          2) SLOT LOCO ADR: 
-//          3) SLOT SPEED: 
-//   D7-SL_SPURGE 
-//   D6-SL_CONUP ;1=SLOT purge en, ALSO adrSEL (INTERNAL use only) //; (not seen on NET!)
-//                   CONDN/CONUP: bit encoding-Control double linked Consist List
-//                11=LOGICAL MID CONSIST , Linked up AND down
-//                10=LOGICAL CONSIST TOP, Only linked downwards
-//                01=LOGICAL CONSIST SUB-MEMBER, Only linked upwards
-//                00=FREE locomotive, no CONSIST indirection/linking number is now SLOT adr of SPD/DIR and STATUS of consist. i.e. is an Indirect pointer.
-//                           This Slot has same BUSY/ACTIVE bits as TOP of Consist.
-//                           TOP is loco with SPD/DIR for whole consist. (top of list). BUSY/ACTIVE: bit encoding for SLOT activity
-//   D5-SL_BUSY   ;11=IN_USE loco adr in SLOT -REFRESHED
-//   D4-SL_ACTIVE ;10=IDLE loco adr in SLOT -NOT refreshed ;
-//                 01=COMMON loco adr IN SLOT -refreshed
-//                 00=FREE SLOT, no valid DATA -not refreshed
-//   D3-SL_CONDN ; shows other SLOT Consist linked INTO this slot,see SL_CONUP
-//   D2-SL_SPDEX ; 3 BITS for Decoder TYPE encoding for this SLOT
-//   D1-SL_SPD14 ;011=send 128 speed mode packets
-//   D0-SL_SPD28 ;010=14 step MODE
-//               ;001=28 step. Generate Trinary packets for this Mobile ADR
-//               ;000=28 step/ 3 BYTE PKT regular mode
-//               ;111=128 Step decoder, Allow Advanced DCC consisting
-//               ;100=28 Step decoder ,Allow Advanced DCC consisting
-//
-//                  7|6|5|4|3|2|1|0
-//    waarde 0x32:  0 0 1 1 0 0 2 0
-//    14 STEP MODE in use refreshed data valid
-//
-//  ,<ADR> address low 0x48 -> 72
-//  ,<SPD> sprre = 0
-//  ,<DIRF> 
-//           D7-0 ;always 0
-//           D6-SL_XCNT ; reserved , set 0
-//           D5-SL_DIR ;1=loco direction FORWARD
-//           D4-SL_F0 ;1=Directional lighting ON
-//           D3-SL_F4 ;1=F4 ON
-//           D2-SL_F3 ;1=F3 ON
-//           D1-SL_F2 ;1=F2 ON
-//           D0-SL_F1 ;1=F1 ON
-//  waarde 0x30   7|6|5|4|3|2|1|0
-//                0 0 1 1 0 0 0 0   -> forwards F0 on F1..4 off
-//  ,<TRK>  (GLOBAL system /track status)
-//         D7-D4 Reserved
-//         D3 GTRK_PROG_BUSY 1=Programming TRACK in this Master is BUSY.
-//         D2 GTRK_MLOK1 , 1=This Master IMPLEMENTS LocoNet 1.1 capability
-//                       , 0=Master is DT200
-//         D1 GTRK_IDLE ; 0=TRACK is PAUSED, B'cast EMERG STOP.
-//         D0 GTRK_POWER ; 1=DCC packets are ON in MASTER, Global POWER up
-// waarde 0x07 7|6|5|4|3|2|1|0
-//             0 0 0 0 0 1 1 1 ->master LN 1.1, Power On DCC is on
-//  ,<SS2> SLOT STATUS2:
-//   D3- 1=expansion IN ID1/2, 0=ENCODED alias
-//   D2- 1=Expansion ID1/2 is NOT ID usage
-//   D0- 1=this slot has SUPPRESSED ADV consist-
-// waarde 0x00 
-//  ,<ADR2>  high address byte
-//  ,<SND>  0x00 
-//SLOT SOUND: Slot sound/ Accesory Function mode II packets. F5-F8 (byte also sent as ARG2 in SND opcode)
-//     D7-D4 reserved
-//     D3-SL_SND4/F8
-//     D2-SL_SND3/F7
-//     D1-SL_SND2/F6
-//     D0-SL_SND1/F5 ;1= SLOT Sound 1 function 1active (accessory 2)
-//  ,<ID1>,<ID2> uid 0x00 not in use
-//  ,<CHK>  
-//; SLOT DATA READ, 10 bytes data /14 byte MSG
-//;NOTE; If STAT2.2=0 EX1/EX2 encodes an ID#,[if STAT2.2=1 the STAT.3=0 means EX1/EX2 are ALIAS]
-//;ID1/ID2 are two 7 bit values encoding a 14 bit unique DEVICE usage ID. ID1/ID2#'s 00/00 -means NO ID being used
-//; 01/00 to 7F/01 -ID shows PC usage.Lo nibble is TYP PC# (PC can use hi values)
-//; 00/02 to 7F/03 -SYSTEM reserved
-//; 00/04 to 7F/7E -NORMAL throttle RANGE
       intellibox2.pause(200000);
       //Lets power Off
       intellibox2.power(false);
@@ -543,11 +566,4 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
     }
   }
 
-//TRACE	2026-07-16 19:42:24.819 [main] IntelliBoxSerialConnection.sendMessage(): RX 3: 02
-//TRACE	2026-07-16 19:42:24.819 [main] IntelliBoxSerialConnection.sendMessage(): RX 4: 39
-//TRACE	2026-07-16 19:42:24.820 [main] IntelliBoxSerialConnection.sendMessage(): RX 5: 64
-//TRACE	2026-07-16 19:42:25.379 [main] IntelliBoxSerialConnection.sendMessage(): RX 6: a0
-//TRACE	2026-07-16 19:42:25.380 [main] IntelliBoxSerialConnection.sendMessage(): RX 7: 01
-//TRACE	2026-07-16 19:42:25.380 [main] IntelliBoxSerialConnection.sendMessage(): RX 8: 02
-//TRACE	2026-07-16 19:42:25.381 [main] IntelliBoxSerialConnection.sendMessage(): RX 9: 5c  
 }

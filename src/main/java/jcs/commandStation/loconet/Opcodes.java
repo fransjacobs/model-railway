@@ -51,6 +51,9 @@ public interface Opcodes {
   public static final char OPC_LOCO_SPD = 0xA0;
 
   public static final char OPC_SE = 0xE4;
+
+  public static final char OPC_IMM_PACKET = 0xED;
+
   public static final char OPC_WR_SL_DATA = 0xEF;
   public static final char OPC_SL_RD_DATA = 0xE7;
 
@@ -135,11 +138,9 @@ public interface Opcodes {
 //    public MessageLengthKind lengthKind() {
 //      return lengthKindFromOpcode(value);
 //    }
-
 //    public int fixedLength() {
 //      return fixedLengthFromOpcode(value);
 //    }
-
     public static Optional<Opcode> from(int value) {
       int normalized = value & BYTE_MASK;
 
@@ -196,7 +197,6 @@ public interface Opcodes {
 //        -1;
 //    };
 //  }
-
   static void require7Bit(String name, int value) {
     if ((value & ~DATA_MASK) != 0) {
       throw new IllegalArgumentException(name + " must be a 7-bit value: " + value);

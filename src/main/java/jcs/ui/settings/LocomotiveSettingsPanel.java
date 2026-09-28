@@ -973,7 +973,15 @@ public class LocomotiveSettingsPanel extends JPanel implements PropertyChangeLis
   }//GEN-LAST:event_tachoMaxSpinnerStateChanged
 
   private void functionCountSpinnerStateChanged(ChangeEvent evt) {//GEN-FIRST:event_functionCountSpinnerStateChanged
+    Integer functions = (Integer) functionCountSpinner.getValue();
 
+    if (functions > 0) {
+      for (int f = 0; f < functions; f++) {
+        if (!selectedLocomotive.hasFunction(f)) {
+          selectedLocomotive.addFunction(new FunctionBean(f, selectedLocomotive.getId()));
+        }
+      }
+    }
   }//GEN-LAST:event_functionCountSpinnerStateChanged
 
   private void speed1SpinnerStateChanged(ChangeEvent evt) {//GEN-FIRST:event_speed1SpinnerStateChanged
@@ -1192,13 +1200,12 @@ public class LocomotiveSettingsPanel extends JPanel implements PropertyChangeLis
             loco.setShow(dbLoco.isShow());
             loco.setImported(importedFrom);
             loco.setSynchronize(true);
-            
+
             loco.setSpeedOne(dbLoco.getSpeedOne());
             loco.setSpeedTwo(dbLoco.getSpeedTwo());
             loco.setSpeedThree(dbLoco.getSpeedThree());
             loco.setSpeedFour(dbLoco.getSpeedFour());
-            
-            
+
           } else {
             Logger.trace("Skip Loco id: " + loco.getId() + ", " + loco.getName() + " Addres: " + loco.getAddress() + " Decoder: " + loco.getDecoderTypeString() + " Exists");
             store = false;

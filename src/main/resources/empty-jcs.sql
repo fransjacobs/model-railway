@@ -180,13 +180,14 @@ CREATE CACHED TABLE "jcs"."command_stations"(
     "virtual" BOOLEAN DEFAULT FALSE NOT NULL
 );         
 ALTER TABLE "jcs"."command_stations" ADD CONSTRAINT "jcs"."command_station_pk" PRIMARY KEY("id");              
--- 5 +/- SELECT COUNT(*) FROM jcs.command_stations;            
+-- 6 +/- SELECT COUNT(*) FROM jcs.command_stations;            
 INSERT INTO "jcs"."command_stations" VALUES
 ('marklin.cs', 'Marklin Central Station 2/3', 'CS', 'jcs.commandStation.marklin.cs.MarklinCentralStationImpl', 'NETWORK', NULL, NULL, 15731, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, 'DCC,MFX,MM', FALSE, TRUE, NULL, 'NETWORK', NULL, NULL, NULL, NULL, NULL, NULL, FALSE),
 ('dcc-ex', 'DCC-EX', 'dcc-ex', 'jcs.commandStation.dccex.DccExCommandStationImpl', 'NETWORK', NULL, NULL, 2560, FALSE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, 'DCC', FALSE, FALSE, NULL, 'NETWORK,SERIAL', NULL, NULL, NULL, NULL, NULL, NULL, FALSE),
 ('hsi-s88', 'HSI S88', 'HSI', 'jcs.commandStation.hsis88.HSIImpl', 'SERIAL', NULL, NULL, 0, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, FALSE, '', FALSE, TRUE, NULL, 'SERIAL', '0', 1, 6, 0, 0, 0, FALSE),
-('virtual', 'Virtual CS', 'VIR', 'jcs.commandStation.virtual.VirtualCommandStationImpl', 'NETWORK', NULL, '127.0.0.1', 0, FALSE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, 'dcc', TRUE, TRUE, '1', 'NETWORK', '0', 1, 1, 0, 0, 0, TRUE),
-('esu-ecos', 'ESU ECoS', 'ECoS', 'jcs.commandStation.esu.ecos.EsuEcosCommandStationImpl', 'NETWORK', NULL, NULL, 15471, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, 'DCC,MFX,MM', TRUE, TRUE, '1', 'NETWORK', '0', 0, 0, 0, 0, 0, FALSE);     
+('virtual', 'Virtual CS', 'VIR', 'jcs.commandStation.virtual.VirtualCommandStationImpl', 'NETWORK', NULL, '127.0.0.1', 0, FALSE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, 'DCC', TRUE, TRUE, '1', 'NETWORK', '0', 1, 1, 0, 0, 0, TRUE),
+('esu-ecos', 'ESU ECoS', 'ECoS', 'jcs.commandStation.esu.ecos.EsuEcosCommandStationImpl', 'NETWORK', NULL, NULL, 15471, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, 'DCC,MFX,MM', FALSE, TRUE, '1', 'NETWORK', '0', 0, 0, 0, 0, 0, FALSE),
+('intellibox2', 'Uhlenbrock Intellibox 2', 'Loconet', 'jcs.commandStation.loconet.Intellibox2Impl', 'SERIAL', 'tty.BLTH', 'AUTO', NULL, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, 'DCC,MM', FALSE, TRUE, '1', 'SERIAL', '0', 0, 0, 0, 0, 0, FALSE);
 CREATE UNIQUE NULLS DISTINCT INDEX "jcs"."command_station_pk_idx" ON "jcs"."command_stations"("id" NULLS FIRST);               
 CREATE CACHED TABLE "jcs"."routes"(
     "id" CHARACTER VARYING(255) NOT NULL,
