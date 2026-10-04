@@ -528,6 +528,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     connectButton.setToolTipText("Connect/Disconnect with Central Station");
     connectButton.setBorder(BorderFactory.createLineBorder(new Color(204, 204, 204)));
     connectButton.setDoubleBuffered(true);
+    connectButton.setEnabled(false);
     connectButton.setFocusable(false);
     connectButton.setHorizontalTextPosition(SwingConstants.CENTER);
     connectButton.setMargin(new Insets(0, 0, 0, 0));

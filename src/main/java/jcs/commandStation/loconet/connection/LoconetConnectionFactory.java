@@ -20,6 +20,7 @@ import com.fazecast.jSerialComm.SerialPortDataListener;
 import com.fazecast.jSerialComm.SerialPortEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import static jcs.commandStation.automation.RailController.TAG;
 import jcs.commandStation.events.ConnectionEvent;
@@ -38,7 +39,7 @@ public class LoconetConnectionFactory {
   private volatile LoconetConnection loconetConnection;
   private volatile PortConnector portConnector;
 
-  private volatile List<ConnectionEventListener> connectionEventListeners;
+  private final List<ConnectionEventListener> connectionEventListeners;
 
   /* Uhlenbrock Intellibox 2 */
   public static final int IB_PORT_VENDOR = 4292;
@@ -48,7 +49,7 @@ public class LoconetConnectionFactory {
   public static final int DATA_BITS = 8;
 
   private LoconetConnectionFactory() {
-    connectionEventListeners = new ArrayList<>();
+    connectionEventListeners = new CopyOnWriteArrayList<>();
   }
 
   public static LoconetConnectionFactory getInstance() {
@@ -68,7 +69,7 @@ public class LoconetConnectionFactory {
 
   public void stopPortAcquire() {
     this.setAutoReAcquirePort(false);
-    if (portConnector != null && portConnector.isRunning()) {
+    if (portConnector != null) {
       portConnector.quit();
     }
     closePort();
@@ -211,7 +212,7 @@ public class LoconetConnectionFactory {
   private class PortConnector extends Thread {
 
     private final LoconetConnectionFactory loconetConnectionFactory;
-    private volatile boolean running;
+    private volatile boolean running = true;
 
     PortConnector(LoconetConnectionFactory loconetConnectionFactory) {
       super("LOCONET-SERIAL-PORT-CONFIG-THREAD");
@@ -245,11 +246,11 @@ public class LoconetConnectionFactory {
 
     void quit() {
       this.running = false;
+      this.interrupt();
     }
 
     @Override
     public void run() {
-      running = true;
       Logger.trace("Try to connect to a Loconet USB port...");
 
       while (running) {

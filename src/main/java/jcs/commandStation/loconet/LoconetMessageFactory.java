@@ -195,8 +195,166 @@ public final class LoconetMessageFactory {
     return new LoconetMessage(LoconetMessage.OPC_IMM_PACKET, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12);
   }
 
+  public static LoconetMessage requestS88ReportAddress() {
+    int arg1 = 0x01;
+    int arg2 = 0x05;
+    int arg3 = 0x00;
+    int arg4 = 0x21;
+    int arg5 = 0x00;
+    int arg6 = 0x6e;
+    int arg7 = 0x19;
+    int arg8 = 0x49;
+    int arg9 = 0x00;
+    int arg10 = 0x00;
+    int arg11 = 0x00;
+    int arg12 = 0x00;
+
+    return new LoconetMessage(LoconetMessage.OPC_IMM_PACKET, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12);
+  }
+
+  public static LoconetMessage startLNCVProgramming(int article, int module) {
+    int articleLow = article & 0xFF;
+    int articleHigh = (article >> 8) & 0xFF;
+
+    int moduleLow = module & 0xFF;
+    int moduleHigh = (module >> 8) & 0xFF;
+
+    int commandData = 0x80;
+
+    int pxct = 0;
+
+    if ((articleLow & 0x80) != 0) {
+      pxct |= 0x01;
+    }
+    if ((articleHigh & 0x80) != 0) {
+      pxct |= 0x02;
+    }
+
+    // LNCV low/high are both zero here.
+    if ((moduleLow & 0x80) != 0) {
+      pxct |= 0x10;
+    }
+    if ((moduleHigh & 0x80) != 0) {
+      pxct |= 0x20;
+    }
+    if ((commandData & 0x80) != 0) {
+      pxct |= 0x40;
+    }
+
+    int arg1 = 0x01;
+    int arg2 = 0x05;
+    int arg3 = 0x00;
+    int arg4 = 0x21;
+    int arg5 = pxct;
+    int arg6 = articleLow & 0x7F;
+    int arg7 = articleHigh & 0x7F;
+    int arg8 = 0x00; // LNCV low
+    int arg9 = 0x00; // LNCV high
+    int arg10 = moduleLow & 0x7F;
+    int arg11 = moduleHigh & 0x7F;
+    int arg12 = commandData & 0x7F;
+
+    return new LoconetMessage(
+            LoconetMessage.OPC_IMM_PACKET,
+            arg1, arg2, arg3, arg4,
+            arg5, arg6, arg7, arg8,
+            arg9, arg10, arg11, arg12);
+  }
+
+  public static LoconetMessage readLNCV(int article, int lncv) {
+    int articleLow = article & 0xFF;
+    int articleHigh = (article >> 8) & 0xFF;
+
+    int lncvLow = lncv & 0xFF;
+    int lncvHigh = (lncv >> 8) & 0xFF;
+
+    int pxct = 0;
+
+    // PXCT carries bit 7 of the seven following data bytes.
+    if ((articleLow & 0x80) != 0) {
+      pxct |= 0x01;
+    }
+    if ((articleHigh & 0x80) != 0) {
+      pxct |= 0x02;
+    }
+    if ((lncvLow & 0x80) != 0) {
+      pxct |= 0x04;
+    }
+    if ((lncvHigh & 0x80) != 0) {
+      pxct |= 0x08;
+    }
+
+    int arg1 = 0x01;
+    int arg2 = 0x05;
+    int arg3 = 0x00;
+    int arg4 = 0x21; // LNCV read
+    int arg5 = pxct;
+    int arg6 = articleLow & 0x7F;
+    int arg7 = articleHigh & 0x7F;
+    int arg8 = lncvLow & 0x7F;
+    int arg9 = lncvHigh & 0x7F;
+    int arg10 = 0x00; // value low - unused for read
+    int arg11 = 0x00; // value high - unused for read
+    int arg12 = 0x00; // command data
+
+    return new LoconetMessage(
+            LoconetMessage.OPC_IMM_PACKET,
+            arg1, arg2, arg3, arg4,
+            arg5, arg6, arg7, arg8,
+            arg9, arg10, arg11, arg12);
+  }
+
+  public static LoconetMessage endLNCVProgramming(int article, int module) {
+    int articleLow = article & 0xFF;
+    int articleHigh = (article >> 8) & 0xFF;
+
+    int moduleLow = module & 0xFF;
+    int moduleHigh = (module >> 8) & 0xFF;
+
+    int commandData = 0x40;
+
+    int pxct = 0;
+
+    if ((articleLow & 0x80) != 0) {
+      pxct |= 0x01;
+    }
+    if ((articleHigh & 0x80) != 0) {
+      pxct |= 0x02;
+    }
+
+    // LNCV low/high are both zero.
+    if ((moduleLow & 0x80) != 0) {
+      pxct |= 0x10;
+    }
+    if ((moduleHigh & 0x80) != 0) {
+      pxct |= 0x20;
+    }
+    if ((commandData & 0x80) != 0) {
+      pxct |= 0x40;
+    }
+
+    int arg1 = 0x01;
+    int arg2 = 0x05;
+    int arg3 = 0x00;
+    int arg4 = 0x21;
+    int arg5 = pxct;
+    int arg6 = articleLow & 0x7F;
+    int arg7 = articleHigh & 0x7F;
+    int arg8 = 0x00; // LNCV low
+    int arg9 = 0x00; // LNCV high
+    int arg10 = moduleLow & 0x7F;
+    int arg11 = moduleHigh & 0x7F;
+    int arg12 = commandData & 0x7F;
+
+    return new LoconetMessage(
+            LoconetMessage.OPC_PEER_XFER,
+            arg1, arg2, arg3, arg4,
+            arg5, arg6, arg7, arg8,
+            arg9, arg10, arg11, arg12);
+  }
+
   public static void main(String[] a) {
-    System.out.println(requestSoftwareVersion());
+    System.out.println(requestS88ReportAddress());
   }
 
 }
