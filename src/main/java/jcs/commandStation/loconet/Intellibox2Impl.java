@@ -112,6 +112,8 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
       eventMessageHandler = new EventMessageHandler(loconet);
       eventMessageHandler.start();
 
+      feedbackManager.refresh();
+
       getDevices();
 
       if (isVirtual()) {
@@ -121,9 +123,9 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
 
       accessoryManager.start();
 
-//      //refresh the accessories in the background
+      //refresh the accessories in the background
       executor.execute(() -> accessoryManager.refresh());
-//      //refresh the locomotives in the background
+      //refresh the locomotives in the background
       executor.execute(() -> locomotiveManager.refresh());
     }
 
@@ -220,8 +222,6 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
     if (ib.getSoftwareVersion() == null) {
       ib.setSoftwareVersion(getSoftwareVersion());
     }
-
-    this.feedbackManager.readFeedbackConfigurations();
 
     return new ArrayList<>(devices);
   }

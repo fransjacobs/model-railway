@@ -15,6 +15,7 @@
  */
 package jcs.commandStation.loconet;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +35,7 @@ import org.tinylog.Logger;
 class FeedbackManager {
 
   private final Intellibox2Impl intelliboxImpl;
-  private final Map<Integer, FeedbackModule> modules;
+  //private final Map<Integer, FeedbackModule> modules;
   private final Map<Integer, SensorBean> sensors;
 
   static final int DEFAULT_ARTICLE = 6510;
@@ -44,32 +45,13 @@ class FeedbackManager {
   private static final int DEFAULT_REPORT_ADDRESS = 1017;
 
   private volatile int numberOfFeedbackModules;
-//  private int expectedFeedbackStates;
-//  private final BitSet receivedFeedbackStates = new BitSet();
 
   FeedbackManager(Intellibox2Impl intelliboxImpl) {
     this.intelliboxImpl = intelliboxImpl;
-    modules = new HashMap<>();
+    //modules = new HashMap<>();
     sensors = new HashMap<>();
   }
 
-//  void beginSnapshot(int moduleCount) {
-//    expectedFeedbackStates = moduleCount * 16;
-//    receivedFeedbackStates.clear();
-//  }
-//  void updateFromSnapshot(int address, boolean active) {
-//    if (address < 0 || address >= expectedFeedbackStates) {
-//      Logger.warn("Feedback address {} outside expected range 0..{}", address, expectedFeedbackStates - 1);
-//      return;
-//    }
-//
-//    boolean alreadyReceived = receivedFeedbackStates.get(address);
-//    receivedFeedbackStates.set(address);
-//
-//    if (!alreadyReceived && receivedFeedbackStates.cardinality() == expectedFeedbackStates) {
-//      Logger.debug("Feedback snapshot complete: {} states", expectedFeedbackStates);
-//    }
-//  }
   private boolean isLNCVReply(LoconetMessage message, int expectedArticle, int expectedLncv) {
     try {
       parseLNCVReadReply(message, expectedArticle, expectedLncv);
@@ -79,8 +61,9 @@ class FeedbackManager {
     }
   }
 
-  void readFeedbackConfigurations() {
+  private void readFeedbackConfigurations() {
     Logger.trace("Start reading Intellibox 2 feedback configurations...");
+
     LoconetMessage start = LoconetMessageFactory.startLNCVProgramming(DEFAULT_ARTICLE, DEFAULT_MODULE);
     Predicate<LoconetMessage> startReplyMatcher = message -> isLNCVReply(message, DEFAULT_ARTICLE, 0);
     LoconetMessage startReply = intelliboxImpl.loconet.sendMessageAwaitEchoAndReply(start, startReplyMatcher, 500);
@@ -90,26 +73,36 @@ class FeedbackManager {
       return;
     }
 
-    LoconetMessage request = LoconetMessageFactory.readLNCV(DEFAULT_ARTICLE, LNCV_MODULE_COUNT);
-    Predicate<LoconetMessage> readReplyMatcher = message -> isLNCVReply(message, DEFAULT_ARTICLE, LNCV_MODULE_COUNT);
-    LoconetMessage readReply = intelliboxImpl.loconet.sendMessageAwaitEchoAndReply(request, readReplyMatcher, 500);
+    boolean configurationRead = false;
 
-    if (readReply == null) {
-      Logger.warn("No reply received for LNCV {}", LNCV_MODULE_COUNT);
-      return;
+    try {
+      LoconetMessage request = LoconetMessageFactory.readLNCV(DEFAULT_ARTICLE, LNCV_MODULE_COUNT);
+      Predicate<LoconetMessage> readReplyMatcher = message -> isLNCVReply(message, DEFAULT_ARTICLE, LNCV_MODULE_COUNT);
+
+      LoconetMessage readReply = intelliboxImpl.loconet.sendMessageAwaitEchoAndReply(request, readReplyMatcher, 500);
+
+      if (readReply == null) {
+        Logger.warn("No reply received for LNCV {}", LNCV_MODULE_COUNT);
+        return;
+      }
+
+      int moduleCount = parseLNCVReadReply(readReply, DEFAULT_ARTICLE, LNCV_MODULE_COUNT);
+      setNumberOfFeedbackModules(moduleCount);
+      configurationRead = true;
+
+    } finally {
+      LoconetMessage end = LoconetMessageFactory.endLNCVProgramming(DEFAULT_ARTICLE, DEFAULT_MODULE);
+      LoconetMessage endEcho = intelliboxImpl.loconet.sendMessage(end);
+
+      if (endEcho == null) {
+        Logger.warn("No echo received for LNCV programming end");
+        configurationRead = false;
+      }
     }
 
-    int moduleCount = parseLNCVReadReply(readReply, DEFAULT_ARTICLE, LNCV_MODULE_COUNT);
-    setNumberOfFeedbackModules(moduleCount);
-    LoconetMessage end = LoconetMessageFactory.endLNCVProgramming(DEFAULT_ARTICLE, DEFAULT_MODULE);
-    LoconetMessage endEcho = intelliboxImpl.loconet.sendMessage(end);
-
-    if (endEcho == null) {
-      Logger.warn("No echo received for LNCV programming end");
-      return;
+    if (configurationRead) {
+      requestCurrentSensorStates();
     }
-
-    requestCurrentSensorStates();
   }
 
   private int parseLNCVReadReply(LoconetMessage message, int expectedArticle, int expectedLncv) {
@@ -188,89 +181,73 @@ class FeedbackManager {
     return value;
   }
 
-  Map<Integer, FeedbackModule> getModules() {
-    return modules;
-  }
-
-  FeedbackModule getFeedbackModule(int id) {
-    return modules.get(id);
-  }
-
+//  Map<Integer, FeedbackModule> getModules() {
+//    return modules;
+//  }
+//  FeedbackModule getFeedbackModule(int id) {
+//    return modules.get(id);
+//  }
   SensorBean getSensor(Integer id) {
     return sensors.get(id);
   }
 
   void refresh() {
-    //refreshSensors(PersistenceFactory.getService().getSensorsByCommandStationId(COMMAND_STATION_ID));
     sensors.clear();
-    modules.clear();
-
+    //modules.clear();
     readFeedbackConfigurations();
-
   }
 
-//  synchronized void refreshSensors(List<SensorBean> sensorList) {
-//    sensors.clear();
-//    modules.clear();
-//
-//    for (SensorBean sb : sensorList) {
-//      this.sensors.put(sb.getId(), sb);
-//      //this.modules
-//    }
-//
-//    Logger.trace("There are {} sensors.", sensors.size());
-//  }
   List<FeedbackModule> getFeedbackModules() {
-//      for (int i = 0; i < bus1Len; i++) {
-//      FeedbackModule b1 = new FeedbackModule();
-//        //Use the offset plus module nr as the id
-//        b1.setId(1000 + i);
-//        b1.setAddressOffset(1000);
-//        b1.setModuleNumber(i + 1);
-//        b1.setPortCount(16);
-//        b1.setIdentifier(nodeId);
-//        b1.setBusNumber(1);
-//        b1.setCommandStationId(commandStationBean.getId());
-//        b1.setBusSize(bus1Len);
-//        feedbackModules.add(b1);
-//      }
+    List<FeedbackModule> feedbackModules = new ArrayList<>();
+    for (int i = 0; i < numberOfFeedbackModules; i++) {
+      FeedbackModule b1 = new FeedbackModule();
 
-    return null;
+      b1.setId(1 + i);
+      b1.setAddressOffset(1);
+      b1.setModuleNumber(i + 1);
+      b1.setPortCount(16);
+      b1.setIdentifier(0);
+      b1.setBusNumber(0);
+      b1.setCommandStationId(Intellibox2Impl.COMMAND_STATION_ID);
+      b1.setBusSize(numberOfFeedbackModules);
+      feedbackModules.add(b1);
+    }
+
+    return feedbackModules;
   }
 
   SensorBean getSensorStatus(SensorBean sensorBean) {
     if (sensorBean != null && sensorBean.getId() != null) {
       Integer sensorId = sensorBean.getId();
-      return this.sensors.get(sensorId);
+      return sensors.get(sensorId);
     } else {
       return null;
     }
   }
 
-  void setNumberOfFeedbackModules(int moduleCount) {
+  private void setNumberOfFeedbackModules(int moduleCount) {
     if (moduleCount < 1 || moduleCount > 31) {
       throw new IllegalArgumentException("Invalid number of feedback modules: " + moduleCount);
     }
     numberOfFeedbackModules = moduleCount;
+    sensors.clear();
 
     int numberOfContacts = numberOfFeedbackModules * 16;
-    if (this.sensors.isEmpty()) {
-      //Create Sensorbeans
-      for (int id = 0; id < numberOfContacts; id++) {
-        //  public SensorBean(Integer id, Integer deviceId, Integer contactId, Integer nodeId, Integer status, Integer previousStatus, String commandStationId, Integer busNr) {
-        int deviceId = calculateDeviceId(id);
-        int contactId = calculateContactId(id);
-        int nodeId = 0;
-        int status = 0;
-        int previousStatus = 1;
-        String commandStationId = Intellibox2Impl.COMMAND_STATION_ID;
-        int busNr = 0;
+    //Create Sensorbeans
+    for (int id = 0; id < numberOfContacts; id++) {
+      //  public SensorBean(Integer id, Integer deviceId, Integer contactId, Integer nodeId, Integer status, Integer previousStatus, String commandStationId, Integer busNr) {
+      int deviceId = calculateDeviceId(id);
+      int contactId = calculateContactId(id);
+      int nodeId = 0;
+      int status = 0;
+      int previousStatus = 1;
+      String commandStationId = Intellibox2Impl.COMMAND_STATION_ID;
+      int busNr = 0;
 
-        SensorBean sb = new SensorBean(id, deviceId, contactId, nodeId, status, previousStatus, commandStationId, busNr);
-        this.sensors.put(id, sb);
-      }
-      Logger.debug("Intellibox S88 has {} feedback modules and {} sensors", numberOfFeedbackModules, sensors.size());
+      SensorBean sb = new SensorBean(id, deviceId, contactId, nodeId, status, previousStatus, commandStationId, busNr);
+      this.sensors.put(id, sb);
     }
+    Logger.debug("Intellibox S88 has {} feedback modules and {} sensors", numberOfFeedbackModules, sensors.size());
   }
 
   private static Integer calculateDeviceId(int address) {
@@ -300,11 +277,8 @@ class FeedbackManager {
   void update(LoconetMessage message) {
     SensorBean sb = parseSensorEvent(message);
 
-    int address = sb.getId();
-    //updateFromSnapshot(address, sb.isActive());
-
-    if (this.sensors.containsKey(sb.getId())) {
-      SensorBean csb = this.sensors.get(sb.getId());
+    if (sensors.containsKey(sb.getId())) {
+      SensorBean csb = sensors.get(sb.getId());
       csb.setActive(sb.isActive());
       csb.setLastUpdatedMillis(System.currentTimeMillis());
     } else {
@@ -316,7 +290,7 @@ class FeedbackManager {
     SensorBean csb = sensors.get(sb.getId());
     if (csb != null) {
       Logger.trace("Sensor: {} Value: {} ", sb.getId(), sb.getStatus());
-      SensorEvent sme = new SensorEvent(sb);
+      SensorEvent sme = new SensorEvent(csb);
       intelliboxImpl.fireAllSensorEventsListeners(sme);
     }
   }

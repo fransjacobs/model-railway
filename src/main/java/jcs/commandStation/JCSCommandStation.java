@@ -314,10 +314,18 @@ public class JCSCommandStation {
     if (!feedbackControllers.isEmpty() && !alreadyConnected) {
       for (FeedbackController fc : feedbackControllers.values()) {
         if (fc.isConnected()) {
+          fc.addAllSensorEventsListener(new AllSensorEventsHandler(this));
+          if (fc.getConnectionEventListeners().isEmpty()) {
+            fc.addConnectionEventListener(new ControllerConnectionListener(this));
+          }
           feedbackCntrConnected++;
         } else {
           try {
             if (fc.connect()) {
+              fc.addAllSensorEventsListener(new AllSensorEventsHandler(this));
+              if (fc.getConnectionEventListeners().isEmpty()) {
+                fc.addConnectionEventListener(new ControllerConnectionListener(this));
+              }
               feedbackCntrConnected++;
             }
           } catch (Exception e) {
@@ -361,18 +369,6 @@ public class JCSCommandStation {
 
           if (ac.getConnectionEventListeners().isEmpty()) {
             ac.addConnectionEventListener(new ControllerConnectionListener(this));
-          }
-        }
-      }
-    }
-
-    if (feedbackCntrConnected > 0 && !alreadyConnected) {
-      for (FeedbackController fc : feedbackControllers.values()) {
-        if (fc.isConnected()) {
-          fc.addAllSensorEventsListener(new AllSensorEventsHandler(this));
-
-          if (fc.getConnectionEventListeners().isEmpty()) {
-            fc.addConnectionEventListener(new ControllerConnectionListener(this));
           }
         }
       }
@@ -932,8 +928,8 @@ public class JCSCommandStation {
   public SensorBean getSensorStatus(SensorBean sensorBean) {
     for (FeedbackController fbc : feedbackControllers.values()) {
       SensorBean sb = fbc.getSensorStatus(sensorBean);
-      SensorEvent se = new SensorEvent(sb);
       if (sb != null) {
+        SensorEvent se = new SensorEvent(sb);
         sensorEventQueue.offer(se);
         sensorBean.setActive(sb.isActive());
       }
@@ -975,8 +971,18 @@ public class JCSCommandStation {
   private void handleSensorEvent(SensorEvent event) {
     SensorBean sb = event.getSensorBean();
     boolean newValue = event.isActive();
-    SensorBean dbsb = PersistenceFactory.getService().getSensor(event.getSensorId());
+    SensorBean dbsb = null;
 
+    //TODO: Add CommandStationID!
+    if (dbsb == null && event.getSensorId() != null) {
+      dbsb = PersistenceFactory.getService().getSensor(event.getSensorId());
+    }
+
+    if (sb.getDeviceId() != null && sb.getContactId() != null) {
+      dbsb = PersistenceFactory.getService().getSensor(sb.getDeviceId(), sb.getContactId());
+    }
+
+    //SensorBean dbsb = PersistenceFactory.getService().getSensor(event.getSensorId());
     if (dbsb == null) {
       //Try using the deviceId and contactId and command station...
       dbsb = PersistenceFactory.getService().getSensor(sb.getDeviceId(), sb.getContactId());
