@@ -25,7 +25,6 @@ import static jcs.commandStation.loconet.Intellibox2Impl.COMMAND_STATION_ID;
 import static jcs.commandStation.loconet.Opcodes.BYTE_MASK;
 import static jcs.commandStation.loconet.Opcodes.DATA_MASK;
 import jcs.entities.AccessoryBean;
-import jcs.entities.SensorBean;
 import org.tinylog.Logger;
 
 public class LoconetMessageParser implements Opcodes {
@@ -156,25 +155,24 @@ public class LoconetMessageParser implements Opcodes {
     return (xor & BYTE_MASK) == 0xFF;
   }
 
-  private static Integer calculateDeviceId(int address) {
-    int deviceId = (address + 1) / 16 + 1;
-    return deviceId;
-  }
-
-  private static int calculateContactId(int address) {
-    int module = (address + 1) / 16 + 1;
-    int mport = address + 1 - (module - 1) * 16;
-    return mport;
-  }
-
-  private static int calculateContactId(int module, int port) {
-    module = module - 1;
-    int contactId = module * 16;
-    return contactId + port;
-  }
-
+//  private static Integer calculateDeviceId(int address) {
+//    int deviceId = (address + 1) / 16 + 1;
+//    return deviceId;
+//  }
+//
+//  private static int calculateContactId(int address) {
+//    int module = (address + 1) / 16 + 1;
+//    int mport = address + 1 - (module - 1) * 16;
+//    return mport;
+//  }
+//
+//  private static int calculateContactId(int module, int port) {
+//    module = module - 1;
+//    int contactId = module * 16;
+//    return contactId + port;
+//  }
   /**
-   * Parses a raw 2-byte LocoNet sensor message.
+   * Parses a raw 2-byte LocoNet power message.
    *
    * @param opcode expected 0xB2
    * @param in1 address low byte (a6..a0)
@@ -218,34 +216,33 @@ public class LoconetMessageParser implements Opcodes {
    * @return the decoded sensor event
    * @throws IllegalArgumentException if opcode or checksum is invalid
    */
-  public static SensorBean parseSensorEvent(LoconetMessage message) {
-    if (!message.isChecksumValid()) {
-      throw new IllegalArgumentException(String.format("Checksum mismatch for message {}", message.toString()));
-    }
-    if (!message.isExpectedsOpcode(OPC_INPUT_REP)) {
-      throw new IllegalArgumentException(String.format("Not a sensor message, opcode={}", message.getHexOpcode()));
-    }
-
-    int in1 = message.getArgument(1);
-    int in2 = message.getArgument(2);
-
-    int addrLow = in1 & 0x7F;   // a6..a0
-    int addrHigh = in2 & 0x0F;  // a10..a7
-    int rawAddress = (addrHigh << 7) | addrLow; // 11-bit pair address
-
-    boolean x = (in2 & 0x40) != 0;
-    boolean i = (in2 & 0x20) != 0; // selects sub-address within the pair
-    boolean value = (in2 & 0x10) != 0; // L bit
-
-    // I bit distinguishes the two sensors sharing this raw pair address
-    int address = (rawAddress << 1) | (i ? 1 : 0);
-
-    Integer id = address; // + 1;
-    Integer deviceId = calculateDeviceId(address);
-    Integer contactId = calculateContactId(address);
-    return new SensorBean(id, deviceId, contactId, 0, (value ? 1 : 0), (value ? 0 : 1), COMMAND_STATION_ID, 0);
-  }
-
+//  public static SensorBean parseSensorEvent(LoconetMessage message) {
+//    if (!message.isChecksumValid()) {
+//      throw new IllegalArgumentException(String.format("Checksum mismatch for message {}", message.toString()));
+//    }
+//    if (!message.isExpectedsOpcode(OPC_INPUT_REP)) {
+//      throw new IllegalArgumentException(String.format("Not a sensor message, opcode={}", message.getHexOpcode()));
+//    }
+//
+//    int in1 = message.getArgument(1);
+//    int in2 = message.getArgument(2);
+//
+//    int addrLow = in1 & 0x7F;   // a6..a0
+//    int addrHigh = in2 & 0x0F;  // a10..a7
+//    int rawAddress = (addrHigh << 7) | addrLow; // 11-bit pair address
+//
+//    boolean x = (in2 & 0x40) != 0;
+//    boolean i = (in2 & 0x20) != 0; // selects sub-address within the pair
+//    boolean value = (in2 & 0x10) != 0; // L bit
+//
+//    // I bit distinguishes the two sensors sharing this raw pair address
+//    int address = (rawAddress << 1) | (i ? 1 : 0);
+//
+//    Integer id = address; // + 1;
+//    Integer deviceId = calculateDeviceId(address);
+//    Integer contactId = calculateContactId(address);
+//    return new SensorBean(id, deviceId, contactId, 0, (value ? 1 : 0), (value ? 0 : 1), COMMAND_STATION_ID, 0);
+//  }
   /**
    * Parses a raw 4-byte LocoNet accessory request message.
    *
@@ -256,39 +253,39 @@ public class LoconetMessageParser implements Opcodes {
    * @return the decoded Accessory event
    * @throws IllegalArgumentException if opcode or checksum is invalid
    */
-  public static AccessoryBean parseSwitchEvent(LoconetMessage message) {
-    if (!message.isChecksumValid()) {
-      throw new IllegalArgumentException(String.format("Checksum mismatch for message {}", message.toString()));
-    }
-    if (!message.isExpectedsOpcode(OPC_SW_REQ)) {
-      throw new IllegalArgumentException(String.format("Not a accessory message, opcode={}", message.getHexOpcode()));
-    }
-
-    int sw1 = message.getArgument(1);
-    int sw2 = message.getArgument(2);
-
-    int addrLow = sw1 & 0x7F;   // a6..a0
-    int addrHigh = sw2 & 0x0F;  // a10..a7
-    int zeroBasedAddress = (addrHigh << 7) | addrLow;
-    int displayAddress = zeroBasedAddress + 1;
-
-    boolean green = (sw2 & 0x20) != 0; // DIR: 1=closed/green, 0=thrown/red
-    boolean outputOn = (sw2 & 0x10) != 0; // ON: 1=coil/output active, 0=off
-
-    String id = Integer.toString(displayAddress);
-
-    Integer address2 = null;
-    String name = null;
-    String type = null;
-    int state = green ? 1 : 0;
-    Integer states = null;
-    Integer switchTime = null;
-    String protocol = null;
-
-    AccessoryBean ab = new AccessoryBean(id, displayAddress, address2, name, type, state, states, switchTime, protocol, COMMAND_STATION_ID);
-    ab.setOn(outputOn);
-    return ab;
-  }
+//  public static AccessoryBean parseSwitchEvent(LoconetMessage message) {
+//    if (!message.isChecksumValid()) {
+//      throw new IllegalArgumentException(String.format("Checksum mismatch for message {}", message.toString()));
+//    }
+//    if (!message.isExpectedsOpcode(OPC_SW_REQ)) {
+//      throw new IllegalArgumentException(String.format("Not a accessory message, opcode={}", message.getHexOpcode()));
+//    }
+//
+//    int sw1 = message.getArgument(1);
+//    int sw2 = message.getArgument(2);
+//
+//    int addrLow = sw1 & 0x7F;   // a6..a0
+//    int addrHigh = sw2 & 0x0F;  // a10..a7
+//    int zeroBasedAddress = (addrHigh << 7) | addrLow;
+//    int displayAddress = zeroBasedAddress + 1;
+//
+//    boolean green = (sw2 & 0x20) != 0; // DIR: 1=closed/green, 0=thrown/red
+//    boolean outputOn = (sw2 & 0x10) != 0; // ON: 1=coil/output active, 0=off
+//
+//    String id = Integer.toString(displayAddress);
+//
+//    Integer address2 = null;
+//    String name = null;
+//    String type = null;
+//    int state = green ? 1 : 0;
+//    Integer states = null;
+//    Integer switchTime = null;
+//    String protocol = null;
+//
+//    AccessoryBean ab = new AccessoryBean(id, displayAddress, address2, name, type, state, states, switchTime, protocol, COMMAND_STATION_ID);
+//    ab.setOn(outputOn);
+//    return ab;
+//  }
 
   /**
    * Parses a raw 4-byte LocoNet accessory status message.
@@ -411,6 +408,83 @@ public class LoconetMessageParser implements Opcodes {
 
       return false;
     };
+  }
+
+  static boolean isIntelliboxPeerReply(LoconetMessage message, int replyId) {
+    return message != null
+            && message.isExpectedsOpcode(LoconetMessage.OPC_PEER_XFER)
+            && message.getLength() == 0x0F
+            && message.getArgument(2) == 0x00
+            && message.getArgument(3) == 0x49
+            && message.getArgument(4) == 0x4B
+            && message.getArgument(5) == replyId;
+  }
+
+  static int decodePeerDataByte(LoconetMessage message, int dataIndex) {
+    int pxct1 = message.getArgument(6);
+    int value = message.getArgument(7 + dataIndex) & 0x7F;
+
+    if ((pxct1 & (1 << dataIndex)) != 0) {
+      value |= 0x80;
+    }
+
+    return value;
+  }
+
+  static String parseSerialNumber(LoconetMessage message) {
+    if (!message.isExpectedsOpcode(OPC_PEER_XFER)) {
+      throw new IllegalArgumentException("Expected OPC_PEER_XFER: " + message);
+    }
+
+    int reqId = message.getArgument(5);
+    if (!isIntelliboxPeerReply(message, 0x09)) {
+      throw new IllegalArgumentException("Expected Intellibox serial-number reply: " + message);
+    }
+
+    int pxct1 = message.getArgument(6);
+
+    StringBuilder serial = new StringBuilder(10);
+
+    // D1..D5 are arguments 7..11
+    for (int i = 0; i < 5; i++) {
+      int value = message.getArgument(7 + i) & 0x7F;
+
+      // Restore bit 7 from PXCT1.
+      if ((pxct1 & (1 << i)) != 0) {
+        value |= 0x80;
+      }
+
+      int highNibble = (value >>> 4) & 0x0F;
+      int lowNibble = value & 0x0F;
+
+      if (highNibble > 9 || lowNibble > 9) {
+        throw new IllegalArgumentException(String.format("Invalid BCD byte 0x%02X", value));
+      }
+
+      serial.append(highNibble);
+      serial.append(lowNibble);
+    }
+    return serial.toString();
+  }
+
+  static String parseSoftwareVersion(LoconetMessage message) {
+    if (!isIntelliboxPeerReply(message, 0x08)) {
+      throw new IllegalArgumentException("Expected Intellibox software-version reply: " + message);
+    }
+
+    int d1 = decodePeerDataByte(message, 0);
+    int d2 = decodePeerDataByte(message, 1);
+
+    int major = (d2 >>> 4) & 0x0F;
+    int digit1 = d2 & 0x0F;
+    int digit2 = (d1 >>> 4) & 0x0F;
+    int digit3 = d1 & 0x0F;
+
+    if (major > 9 || digit1 > 9 || digit2 > 9 || digit3 > 9) {
+      throw new IllegalArgumentException(String.format("Invalid BCD software version D2=0x%02X D1=0x%02X", d2, d1));
+    }
+
+    return String.format("%d.%d%d%d", major, digit1, digit2, digit3);
   }
 
 }

@@ -27,6 +27,8 @@ import java.util.concurrent.TimeUnit;
 import jcs.commandStation.events.AccessoryEvent;
 import jcs.commandStation.events.AccessoryEventListener;
 import static jcs.commandStation.loconet.Intellibox2Impl.COMMAND_STATION_ID;
+import static jcs.commandStation.loconet.Opcodes.OPC_SW_REP;
+import static jcs.commandStation.loconet.Opcodes.OPC_SW_REQ;
 import jcs.entities.AccessoryBean;
 import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.persistence.PersistenceFactory;
@@ -111,60 +113,8 @@ class AccessoryManager {
     return this.accessories.get(address);
   }
 
-  void update(final AccessoryBean accessoryBean) {
-
-    if (accessoryBean != null && accessoryBean.isOn()) {
-      Logger.trace("Accessory: {} Value: {}", accessoryBean.getId(), accessoryBean.getAccessoryValue());
-
-      AccessoryBean registered = accessories.get(accessoryBean.getAddress());
-
-      if (registered == null) {
-        registered = accessories2.get(accessoryBean.getAddress());
-      }
-
-      if (registered == null) {
-        Logger.warn("AccessoryEvent from unknown accessory address: {}", accessoryBean.getAddress());
-        return;
-      }
-
-      registered.setAccessoryValue(accessoryBean.getAccessoryValue());
-
-      fireAccessoryEventListeners(new AccessoryEvent(registered));
-    }
-
-//    if (ab == null) {
-//      //might be the 2nd address
-//      ab = accessories2.get(accessoryEvent.getAddress());
-//      if (ab != null) {
-//        Logger.trace("2nd Address " + accessoryEvent.getAddress() + " Protocol: " + accessoryEvent.getProtocol() + " value: " + accessoryEvent.getValue() + " Millis: " + accessoryEvent.getSystemtime());
-//        ab.setAccessoryValue2(accessoryEvent.getValue());
-//      } else {
-//        Logger.warn("AccessoryEvent from unknown Accessory with address: " + accessoryEvent.getProtocol() + " " + accessoryEvent.getAddress() + " and Value " + accessoryEvent.getValue());
-//      }
-//    } else {
-//      Logger.trace("1st Address " + accessoryEvent.getAddress() + " Protocol: " + accessoryEvent.getProtocol() + " value: " + accessoryEvent.getValue() + " Millis: " + accessoryEvent.getSystemtime());
-//      ab.setAccessoryValue(accessoryEvent.getValue());
-//    }
-//
-//    if (ab != null) {
-//      if (ab.isSignal()) {
-//        Logger.trace("Id: " + ab.getId() + " " + ab.getProtocol() + " Address: " + ab.getAddress() + (ab.isBiAddress() ? " Address2: " + ab.getAddress2() : "") + "  SignalValue: " + ab.getSignalValue().getSignalValue() + " State: " + ab.getState() + " of states: " + ab.getStates() + "...");
-//      }
-//
-//      fireAccessoryEventListeners(new AccessoryEvent(ab));
-//    }
-  }
-
-  private int getAddress(Integer address, String protocol) {
-    int adr = address - 1;
-
-//    if ("dcc".equals(protocol)) {
-//      adr = adr + CanMessage.DCC_ACCESSORY_OFFSET;
-//    } else {
-//      //assume MM
-//      adr = adr + CanMessage.MM_ACCESSORY_OFFSET;
-//    }
-    return adr;
+  List<AccessoryBean> getAccessories() {
+    return new ArrayList<>(accessories.values());
   }
 
   void switchAccessory(Integer address, String protocol, AccessoryValue value, Integer switchTime) {
@@ -217,7 +167,7 @@ class AccessoryManager {
 
       try {
         Logger.trace("AccessoryReply: {}", reply);
-        AccessoryBean ab = LoconetMessageParser.parseSwitchEvent(reply);
+        AccessoryBean ab = parseSwitchEvent(reply);
         update(ab);
       } catch (Exception ex) {
         Logger.error("Could not process accessory ON echo: {}", ex.getMessage());
@@ -236,6 +186,163 @@ class AccessoryManager {
       }
       listener.onAccessoryChange(accessoryEvent);
     }
+  }
+
+  void update(LoconetMessage message) {
+    AccessoryBean ab = parseSwitchEvent(message);
+  }
+
+  void update(final AccessoryBean ab) {
+
+    if (ab == null || !ab.isOn()) {
+      return;
+    }
+
+    boolean secondAddress = false;
+
+    AccessoryBean registered = accessories.get(ab.getAddress());
+
+    if (registered == null) {
+      registered = accessories2.get(ab.getAddress());
+      secondAddress = registered != null;
+    }
+
+    if (registered == null) {
+      Logger.warn("AccessoryEvent from unknown accessory address: {}", ab.getAddress());
+      return;
+    }
+
+    if (secondAddress) {
+      registered.setAccessoryValue2(ab.getAccessoryValue());
+    } else {
+      registered.setAccessoryValue(ab.getAccessoryValue());
+    }
+
+    fireAccessoryEventListeners(new AccessoryEvent(registered));
+  }
+
+  /**
+   * Parses a raw 4-byte LocoNet accessory request message.
+   *
+   * @param opcode expected 0xB2
+   * @param sw1 address low byte (a6..a0)
+   * @param sw2 address high nibble + flags (0, dir, on, a10..a7)
+   * @param chk checksum byte
+   * @return the decoded Accessory event
+   * @throws IllegalArgumentException if opcode or checksum is invalid
+   */
+  AccessoryBean parseSwitchEvent(LoconetMessage message) {
+    if (!message.isChecksumValid()) {
+      throw new IllegalArgumentException(String.format("Checksum mismatch for message {}", message.toString()));
+    }
+    if (!message.isExpectedsOpcode(OPC_SW_REQ)) {
+      throw new IllegalArgumentException(String.format("Not a accessory message, opcode={}", message.getHexOpcode()));
+    }
+
+    int sw1 = message.getArgument(1);
+    int sw2 = message.getArgument(2);
+
+    int addrLow = sw1 & 0x7F;   // a6..a0
+    int addrHigh = sw2 & 0x0F;  // a10..a7
+    int zeroBasedAddress = (addrHigh << 7) | addrLow;
+    int displayAddress = zeroBasedAddress + 1;
+
+    boolean green = (sw2 & 0x20) != 0; // DIR: 1=closed/green, 0=thrown/red
+    boolean outputOn = (sw2 & 0x10) != 0; // ON: 1=coil/output active, 0=off
+
+    String id = Integer.toString(displayAddress);
+
+    Integer address2 = null;
+    String name = null;
+    String type = null;
+    int state = green ? 1 : 0;
+    Integer states = null;
+    Integer switchTime = null;
+    String protocol = null;
+
+    AccessoryBean ab = new AccessoryBean(id, displayAddress, address2, name, type, state, states, switchTime, protocol, COMMAND_STATION_ID);
+    ab.setOn(outputOn);
+    return ab;
+  }
+
+  /**
+   * Parses a raw 4-byte LocoNet accessory status message.
+   *
+   * @param opcode expected 0xB2
+   * @param sn1 address low byte (a6..a0)
+   * @param sn2 address high nibble + flags (0, dir, on, a10..a7)
+   * @param chk checksum byte
+   * @return the decoded Accessory event
+   * @throws IllegalArgumentException if opcode or checksum is invalid
+   */
+  AccessoryBean parseSwitchStateEvent(LoconetMessage message) {
+    if (!message.isChecksumValid()) {
+      throw new IllegalArgumentException(String.format("Checksum mismatch for message %s", message.toString()));
+    }
+    if (!message.isExpectedsOpcode(OPC_SW_REP)) {
+      throw new IllegalArgumentException(String.format("Not a sensor message, opcode=%s", message.getHexOpcode()));
+    }
+
+    int sn1 = message.getArgument(1);
+    int sn2 = message.getArgument(2);
+
+    int addrLow = sn1 & 0x7F;   // a6..a0
+    int addrHigh = sn2 & 0x0F;  // a10..a7
+    int zeroBasedAddress = (addrHigh << 7) | addrLow;
+    int displayAddress = zeroBasedAddress + 1;
+
+    boolean green = (sn2 & 0x20) != 0; // DIR: 1=closed/green, 0=thrown/red
+    boolean outputOn = (sn2 & 0x10) != 0; // ON: 1=coil/output active, 0=off
+
+    String id = Integer.toString(displayAddress);
+
+    Integer address2 = null;
+    String name = null;
+    String type = null;
+    int state = green ? 1 : 0;
+    Integer states = null;
+    Integer switchTime = null;
+    String protocol = null;
+
+    AccessoryBean ab = new AccessoryBean(id, displayAddress, address2, name, type, state, states, switchTime, protocol, COMMAND_STATION_ID);
+    ab.setOn(outputOn);
+    return ab;
+  }
+
+  AccessoryBean parseSwitchReportEvent(LoconetMessage message) {
+    if (!message.isChecksumValid()) {
+      throw new IllegalArgumentException(String.format("Checksum mismatch for message %s", message)
+      );
+    }
+
+    if (!message.isExpectedsOpcode(OPC_SW_REP)) {
+      throw new IllegalArgumentException(String.format("Not an OPC_SW_REP message, opcode=%s", message.getHexOpcode()));
+    }
+
+    int sn1 = message.getArgument(1);
+    int sn2 = message.getArgument(2);
+
+    int addrLow = sn1 & 0x7F;   // a6..a0
+    int addrHigh = sn2 & 0x0F;  // a10..a7
+    int zeroBasedAddress = (addrHigh << 7) | addrLow;
+    int displayAddress = zeroBasedAddress + 1;
+
+    boolean green = (sn2 & 0x20) != 0; // DIR: 1=closed/green, 0=thrown/red
+    boolean outputOn = (sn2 & 0x10) != 0; // ON: 1=coil/output active, 0=off
+
+    String id = Integer.toString(displayAddress);
+
+    Integer address2 = null;
+    String name = null;
+    String type = null;
+    int state = green ? 1 : 0;
+    Integer states = null;
+    Integer switchTime = null;
+    String protocol = null;
+
+    AccessoryBean ab = new AccessoryBean(id, displayAddress, address2, name, type, state, states, switchTime, protocol, COMMAND_STATION_ID);
+    ab.setOn(outputOn);
+    return ab;
   }
 
 }

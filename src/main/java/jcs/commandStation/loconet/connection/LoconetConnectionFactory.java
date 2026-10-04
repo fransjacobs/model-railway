@@ -20,7 +20,11 @@ import com.fazecast.jSerialComm.SerialPortDataListener;
 import com.fazecast.jSerialComm.SerialPortEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
 import static jcs.commandStation.automation.RailController.TAG;
+import jcs.commandStation.events.ConnectionEvent;
+import jcs.commandStation.events.ConnectionEventListener;
 import jcs.util.SerialPortUtil;
 import org.tinylog.Logger;
 
@@ -29,142 +33,137 @@ public class LoconetConnectionFactory {
   private static LoconetConnectionFactory instance;
 
   private volatile SerialPort serialPort;
-  private volatile boolean autoReAquirePort = true;
-  private volatile ConnectionEventListener connectionEventListener;
+  private volatile boolean autoReAcquirePort = true;
+  private volatile SerialportConnectionEventListener connectionEventListener;
 
   private volatile LoconetConnection loconetConnection;
-
   private volatile PortConnector portConnector;
+
+  private final List<ConnectionEventListener> connectionEventListeners;
 
   /* Uhlenbrock Intellibox 2 */
   public static final int IB_PORT_VENDOR = 4292;
   public static final int IB_PORT_PRODUCT_ID = 60000;
 
-  /**
-   * Intellibox 2 returns String this as it manufacturer, used to recognize the Intellibox 2 on the Serialport
-   */
-  public static final String IB_PORT_MANUFACTURER = "Silicon Labs";
-
   public static final int BAUD_RATE = 115200;
   public static final int DATA_BITS = 8;
 
   private LoconetConnectionFactory() {
+    connectionEventListeners = new CopyOnWriteArrayList<>();
   }
 
   public static LoconetConnectionFactory getInstance() {
     if (instance == null) {
       instance = new LoconetConnectionFactory();
-      instance.aquireSerialPort();
     }
     return instance;
   }
 
-  public boolean isAutoReAquirePort() {
-    return autoReAquirePort;
+  public boolean isAutoReAcquirePort() {
+    return autoReAcquirePort;
   }
 
-  public void setAutoReAquirePort(boolean autoReAquirePort) {
-    this.autoReAquirePort = autoReAquirePort;
+  public void setAutoReAcquirePort(boolean autoReAquirePort) {
+    this.autoReAcquirePort = autoReAquirePort;
   }
 
-  public void stopPortAquire() {
-    this.setAutoReAquirePort(false);
-    if (portConnector != null && portConnector.isRunning()) {
+  public void stopPortAcquire() {
+    this.setAutoReAcquirePort(false);
+    if (portConnector != null) {
       portConnector.quit();
     }
     closePort();
-  }
-
-  @SuppressWarnings("unused")
-  SerialPort getSerialPort() {
-    return this.serialPort;
   }
 
   public static void closeConnection() {
     if (instance != null) {
-      instance.setAutoReAquirePort(false);
-      instance.closePort();
+      instance.stopPortAcquire();
     }
   }
 
-  public static LoconetConnection aquireConnection() {
-    return getInstance().aquireLoconetConnection();
+  public static LoconetConnection acquireConnection(long timeoutMillis) {
+    LoconetConnectionFactory factory = getInstance();
+    factory.setAutoReAcquirePort(true);
+    factory.startPortAcquire();
+
+    return factory.awaitConnection(timeoutMillis);
   }
 
-  synchronized LoconetConnection aquireLoconetConnection() {
-    long now = System.currentTimeMillis();
-    long start = now;
-    long timeout = start + 2000;
+  LoconetConnection awaitConnection(long timeoutMillis) {
+    long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(timeoutMillis);
 
-    while (this.loconetConnection == null && timeout > now) {
-      zleep(100);
-      now = System.currentTimeMillis();
+    while (System.nanoTime() < deadline) {
+      LoconetConnection connection = loconetConnection;
+
+      if (connection != null && connection.isConnected()) {
+
+        //Let clean the port connector thread if needed
+        if (this.portConnector != null && !this.portConnector.isAlive()) {
+          this.portConnector = null;
+        }
+        return connection;
+      }
+
+      zleep(10);
     }
 
-    long end = System.currentTimeMillis();
-
-    if (loconetConnection == null || !loconetConnection.isConnected() && timeout <= end) {
-      Logger.error("Can't establish a connection with Intellibox Timeout after {} ms.", (end - start));
-    } else {
-      Logger.trace("Connected in {} ms.", (end - start));
-    }
-    return this.loconetConnection;
+    Logger.warn("Can't establish connection with Intellibox within {} ms.", timeoutMillis);
+    return null;
   }
 
   void closePort() {
-    if (serialPort != null && serialPort.isOpen()) {
-      try {
-        if (loconetConnection != null) {
-          loconetConnection.close();
-        }
-        loconetConnection = null;
+    LoconetConnection oldConnection = loconetConnection;
+    loconetConnection = null;
 
-        serialPort.flushIOBuffers();
-        serialPort.removeDataListener();
-
-        serialPort.closePort();
-      } catch (Exception e) {
-        Logger.trace("Exception while closing port: {}", e.getMessage());
+    try {
+      if (oldConnection != null) {
+        oldConnection.close();
       }
+      if (serialPort != null) {
+        if (serialPort.isOpen()) {
+          serialPort.flushIOBuffers();
+          serialPort.removeDataListener();
+          serialPort.closePort();
+        }
+      }
+    } catch (Exception e) {
+      Logger.trace("Exception while closing port: {}", e.getMessage());
+    } finally {
+      connectionEventListener = null;
+      serialPort = null;
     }
-    connectionEventListener = null;
-    serialPort = null;
   }
 
-  private void diconnected() {
+  private void disconnected() {
     Logger.trace("Port is disconnected cleanup...");
     closePort();
     zleep(1000);
 
-    if (autoReAquirePort) {
-      aquireSerialPort();
+    if (autoReAcquirePort) {
+      startPortAcquire();
     }
   }
 
-  private synchronized void aquireSerialPort() {
-    if (portConnector != null && portConnector.isRunning()) {
-      Logger.trace("Port Connector is running...");
-    } else if (portConnector == null && serialPort != null && serialPort.isOpen()) {
+  private synchronized void startPortAcquire() {
+    if (loconetConnection != null && loconetConnection.isConnected()) {
       Logger.trace("SerialPort is connected...");
-    } else {
-      portConnector = new PortConnector(this);
-      portConnector.start();
-      //wait....
-      while (loconetConnection == null && autoReAquirePort) {
-        zleep(1000);
-      }
-
-      portConnector.quit();
-      portConnector = null;
-
-      if (serialPort != null) {
-        String name = serialPort.getDescriptivePortName();
-        String manu = serialPort.getManufacturer();
-        String serial = serialPort.getSerialNumber();
-        Logger.tag(TAG).debug("Aquired SerialPort {}. Manufacturer {}, Serial {} ", name, manu, serial);
-      }
+      return;
     }
-    //Logger.trace("Port Aquire finished.");
+
+    if (portConnector != null && portConnector.isAlive()) {
+      Logger.trace("Port Connector is running...");
+      return;
+    }
+
+    portConnector = new PortConnector(this);
+    portConnector.start();
+
+    if (serialPort != null) {
+      String name = serialPort.getDescriptivePortName();
+      String manu = serialPort.getManufacturer();
+      String serial = serialPort.getSerialNumber();
+      Logger.tag(TAG).debug("Aquired SerialPort {}. Manufacturer {}, Serial {} ", name, manu, serial);
+    }
   }
 
   private void zleep(long millis) {
@@ -175,11 +174,19 @@ public class LoconetConnectionFactory {
     }
   }
 
-  private class ConnectionEventListener implements SerialPortDataListener {
+  public void registerConnectionListener(ConnectionEventListener listener) {
+    this.connectionEventListeners.add(listener);
+  }
+
+  public void unRegisterConnectionListener(ConnectionEventListener listener) {
+    this.connectionEventListeners.remove(listener);
+  }
+
+  private class SerialportConnectionEventListener implements SerialPortDataListener {
 
     private final LoconetConnectionFactory loconetConnectionFactory;
 
-    ConnectionEventListener(LoconetConnectionFactory loconetConnectionFactory) {
+    SerialportConnectionEventListener(LoconetConnectionFactory loconetConnectionFactory) {
       this.loconetConnectionFactory = loconetConnectionFactory;
     }
 
@@ -191,14 +198,21 @@ public class LoconetConnectionFactory {
     @Override
     public void serialEvent(SerialPortEvent spe) {
       Logger.tag(TAG).warn("Serialport Disconnected!");
-      loconetConnectionFactory.diconnected();
+      Thread reconnectThread = new Thread(loconetConnectionFactory::disconnected, "LOCONET-RECONNECT");
+      reconnectThread.setDaemon(true);
+      reconnectThread.start();
+
+      ConnectionEvent ce = new ConnectionEvent(spe.getSerialPort().getDescriptivePortName(), false, false);
+      for (ConnectionEventListener listener : connectionEventListeners) {
+        listener.onConnectionChange(ce);
+      }
     }
   }
 
   private class PortConnector extends Thread {
 
     private final LoconetConnectionFactory loconetConnectionFactory;
-    private volatile boolean running;
+    private volatile boolean running = true;
 
     PortConnector(LoconetConnectionFactory loconetConnectionFactory) {
       super("LOCONET-SERIAL-PORT-CONFIG-THREAD");
@@ -232,11 +246,11 @@ public class LoconetConnectionFactory {
 
     void quit() {
       this.running = false;
+      this.interrupt();
     }
 
     @Override
     public void run() {
-      running = true;
       Logger.trace("Try to connect to a Loconet USB port...");
 
       while (running) {
@@ -251,9 +265,9 @@ public class LoconetConnectionFactory {
             comPort.setNumStopBits(SerialPort.ONE_STOP_BIT);
             comPort.setParity(SerialPort.NO_PARITY);
 
-            comPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 0, 0);
+            comPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 100, 0);
 
-            loconetConnectionFactory.connectionEventListener = new ConnectionEventListener(loconetConnectionFactory);
+            loconetConnectionFactory.connectionEventListener = new SerialportConnectionEventListener(loconetConnectionFactory);
             comPort.addDataListener(connectionEventListener);
             loconetConnectionFactory.serialPort = comPort;
             loconetConnection = new IntelliboxConnectionImpl(comPort);
@@ -268,11 +282,16 @@ public class LoconetConnectionFactory {
 
         //Not connected, sleep a while and try again...
         if (running) {
-          zleep(2000);
+          zleep(1000);
         }
       }
       if (loconetConnection != null) {
         Logger.trace("Port Connected {}.", loconetConnection.isConnected());
+
+        ConnectionEvent ce = new ConnectionEvent(serialPort.getDescriptivePortName(), true, false);
+        for (ConnectionEventListener listener : connectionEventListeners) {
+          listener.onConnectionChange(ce);
+        }
       } else {
         Logger.trace("Port NOT Connected!");
       }
