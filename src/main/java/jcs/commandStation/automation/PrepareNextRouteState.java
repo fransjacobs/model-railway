@@ -52,6 +52,13 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
     inSensorId = dispatcher.getInSensorId();
     dispatcher.getSensorMonitor().subscribe(inSensorId, this);
 
+    // The sensor may already have become active before we subscribed.
+    if (dispatcher.getSensorMonitor().isSensorActive(inSensorId)) {
+      inSensorTriggered = true;
+      dispatcher.changeLocomotiveVelocity(0);
+      Logger.tag(TAG).debug("Dispatcher {} IN sensor {} was already active when entering PrepareNextRouteState", dispatcher.getName(), inSensorId);
+    }
+
     BlockBean departureBlock = dispatcher.getDepartureBlock();
     BlockBean destinationBlock = dispatcher.getDestinationBlock();
     RouteBean route = dispatcher.getRouteBean();
@@ -70,11 +77,11 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
 
     //Search for a next route...
     long now = System.currentTimeMillis();
-    
+
     nextRouteFound = dispatcher.getRouteManager().searchNextRoute();
-    
+
     long done = System.currentTimeMillis();
-    Logger.trace("Next route {} in {} ms.",(nextRouteFound?"found":"not found"),(done-now));
+    Logger.trace("Next route {} in {} ms.", (nextRouteFound ? "found" : "not found"), (done - now));
 
     if (nextRouteFound) {
       // If max switch time exceeds a threshold, slow down preemptively
@@ -108,7 +115,7 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
       PersistenceFactory.getService().persist(nextDestinationBlock);
       dispatcher.showBlockState(nextDestinationBlock);
       dispatcher.resetRoute(nextRoute);
-
+      dispatcher.setNextRouteBean(null);    
       Logger.trace("Rolled back next route for " + dispatcher.getName());
     }
   }
