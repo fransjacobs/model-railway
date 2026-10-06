@@ -17,10 +17,10 @@ package jcs.commandStation.automation;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
 import jcs.JCS;
 import jcs.commandStation.automation.AbstractState.State;
 import static jcs.commandStation.automation.AbstractState.State.DEPARTING;
@@ -92,7 +92,7 @@ public class Dispatcher {
     locomotiveId = locomotiveBean.getId();
     name = locomotiveBean.getName();
     routeManager = new RouteManager(this);
-    stateEventListeners = new ArrayList<>();
+    stateEventListeners = new CopyOnWriteArrayList<>();
   }
 
   @SuppressWarnings("unused")
@@ -180,14 +180,12 @@ public class Dispatcher {
         stb.setLastUpdated(yesterday);
         PersistenceFactory.getService().persist(station);
       }
-
     }
 
   }
 
   //For test mocking only!!!
-  void setLocomotiveStarted(boolean locomotiveStarted
-  ) {
+  void setLocomotiveStarted(boolean locomotiveStarted) {
     this.locomotiveStarted = locomotiveStarted;
   }
 
@@ -409,18 +407,6 @@ public class Dispatcher {
         }
         delayStart = true;
       }
-//      case PREPROUTE -> {
-//        BlockBean departureBlock = getDepartureBlock();
-//        String departureSuffix = getRouteBean().getFromSuffix();
-//        signal = getDepartureSignal(departureSuffix, departureBlock);
-//        setActiveSignal(signal);
-//
-//        if (routeBean.getDepartureSignalValue() != null) {
-//          newValue = SignalValue.get(routeBean.getDepartureSignalValue());
-//        } else {
-//          newValue = SignalValue.Hp1;
-//        }
-//      }
       case APPROACH -> {
         newValue = SignalValue.Hp0;
       }

@@ -33,9 +33,15 @@ import org.tinylog.Logger;
 class ArrivedState extends AbstractState {
 
   boolean alwaysStop = true;
+  private final boolean passingThrough;
 
-  public ArrivedState() {
+  ArrivedState() {
+    this(false);
+  }
+
+  ArrivedState(boolean passingThrough) {
     super(ARRIVED);
+    this.passingThrough = passingThrough;
   }
 
   /**
@@ -182,6 +188,9 @@ class ArrivedState extends AbstractState {
     if (alwaysStop || automodeInActive || !nextRoutePrepared) {
       return new WaitingState();
     } else {
+      if (passingThrough) {
+        return new DepartingState(true);
+      }
       return new DepartingState();
     }
   }

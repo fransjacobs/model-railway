@@ -41,7 +41,7 @@ class StateMachine {
   private final Dispatcher dispatcher;
   private volatile AbstractState currentState;
   private StateMachineRunner stateMachineRunner;
-  private boolean requestStop = false;
+  private volatile boolean requestStop = false;
 
   /**
    *
