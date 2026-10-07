@@ -1571,7 +1571,8 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   }
 
   public void refreshLocomotives() {
-    this.dispatcherStatusPanel.refresh();
+    JCS.getJcsCommandStation().refreshLocomotives();
+    dispatcherStatusPanel.refresh();
   }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables

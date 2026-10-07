@@ -185,6 +185,11 @@ public abstract class AbstractController implements GenericController {
   public void removeMeasurementEventListener(MeasurementEventListener listener) {
     this.measurementEventListeners.remove(listener);
   }
+  
+  public void refreshLocomotives() {
+    //Boilerplate for the refrsh method. Not all command stations support this feature.
+  }
+  
 
   protected void pause(long millis) {
     try {

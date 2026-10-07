@@ -60,99 +60,101 @@ class RouteManager {
 
   boolean searchRoute() {
     Logger.trace("Search a free route for " + dispatcher.getName() + "...");
+    // Important: don't retain this from a previous search.
+    swapLocomotiveDirection = false;
+    route = null;
+
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
-    Direction locomotiveDirection = locomotive.getDirection();
     BlockBean departureBlock = PersistenceFactory.getService().getBlock(dispatcher.getDepartureBlockId());
 
     if (departureBlock.getLogicalDirection() == null) {
       departureBlock.setLogicalDirection(locomotive.getDirection().getDirection());
-      Logger.trace("Setting departure Block logicalDirection to: " + departureBlock.getLogicalDirection());
       PersistenceFactory.getService().persist(departureBlock);
     }
 
     logicalDirection = LocomotiveBean.Direction.get(departureBlock.getLogicalDirection());
-
-    if (locomotiveDirection != logicalDirection) {
-      Logger.tag(TAG).warn("Dispatcher" + dispatcher.getName() + " Locomotive Dir.: " + locomotiveDirection + " differs with the logical Direction " + logicalDirection + "!");
-    }
-
     TileBean tileBean = PersistenceFactory.getService().getTileBean(departureBlock.getTileId());
-    TileBean.Orientation blockOrientation = tileBean.getOrientation();
 
     String departureSuffix = departureBlock.getDepartureSuffix();
+
     if (departureSuffix == null) {
-      departureSuffix = Block.getDepartureSuffix(blockOrientation, logicalDirection);
+      departureSuffix
+              = Block.getDepartureSuffix(
+                      tileBean.getOrientation(),
+                      logicalDirection);
     }
 
-    Logger.trace("Loco " + dispatcher.getName() + " is in block " + departureBlock.getId() + ". Direction " + logicalDirection.getDirection() + ". DepartureSuffix " + departureSuffix + "...");
-
-    List<RouteBean> routes = PersistenceFactory.getService().getRoutes(departureBlock.getId(), departureSuffix);
-    Logger.trace("There " + (routes.size() == 1 ? "is" : "are") + " " + routes.size() + " possible route(s)...");
-
-    List<RouteBean> checkedRoutes = new ArrayList<>();
     boolean commuter = locomotive.isCommuter();
 
-    //No routes found or possible.
-    //When the Locomotive is a commuter train and the departure block allows a direction change, may be a route is available.
-    //Reverse the direction and try again...
-    Direction oldDirection = logicalDirection;
-    if (routes.isEmpty() && commuter && departureBlock.isAllowDirectionChange()) {
-      Direction newDirection = LocomotiveBean.toggle(oldDirection);
-      Logger.tag(TAG).debug("Dispatcher " + dispatcher.getName() + " tries to Reverse from " + oldDirection + " to " + newDirection + " and re-try to find a route...");
+    // First try current direction.
+    List<RouteBean> routes = PersistenceFactory.getService().getRoutes(departureBlock.getId(), departureSuffix);
+    List<RouteBean> checkedRoutes = getUsableRoutes(routes, commuter);
 
-      //Do NOT persist the new direction yet, just test....
-      departureBlock.setLogicalDirection(newDirection.getDirection());
-      //Now flip the departure direction
-      if ("-".equals(departureSuffix)) {
-        departureSuffix = "+";
-      } else {
-        departureSuffix = "-";
+    // Nothing usable in current direction.
+    if (checkedRoutes.isEmpty() && commuter && departureBlock.isAllowDirectionChange()) {
+
+      Direction reversedDirection = LocomotiveBean.toggle(logicalDirection);
+      String reversedSuffix = "-".equals(departureSuffix) ? "+" : "-";
+
+      Logger.tag(TAG).debug("Dispatcher {} no usable route in direction {}. Trying reverse direction {} suffix {}",
+              dispatcher.getName(),
+              logicalDirection,
+              reversedDirection,
+              reversedSuffix);
+
+      List<RouteBean> reverseRoutes = PersistenceFactory.getService().getRoutes(departureBlock.getId(), reversedSuffix);
+      List<RouteBean> reverseCheckedRoutes = getUsableRoutes(reverseRoutes, commuter);
+
+      if (!reverseCheckedRoutes.isEmpty()) {
+        checkedRoutes = reverseCheckedRoutes;
+        swapLocomotiveDirection = true;
       }
-
-      Logger.trace("2nd attempt for Loco " + dispatcher.getName() + " is in block " + departureBlock.getId() + ". Direction " + newDirection.getDirection() + ". DepartureSuffix " + departureSuffix + "...");
-      routes = PersistenceFactory.getService().getRoutes(departureBlock.getId(), departureSuffix);
-      Logger.trace("After the 2nd attempt, there " + (routes.size() == 1 ? "is" : "are") + " " + routes.size() + " possible route(s). " + (!routes.isEmpty() ? "Direction of " + locomotive.getName() + " must be swapped!" : ""));
-      swapLocomotiveDirection = !routes.isEmpty();
     }
 
-    //Check the possible routes, check on the destination for active sensors and permissions
+    if (checkedRoutes.isEmpty()) {
+      return false;
+    }
+
+    int rIdx = 0;
+
+    if (checkedRoutes.size() > 1) {
+      rIdx = new Random().nextInt(checkedRoutes.size());
+    }
+
+    route = checkedRoutes.get(rIdx);
+
+    Logger.tag(TAG).debug("Dispatcher {} Chosen route {}{}",
+            dispatcher.getName(),
+            route.toLogString(),
+            swapLocomotiveDirection ? " after direction reversal" : "");
+
+    return true;
+  }
+
+  private List<RouteBean> getUsableRoutes(List<RouteBean> routes, boolean commuter) {
+    List<RouteBean> checkedRoutes = new ArrayList<>();
     for (RouteBean possibleRoute : routes) {
       String destinationTileId = possibleRoute.getToTileId();
+
       BlockBean destinationBlock = PersistenceFactory.getService().getBlockByTileId(destinationTileId);
-      //Check the sensors 
-      boolean plusInActive = !destinationBlock.getPlusSensorBean().isActive();
-      boolean minInActive = !destinationBlock.getMinSensorBean().isActive();
 
-      boolean allowCommuter = destinationBlock.isAllowCommuterOnly();
-      boolean allowNonCommuter = destinationBlock.isAllowNonCommuterOnly();
+      boolean plusInactive = !destinationBlock.getPlusSensorBean().isActive();
+      boolean minInactive = !destinationBlock.getMinSensorBean().isActive();
+      boolean allowed = isAllowed(destinationBlock.isAllowCommuterOnly(), destinationBlock.isAllowNonCommuterOnly(), commuter);
 
-      boolean allowed = isAllowed(allowCommuter, allowNonCommuter, commuter);
+      Logger.tag(TAG).debug("Destination {} Train type commuter: {} Permission {} sensor: {} - sensor: {}",
+              destinationBlock.getId(),
+              commuter,
+              allowed,
+              plusInactive ? "Free" : "Occupied",
+              minInactive ? "Free" : "Occupied");
 
-      Logger.trace("Destination " + destinationBlock.getId() + " Train type commuter: " + commuter + " Permission " + allowed + " sensor: " + (plusInActive ? "Free" : "Occupied") + " - sensor: " + (minInActive ? "Free" : "Occupied"));
-
-      if (plusInActive && minInActive && allowed && turnoutsNotLocked(possibleRoute)) {
+      if (plusInactive && minInactive && allowed && turnoutsNotLocked(possibleRoute)) {
         checkedRoutes.add(possibleRoute);
       }
     }
 
-    //Randomly pick a route in case multiple routes are found...
-    int rIdx = 0;
-    if (checkedRoutes.size() > 1) {
-      //Choose randomly the route
-      Random random = new Random();
-      for (int i = 0; i < 10; i++) {
-        //Seed a bit....
-        random.ints(0, checkedRoutes.size()).findFirst();
-      }
-      rIdx = random.ints(0, checkedRoutes.size()).findFirst().getAsInt();
-    }
-
-    route = null;
-    if (!checkedRoutes.isEmpty()) {
-      route = checkedRoutes.get(rIdx);
-      Logger.tag(TAG).debug("Dispatcher " + dispatcher.getName() + " Choosen route " + route.toLogString());
-    }
-    return route != null;
+    return checkedRoutes;
   }
 
   boolean reserveRoute() {
