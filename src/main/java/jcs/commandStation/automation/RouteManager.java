@@ -78,10 +78,7 @@ class RouteManager {
     String departureSuffix = departureBlock.getDepartureSuffix();
 
     if (departureSuffix == null) {
-      departureSuffix
-              = Block.getDepartureSuffix(
-                      tileBean.getOrientation(),
-                      logicalDirection);
+      departureSuffix = Block.getDepartureSuffix(tileBean.getOrientation(), logicalDirection);
     }
 
     boolean commuter = locomotive.isCommuter();
@@ -197,7 +194,7 @@ class RouteManager {
         switchAccessory(turnout, av);
 
         //TODO: configurable wait time between switches
-        pause(250);
+        pause(150);
       }
       Logger.trace("Turnouts set for " + route);
 
@@ -230,7 +227,6 @@ class RouteManager {
       Logger.tag(TAG).debug("Dispatcher " + dispatcher.getName() + " " + route + " Locked");
 
       if (swapLocomotiveDirection) {
-        //LocomotiveBean.Direction curDir = locomotive.getDirection();
         Direction newDir = LocomotiveBean.toggle(logicalDirection);
         Logger.tag(TAG).trace("Swapping direction of " + dispatcher.getName() + " from: " + logicalDirection + " Swap to " + newDir);
         Logger.tag(TAG).trace("Changing Direction to " + newDir);
@@ -259,21 +255,80 @@ class RouteManager {
     }
   }
 
-  Integer getEstimatedNextRouteSwitchTime() {
-    RouteBean nextRoute = dispatcher.getNextRouteBean();
-    Integer ast = PersistenceFactory.getService().getAverageAccessorySwitchTime(nextRoute);
+  Integer getEstimatedSwitchTime(RouteBean route) {
+    Integer ast = PersistenceFactory.getService().getAverageAccessorySwitchTime(route);
     return ast;
   }
 
-  boolean searchAndReserveNextRoute() {
-    if (searchNextRoute()) {
-      return reserveNextRoute();
-    } else {
+  boolean validateAndReserveNextRoute(RouteBean candidateRoute) {
+    if (candidateRoute == null) {
       return false;
     }
+
+    //Refresh the available routes while holding the RailController semaphore.
+    //This checks route.locked and destination block FREE.
+    List<RouteBean> availableRoutes = PersistenceFactory.getService().getRoutes(candidateRoute.getFromTileId(), candidateRoute.getFromSuffix());
+    RouteBean validatedRoute = null;
+
+    for (RouteBean availableRoute : availableRoutes) {
+      if (candidateRoute.getId().equals(availableRoute.getId())) {
+        validatedRoute = availableRoute;
+        break;
+      }
+    }
+
+    if (validatedRoute == null) {
+      Logger.tag(TAG).debug("Dispatcher {} candidate next route {} is no longer available", dispatcher.getName(), candidateRoute.getId());
+      return false;
+    }
+
+    boolean commuter = dispatcher.getLocomotiveBean().isCommuter();
+
+    if (!isNextRouteAvailable(validatedRoute, commuter)) {
+      Logger.tag(TAG).debug("Dispatcher {} candidate next route {} failed final validation", dispatcher.getName(), validatedRoute.getId());
+      return false;
+    }
+
+    //Only now does the candidate become the real next route.
+    dispatcher.setNextRouteBean(validatedRoute);
+    return reserveNextRoute();
   }
 
-  boolean searchNextRoute() {
+  private boolean isNextRouteAvailable(RouteBean route, boolean commuter) {
+
+    BlockBean destination = PersistenceFactory.getService().getBlockByTileId(route.getToTileId());
+
+    boolean plusFree = !destination.getPlusSensorBean().isActive();
+    boolean minFree = !destination.getMinSensorBean().isActive();
+    boolean allowed = isAllowed(destination.isAllowCommuterOnly(), destination.isAllowNonCommuterOnly(), commuter);
+
+    return plusFree && minFree && allowed && turnoutsNotLocked(route);
+  }
+
+  RouteBean selectRandomRoute(List<RouteBean> candidates) {
+    //Randomly pick a nextRoute in case multiple routes are found...
+    int rIdx = 0;
+    if (candidates.size() > 1) {
+      //Choose randomly the nextRoute
+      Random random = new Random();
+      for (int i = 0; i < 10; i++) {
+        //Seed a bit....
+        random.ints(0, candidates.size()).findFirst();
+      }
+      rIdx = random.ints(0, candidates.size()).findFirst().getAsInt();
+    }
+
+    RouteBean nextRoute = null;
+    if (!candidates.isEmpty()) {
+      nextRoute = candidates.get(rIdx);
+      Logger.tag(TAG).debug("Dispatcher " + dispatcher.getName() + " found next route " + nextRoute.toLogString());
+    } else {
+      Logger.tag(TAG).debug("Dispatcher " + dispatcher.getName() + " no next route available...");
+    }
+    return nextRoute;
+  }
+
+  RouteBean findNextRouteOld() {
     Logger.trace("Search a free next route for " + dispatcher.getLocomotiveBean().getName() + "...");
 
     // In this state the we are checking whether there is a valid nextRoute from the destination to the next block.
@@ -281,6 +336,7 @@ class RouteManager {
 
     //Use the current running locomotive direction
     LocomotiveBean.Direction nextLogicalDirection = dispatcher.getLocomotiveBean().getDirection();
+    boolean commuter = dispatcher.getLocomotiveBean().isCommuter();
 
     TileBean tileBean = PersistenceFactory.getService().getTileBean(departureBlock.getTileId());
     TileBean.Orientation blockOrientation = tileBean.getOrientation();
@@ -296,48 +352,44 @@ class RouteManager {
     List<RouteBean> routes = PersistenceFactory.getService().getRoutes(departureBlock.getId(), departureSuffix);
     Logger.trace("There " + (routes.size() == 1 ? "is" : "are") + " " + routes.size() + " possible route(s)...");
 
-    List<RouteBean> checkedRoutes = new ArrayList<>();
+    List<RouteBean> candidates = new ArrayList<>();
     //Found possible routes check on the destination for the sensors and permissions
     for (RouteBean nextRoute : routes) {
-      String nextDestinationTileId = nextRoute.getToTileId();
-      BlockBean nextDestinationBlock = PersistenceFactory.getService().getBlockByTileId(nextDestinationTileId);
-      //Check the sensors 
-      boolean plusInActive = !nextDestinationBlock.getPlusSensorBean().isActive();
-      boolean minInActive = !nextDestinationBlock.getMinSensorBean().isActive();
+      if (isNextRouteAvailable(nextRoute, commuter)) {
+        candidates.add(nextRoute);
+      }
+    }
+    return selectRandomRoute(candidates);
+  }
 
-      boolean allowCommuter = nextDestinationBlock.isAllowCommuterOnly();
-      boolean allowNonCommuter = nextDestinationBlock.isAllowNonCommuterOnly();
+  RouteBean findNextRoute() {
 
-      boolean allowed = isAllowed(allowCommuter, allowNonCommuter, dispatcher.getLocomotiveBean().isCommuter());
+    Logger.trace("Search a free next route for {}...", dispatcher.getLocomotiveBean().getName());
+    BlockBean departureBlock = dispatcher.getDestinationBlock();
+    LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
+    LocomotiveBean.Direction nextLogicalDirection = locomotive.getDirection();
+    boolean commuter = locomotive.isCommuter();
 
-      Logger.trace("Next Destination " + nextDestinationBlock.getId() + " Train type commuter: " + dispatcher.getLocomotiveBean().isCommuter() + " Permission " + allowed + " sensor: " + (plusInActive ? "Free" : "Occupied") + " - sensor: " + (minInActive ? "Free" : "Occupied"));
+    TileBean tileBean = PersistenceFactory.getService().getTileBean(departureBlock.getTileId());
+    String departureSuffix = departureBlock.getDepartureSuffix();
 
-      if (plusInActive && minInActive && allowed && turnoutsNotLocked(nextRoute)) {
-        checkedRoutes.add(nextRoute);
+    if (departureSuffix == null) {
+      departureSuffix = Block.getDepartureSuffix(tileBean.getOrientation(), nextLogicalDirection);
+    }
+
+    Logger.tag(TAG).debug("Dispatcher {} is entering block {}. Direction {}. DepartureSuffix {} searching next route...", dispatcher.getName(), departureBlock.getId(), nextLogicalDirection.getDirection(), departureSuffix);
+
+    List<RouteBean> routes = PersistenceFactory.getService().getRoutes(departureBlock.getId(), departureSuffix);
+
+    List<RouteBean> candidates = new ArrayList<>();
+
+    for (RouteBean nextRoute : routes) {
+      if (isNextRouteAvailable(nextRoute, commuter)) {
+        candidates.add(nextRoute);
       }
     }
 
-    //Randomly pick a nextRoute in case multiple routes are found...
-    int rIdx = 0;
-    if (checkedRoutes.size() > 1) {
-      //Choose randomly the nextRoute
-      Random random = new Random();
-      for (int i = 0; i < 10; i++) {
-        //Seed a bit....
-        random.ints(0, checkedRoutes.size()).findFirst();
-      }
-      rIdx = random.ints(0, checkedRoutes.size()).findFirst().getAsInt();
-    }
-
-    RouteBean nextRoute = null;
-    if (!checkedRoutes.isEmpty()) {
-      nextRoute = checkedRoutes.get(rIdx);
-      Logger.tag(TAG).debug("Dispatcher " + dispatcher.getName() + " found next route " + nextRoute.toLogString());
-    } else {
-      Logger.tag(TAG).debug("Dispatcher " + dispatcher.getName() + " no next route available...");
-    }
-    dispatcher.setNextRouteBean(nextRoute);
-    return nextRoute != null;
+    return selectRandomRoute(candidates);
   }
 
   boolean reserveNextRoute() {
@@ -544,7 +596,6 @@ class RouteManager {
         routeManager.waitForAccessory(value == accessoryEvent.getValue());
       }
     }
-
   }
 
 }

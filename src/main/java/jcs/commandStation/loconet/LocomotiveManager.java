@@ -131,11 +131,32 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
 
       locomotive.setDirection(direction);
       Map<Integer, FunctionBean> functionValues = locomotive.getFunctions();
-      boolean f0 = functionValues.get(0).isOn();
-      boolean f1 = functionValues.get(1).isOn();
-      boolean f2 = functionValues.get(2).isOn();
-      boolean f3 = functionValues.get(3).isOn();
-      boolean f4 = functionValues.get(4).isOn();
+      boolean f0, f1, f2, f3, f4;
+      if (functionValues.containsKey(0)) {
+        f0 = functionValues.get(0).isOn();
+      } else {
+        f0 = false;
+      }
+      if (functionValues.containsKey(1)) {
+        f1 = functionValues.get(1).isOn();
+      } else {
+        f1 = false;
+      }
+      if (functionValues.containsKey(2)) {
+        f2 = functionValues.get(2).isOn();
+      } else {
+        f2 = false;
+      }
+      if (functionValues.containsKey(3)) {
+        f3 = functionValues.get(3).isOn();
+      } else {
+        f3 = false;
+      }
+      if (functionValues.containsKey(4)) {
+        f4 = functionValues.get(4).isOn();
+      } else {
+        f4 = false;
+      }
 
       LoconetMessage tx = LoconetMessageFactory.setDirectionAndFunctions(slot, direction, f0, f1, f2, f3, f4);
       intelliboxImpl.loconet.sendMessageNoWaitConsumeEcho(tx);
