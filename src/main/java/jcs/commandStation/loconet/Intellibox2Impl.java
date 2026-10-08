@@ -287,6 +287,11 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
   }
 
   @Override
+  public void refreshLocomotives() {
+    this.locomotiveManager.refresh();
+  }
+
+  @Override
   public Image getLocomotiveImage(String icon) {
     return null;
   }

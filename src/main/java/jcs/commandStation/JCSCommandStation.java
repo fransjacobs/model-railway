@@ -917,6 +917,12 @@ public class JCSCommandStation {
     return decoderController;
   }
 
+  public void refreshLocomotives() {
+    if (decoderController != null) {
+      decoderController.refreshLocomotives();
+    }
+  }
+
   public List<AccessoryController> getAccessoryControllers() {
     return new ArrayList<>(accessoryControllers.values());
   }

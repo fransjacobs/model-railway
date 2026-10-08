@@ -35,6 +35,7 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
   private volatile boolean nextRouteFound;
   private volatile boolean inSensorTriggered = false;
   private volatile boolean nextRouteAvaliable = false;
+  private RouteBean candidateRoute;
 
   PrepareNextRouteState() {
     super(PREPNEXTROUTE);
@@ -76,16 +77,12 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
     dispatcher.showBlockState(destinationBlock);
 
     //Search for a next route...
-    long now = System.currentTimeMillis();
-
-    nextRouteFound = dispatcher.getRouteManager().searchNextRoute();
-
-    long done = System.currentTimeMillis();
-    Logger.trace("Next route {} in {} ms.", (nextRouteFound ? "found" : "not found"), (done - now));
+    candidateRoute = dispatcher.getRouteManager().findNextRoute();
+    nextRouteFound = candidateRoute != null;
 
     if (nextRouteFound) {
-      // If max switch time exceeds a threshold, slow down preemptively
-      int estimatedSwitchTime = dispatcher.getRouteManager().getEstimatedNextRouteSwitchTime();
+      int estimatedSwitchTime = dispatcher.getRouteManager().getEstimatedSwitchTime(candidateRoute);
+
       if (estimatedSwitchTime > 500) {
         // Slow to speed 1 so we have more margin
         Integer speed1 = dispatcher.getLocomotiveBean().getSpeedOne();
@@ -115,7 +112,7 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
       PersistenceFactory.getService().persist(nextDestinationBlock);
       dispatcher.showBlockState(nextDestinationBlock);
       dispatcher.resetRoute(nextRoute);
-      dispatcher.setNextRouteBean(null);    
+      dispatcher.setNextRouteBean(null);
       Logger.trace("Rolled back next route for " + dispatcher.getName());
     }
   }
@@ -123,8 +120,7 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
   @Override
   AbstractState execute() {
     BlockBean destinationBlock = dispatcher.getDestinationBlock();
-
-    Logger.debug("{} Route found for: {} in: {} Direction: {} {}Route: {} Speed: Listening for InSensorId: {} ...", (nextRouteFound ? "Next" : "No"), dispatcher.getName(), destinationBlock.getDescription(), dispatcher.getLocomotiveBean().getDirection().getDirection(), (nextRouteFound ? "Next" : ""), (nextRouteFound ? dispatcher.getNextRouteBean().getId() : dispatcher.getRouteBean().getId()), dispatcher.getLocomotiveBean().getVelocity(), inSensorId);
+    Logger.debug("{} Route found for: {} in: {} Direction: {} {}Route: {} Speed: Listening for InSensorId: {} ...", (nextRouteFound ? "Next" : "No"), dispatcher.getName(), destinationBlock.getDescription(), dispatcher.getLocomotiveBean().getDirection().getDirection(), (nextRouteFound ? "Next" : ""), (nextRouteFound ? candidateRoute.getId() : dispatcher.getRouteBean().getId()), dispatcher.getLocomotiveBean().getVelocity(), inSensorId);
 
     if (nextRouteFound) {
       //Try to reserve the next route
@@ -134,7 +130,7 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
         if (RailController.tryAquireLock()) {
           try {
             Logger.trace("##### Locked N ####");
-            nextRouteAvaliable = dispatcher.getRouteManager().searchAndReserveNextRoute();
+            nextRouteAvaliable = dispatcher.getRouteManager().validateAndReserveNextRoute(candidateRoute);
           } finally {
             //Make sure the lock is released
             RailController.releaseLock();
