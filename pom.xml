@@ -261,10 +261,10 @@
                         </javaOptions>
                         <macPackageIdentifier>jcs</macPackageIdentifier>
                         <winConsole>false</winConsole>
-                        <winMenuGroup>JCS</winMenuGroup>
-                        <winShortcut>true</winShortcut>
-                        <linuxMenuGroup>Education</linuxMenuGroup>
-                        <linuxShortcut>true</linuxShortcut>
+                        <!--winMenuGroup>JCS</winMenuGroup-->
+                        <!--winShortcut>true</winShortcut-->
+                        <!--linuxMenuGroup>Education</linuxMenuGroup-->
+                        <!--linuxShortcut>true</linuxShortcut-->
                         <icon>${app.icon}</icon>
                     </configuration>
                 </plugin>
