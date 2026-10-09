@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 frans.
+ * Copyright 2026 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,14 @@
  */
 
 open module jcs {
-  requires java.desktop;        // java.awt.*, javax.swing.*
-  requires java.logging;        // java.util.logging.*
-  requires java.sql;            // java.sql.*  (needed by H2, Hikari)
-  requires java.naming;         // javax.naming.* (needed by some persistence)
-  requires java.xml;            // javax.xml.*, org.xml.sax.*
-  requires java.net.http;       // java.net.http.* (if used)
-  requires jdk.unsupported;     // sun.misc.Unsafe (needed by several libs)
+  requires java.desktop;       
+  requires java.logging;      
+  requires java.sql;           
+  requires java.naming;        
+  requires java.xml;           
+  requires java.net.http;       
+  requires jdk.unsupported;    
   requires java.prefs; 
-  
-  
-  
   requires org.tinylog.api;
   requires org.tinylog.impl;
   requires com.h2database;
@@ -76,5 +73,5 @@ open module jcs {
   requires ch.qos.logback.core;
   requires com.miglayout.core;
   requires com.miglayout.swing;
-  requires AbsoluteLayout.RELEASE300;
+  requires AbsoluteLayout.RELEASE310;
 }
