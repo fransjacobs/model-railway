@@ -44,41 +44,150 @@ Controleer dat `mvn` in je PATH staat en dat `JAVA_HOME` is ingesteld.
 
 #### Controleer de JDK-versie
 
+```text
 java -version
+```
 
 Dit zou ongeveer het volgende moeten teruggeven (Window):
 
+```text
 C:\Users\frans>java -version
 openjdk version "25.0.2" 2026-01-20 LTS
 OpenJDK Runtime Environment Temurin-25.0.2+10 (build 25.0.2+10-LTS)
 OpenJDK 64-Bit Server VM Temurin-25.0.2+10 (build 25.0.2+10-LTS, mixed mode, sharing)
+```
 
 #### Controleer Maven
 
+```text
 mvn -version
+```
 
 Dit zou ongeveer het volgende moeten teruggeven (Window):
 
+```text
 C:\Users\frans>mvn -version
 Apache Maven 3.9.16 (2bdd9fddda4b155ebf8000e807eb73fd829a51d5)
 Maven home: C:\ProgramFiles\apache-maven-3.9.16
 Java version: 25.0.2, vendor: Eclipse Adoptium, runtime: C:\Program Files\Eclipse Adoptium\jdk-25.0.2.10-hotspot
 Default locale: en_US, platform encoding: UTF-8
 OS name: "windows 10", version: "10.0", arch: "amd64", family: "windows"
+```
 
 ## Bouwen
 
 Ga naar de map waarin de broncode staat. Deze map moet `pom.xml`
 bevatten.
 
-mvn package -P package-app
+```text
+mvn clean package jpackage:jpackage
+```
 
 Na enige tijd verschijnt:
 
+```text
+[INFO] --- jpackage:1.8.0:jpackage (default-cli) @ jcs ---
+[INFO] Loaded 24041 auto-discovered prefixes for remote repository maven_central (prefixes-maven_central.txt)
+[INFO] Using: C:\Program Files\Eclipse Adoptium\jdk-25.0.4.101-hotspot\bin\jpackage.exe
+[INFO] jpackage options:
+[INFO]   --name jcs
+[INFO]   --dest C:\path\to\model-railway\target\jpackage
+[INFO]   --type app-image
+[INFO]   --app-version 1.0.0
+[INFO]   --copyright Frans Jacobs
+[INFO]   --description JCS is model railroad automation software
+[INFO]   --input C:\path\to\model-railway\target
+[INFO]   --vendor Frans Jacobs
+[INFO]   --main-class jcs.JCS
+[INFO]   --main-jar jcs-0.0.4-SNAPSHOT.jar
+[INFO]   --icon C:\path\to\model-railway\config\jpackage\resources\JCS.ico
+[INFO]   --java-options -Dfile.encoding=UTF-8
+[INFO]   --java-options -Dtinylog.writer.level=trace
+[INFO]   --java-options -Xms256m
+[INFO]   --java-options -Xmx1024m
+[INFO]   --java-options --enable-native-access=com.fazecast.jSerialComm
+[INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  01:18 min
+[INFO] Finished at: 2026-10-09T21:04:57+02:00
+[INFO] ------------------------------------------------------------------------
+√ model-railway %
+```
 
-In de map `target/jcs` staat vervolgens het uitvoerbare programma (onder
-Windows `jcs.exe`).
+In de map  ...\target\jpackage\jcs staat vervolgens het uitvoerbare programma (onder Windows `jcs.exe`).
+
+### MAC OS
+
+Volg dezelfde procedure voor het controleren van de paden als hierboven bescheven voor Windows.
+
+Open de Terminal App. cd naar de directory waar de source code staat.
+In deze directory moet de file pom.xml staan.
+
+
+Voor de JDK moet je iets zien als:
+```text
+√ model-railway % java -version
+openjdk version "25.0.2" 2026-01-20 LTS
+OpenJDK Runtime Environment Temurin-25.0.2+10 (build 25.0.2+10-LTS)
+OpenJDK 64-Bit Server VM Temurin-25.0.2+10 (build 25.0.2+10-LTS, mixed mode)
+√ model-railway %
+```
+
+Voor Maven ziet het er ongeveer zo uit:
+
+```text
+√ model-railway % mvn -version
+Apache Maven 3.9.11 (3e54c93a704957b63ee3494413a2b544fd3d825b)
+Maven home: /opt/apache-maven-3.9.11
+Java version: 25.0.2, vendor: Eclipse Adoptium, runtime: /path/to/java/25.0.2-tem
+Default locale: en_NL, platform encoding: UTF-8
+OS name: "mac os x", version: "26.7.1", arch: "x86_64", family: "mac"
+√ model-railway % 
+```
+
+Als de paden van de JDK en Maven kloppen run:
+
+```text
+mvn package jpackage:jpackage
+```
+ 
+Na enige tijd:
+```text
+[INFO] 
+[INFO] --- jpackage:1.8.0:jpackage (default-cli) @ jcs ---
+[INFO] Using: /path/to/bin/jpackage
+[INFO] jpackage options:
+[INFO]   --name jcs
+[INFO]   --dest /path/to/model-railway/target/jpackage
+[INFO]   --type app-image
+[INFO]   --app-version 1.0.0
+[INFO]   --copyright Frans Jacobs
+[INFO]   --description JCS is model railroad automation software
+[INFO]   --input /path/to/model-railway/target
+[INFO]   --vendor Frans Jacobs
+[INFO]   --main-class jcs.JCS
+[INFO]   --main-jar jcs-0.0.4-SNAPSHOT.jar
+[INFO]   --icon /path/to/model-railway/config/jpackage/resources/JCS.icns
+[INFO]   --java-options -Dfile.encoding=UTF-8
+[INFO]   --java-options -Dtinylog.writer.level=trace
+[INFO]   --java-options -Xms256m
+[INFO]   --java-options -Xmx1024m
+[INFO]   --java-options --enable-native-access=com.fazecast.jSerialComm
+[INFO]   --mac-package-identifier jcs
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  47.158 s
+[INFO] Finished at: 2026-10-09T21:21:12+02:00
+[INFO] ------------------------------------------------------------------------
+√ model-railway % 
+```
+
+In de directory ../target/jpackage staat nu het bestand jcs.app.
+Dit is de uitvoerbare applicatie.
+
+Bij het starten zou je een melding kunnen krijgen dat de App van een onbekende ontwikkelaar is en / of niet "notarized" is.
 
 ## JCS uitvoeren
 
@@ -88,50 +197,17 @@ H2-database in `$HOME/jcs`.
 Bestaat de database nog niet, dan wordt deze automatisch aangemaakt bij
 de eerste keer opstarten.
 
-Start de klasse `jcs.JCS`.
-
-## Debuggen
-
-Extra instellingen worden opgeslagen in `user.home/jcs/jcs.properties`.
-
-### Locomotieven ophalen
-
-``` properties
-locomotive.list.via=can
-locomotive.list.via=http
-```
-
-### Accessoires ophalen
-
-``` properties
-accessory.list.via=can
-accessory.list.via=http
-accessory.list.via=JSON
-```
-
-### Zlib-debug
-
-``` properties
-inflate.debug=true
-```
-
-Standaard:
-
-``` properties
-inflate.debug=false
-```
-
-## Debugdatabase
+## Debug database
 
 JCS gebruikt een ingebouwde
-[H2](https://h2database.com/html/main.html)-database.
+[H2](https://h2database.com/html/main.html)-database voor de opslag van configuratie data.
 
 Bij de eerste start wordt automatisch de database, het schema `jcs` en
 gebruiker `jcs` (wachtwoord `repo`) aangemaakt.
 
 ## Datamodel
 
-![UI screenshot: JCS Datamodel](assets/jcs_datamodel.png?raw=true)
+![Datamodel: JCS Datamodel](assets/datamodel.png?raw=true)
 
 ### Verbinding maken met de database
 
