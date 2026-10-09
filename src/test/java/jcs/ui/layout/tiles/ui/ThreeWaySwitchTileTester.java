@@ -29,16 +29,15 @@ import org.tinylog.Logger;
 
 public class ThreeWaySwitchTileTester extends javax.swing.JFrame {
 
-  private Tile switchEastR;
-  private Tile switchSouthR;
-  private Tile switchWestR;
-  private Tile switchNorthR;
+  private Tile switchEast;
+  private Tile switchSouth;
+  private Tile switchWest;
+  private Tile switchNorth;
 
-  private Tile switchEastL;
-  private Tile switchSouthL;
-  private Tile switchWestL;
-  private Tile switchNorthL;
-
+//  private Tile switchEastL;
+//  private Tile switchSouthL;
+//  private Tile switchWestL;
+//  private Tile switchNorthL;
   private int redGreenRed2;
 
   /**
@@ -57,199 +56,194 @@ public class ThreeWaySwitchTileTester extends javax.swing.JFrame {
 
   private void createTiles() {
 
-    switchEastR = new ThreeWaySwitch(TileBean.Orientation.EAST, TileBean.Direction.CENTER, 40, 40);
-    switchEastR.setId("eastR");
-    switchEastR.setTrackRouteColor(Color.MAGENTA);
-    switchEastR.setRouteValue(AccessoryValue.GREEN);
+    switchEast = new ThreeWaySwitch(TileBean.Orientation.EAST, TileBean.Direction.CENTER, 40, 40);
+    switchEast.setId("east");
+    switchEast.setTrackRouteColor(Color.MAGENTA);
+    switchEast.setRouteValue(AccessoryValue.GREEN);
 
-    switchSouthR = new ThreeWaySwitch(TileBean.Orientation.SOUTH, TileBean.Direction.CENTER, 120, 40);
-    switchSouthR.setId("southR");
-    switchSouthR.setTrackRouteColor(Color.YELLOW);
-    switchSouthR.setRouteValue(AccessoryValue.RED);
+    switchSouth = new ThreeWaySwitch(TileBean.Orientation.SOUTH, TileBean.Direction.CENTER, 120, 40);
+    switchSouth.setId("south");
+    switchSouth.setTrackRouteColor(Color.YELLOW);
+    switchSouth.setRouteValue(AccessoryValue.RED);
 
-    switchWestR = new ThreeWaySwitch(TileBean.Orientation.WEST, TileBean.Direction.CENTER, 200, 40);
-    switchWestR.setId("westR");
-    switchWestR.setTrackRouteColor(Color.CYAN);
+    switchWest = new ThreeWaySwitch(TileBean.Orientation.WEST, TileBean.Direction.CENTER, 200, 40);
+    switchWest.setId("west");
+    switchWest.setTrackRouteColor(Color.CYAN);
 
-    switchNorthR = new ThreeWaySwitch(TileBean.Orientation.NORTH, TileBean.Direction.CENTER, 280, 40);
-    switchNorthR.setId("northR");
-    switchNorthR.setTrackRouteColor(Color.blue);
-    switchNorthR.setRouteValue(AccessoryValue.GREEN);
+    switchNorth = new ThreeWaySwitch(TileBean.Orientation.NORTH, TileBean.Direction.CENTER, 280, 40);
+    switchNorth.setId("north");
+    switchNorth.setTrackRouteColor(Color.blue);
+    switchNorth.setRouteValue(AccessoryValue.GREEN);
 
-    switchEastL = new ThreeWaySwitch(TileBean.Orientation.EAST, TileBean.Direction.CENTER, 40, 120);
-    switchEastL.setId("eastR");
-    switchEastL.setTrackRouteColor(Color.MAGENTA);
-    switchEastL.setRouteValue(AccessoryValue.GREEN);
+//    switchEastL = new ThreeWaySwitch(TileBean.Orientation.EAST, TileBean.Direction.CENTER, 40, 120);
+//    switchEastL.setId("eastR");
+//    switchEastL.setTrackRouteColor(Color.MAGENTA);
+//    switchEastL.setRouteValue(AccessoryValue.GREEN);
+//    switchSouthL = new ThreeWaySwitch(TileBean.Orientation.SOUTH, TileBean.Direction.CENTER, 120, 120);
+//    switchSouthL.setId("southR");
+//    switchSouthL.setTrackRouteColor(Color.YELLOW);
+//    switchSouthL.setRouteValue(AccessoryValue.RED);
+//    switchWestL = new ThreeWaySwitch(TileBean.Orientation.WEST, TileBean.Direction.CENTER, 200, 120);
+//    switchWestL.setId("westR");
+//    switchWestL.setTrackRouteColor(Color.CYAN);
+//    switchNorthL = new ThreeWaySwitch(TileBean.Orientation.NORTH, TileBean.Direction.CENTER, 280, 120);
+//    switchNorthL.setId("northR");
+//    switchNorthL.setTrackRouteColor(Color.blue);
+//    switchNorthL.setRouteValue(AccessoryValue.GREEN);
+    dotGridCanvas.add(switchEast);
+    dotGridCanvas.add(switchSouth);
+    dotGridCanvas.add(switchWest);
+    dotGridCanvas.add(switchNorth);
 
-    switchSouthL = new ThreeWaySwitch(TileBean.Orientation.SOUTH, TileBean.Direction.CENTER, 120, 120);
-    switchSouthL.setId("southR");
-    switchSouthL.setTrackRouteColor(Color.YELLOW);
-    switchSouthL.setRouteValue(AccessoryValue.RED);
-
-    switchWestL = new ThreeWaySwitch(TileBean.Orientation.WEST, TileBean.Direction.CENTER, 200, 120);
-    switchWestL.setId("westR");
-    switchWestL.setTrackRouteColor(Color.CYAN);
-
-    switchNorthL = new ThreeWaySwitch(TileBean.Orientation.NORTH, TileBean.Direction.CENTER, 280, 120);
-    switchNorthL.setId("northR");
-    switchNorthL.setTrackRouteColor(Color.blue);
-    switchNorthL.setRouteValue(AccessoryValue.GREEN);
-    dotGridCanvas.add(switchEastR);
-
-    dotGridCanvas.add(switchSouthR);
-    dotGridCanvas.add(switchWestR);
-    dotGridCanvas.add(switchNorthR);
-
-    dotGridCanvas.add(switchEastL);
-    dotGridCanvas.add(switchSouthL);
-    dotGridCanvas.add(switchWestL);
-    dotGridCanvas.add(switchNorthL);
-
+//    dotGridCanvas.add(switchEastL);
+//    dotGridCanvas.add(switchSouthL);
+//    dotGridCanvas.add(switchWestL);
+//    dotGridCanvas.add(switchNorthL);
   }
 
   /**
    * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this code. The content of this method is always regenerated by the Form Editor.
    */
   @SuppressWarnings("unchecked")
-  // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-  private void initComponents() {
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
 
-    toolbarPanel = new javax.swing.JPanel();
-    toolBar = new javax.swing.JToolBar();
-    eastTileBtn = new javax.swing.JToggleButton();
-    southTileBtn = new javax.swing.JToggleButton();
-    westTileBtn = new javax.swing.JToggleButton();
-    northTileBtn = new javax.swing.JToggleButton();
-    selectSouthTileBtn = new javax.swing.JToggleButton();
-    drawCenterBtn = new javax.swing.JToggleButton();
-    redGreenRed2Btn = new javax.swing.JButton();
-    dotGridCanvas = new jcs.ui.layout.tiles.ui.DotGridCanvas();
+        toolbarPanel = new javax.swing.JPanel();
+        toolBar = new javax.swing.JToolBar();
+        eastTileBtn = new javax.swing.JToggleButton();
+        southTileBtn = new javax.swing.JToggleButton();
+        westTileBtn = new javax.swing.JToggleButton();
+        northTileBtn = new javax.swing.JToggleButton();
+        selectSouthTileBtn = new javax.swing.JToggleButton();
+        drawCenterBtn = new javax.swing.JToggleButton();
+        redGreenRed2Btn = new javax.swing.JButton();
+        dotGridCanvas = new jcs.ui.layout.tiles.ui.DotGridCanvas();
 
-    setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-    setPreferredSize(new java.awt.Dimension(375, 250));
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setPreferredSize(new java.awt.Dimension(375, 250));
 
-    java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
-    flowLayout1.setAlignOnBaseline(true);
-    toolbarPanel.setLayout(flowLayout1);
+        java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
+        flowLayout1.setAlignOnBaseline(true);
+        toolbarPanel.setLayout(flowLayout1);
 
-    toolBar.setRollover(true);
+        toolBar.setRollover(true);
 
-    eastTileBtn.setText("East");
-    eastTileBtn.setFocusable(false);
-    eastTileBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    eastTileBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    eastTileBtn.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        eastTileBtnActionPerformed(evt);
-      }
-    });
-    toolBar.add(eastTileBtn);
+        eastTileBtn.setText("East");
+        eastTileBtn.setFocusable(false);
+        eastTileBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        eastTileBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        eastTileBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                eastTileBtnActionPerformed(evt);
+            }
+        });
+        toolBar.add(eastTileBtn);
 
-    southTileBtn.setText("South");
-    southTileBtn.setFocusable(false);
-    southTileBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    southTileBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    southTileBtn.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        southTileBtnActionPerformed(evt);
-      }
-    });
-    toolBar.add(southTileBtn);
+        southTileBtn.setText("South");
+        southTileBtn.setFocusable(false);
+        southTileBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        southTileBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        southTileBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                southTileBtnActionPerformed(evt);
+            }
+        });
+        toolBar.add(southTileBtn);
 
-    westTileBtn.setText("West");
-    westTileBtn.setFocusable(false);
-    westTileBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    westTileBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    westTileBtn.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        westTileBtnActionPerformed(evt);
-      }
-    });
-    toolBar.add(westTileBtn);
+        westTileBtn.setText("West");
+        westTileBtn.setFocusable(false);
+        westTileBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        westTileBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        westTileBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                westTileBtnActionPerformed(evt);
+            }
+        });
+        toolBar.add(westTileBtn);
 
-    northTileBtn.setText("North");
-    northTileBtn.setFocusable(false);
-    northTileBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    northTileBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    northTileBtn.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        northTileBtnActionPerformed(evt);
-      }
-    });
-    toolBar.add(northTileBtn);
+        northTileBtn.setText("North");
+        northTileBtn.setFocusable(false);
+        northTileBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        northTileBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        northTileBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                northTileBtnActionPerformed(evt);
+            }
+        });
+        toolBar.add(northTileBtn);
 
-    selectSouthTileBtn.setText("Select Tile");
-    selectSouthTileBtn.setFocusable(false);
-    selectSouthTileBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    selectSouthTileBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    selectSouthTileBtn.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        selectSouthTileBtnActionPerformed(evt);
-      }
-    });
-    toolBar.add(selectSouthTileBtn);
+        selectSouthTileBtn.setText("Select Tile");
+        selectSouthTileBtn.setFocusable(false);
+        selectSouthTileBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        selectSouthTileBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        selectSouthTileBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectSouthTileBtnActionPerformed(evt);
+            }
+        });
+        toolBar.add(selectSouthTileBtn);
 
-    drawCenterBtn.setText("show Center");
-    drawCenterBtn.setFocusable(false);
-    drawCenterBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    drawCenterBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    drawCenterBtn.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        drawCenterBtnActionPerformed(evt);
-      }
-    });
-    toolBar.add(drawCenterBtn);
+        drawCenterBtn.setText("show Center");
+        drawCenterBtn.setFocusable(false);
+        drawCenterBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        drawCenterBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        drawCenterBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                drawCenterBtnActionPerformed(evt);
+            }
+        });
+        toolBar.add(drawCenterBtn);
 
-    redGreenRed2Btn.setText("Red");
-    redGreenRed2Btn.setFocusable(false);
-    redGreenRed2Btn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    redGreenRed2Btn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    redGreenRed2Btn.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        redGreenRed2BtnActionPerformed(evt);
-      }
-    });
-    toolBar.add(redGreenRed2Btn);
+        redGreenRed2Btn.setText("Red");
+        redGreenRed2Btn.setFocusable(false);
+        redGreenRed2Btn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        redGreenRed2Btn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        redGreenRed2Btn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                redGreenRed2BtnActionPerformed(evt);
+            }
+        });
+        toolBar.add(redGreenRed2Btn);
 
-    toolbarPanel.add(toolBar);
+        toolbarPanel.add(toolBar);
 
-    getContentPane().add(toolbarPanel, java.awt.BorderLayout.NORTH);
+        getContentPane().add(toolbarPanel, java.awt.BorderLayout.NORTH);
 
-    dotGridCanvas.setPreferredSize(new java.awt.Dimension(360, 200));
-    getContentPane().add(dotGridCanvas, java.awt.BorderLayout.CENTER);
+        dotGridCanvas.setPreferredSize(new java.awt.Dimension(360, 200));
+        getContentPane().add(dotGridCanvas, java.awt.BorderLayout.CENTER);
 
-    pack();
-  }// </editor-fold>//GEN-END:initComponents
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
 
   private void northTileBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_northTileBtnActionPerformed
-    Logger.trace(switchNorthR.getId() + "...");
-    this.switchNorthR.setShowRoute(this.northTileBtn.isSelected());
-    this.switchNorthL.setShowRoute(this.northTileBtn.isSelected());
+    Logger.trace(switchNorth.getId() + "...");
+    this.switchNorth.setShowRoute(this.northTileBtn.isSelected());
+    //this.switchNorthL.setShowRoute(this.northTileBtn.isSelected());
   }//GEN-LAST:event_northTileBtnActionPerformed
 
   private void eastTileBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_eastTileBtnActionPerformed
-    this.switchEastR.setShowRoute(this.eastTileBtn.isSelected());
-    this.switchEastL.setShowRoute(this.eastTileBtn.isSelected());
+    this.switchEast.setShowRoute(this.eastTileBtn.isSelected());
+    //this.switchEastL.setShowRoute(this.eastTileBtn.isSelected());
   }//GEN-LAST:event_eastTileBtnActionPerformed
 
   private void westTileBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_westTileBtnActionPerformed
-    this.switchWestR.setShowRoute(this.westTileBtn.isSelected());
-    this.switchWestL.setShowRoute(this.westTileBtn.isSelected());
+    this.switchWest.setShowRoute(this.westTileBtn.isSelected());
+    //this.switchWestL.setShowRoute(this.westTileBtn.isSelected());
   }//GEN-LAST:event_westTileBtnActionPerformed
 
   private void southTileBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_southTileBtnActionPerformed
-    this.switchSouthR.setShowRoute(this.southTileBtn.isSelected());
-    this.switchSouthL.setShowRoute(this.southTileBtn.isSelected());
+    this.switchSouth.setShowRoute(this.southTileBtn.isSelected());
+    //this.switchSouthL.setShowRoute(this.southTileBtn.isSelected());
   }//GEN-LAST:event_southTileBtnActionPerformed
 
   private void selectSouthTileBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectSouthTileBtnActionPerformed
-    this.switchSouthR.setSelected(this.selectSouthTileBtn.isSelected());
-    this.switchSouthL.setSelected(this.selectSouthTileBtn.isSelected());
+    this.switchSouth.setSelected(this.selectSouthTileBtn.isSelected());
+    //this.switchSouthL.setSelected(this.selectSouthTileBtn.isSelected());
   }//GEN-LAST:event_selectSouthTileBtnActionPerformed
 
   private void drawCenterBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_drawCenterBtnActionPerformed
-    this.switchNorthR.setDrawCenterPoint(this.drawCenterBtn.isSelected());
-    this.switchEastL.setDrawCenterPoint(this.drawCenterBtn.isSelected());
+    this.switchNorth.setDrawCenterPoint(this.drawCenterBtn.isSelected());
+    //this.switchEastL.setDrawCenterPoint(this.drawCenterBtn.isSelected());
   }//GEN-LAST:event_drawCenterBtnActionPerformed
 
   private void redGreenRed2BtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_redGreenRed2BtnActionPerformed
@@ -257,30 +251,31 @@ public class ThreeWaySwitchTileTester extends javax.swing.JFrame {
       case 0 -> {
         redGreenRed2 = 1;
         this.redGreenRed2Btn.setText("Green");
-        this.switchWestR.setAccessoryValue(AccessoryValue.OFF);
-        this.switchWestR.setRouteValue(AccessoryValue.RED);
+        this.switchWest.setAccessoryValue(AccessoryValue.OFF);
+        this.switchWest.setRouteValue(AccessoryValue.RED);
 
-        this.switchWestL.setAccessoryValue(AccessoryValue.RED);
-        this.switchWestL.setRouteValue(AccessoryValue.OFF);
+        this.switchWest.setAccessoryValue(AccessoryValue.RED);
+        this.switchWest.setRouteValue(AccessoryValue.OFF);
       }
       case 1 -> {
         redGreenRed2 = 2;
         this.redGreenRed2Btn.setText("Red2");
-        this.switchWestR.setAccessoryValue(AccessoryValue.OFF);
-        this.switchWestR.setRouteValue(AccessoryValue.GREEN);
+        this.switchWest.setAccessoryValue(AccessoryValue.OFF);
+        this.switchWest.setRouteValue(AccessoryValue.GREEN);
 
-        this.switchWestL.setAccessoryValue(AccessoryValue.GREEN);
-        this.switchWestL.setRouteValue(AccessoryValue.OFF);
+        this.switchWest.setAccessoryValue(AccessoryValue.GREEN);
+        this.switchWest.setRouteValue(AccessoryValue.OFF);
       }
       case 2 -> {
         redGreenRed2 = 0;
         this.redGreenRed2Btn.setText("Red");
-        this.switchWestR.setAccessoryValue(AccessoryValue.OFF);
-        this.switchWestR.setRouteValue(AccessoryValue.RED2);
+        this.switchWest.setAccessoryValue(AccessoryValue.OFF);
+        this.switchWest.setRouteValue(AccessoryValue.RED2);
 
-        this.switchWestL.setAccessoryValue(AccessoryValue.RED2);
-        this.switchWestL.setRouteValue(AccessoryValue.OFF);
+        this.switchWest.setAccessoryValue(AccessoryValue.RED2);
+        this.switchWest.setRouteValue(AccessoryValue.OFF);
       }
+
     }
   }//GEN-LAST:event_redGreenRed2BtnActionPerformed
 
@@ -309,16 +304,16 @@ public class ThreeWaySwitchTileTester extends javax.swing.JFrame {
     });
   }
 
-  // Variables declaration - do not modify//GEN-BEGIN:variables
-  private jcs.ui.layout.tiles.ui.DotGridCanvas dotGridCanvas;
-  private javax.swing.JToggleButton drawCenterBtn;
-  private javax.swing.JToggleButton eastTileBtn;
-  private javax.swing.JToggleButton northTileBtn;
-  private javax.swing.JButton redGreenRed2Btn;
-  private javax.swing.JToggleButton selectSouthTileBtn;
-  private javax.swing.JToggleButton southTileBtn;
-  private javax.swing.JToolBar toolBar;
-  private javax.swing.JPanel toolbarPanel;
-  private javax.swing.JToggleButton westTileBtn;
-  // End of variables declaration//GEN-END:variables
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private jcs.ui.layout.tiles.ui.DotGridCanvas dotGridCanvas;
+    private javax.swing.JToggleButton drawCenterBtn;
+    private javax.swing.JToggleButton eastTileBtn;
+    private javax.swing.JToggleButton northTileBtn;
+    private javax.swing.JButton redGreenRed2Btn;
+    private javax.swing.JToggleButton selectSouthTileBtn;
+    private javax.swing.JToggleButton southTileBtn;
+    private javax.swing.JToolBar toolBar;
+    private javax.swing.JPanel toolbarPanel;
+    private javax.swing.JToggleButton westTileBtn;
+    // End of variables declaration//GEN-END:variables
 }

@@ -21,7 +21,6 @@ import java.awt.Toolkit;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.TileBean;
 import jcs.ui.layout.tiles.Cross;
 import jcs.ui.layout.tiles.Tile;
@@ -54,28 +53,27 @@ public class CrossTileTester extends javax.swing.JFrame {
     crossEast = new Cross(TileBean.Orientation.EAST, 60, 60);
     crossEast.setId("east");
     crossEast.setTrackRouteColor(Color.MAGENTA);
-    crossEast.setRouteValue(AccessoryValue.GREEN);
+    //crossEast.setRouteValue(AccessoryValue.GREEN);
 
     crossSouth = new Cross(TileBean.Orientation.SOUTH, 180, 60);
     crossSouth.setId("south");
     crossSouth.setTrackRouteColor(Color.YELLOW);
-    crossSouth.setRouteValue(AccessoryValue.RED);
+    //crossSouth.setRouteValue(AccessoryValue.RED);
 
     crossNorth = new Cross(TileBean.Orientation.NORTH, 260, 100);
     crossNorth.setId("north");
     crossNorth.setTrackRouteColor(Color.blue);
-    crossNorth.setRouteValue(AccessoryValue.GREEN);
+    //crossNorth.setRouteValue(AccessoryValue.GREEN);
     
     
     crossWest = new Cross(TileBean.Orientation.WEST, 380, 60);
     crossWest.setId("west");
     crossWest.setTrackRouteColor(Color.CYAN);
 
-
     dotGridCanvas.add(crossEast);
     dotGridCanvas.add(crossSouth);
-    dotGridCanvas.add(crossWest);
     dotGridCanvas.add(crossNorth);
+    dotGridCanvas.add(crossWest);
   }
 
   /**

@@ -45,9 +45,11 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
   private final Map<Integer, List<SensorEventCallback>> subscribers;
   private final Set<Integer> subscribersWithoutCallback;
 
-  private volatile boolean running = false;
-
   private final Map<Integer, SensorBean> sensorBeans;
+  // Current physical/logical level of every known sensor
+  private final Map<Integer, Boolean> sensorStates;
+
+  private volatile boolean running = false;
 
   public SensorMonitor() {
     this(null);
@@ -59,7 +61,8 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
     eventQueue = new LinkedBlockingQueue<>();
     subscribers = new ConcurrentHashMap<>();
     subscribersWithoutCallback = ConcurrentHashMap.newKeySet();
-    sensorBeans = new HashMap<>();
+    sensorBeans = new ConcurrentHashMap<>();
+    sensorStates = new ConcurrentHashMap<>();
   }
 
   Map<Integer, SensorBean> getSensorBeans() {
@@ -101,6 +104,14 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
     return subscribersWithoutCallback;
   }
 
+  public boolean isSensorActive(Integer sensorId) {
+    if (sensorId == null) {
+      return false;
+    }
+
+    return Boolean.TRUE.equals(sensorStates.get(sensorId));
+  }
+
   /**
    * Unsubscribe from sensor events
    *
@@ -108,7 +119,6 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
    * @param callback
    */
   public void unsubscribe(Integer sensorId, SensorEventCallback callback) {
-
     List<SensorEventCallback> callbacks = subscribers.get(sensorId);
     if (callbacks != null) {
       callbacks.remove(callback);
@@ -146,7 +156,7 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
   }
 
   public boolean isSensorRegisteredWithoutCallback(Integer sensorId) {
-    return this.subscribersWithoutCallback.contains(sensorId);
+    return subscribersWithoutCallback.contains(sensorId);
   }
 
   void stopMonitor() {
@@ -179,6 +189,7 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
     List<SensorBean> sensors = PersistenceFactory.getService().getAssignedSensors();
     for (SensorBean sb : sensors) {
       sensorBeans.put(sb.getId(), sb);
+      sensorStates.put(sb.getId(), sb.isActive());
     }
     Logger.trace("Registered " + sensorBeans.size() + " sensors");
   }
@@ -217,18 +228,25 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
   }
 
   void handleSensorEvent(SensorEvent event) {
-    Logger.trace("Event from Sensor " + event.getSensorId() + " " + (event.isActive() ? "On" : "Off") + " isChanged " + event.isChanged());
+    Integer sensorId = event.getSensorId();
 
-    if (event.isChanged()) {
-      //Logger.tag(TAG).debug("Event from Sensor " + event.getSensorId() + " Value " + (event.isActive() ? "On" : "Off"));
-      if (subscribersWithoutCallback.contains(event.getSensorId())) {
-        Logger.tag(TAG).debug("Event from Sensor " + event.getSensorId() + " Value " + (event.isActive() ? "On" : "Off") + " will be ignored");
-      } else if (subscribers.containsKey(event.getSensorId())) {
-        //Logger.trace(event.getSensorId() + " is subscribed in callback list...");
-        notifySubscribers(event);
-      } else {
-        Logger.tag(TAG).debug("Event from Sensor " + event.getSensorId() + " Value " + (event.isActive() ? "On" : "Off") + " ...");
-        handleGhost(event);
+    if (sensorId != null) {
+      // Always remember the current sensor level
+      sensorStates.put(sensorId, event.isActive());
+      Logger.trace("Event from Sensor " + event.getSensorId() + " " + (event.isActive() ? "On" : "Off") + " isChanged " + event.isChanged());
+
+      if (event.isChanged()) {
+        Logger.tag(TAG).debug("Event from Sensor " + event.getSensorId() + " Value " + (event.isActive() ? "On" : "Off"));
+
+        if (subscribersWithoutCallback.contains(event.getSensorId())) {
+          Logger.tag(TAG).debug("Event from Sensor " + event.getSensorId() + " Value " + (event.isActive() ? "On" : "Off") + " will be ignored");
+        } else if (subscribers.containsKey(event.getSensorId())) {
+          Logger.trace(event.getSensorId() + " is subscribed in callback list...");
+          notifySubscribers(event);
+        } else {
+          Logger.tag(TAG).debug("Event from Sensor " + event.getSensorId() + " Value " + (event.isActive() ? "On" : "Off") + " ...");
+          handleGhost(event);
+        }
       }
     }
   }
@@ -264,6 +282,7 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
     subscribers.clear();
     eventQueue.clear();
     sensorBeans.clear();
+    sensorStates.clear();
 
     registerAllSensors();
     //Subsribe to the command station as SensorEventListener 
@@ -288,6 +307,7 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
     subscribers.clear();
     subscribersWithoutCallback.clear();
     sensorBeans.clear();
+    sensorStates.clear();
     JCS.getJcsCommandStation().removeAllSensorEventsListener(this);
     Logger.tag(TAG).trace("SensorMonitor Finished.");
   }

@@ -50,17 +50,26 @@ class BrakingState extends AbstractState implements SensorEventCallback {
     //Subscribe the IN sensor
     inSensorId = dispatcher.getInSensorId();
     dispatcher.getSensorMonitor().subscribe(inSensorId, this);
+    if (inSensorTriggerred || dispatcher.getSensorMonitor().isSensorActive(inSensorId)) {
+      inSensorTriggerred = true;
+      dispatcher.changeLocomotiveVelocity(0);
+    } else {
+      // Only apply braking speed when we have not yet reached IN.
+      LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
+      //Slowdown Speed to ~10% or speed 1
+      Integer speed1 = locomotive.getSpeedOne();
+      if (speed1 == null || speed1 == 0) {
+        speed1 = 10;
+      }
 
-    LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
-    //Slowdown Speed to ~10% or speed 1
-    Integer speed1 = locomotive.getSpeedOne();
-    if (speed1 == null || speed1 == 0) {
-      speed1 = 10;
+      int fullscale = locomotive.getTachoMax();
+      double velocity = (speed1 / (double) fullscale) * 1000;
+      dispatcher.changeLocomotiveVelocity(velocity);
+
+      Logger.tag(TAG).debug("Dispatcher {} braking. Power: {}% direction: {} Route: {} Destnation block: {} now waiting for Occupancy (in) sensor Id: {} ...",
+              dispatcher.getName(), speed1, locomotive.getDirection(), dispatcher.getRouteBean().getId(),
+              destinationBlock.getDescription(), inSensorId);
     }
-
-    int fullscale = locomotive.getTachoMax();
-    double velocity = (speed1 / (double) fullscale) * 1000;
-    dispatcher.changeLocomotiveVelocity(velocity);
 
     BlockBean departureBlock = dispatcher.getDepartureBlock();
     RouteBean route = dispatcher.getRouteBean();
@@ -74,10 +83,6 @@ class BrakingState extends AbstractState implements SensorEventCallback {
     dispatcher.showBlockState(departureBlock);
     dispatcher.getRouteManager().showRoute(route, Color.magenta);
     dispatcher.showBlockState(destinationBlock);
-
-    Logger.tag(TAG).debug("Dispatcher {} braking. Power: {}% direction: {} Route: {} Destnation block: {} now waiting for Occupancy (in) sensor Id: {} ...",
-            dispatcher.getName(), speed1, locomotive.getDirection(), dispatcher.getRouteBean().getId(),
-            destinationBlock.getDescription(), inSensorId);
   }
 
   @Override
@@ -105,10 +110,12 @@ class BrakingState extends AbstractState implements SensorEventCallback {
     if (inSensorId.equals(event.getSensorId())) {
       if (event.isActive()) {
         inSensorTriggerred = true;
+
+        // Stop immediately when the IN sensor is reached.
+        dispatcher.changeLocomotiveVelocity(0);
         Logger.tag(TAG).debug("Dispatcher " + dispatcher.getName() + " Occupied (in) event from Sensor " + event.getSensorId() + " Value " + (event.isActive() ? "On" : "Off"));
         dispatcher.wakeup();
       }
     }
   }
-
 }

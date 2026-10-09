@@ -56,7 +56,7 @@ public class EcosHTTPConnection {
     BufferedImage image = null;
     try {
       URL url = URI.create(fixURL(HTTP + ecosAddress.getHostAddress() + IMAGE_FOLDER_ECOS + "?type=" + type + "&index=" + index)).toURL();
-      Logger.trace("image URL: " + url);
+      Logger.trace("image URL: {}", url);
       image = ImageIO.read(url);
     } catch (MalformedURLException ex) {
       Logger.error(ex);

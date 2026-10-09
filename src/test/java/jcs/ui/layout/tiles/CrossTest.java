@@ -28,6 +28,8 @@ import static jcs.entities.TileBean.Orientation.SOUTH;
 import static jcs.entities.TileBean.Orientation.WEST;
 import static jcs.entities.TileBean.TileType.CROSS;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.AfterAll;
@@ -161,67 +163,204 @@ public class CrossTest {
     assertEquals(expResult, result);
   }
 
-  /**
-   * Test of getNeighborPoints method, of class Cross.
-   */
   @Test
-  public void testGetNeighborPoints() {
-    System.out.println("getNeighborPoints");
-    Tile instance = TileCache.createTile(CROSS, Orientation.EAST, 100, 100);
+  public void testGetNeighborPointsE() {
+    System.out.println("getNeighborPointsE");
+    Tile instance = TileCache.createTile(CROSS, EAST, 200, 200);
 
     Map<TileBean.Orientation, Point> result = instance.getNeighborPoints();
     Map<TileBean.Orientation, Point> expResult = new HashMap<>();
 
-    Point e = new Point(140, 60);
-    Point n = new Point(100, 60);
-    Point w = new Point(100, 140);
-    Point s = new Point(140, 140);
-
-    expResult.put(EAST, e);
-    expResult.put(WEST, w);
-    expResult.put(NORTH, n);
-    expResult.put(SOUTH, s);
+    expResult.put(NORTH, new Point(200, 160));
+    expResult.put(EAST, new Point(240, 160));
+    expResult.put(SOUTH, new Point(240, 240));
+    expResult.put(WEST, new Point(200, 240));
 
     assertEquals(expResult, result);
   }
 
   @Test
-  public void testGetEdgePoints() {
-    System.out.println("getEdgePoints");
-    Tile instance = TileCache.createTile(CROSS, Orientation.EAST, 100, 100);
+  public void testGetNeighborPointsS() {
+    System.out.println("getNeighborPointsS");
+    Tile instance = TileCache.createTile(CROSS, SOUTH, 200, 200);
+
+    Map<TileBean.Orientation, Point> result = instance.getNeighborPoints();
+    Map<TileBean.Orientation, Point> expResult = new HashMap<>();
+
+    expResult.put(NORTH, new Point(240, 200));
+    expResult.put(EAST, new Point(240, 240));
+    expResult.put(SOUTH, new Point(160, 240));
+    expResult.put(WEST, new Point(160, 200));
+
+    assertEquals(expResult, result);
+  }
+
+  @Test
+  public void testGetNeighborPointsN() {
+    System.out.println("getNeighborPointsN");
+    Tile instance = TileCache.createTile(CROSS, NORTH, 200, 200);
+
+    Map<TileBean.Orientation, Point> result = instance.getNeighborPoints();
+    Map<TileBean.Orientation, Point> expResult = new HashMap<>();
+
+    expResult.put(NORTH, new Point(240, 160));
+    expResult.put(EAST, new Point(240, 200));
+    expResult.put(SOUTH, new Point(160, 200));
+    expResult.put(WEST, new Point(160, 160));
+
+    assertEquals(expResult, result);
+  }
+
+  @Test
+  public void testGetNeighborPointsW() {
+    System.out.println("getNeighborPointsW");
+    Tile instance = TileCache.createTile(CROSS, WEST, 200, 200);
+
+    Map<TileBean.Orientation, Point> result = instance.getNeighborPoints();
+    Map<TileBean.Orientation, Point> expResult = new HashMap<>();
+
+    expResult.put(NORTH, new Point(160, 160));
+    expResult.put(EAST, new Point(200, 160));
+    expResult.put(SOUTH, new Point(200, 240));
+    expResult.put(WEST, new Point(160, 240));
+
+    assertEquals(expResult, result);
+  }
+
+  @Test
+  public void testGetEdgePointsE() {
+    System.out.println("getEdgePointsE");
+    Tile instance = TileCache.createTile(CROSS, Orientation.EAST, 200, 200);
 
     Map<TileBean.Orientation, Point> result = instance.getEdgePoints();
     Map<TileBean.Orientation, Point> expResult = new HashMap<>();
 
-    Point e = new Point(140, 80);
-    Point n = new Point(100, 80);
-    Point w = new Point(100, 120);
-    Point s = new Point(140, 120);
-
-    expResult.put(EAST, e);
-    expResult.put(WEST, w);
-    expResult.put(NORTH, n);
-    expResult.put(SOUTH, s);
+    expResult.put(NORTH, new Point(200, 180));
+    expResult.put(EAST, new Point(240, 180));
+    expResult.put(SOUTH, new Point(240, 220));
+    expResult.put(WEST, new Point(200, 220));
 
     assertEquals(expResult, result);
   }
 
   @Test
-  public void testIsDiagonalOpposite() {
-    System.out.println("isDiagonalOpposite");
-    TileBean.Orientation from = EAST;
-    TileBean.Orientation to = NORTH;
+  public void testGetEdgePointsS() {
+    System.out.println("getEdgePointsS");
+    Tile instance = TileCache.createTile(CROSS, Orientation.SOUTH, 200, 200);
+
+    Map<TileBean.Orientation, Point> result = instance.getEdgePoints();
+    Map<TileBean.Orientation, Point> expResult = new HashMap<>();
+
+    expResult.put(NORTH, new Point(220, 200));
+    expResult.put(EAST, new Point(220, 240));
+    expResult.put(SOUTH, new Point(180, 240));
+    expResult.put(WEST, new Point(180, 200));
+
+    assertEquals(expResult, result);
+  }
+
+  @Test
+  public void testGetEdgePointsW() {
+    System.out.println("getEdgePointsW");
+    Tile instance = TileCache.createTile(CROSS, Orientation.WEST, 200, 200);
+
+    Map<TileBean.Orientation, Point> result = instance.getEdgePoints();
+    Map<TileBean.Orientation, Point> expResult = new HashMap<>();
+
+    expResult.put(NORTH, new Point(160, 180));
+    expResult.put(EAST, new Point(200, 180));
+    expResult.put(SOUTH, new Point(200, 220));
+    expResult.put(WEST, new Point(160, 220));
+
+    assertEquals(expResult, result);
+  }
+
+  @Test
+  public void testGetEdgePointsN() {
+    System.out.println("getEdgePointsN");
+    Tile instance = TileCache.createTile(CROSS, Orientation.NORTH, 200, 200);
+
+    Map<TileBean.Orientation, Point> result = instance.getEdgePoints();
+    Map<TileBean.Orientation, Point> expResult = new HashMap<>();
+
+    expResult.put(NORTH, new Point(220, 160));
+    expResult.put(EAST, new Point(220, 200));
+    expResult.put(SOUTH, new Point(180, 200));
+    expResult.put(WEST, new Point(180, 160));
+
+    assertEquals(expResult, result);
+  }
+
+  @Test
+  public void testIsDiagonalOppositeE() {
+    System.out.println("isDiagonalOppositeE");
     Tile instance = TileCache.createTile(CROSS, Orientation.EAST, 100, 100);
 
-    boolean expResult = false;
-    boolean result = instance.isDiagonalOpposite(from, to);
-    assertEquals(expResult, result);
+    assertTrue(instance.isDiagonalOpposite(EAST, WEST));
+    assertTrue(instance.isDiagonalOpposite(WEST, EAST));
 
-    to = WEST;
+    assertTrue(instance.isDiagonalOpposite(NORTH, SOUTH));
+    assertTrue(instance.isDiagonalOpposite(SOUTH, NORTH));
 
-    expResult = true;
-    result = instance.isDiagonalOpposite(from, to);
-    assertEquals(expResult, result);
+    assertFalse(instance.isDiagonalOpposite(NORTH, EAST));
+    assertFalse(instance.isDiagonalOpposite(EAST, NORTH));
+
+    assertFalse(instance.isDiagonalOpposite(WEST, SOUTH));
+    assertFalse(instance.isDiagonalOpposite(SOUTH, WEST));
+  }
+
+  @Test
+  public void testIsDiagonalOppositeS() {
+    System.out.println("isDiagonalOppositeS");
+    Tile instance = TileCache.createTile(CROSS, Orientation.SOUTH, 100, 100);
+
+    assertTrue(instance.isDiagonalOpposite(EAST, WEST));
+    assertTrue(instance.isDiagonalOpposite(WEST, EAST));
+
+    assertTrue(instance.isDiagonalOpposite(NORTH, SOUTH));
+    assertTrue(instance.isDiagonalOpposite(SOUTH, NORTH));
+
+    assertFalse(instance.isDiagonalOpposite(NORTH, EAST));
+    assertFalse(instance.isDiagonalOpposite(EAST, NORTH));
+
+    assertFalse(instance.isDiagonalOpposite(WEST, SOUTH));
+    assertFalse(instance.isDiagonalOpposite(SOUTH, WEST));
+  }
+
+  @Test
+  public void testIsDiagonalOppositeN() {
+    System.out.println("isDiagonalOppositeN");
+    Tile instance = TileCache.createTile(CROSS, Orientation.NORTH, 100, 100);
+
+    assertTrue(instance.isDiagonalOpposite(EAST, WEST));
+    assertTrue(instance.isDiagonalOpposite(WEST, EAST));
+
+    assertTrue(instance.isDiagonalOpposite(NORTH, SOUTH));
+    assertTrue(instance.isDiagonalOpposite(SOUTH, NORTH));
+
+    assertFalse(instance.isDiagonalOpposite(NORTH, EAST));
+    assertFalse(instance.isDiagonalOpposite(EAST, NORTH));
+
+    assertFalse(instance.isDiagonalOpposite(WEST, SOUTH));
+    assertFalse(instance.isDiagonalOpposite(SOUTH, WEST));
+  }
+
+  @Test
+  public void testIsDiagonalOppositeW() {
+    System.out.println("isDiagonalOppositeW");
+    Tile instance = TileCache.createTile(CROSS, Orientation.WEST, 100, 100);
+
+    assertTrue(instance.isDiagonalOpposite(EAST, WEST));
+    assertTrue(instance.isDiagonalOpposite(WEST, EAST));
+
+    assertTrue(instance.isDiagonalOpposite(NORTH, SOUTH));
+    assertTrue(instance.isDiagonalOpposite(SOUTH, NORTH));
+
+    assertFalse(instance.isDiagonalOpposite(NORTH, EAST));
+    assertFalse(instance.isDiagonalOpposite(EAST, NORTH));
+
+    assertFalse(instance.isDiagonalOpposite(WEST, SOUTH));
+    assertFalse(instance.isDiagonalOpposite(SOUTH, WEST));
   }
 
 }

@@ -13,24 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation.uhlenbrock.connection;
+package jcs.commandStation.loconet.connection;
 
+import jcs.commandStation.loconet.LoconetMessage;
 
 /**
  *
  */
-public interface IntelliBoxConnection extends AutoCloseable {
+@FunctionalInterface
+public interface LoconetMessageListener {
 
-  static final int MAX_ERRORS = 15;
-
-  static final int DEFAULT_NETWORK_PORT = 2560;
-
-  static final String MESSAGE_DELIMITER = ">\n";
-
-  String sendMessage(String message);
-
-  //void setMessageListener(DccExMessageListener messageListener);
-
-  boolean isConnected();
-
+  void onMessage(LoconetMessage message);
 }

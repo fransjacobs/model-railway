@@ -28,18 +28,18 @@ import org.junit.Test;
 /**
  * Test for the Crossing
  */
-public class AStarCrossingTest {
+public class AStarCrossingNorth {
 
   private final PersistenceTestHelper testHelper;
 
-  public AStarCrossingTest() {
+  public AStarCrossingNorth() {
     System.setProperty("persistenceService", "jcs.persistence.TestH2PersistenceService");
     testHelper = PersistenceTestHelper.getInstance();
   }
 
   @Before
   public void setUp() {
-    testHelper.runTestDataInsertScript("layout_crossing_test.sql");
+    testHelper.runTestDataInsertScript("layout_crossing_north_test.sql");
   }
 
   @After

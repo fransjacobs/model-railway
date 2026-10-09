@@ -110,11 +110,11 @@ public class CrossUI extends TileUI {
       case SOUTH -> {
         switch (incomingSide) {
           case NORTH, SOUTH -> {
-            renderRouteEastWest(g2, c);
+            renderRouteNorthSouth(g2, c);
           }
           default -> {
             //EAST
-            renderRouteNorthSouth(g2, c);
+            renderRouteEastWest(g2, c);
           }
         }
       }

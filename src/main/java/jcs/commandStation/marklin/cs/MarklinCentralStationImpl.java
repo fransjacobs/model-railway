@@ -764,10 +764,12 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   ) {
     if (power && connected) {
       CanMessage message = sendMessage(CanMessageFactory.setFunction(locUid, functionNumber, flag, this.csUid));
+      
       notifyLocomotiveFunctionEventListeners(LocomotiveFunctionEventParser.parseMessage(message));
     }
   }
 
+  @SuppressWarnings("unused")
   private int getCSAddress(Integer address, String protocol) {
     int adr; // zero based!
     if ("dcc".equals(protocol)) {

@@ -455,12 +455,14 @@ public class H2PersistenceService implements PersistenceService {
 
   @Override
   public synchronized void remove(LocomotiveBean locomotive) {
-    // First remove the functions
-    database.sql("delete from locomotive_functions where locomotive_id =?", locomotive.getId()).execute();
+    if (locomotive != null && locomotive.getId() != null) {
+      // First remove the functions
+      database.sql("delete from locomotive_functions where locomotive_id =?", locomotive.getId()).execute();
 
-    int rows = database.delete(locomotive).getRowsAffected();
-    Logger.trace(rows + " rows deleted");
-    changeSupport.firePropertyChange("data.locomotive.deleted", locomotive, null);
+      int rows = database.delete(locomotive).getRowsAffected();
+      Logger.trace(rows + " rows deleted");
+      changeSupport.firePropertyChange("data.locomotive.deleted", locomotive, null);
+    }
   }
 
   @Override

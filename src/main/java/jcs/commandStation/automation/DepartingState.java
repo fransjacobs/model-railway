@@ -30,26 +30,42 @@ import org.tinylog.Logger;
  */
 class DepartingState extends AbstractState {
 
+  private final boolean alreadyMoving;
+
   DepartingState() {
+    this(false);
+  }
+
+  DepartingState(boolean alreadyMoving) {
     super(DEPARTING);
+    this.alreadyMoving = alreadyMoving;
   }
 
   @Override
   AbstractState execute() {
     LocomotiveBean locomotive = PersistenceFactory.getService().getLocomotive(dispatcher.getLocomotiveId());
 
-    boolean delay = dispatcher.handleSignal(state);
+    /*
+     * Only perform signal handling/start delay when the
+     * locomotive is actually departing from standstill.
+     *
+     * During drive-through PREPNEXTROUTE has already
+     * prepared the route and signal.
+     */
+    if (!alreadyMoving) {
+      boolean delay = dispatcher.handleSignal(state);
 
-    if (delay) {
-      //delay the start a while
-      long startDelayTime = Long.getLong("default.start-delaytime", 2000L);
-      Logger.tag(TAG).debug("Dispatcher " + dispatcher.getName() + " Delaying departure by " + startDelayTime + "ms due to signal proccessing...");
-      try {
-        Thread.sleep(startDelayTime);
-      } catch (InterruptedException ie) {
-        Thread.currentThread().interrupt();
-        Logger.tag(TAG).warn("Dispatcher {} departure delay interrupted!", dispatcher.getName());
-        return this;
+      if (delay) {
+        //delay the start a while
+        long startDelayTime = Long.getLong("default.start-delaytime", 2000L);
+        Logger.tag(TAG).debug("Dispatcher " + dispatcher.getName() + " Delaying departure by " + startDelayTime + "ms due to signal proccessing...");
+        try {
+          Thread.sleep(startDelayTime);
+        } catch (InterruptedException ie) {
+          Thread.currentThread().interrupt();
+          Logger.tag(TAG).warn("Dispatcher {} departure delay interrupted!", dispatcher.getName());
+          return this;
+        }
       }
     }
 
@@ -58,17 +74,25 @@ class DepartingState extends AbstractState {
     departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
     destinationBlock.setBlockState(BlockBean.BlockState.LOCKED);
 
-    //Speed to ~75% or speed 3
-    Integer speed3 = locomotive.getSpeedThree();
-    if (speed3 == null || speed3 == 0) {
-      speed3 = 75;
+    /*
+     * Only issue a start-speed command when actually
+     * starting from standstill.
+     */
+    if (!alreadyMoving) {
+      //Speed to ~75% or speed 3
+      Integer speed3 = locomotive.getSpeedThree();
+      if (speed3 == null || speed3 == 0) {
+        speed3 = 75;
+      }
+
+      int fullscale = locomotive.getTachoMax();
+      double velocity = (speed3 / (double) fullscale) * 1000;
+      dispatcher.changeLocomotiveVelocity(velocity);
+      locomotive.setVelocity((int) velocity);
+    } else {
+      Logger.tag(TAG).debug("Dispatcher {} continuing through block {} with velocity {}", dispatcher.getName(), departureBlock.getId(), locomotive.getVelocity());
     }
 
-    int fullscale = locomotive.getTachoMax();
-    double velocity = (speed3 / (double) fullscale) * 1000;
-    dispatcher.changeLocomotiveVelocity(velocity);
-
-    locomotive.setVelocity((int) velocity);
     departureBlock.setLocomotive(locomotive);
     PersistenceFactory.getService().persist(departureBlock);
     PersistenceFactory.getService().persist(destinationBlock);
@@ -77,7 +101,7 @@ class DepartingState extends AbstractState {
     dispatcher.showBlockState(destinationBlock);
 
     Logger.tag(TAG).debug("Dispatcher {} departing in direction: {} Route: {} power: {}%",
-            dispatcher.getName(), locomotive.getDirection(), dispatcher.getRouteBean().getId(), speed3);
+            dispatcher.getName(), locomotive.getDirection(), dispatcher.getRouteBean().getId(), locomotive.getVelocity());
 
     return new RunningState();
   }

@@ -28,7 +28,8 @@ import org.tinylog.Logger;
  * Proceeding state of the Autopilot State Machine.<br>
  * The locomotive does not have to stop in this block, therefor the speed is maintained.
  */
-class PassingThroughState extends AbstractState implements SensorEventCallback {
+class PassingThroughState
+        extends AbstractState implements SensorEventCallback {
 
   private Integer inSensorId;
   private volatile boolean inSensorTriggered = false;
@@ -49,6 +50,9 @@ class PassingThroughState extends AbstractState implements SensorEventCallback {
     super.onEnter(dispatcher);
     inSensorId = dispatcher.getInSensorId();
     dispatcher.getSensorMonitor().subscribe(inSensorId, this);
+    if (dispatcher.getSensorMonitor().isSensorActive(inSensorId)) {
+      inSensorTriggered = true;
+    }
 
     BlockBean departureBlock = dispatcher.getDepartureBlock();
     BlockBean destinationBlock = dispatcher.getDestinationBlock();
@@ -70,7 +74,7 @@ class PassingThroughState extends AbstractState implements SensorEventCallback {
   @Override
   AbstractState execute() {
     if (inSensorTriggered) {
-      return new ArrivedState();
+      return new ArrivedState(true);
     } else {
       return this;
     }

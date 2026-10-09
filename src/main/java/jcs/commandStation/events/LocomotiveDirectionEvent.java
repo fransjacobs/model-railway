@@ -24,6 +24,8 @@ import jcs.entities.LocomotiveBean.Direction;
  */
 public class LocomotiveDirectionEvent extends LocomotiveEvent implements Serializable {
 
+  private static final long serialVersionUID = -6216814946103471166L;
+
   public LocomotiveDirectionEvent(LocomotiveBean locomotiveBean) {
     super(locomotiveBean);
   }

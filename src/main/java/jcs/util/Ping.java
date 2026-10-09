@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 fransjacobs.
+ * Copyright 2023 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,23 +21,27 @@ import java.net.UnknownHostException;
 import org.tinylog.Logger;
 
 /**
- * Network ping test to check the availability of the CS
- *
- * @author Frans Jacobs
+ * Network ping test to check the availability of a Command Station
  */
 public class Ping {
 
-    public static Boolean isReachable(String ipAddress) {
-        Boolean reachable = false;
-        try {
-            InetAddress inet = InetAddress.getByName(ipAddress);
-            reachable = inet.isReachable(2000);
-        } catch (UnknownHostException e) {
-            Logger.trace(e.getMessage() + " Can't Reach Host: " + ipAddress);
-        } catch (IOException e) {
-            Logger.trace(e.getMessage() + " Error in reaching Host: " + ipAddress);
-        }
-        Logger.trace("Host: " + ipAddress + " is " + (reachable ? "" : "not ") + "reachable");
-        return reachable;
+  public static int DEFAULT_TIMEOUT = 2000;
+
+  public static Boolean isReachable(String ipAddress) {
+    return isReachable(ipAddress, DEFAULT_TIMEOUT);
+  }
+
+  public static Boolean isReachable(String ipAddress, int timeout) {
+    Boolean reachable = false;
+    try {
+      InetAddress inet = InetAddress.getByName(ipAddress);
+      reachable = inet.isReachable(timeout);
+    } catch (UnknownHostException e) {
+      Logger.trace(e.getMessage() + " Can't Reach Host: " + ipAddress);
+    } catch (IOException e) {
+      Logger.trace(e.getMessage() + " Error in reaching Host: " + ipAddress);
     }
+    Logger.trace("Host: " + ipAddress + " is " + (reachable ? "" : "not ") + "reachable");
+    return reachable;
+  }
 }

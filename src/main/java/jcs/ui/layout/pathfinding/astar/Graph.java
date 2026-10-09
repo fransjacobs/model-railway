@@ -11,11 +11,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.TileBean.Orientation;
+import jcs.ui.layout.tiles.Tile;
 import org.tinylog.Logger;
 
 public class Graph {
 
-  private final Map<String, Node> nodes;
+  protected final Map<String, Node> nodes;
 
   Graph() {
     nodes = new HashMap<>();
@@ -31,6 +32,42 @@ public class Graph {
 
   Node getNode(String id) {
     return nodes.get(id);
+  }
+
+  Node getNode(Node from, Tile to, Point p) {
+    if (to.isCrossing()) {
+      //find the h or v only node based on the from    
+      Point mp = from.getTile().getSharingPoint(to);
+      boolean ve = to.getEdgeConnections(true).containsValue(mp);
+      boolean he = to.getEdgeConnections(false).containsValue(mp);
+
+      if (ve) {
+        Node v = nodes.get(to.getId() + "-v");
+        return v;
+      }
+      if (he) {
+        Node h = nodes.get(to.getId() + "-h");
+        return h;
+      }
+
+      //Logger.warn("No Neighbor for From: {} To: {} and Point ({},{})", from.getId(), to.getId(), p.x, p.y);
+      return nodes.get(to.getId());
+    } else {
+      return nodes.get(to.getId());
+    }
+  }
+
+  @SuppressWarnings("unused")
+  List<Node> getNodeList(Tile t) {
+    List<Node> nl = new ArrayList<>();
+    if (t.isCrossing()) {
+      String id = t.getId();
+      nl.add(nodes.get(id + "-v"));
+      nl.add(nodes.get(id + "-h"));
+    } else {
+      nl.add(nodes.get(t.getId()));
+    }
+    return nl;
   }
 
   void clear() {
@@ -51,13 +88,13 @@ public class Graph {
     }
     if (from.getPreviousNode() != null && from.getPreviousNode().equals(to)) {
       //Skip going around...
-      //Logger.trace("Skip from: " + from.getPreviousNode().getId() + " via " + from.getId() + " to " + to.getId());
+      //Logger.trace("Skipping as is this is going back to previous Node (From: {} via {} to {}).", from.getPreviousNode().getId(), from.getId(), to.getId());
       return false;
     }
 
     if (from.getPreviousNode() != null && from.getTile().isJunction()) {
       AccessoryValue routeValue = from.getAccessoryStatus(from, to);
-      Logger.trace("From: " + from.getPreviousNode().getId() + " via " + from.getId() + (AccessoryValue.OFF == routeValue ? " Not possible" : " Using " + routeValue) + " to " + to.getId());
+      Logger.trace("From: {} via {} {} to {}", from.getPreviousNode().getId(), from.getId(), (AccessoryValue.OFF == routeValue ? " Not possible" : " Using " + routeValue), to.getId());
 
       return AccessoryValue.OFF != routeValue;
     } else if (from.getPreviousNode() != null && from.isDirectional()) {
@@ -65,19 +102,22 @@ public class Graph {
       //Logger.trace("From " + from.getId() + " to: " + to.getId() + " isToOnArrowSide: " + isToOnArrowSide);
       return from.getTile().isAdjacent(to.getTile()) && isToOnArrowSide;
     } else if (from.getPreviousNode() != null && from.isCrossing()) {
+      //Logger.trace("From {} isCrossing {}", from.getId(), from.isCrossing());
       //Find the edge connection point between the previous and the from node
       Point inComingEdgePoint = from.getIncomingPoint();
-      Orientation inComingSide = from.getConnectingSide(inComingEdgePoint);
 
+      Orientation inComingSide = from.getConnectingSide(inComingEdgePoint);
       //find the connection edge point on the opposite side
       Orientation exitSide = Node.getOppositeSide(inComingSide);
-      Point toInComingPoint = from.getTile().getEdgePoints().get(exitSide);
 
-      //Check if the to has this edgepoint
+      Point toInComingPoint = from.getTile().getEdgePoints().get(exitSide);
+      //Logger.trace("From {} inComing point: ({},{}) incoming side: {} exit side: {} toInComingPoint: ({},{}) ", from.getId(), inComingEdgePoint.x, inComingEdgePoint.y, inComingSide.getOrientation(), exitSide.getOrientation(), toInComingPoint.x, toInComingPoint.y);      
       return to.getTile().getEdgePoints().containsValue(toInComingPoint);
     } else if (from.getPreviousNode() != null && from.isCross()) {
       //A cross can only connect to diagonal opposite sides
       boolean diagonal = from.isDiagonalOpposite(from, to);
+      Logger.trace("#Else if pref from {} to {} diagonal: {}", from.getTile().getId(), to.getTile().getId(), diagonal);
+
       return diagonal;
     } else {
       return from.getTile().isAdjacent(to.getTile());
@@ -85,7 +125,7 @@ public class Graph {
   }
 
   double calculateHeuristic(Node from, Node to) {
-    boolean canTravel = this.canTravelTo(from, to);
+    boolean canTravel = canTravelTo(from, to);
     double h = manhattanDistance(from, to) + (canTravel ? 0D : Double.MAX_VALUE);
     return h;
   }
@@ -102,7 +142,21 @@ public class Graph {
     return dx + dy;
   }
 
+  static double shortestDistance(Node from, Node to) {
+    int dx = Math.abs(to.getX() - from.getX());
+    int dy = Math.abs(to.getY() - from.getY());
+    return Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+  }
+
+  static double shortestDistance(Point from, Point to) {
+    double dx = to.x - from.x;
+    double dy = to.y - from.y;
+
+    return Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+  }
+
   Edge link(Node from, Node to, double distance) {
+    //extra check needed to see is the tracks really connect...
     Edge edge = new Edge(from, to, distance);
     from.addEdge(edge);
     to.addEdge(edge);
@@ -120,7 +174,7 @@ public class Graph {
   }
 
   List<Node> findPath(Node start, String startSuffix, Node destination, String destSuffix) {
-    Logger.trace("Searching for a route from: " + start.getId() + startSuffix + " to: " + destination.getId() + destSuffix);
+    Logger.trace("Searching for a route from: {}{} to: {}{}", start.getId(), startSuffix, destination.getId(), destSuffix);
     List<Node> path = new ArrayList<>();
 
     nodes.values().forEach(node -> {
@@ -136,11 +190,11 @@ public class Graph {
 
     while (!activeNodes.isEmpty()) {
       Node current = activeNodes.poll();
-      Logger.trace("Polled " + current.getId() + " from activeNodes. Size: " + activeNodes.size());
+      Logger.trace("Polled {} from activeNodes. Size: {}", current.getId(), activeNodes.size());
 
       if (current == destination) {
         current.setSuffix(destSuffix);
-        Logger.trace("Target node " + destination.getId() + destSuffix + " found");
+        Logger.trace("Target node {}{} found", destination.getId(), destSuffix);
         path.clear();
         destination.retrievePath(path);
         return path;
@@ -154,18 +208,22 @@ public class Graph {
         currentEdges = current.getEdges();
       }
 
-//      Logger.trace("Current Node " + current.getId() + " has " + currentEdges.size() + " edges...");
-//      for (Edge edge : currentEdges) {
-//        Logger.trace(current.getId() + " -> " + edge);
-//      }
+      Logger.trace("Current Node {} has {} edges...", current.getId(), currentEdges.size());
+      for (Edge edge : currentEdges) {
+        Logger.trace("{} -> {}", current.getId(), edge);
+      }
+
       for (Edge edge : currentEdges) {
         Node neighbor = edge.getOpposite(current);
+
         if (neighbor != null) {
+          Logger.trace("Check {} -> {} ", current.getTile().getId(), neighbor.getId());
+
           boolean noBlockOrTarget = neighbor.equals(destination) || !neighbor.isBlock();
           boolean noBlockOrTargetSide = !neighbor.isBlock() || (neighbor.equals(destination) && (destSuffix.equals(edge.getToSuffix()) || destSuffix.equals(edge.getFromSuffix())));
 
           boolean canTravel = canTravelTo(current, neighbor);
-
+          //Logger.trace("Can{} travel from {} to {}", (canTravel ? "" : "'t"), current.getTile().getId(), neighbor.getId());          
           double neighborG = current.getG() + edge.getDistance();
           if (neighborG < neighbor.getG() && noBlockOrTarget && noBlockOrTargetSide && canTravel) {
             neighbor.setPreviousNode(current);
@@ -173,13 +231,18 @@ public class Graph {
 
             neighbor.setH(calculateHeuristic(current, neighbor));
 
-            Logger.trace(current + " -> " + neighbor);
-
+            //Logger.trace(current + " -> " + neighbor);
             if (!activeNodes.contains(neighbor)) {
               activeNodes.add(neighbor);
             }
           }
+          //else {
+          //  Logger.trace("## New neighborG {} Distance {} currentG {} canTravel {}", neighborG, edge.getDistance(), current.getG(), canTravel);
+          //}
         }
+        //else {
+        //  Logger.trace("Edge has no neigbors. From {} To: {}", edge.getFrom().getId(), edge.getTo().getId());
+        //}
       }
     }
     return Collections.EMPTY_LIST;

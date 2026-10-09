@@ -65,4 +65,6 @@ public interface DecoderController extends GenericController {
 
   void removeMeasurementEventListener(MeasurementEventListener listener);
 
+  void refreshLocomotives();
+
 }
