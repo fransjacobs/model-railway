@@ -13,27 +13,26 @@
 
 ## 🚂 Over
 
-JCS, Java Central Station, is een open source project om een modelspoorbaan tot leven te brengen met software.  
+JCS, Java Central Station, is een *open source* project om een modelspoorbaan tot leven te brengen met software.  
 
-Ik ben dit project begonnen uit nieuwsgierigheid (en plezier!),
+Ik ben dit project begonnen uit nieuwsgierigheid, te leren en plezier!,
 om te ontdekken hoe ver ik automatisering op een modelspoorbaan kon brengen,
 zonder afhankelijk te zijn van gesloten, commerciële systemen.
 
-Inmiddels is het uitgegroeid tot een volledige tool die:
+Inmiddels is het uitgegroeid tot een volledige programma waarmee:
 
 - een layout tekenen, en treinen laten rijden met *handmatige* of *automatische* bediening.
-- Werkt met centrales zoals de Märklin CS2/CS3, ESU ECoS, DCC-EX en HSI-S88.  
+- Werkt met centrales zoals de Märklin CS2/CS3, ESU ECoS, Uhlenbrock Intellibox2, DCC-EX en HSI-S88.  
 - Je de mogelijkheid geeft om in Autopilot-modus te rijden of handmatig met de Driver Cab.  
 - Live feedback van sensoren en wissels op je layout toont.  
 - Een Virtueel Command Station bevat, zodat je ook zonder hardware kunt experimenteren.  
 - een "op afstand" scherm voor centrales die VNC onder steunen
 
-Het doel is niet om te concurreren met professionele producten, maar om iets open, uitbreidbaar en gemakkelijk te bedienen te creëren, — voor iedereen die graag met treinen en code knutselt. 🚉✨
-
+Het doel is niet om te concurreren met professionele producten, maar om iets *open*, uitbreidbaar en gemakkelijk te bedienen te creëren, — voor iedereen die graag met treinen en code knutselt. 🚉✨
 
 ## 📄 Gebruikers handleiding
 De [Gebruikers handleiding](https://github.com/fransjacobs/model-railway/wiki) is aan de Wiki toegevoegd.
- 
+
 
 ## 🎯 Waarom dit project?
 
@@ -45,23 +44,23 @@ Ik begon **JCS** omdat ik iets anders wilde:
 - Een kans om **vrij te experimenteren** met nieuwe ideeën.  
 - En bovenal… om **plezier te hebben met het rijden van treinen**! 🚂✨  
 
-Door JCS open source te maken, hoop ik ook andere hobbyisten te inspireren:  
+Door JCS *open source* te maken, hoop ik ook andere hobbyisten te **inspireren**:  
 
 - Knutselaars die onder de motorkap willen kijken.  
 - Bouwers die het willen uitbreiden met hun eigen functies.  
-- Of gewoon iedereen die een gratis en flexibele oplossing zoekt voor hun layout.  
+- Of gewoon iedereen die een gratis en flexibele oplossing zoekt voor hun modelspoorbaan.  
 
 ## ✨ Belangrijkste functies
 
-- **Verbinding met centrales**: Märklin CS2/CS3, ESU ECoS, DCC-EX en HSI-S88.  
+- **Verbinding met centrales**: Märklin CS2/CS3, ESU ECoS, Uhlenbrock Intellibox2 (loconet), DCC-EX en HSI-S88.  
 - **Teken je layout**: Een interactieve grafische editor om sporen, blokken en sensoren te ontwerpen.  
 - **Automatisch treinen laten rijden**: Laat de Autopilot routing en blokbeheer regelen.  
 - **Of bestuur ze zelf**: Gebruik de ingebouwde Throttle / Driver Cab voor handmatige controle.  
-- **Live overzicht**: Zie realtime feedback van sensoren, wissels en blokken.  
+- **Live overzicht**: Zie realtime feedback van sensoren, wissels, seinen en blokken.  
 - **Test zonder hardware**: Het Virtuele Command Station laat je op het scherm experimenteren.  
 - **Externe toegang**: Ingebouwde VNC-viewer voor Märklin CS3 en ESU ECoS systemen.  
 
-> Of je de bediening nu aan Autopilot wilt overlaten, of zelf de controle houdt, JCS laat je layout tot leven komen.
+> Of je de bediening nu aan Autopilot wilt overlaten, of zelf de controle houdt, JCS laat je modelspoorbaan tot leven komen!
 
 ## 🖼️ Screenshots
 
@@ -88,19 +87,16 @@ Door JCS open source te maken, hoop ik ook andere hobbyisten te inspireren:
 JCS ondersteunt een reeks populaire centrales voor zowel commerciële als DIY-opstellingen:
 
 - **[Märklin CS-3](https://www.marklin.nl/producten/details/article/60216)**  
-  Volledig ondersteund; biedt volledige controle over locomotieven, wissels en accessoires.
 
 - **[Märklin CS-2](https://www.marklin.nl/producten/details/article/60215)** — [Protocol Documentatie](http://streaming.maerklin.de/public-media/cs2/cs2CAN-Protokoll-2_0.pdf)  
-  Ondersteund via CAN-bus; kan gebruikt worden voor realtime feedback en handmatig rijden.
 
 - **[ESU ECoS](https://www.esu.eu/)** — [Protocol Documentatie ESU](https://github.com/cbries/railessentials/blob/master/ecoslibNet48/Documentation/ecos_pc_interface3.pdf) — [Community Versie](https://github.com/TabalugaDrache/TCPEcos/files/13458970/Netzwerkspezifikation_2023.pdf)  
-  Ondersteunt TCP/IP-verbindingen; compatibel met zowel commerciële als community-protocollen.
+
+- **[Uhlenbrock Intellibox2](https://www.uhlenbrock.de/de_DE/produkte/prodarch/I1F5AE2E-001.htm!ArcEntryInfo=0004.61.I1F5AE2E)** — [Protocol Documentatie](https://www.digitrax.com/support/loconet/loconetpersonaledition.pdf) 
 
 - **[DCC-EX](https://dcc-ex.com)**  
-  Kan worden verbonden via seriële poort of netwerk; biedt volledige DCC-controle voor locomotieven, blokken en accessoires.
 
 - **[HSI-S88](https://www.ldt-infocenter.com/dokuwiki/doku.php?id=en:hsi-88-usb)** — of de [DIY-versie](https://mobatron.4lima.de/2020/05/s88-scanner-mit-arduino)  
-  Feedbackmodule voor bloksensornetwerken; ondersteunt zowel officiële als zelfgebouwde oplossingen om treinbezetting te detecteren.
 
 ## 🔧 Huidige status & Roadmap
 
@@ -110,14 +106,13 @@ Huidige focusgebieden:
 
 - Documentatie verbeteren  
 - GUI verbeteren  
-- Signaalweergave toevoegen bij automatisch rijden  
 - Internationalisatie (meertalige ondersteuning)  
 - Uitbreiden van unit tests  
 - Meer hardware-integraties  
 
 ## 🎮 Wil je het zelf proberen?
 
-Als je JCS zelf wilt uitproberen, wordt dat zeer gewaardeerd!  
+Als je JCS zelf wilt uitproberen wordt dat zeer gewaardeerd!  
 
 Voordat je begint, zorg ervoor dat je layout aan een paar eisen voldoet:
 
@@ -134,7 +129,7 @@ Voordat je JCS start, zorg ervoor dat je het volgende hebt:
 - **Java 25** geïnstalleerd (bijv. [Temurin OpenJDK](https://adoptium.net/temurin/releases/))  
 - Een **ondersteund commandostation** verbonden en geconfigureerd (zie [Ondersteunde Commandostations](#ondersteunde-commandostations))  
 
-> Tip: Zorg dat je Java-omgeving correct in je systeem-PATH staat om de applicatie via de command line te kunnen starten.
+> Tip: Zorg dat je Java-omgeving correct in je systeem-PATH staat om de applicatie via de command-line te kunnen starten.
 
 ### 💾 Download een Prebuilt Release
 
@@ -150,8 +145,8 @@ De nieuwste stabiele versie is **v0.0.3** (uitgebracht op 24 november 2025):
 
 Als je JCS liever zelf bouwt:  
 
-- Zie [BUILDING.md](BUILDING.md) voor **volledige build-instructies**, inclusief benodigde libraries, Maven-commando’s en troubleshooting tips.  
-- Aanbevolen voor ontwikkelaars die de applicatie willen **aanpassen, uitbreiden of debuggen**.  
+- Zie [BUILDING_NL.md](BUILDING_NL.md) voor **volledige bouw-instructies**, inclusief benodigde libraries, Maven-commando’s en troubleshooting tips.  
+- Aanbevolen voor iedereen die in JCS wil proberen met de laatste stand van de ontwikkelingen.  
 
 ### ⚙️ Setup en Gebruik
 

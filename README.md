@@ -2,8 +2,7 @@
 
 🌐 **[Lees deze README in het Nederlands](LEESMIJ.md)**
 
-🎯 *An open-source project to automate model railways.*
-
+🎯 *An open-source project for model railway automation.*
 
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](#license)  
 [![Release](https://img.shields.io/github/v/release/fransjacobs/model-railway)](https://github.com/fransjacobs/model-railway/releases)  
@@ -12,156 +11,173 @@
 [![Java CI with Maven](https://github.com/fransjacobs/model-railway/actions/workflows/maven.yml/badge.svg?branch=master)](https://github.com/fransjacobs/model-railway/actions/workflows/maven.yml)  
 [![GitHub last commit](https://img.shields.io/github/last-commit/fransjacobs/model-railway)]()
 
----
+## 🚂 About
 
-## 🚂 What is JCS?
+JCS, Java Central Station, is an *open-source* project that brings a model railway to life with software.  
 
-JCS (Java Central Station) lets you design, control, and automate your model railway. With JCS you can:
+I started this project out of curiosity, to learn, and to have fun,
+to discover how far I could take automation on a model railway,
+without depending on closed, commercial systems.
 
-- Draw and edit the layout (tracks, blocks, turnouts, sensors).  
-- Place locomotives manually or via command stations and run them in *manual* or *autopilot* mode.  
-- View live feedback: sensor events, switch (turnout) positions, block occupancy.  
-- Simulate the system with a *Virtual Command Station* if you don’t yet have physical hardware.  
-- Remote visibility via VNC for supported command stations.  
+It has since grown into a complete application that lets you:
 
-It’s built for hobbyists who like software, trains, and tinkering.
+- Draw a layout and run trains using *manual* or *automatic* control.
+- Works with command stations such as Märklin CS2/CS3, ESU ECoS, Uhlenbrock Intellibox2, DCC-EX, and HSI-S88.  
+- Lets you run trains in Autopilot mode or control them manually using the Driver Cab.  
+- Shows live feedback from sensors and turnouts on your layout.  
+- Includes a Virtual Command Station, so you can experiment even without hardware.  
+- Provides a remote screen for command stations that support VNC.
 
----
+The goal is not to compete with professional products, but to create something *open*, extensible, and easy to use — for anyone who enjoys tinkering with trains and code. 🚉✨
 
-## 📄 User Manual
-The [User Manual](https://github.com/fransjacobs/model-railway/wiki) is added to the Wiki.
- 
----
+## 📄 User manual
+The [User Manual](https://github.com/fransjacobs/model-railway/wiki) has been added to the Wiki.
 
-## 🎯 Why Build This?
 
-Many commercial model railway automation tools are powerful but not open, or are restricted in flexibility. JCS is about:
+## 🎯 Why this project?
 
-- **Learning & experimentation**  
-- **Open source**: free to use, inspect, modify  
-- **Flexibility**: support for different hardware, and growing modularity  
-- **Fun**: hobby projects don’t always need to be ultra polished—they should let you play, experiment, and learn
+Most commercial model railway automation solutions feel like a **black box** — with a great deal of functionality, but closed, rigid, and overkill for my hobby layout(s).  
 
----
+I started **JCS** because I wanted something different:  
 
-## ⚙️ Key Features
+- A project where I could **learn by building**.  
+- An opportunity to **experiment freely** with new ideas.  
+- And above all… to **have fun running trains**! 🚂✨  
 
-- Support for multiple command stations: **Märklin CS2/CS3**, **ESU ECoS**, **DCC‑EX**, **HSI‑S88**, etc.  
-- Automatic train running via [**Autopilot**](./AUTOPILOT.MD)  
-- Manual driving via *Throttle* or *Driver Cab*  
-- Graphical layout editor and live sensor/block feedback  
-- Virtual Command Station mode (no hardware required)  
-- Dispatcher view, Cruise Control, turnout control  
-- Multi-language support (NL/EN) in progress  
+By making JCS *open source*, I also hope to **inspire** other hobbyists:  
 
----
+- Tinkerers who want to look under the hood.  
+- Builders who want to extend it with their own features.  
+- Or simply anyone looking for a free and flexible solution for their model railway.  
 
-## 🤖 Autopilot — The Automatic Driving Engine
+## ✨ Key features
 
-The **Autopilot** module allows fully automatic train operations once locomotives are placed in blocks with directions set.
+- **Command station connectivity**: Märklin CS2/CS3, ESU ECoS, Uhlenbrock Intellibox2 (LocoNet), DCC-EX, and HSI-S88.  
+- **Draw your layout**: An interactive graphical editor for designing tracks, blocks, and sensors.  
+- **Run trains automatically**: Let Autopilot handle routing and block management.  
+- **Or control them yourself**: Use the built-in Throttle / Driver Cab for manual control.  
+- **Live overview**: See real-time feedback from sensors, turnouts, signals, and blocks.  
+- **Test without hardware**: The Virtual Command Station lets you experiment on screen.  
+- **Remote access**: Built-in VNC viewer for Märklin CS3 and ESU ECoS systems.  
 
-- Each train gets its own **dispatcher**.
-- Locomotives move block-by-block into **free** neighboring blocks.
-- Sensors confirm **departure** and **arrival**.
-- Autopilot marks blocks **free/occupied** dynamically to prevent collisions.
-- Start one locomotive manually or all at once via **Cruise Control**.
+> Whether you want to leave control to Autopilot or stay in control yourself, JCS brings your model railway to life!
 
-➡️ See full details in [**AUTOPILOT.MD**](./AUTOPILOT.MD)  
-
----
-
-## 🧰 Requirements
-
-Before you run or build:
-
-- **Java 25** (e.g., Temurin JDK or equivalent)  
-- A supported command station or virtual mode setup  
-- Layout must satisfy some constraints:
-  - Each block has working feedback sensors  
-  - Turnouts (switches) are *not* part of blocks  
-  - At least two blocks (for meaningful autopilot behavior)  
-
----
-
-## 🚀 Getting Started
-
-### Try without hardware
-
-1. Clone the repo  
-2. Run in **Virtual Command Station** mode  
-3. Use the layout editor to draw a simple layout  
-4. Place a locomotive, set its direction, enable Autopilot or manual driving  
-
-### Running with hardware
-
-1. Ensure your command station is connected and configured  
-2. Set up feedback sensors, blocks, turnouts, etc.  
-3. Draw the layout in the layout editor  
-4. Place trains, set directions  
-5. Enable Autopilot or use manual Driver Cab  
-
----
-
-## 🛠 Build & Installation
-
-- Full build instructions are in **BUILDING.md**  
-- Use Maven (or your IDE) to compile sources  
-- A prebuilt JAR may be available via [Releases](https://github.com/fransjacobs/model-railway/releases)  
-
----
-
-## 📊 Status & Roadmap
-
-| Status | What works | In progress / Planned |
-|---|---|---|
-| ✅ Stable features | Layout editor, Autopilot, manual driving, CS2/CS3/ECoS support, sensor feedback | Signal displays in autopilot, GUI polish, unit tests |
-| ⚠️ Work in progress | Internationalization, documentation, more command station backends | Multi-language UI, better styling & UX, enhanced autopilot decision logic |
-
----
-
-## 🢂 Screenshots
+## 🖼️ Screenshots
 
 ### Main screen
 ![MAIN_SCREEN](assets/mainscreen.png)
 
-### Layout editor
+### Track layout editor
 ![MAIN_SCREEN_EDIT](assets/mainscreen-edit-layout.png)
 
-### Sensor monitor
+### Feedback sensor monitor
 ![SENSOR_MONITOR](assets/sensor_monitor.png)
 
-### Locomotive Throttle
+### Locomotive control dialog
 ![DRIVER_CAB](assets/drivercab-dialog.png)
 
-### Main screen VNC to Marklin CS-3
+### Main screen with VNC to Märklin CS3
 ![MAIN_SCREEN](assets/mainScreen-VNC.png)
 
-### Command Station settings for Marklin CS-3
+### Command station settings for Märklin CS3
 ![COMMAND_STATION_SETTINGS](assets/command-station-CS3.png) 
 
----
+## ⚙️ Supported command stations
+
+JCS supports a range of popular command stations for both commercial and DIY setups:
+
+- **[Märklin CS-3](https://www.marklin.nl/producten/details/article/60216)**  
+
+- **[Märklin CS-2](https://www.marklin.nl/producten/details/article/60215)** — [Protocol Documentation](http://streaming.maerklin.de/public-media/cs2/cs2CAN-Protokoll-2_0.pdf)  
+
+- **[ESU ECoS](https://www.esu.eu/)** — [Protocol Documentation ESU](https://github.com/cbries/railessentials/blob/master/ecoslibNet48/Documentation/ecos_pc_interface3.pdf) — [Community Version](https://github.com/TabalugaDrache/TCPEcos/files/13458970/Netzwerkspezifikation_2023.pdf)  
+
+- **[Uhlenbrock Intellibox2](https://www.uhlenbrock.de/de_DE/produkte/prodarch/I1F5AE2E-001.htm!ArcEntryInfo=0004.61.I1F5AE2E)** — [Protocol Documentation](https://www.digitrax.com/support/loconet/loconetpersonaledition.pdf) 
+
+- **[DCC-EX](https://dcc-ex.com)**  
+
+- **[HSI-S88](https://www.ldt-infocenter.com/dokuwiki/doku.php?id=en:hsi-88-usb)** — or the [DIY version](https://mobatron.4lima.de/2020/05/s88-scanner-mit-arduino)  
+
+## 🔧 Current status & roadmap
+
+JCS is under active development! You can follow progress, report issues, or suggest features on the [GitHub Issues page](https://github.com/fransjacobs/model-railway/issues).  
+
+Current focus areas:
+
+- Improve documentation  
+- Improve the GUI  
+- Internationalization (multilingual support)  
+- Expand unit tests  
+- More hardware integrations  
+
+## 🎮 Want to try it yourself?
+
+If you would like to try JCS yourself, that is greatly appreciated!  
+
+Before you begin, make sure your layout meets a few requirements:
+
+- Each block must have **at least 2 feedback sensors**.  
+- A **turnout** must not be part of a block.  
+- Your layout must contain **at least 2 blocks**.  
+
+Once your layout is ready, you can start exploring Autopilot and manual driving with the Driver Cab.
+
+### 🛠 Requirements
+
+Before starting JCS, make sure you have the following:
+
+- **Java 25** installed (for example, [Temurin OpenJDK](https://adoptium.net/temurin/releases/))  
+- A **supported command station** connected and configured (see [Supported Command Stations](#supported-command-stations))  
+
+> Tip: Make sure your Java environment is correctly configured in your system PATH so you can start the application from the command line.
+
+### 💾 Download a prebuilt release
+
+The latest stable version is **v0.0.3** (released on November 24, 2025):  
+
+- First fully automated train-running release  
+- Executable files for **Windows, macOS, Linux**, plus a **cross-platform Uber-JAR**  
+- For complete release notes and the changelog, see the [Releases section](https://github.com/fransjacobs/model-railway/releases)  
+
+> Tip: The Uber-JAR can be started directly with `java -jar jcs-uber.jar` without additional dependencies.
+
+### 🏗 Build from source
+
+If you prefer to build JCS yourself:  
+
+- See [BUILDING.md](BUILDING.md) for **complete build instructions**, including required libraries, Maven commands, and troubleshooting tips.  
+- Recommended for anyone who wants to try the latest state of JCS development.  
+
+### ⚙️ Setup and usage
+
+Get started quickly with JCS using the following resources:
+
+- **Walkthrough**: [JCS_SETUP_NL.md](JCS_SETUP.md) — Step-by-step instructions for preparing your layout and starting the application.  
+- **Driving and Automation Guide**: [DRIVING.md](DRIVING.md) — Learn how to control trains manually or with Autopilot.  
+- **Interface Documentation**: [INTERFACES.md](INTERFACES.md) — Detailed information about connecting command stations, sensors, and blocks.  
+
+> Tip: Start with a small layout and a few trains to explore the features before scaling up to larger layouts.
 
 ## 🤝 Contributing
 
-We welcome all kinds of contributions:
+Contributions are **always welcome**! You can help by:
 
-- Bug reports & issue suggestions  
-- Feature requests & pull requests  
-- Help with docs (especially translations)  
-- Test writing  
-- GUI / UX improvements  
-- A Chat or email 
-- Cup of coffee
+- Reporting bugs or issues on the [GitHub Issues page](https://github.com/fransjacobs/model-railway/issues)  
+- Suggesting new features or improvements  
+- Submitting pull requests with fixes or enhancements 
+- Chat or email
+- A cup of coffee 
 
-Please follow the project’s conventions and open an issue to discuss large changes.
+Your input helps make JCS better for everyone.  
 
----
+## 📄 License
 
-## 📄 License & Credits
+This project is licensed under the **Apache-2.0 License**.  
+See the [LICENSE](LICENSE) file for full details.  
 
-This project is licensed under **Apache‑2.0**. See the [LICENSE](LICENSE) file for details.  
+## 🙌 Contributors
 
-Thanks to all contributors, testers, and model railway enthusiasts who help make JCS better every day.  
+Many thanks to everyone who supports this project!  
 
 <table>
 <tr>
@@ -170,25 +186,20 @@ Thanks to all contributors, testers, and model railway enthusiasts who help make
             <img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy me a coffee" height="41" width="174"/>
         </a>
         <br />
-        <sub>Support this project and keep the trains rolling!</sub>
+        <sub>Support development and keep the trains running!</sub>
     </td>
 </tr>
 </table>
 
+I hope this project inspires you to **experiment, tinker, and have fun with model trains and code!**  
 
 
 ## 📜 Copyright 2018 - 2026 Frans Jacobs
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software **without restriction**, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-      http://www.apache.org/licenses/LICENSE-2.0
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-**WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND**, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+**THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND**, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose, and non-infringement. In no event shall the authors or copyright holders be liable for any claim, damages, or other liability, whether in an action of contract, tort, or otherwise, arising from, out of, or in connection with the Software or the use of the Software.
 
-> Thanks for being a part of the JCS-community — every contribution, suggestion or cup of coffee keeps this project alive! 🚂✨
+> Thank you for being part of the JCS community — every contribution, suggestion, or cup of coffee helps keep this hobby project alive! 🚂✨
