@@ -230,8 +230,12 @@ public class SmallDriverCabPanel extends JPanel implements LocomotiveSelectionCh
 
           btn.setActionCommand("F" + fb.getNumber());
           btn.setEnabled(true);
-
-          boolean isOn = fb.getValue() == 1;
+          boolean isOn;
+          if (fb.getValue() != null) {
+            isOn = fb.getValue() == 1;
+          } else {
+            isOn = false;
+          }
           if (isOn) {
             btn.doClick();
           }

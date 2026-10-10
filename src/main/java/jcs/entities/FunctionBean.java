@@ -82,7 +82,7 @@ public class FunctionBean implements Serializable {
   }
 
   public FunctionBean(Integer number, Long locomotiveId) {
-    this(locomotiveId, number, null, null);
+    this(locomotiveId, number, number, null);
   }
 
   public FunctionBean(Long locomotiveId, Integer number, Integer value) {
@@ -181,7 +181,10 @@ public class FunctionBean implements Serializable {
 
   @Transient
   public boolean isOn() {
-    return this.value >= 1;
+    if (this.value != null) {
+      return this.value >= 1;
+    }
+    return false;
   }
 
   public void setValue(Integer value) {
