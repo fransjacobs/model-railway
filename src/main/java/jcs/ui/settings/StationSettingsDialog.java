@@ -44,7 +44,7 @@ public class StationSettingsDialog extends javax.swing.JDialog {
     stationSettingsPanel1 = new jcs.ui.settings.StationSettingsPanel();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-    setTitle("Driveways");
+    setTitle("Stations");
     getContentPane().add(stationSettingsPanel1, java.awt.BorderLayout.CENTER);
 
     pack();
