@@ -334,7 +334,8 @@ public class SmallDriverCabPanel extends JPanel implements LocomotiveSelectionCh
     filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(20, 0), new java.awt.Dimension(20, 0), new java.awt.Dimension(20, 32767));
     nameLbl = new javax.swing.JLabel();
     rightPanel = new javax.swing.JPanel();
-    jPanel3 = new javax.swing.JPanel();
+    speedButtonsPanel = new javax.swing.JPanel();
+    speed0Button = new javax.swing.JButton();
     speed1Button = new javax.swing.JButton();
     speed2Button = new javax.swing.JButton();
     speed3Button = new javax.swing.JButton();
@@ -416,11 +417,23 @@ public class SmallDriverCabPanel extends JPanel implements LocomotiveSelectionCh
     flowLayout2.setAlignOnBaseline(true);
     rightPanel.setLayout(flowLayout2);
 
-    jPanel3.setName("jPanel3"); // NOI18N
-    jPanel3.setPreferredSize(new java.awt.Dimension(38, 200));
+    speedButtonsPanel.setName("speedButtonsPanel"); // NOI18N
+    speedButtonsPanel.setPreferredSize(new java.awt.Dimension(38, 200));
     jcs.ui.swing.layout.VerticalFlowLayout verticalFlowLayout1 = new jcs.ui.swing.layout.VerticalFlowLayout();
     verticalFlowLayout1.sethGap(1);
-    jPanel3.setLayout(verticalFlowLayout1);
+    speedButtonsPanel.setLayout(verticalFlowLayout1);
+
+    speed0Button.setText("0");
+    speed0Button.setMargin(new java.awt.Insets(2, 2, 2, 2));
+    speed0Button.setMinimumSize(new java.awt.Dimension(30, 30));
+    speed0Button.setName("speed0Button"); // NOI18N
+    speed0Button.setPreferredSize(new java.awt.Dimension(30, 30));
+    speed0Button.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        speed0ButtonActionPerformed(evt);
+      }
+    });
+    speedButtonsPanel.add(speed0Button);
 
     speed1Button.setText("I");
     speed1Button.setMargin(new java.awt.Insets(2, 2, 2, 2));
@@ -432,7 +445,7 @@ public class SmallDriverCabPanel extends JPanel implements LocomotiveSelectionCh
         speed1ButtonActionPerformed(evt);
       }
     });
-    jPanel3.add(speed1Button);
+    speedButtonsPanel.add(speed1Button);
 
     speed2Button.setText("II");
     speed2Button.setMargin(new java.awt.Insets(2, 2, 2, 2));
@@ -444,7 +457,7 @@ public class SmallDriverCabPanel extends JPanel implements LocomotiveSelectionCh
         speed2ButtonActionPerformed(evt);
       }
     });
-    jPanel3.add(speed2Button);
+    speedButtonsPanel.add(speed2Button);
 
     speed3Button.setText("III");
     speed3Button.setMargin(new java.awt.Insets(2, 2, 2, 2));
@@ -456,7 +469,7 @@ public class SmallDriverCabPanel extends JPanel implements LocomotiveSelectionCh
         speed3ButtonActionPerformed(evt);
       }
     });
-    jPanel3.add(speed3Button);
+    speedButtonsPanel.add(speed3Button);
 
     speed4Button.setText("IIII");
     speed4Button.setMargin(new java.awt.Insets(2, 2, 2, 2));
@@ -468,9 +481,9 @@ public class SmallDriverCabPanel extends JPanel implements LocomotiveSelectionCh
         speed4ButtonActionPerformed(evt);
       }
     });
-    jPanel3.add(speed4Button);
+    speedButtonsPanel.add(speed4Button);
 
-    rightPanel.add(jPanel3);
+    rightPanel.add(speedButtonsPanel);
 
     jPanel4.setMinimumSize(new java.awt.Dimension(40, 200));
     jPanel4.setName("jPanel4"); // NOI18N
@@ -1327,6 +1340,14 @@ public class SmallDriverCabPanel extends JPanel implements LocomotiveSelectionCh
     }
   }//GEN-LAST:event_speedSliderStateChanged
 
+  private void speed0ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_speed0ButtonActionPerformed
+    if (locomotiveBean != null) {
+      speedSlider.setValue(0);
+    } else {
+      Logger.trace(evt.getActionCommand());
+    }
+  }//GEN-LAST:event_speed0ButtonActionPerformed
+
   private void changeVelocity(int newVelocity, LocomotiveBean locomotiveBean) {
     if (JCS.getJcsCommandStation() != null && locomotiveBean != null && locomotiveBean.getId() != null) {
       Logger.trace("Changing speeed of " + locomotiveBean + " to: " + newVelocity);
@@ -1481,17 +1502,18 @@ public class SmallDriverCabPanel extends JPanel implements LocomotiveSelectionCh
   javax.swing.Box.Filler filler2;
   javax.swing.JToggleButton forwardButton;
   javax.swing.JLabel iconLbl;
-  javax.swing.JPanel jPanel3;
   javax.swing.JPanel jPanel4;
   javax.swing.JLabel nameLbl;
   javax.swing.JPanel northPanel;
   javax.swing.JToggleButton reverseButton;
   javax.swing.JPanel rightPanel;
   javax.swing.JPanel southPanel;
+  javax.swing.JButton speed0Button;
   javax.swing.JButton speed1Button;
   javax.swing.JButton speed2Button;
   javax.swing.JButton speed3Button;
   javax.swing.JButton speed4Button;
+  javax.swing.JPanel speedButtonsPanel;
   javax.swing.JSlider speedSlider;
   javax.swing.JButton stopButton;
   // End of variables declaration//GEN-END:variables

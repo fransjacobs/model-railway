@@ -99,6 +99,7 @@ public class DriverCabPanel extends JPanel implements LocomotiveDirectionEventLi
     speedSlider = new javax.swing.JSlider();
     functionsPanel = new jcs.ui.widgets.FunctionsPanel();
     southPanel = new javax.swing.JPanel();
+    speed0Button = new javax.swing.JButton();
     speed1Button = new javax.swing.JButton();
     speed2Button = new javax.swing.JButton();
     speed3Button = new javax.swing.JButton();
@@ -131,7 +132,6 @@ public class DriverCabPanel extends JPanel implements LocomotiveDirectionEventLi
     speedGauge.setLcdVisible(false);
     speedGauge.setMinimumSize(new java.awt.Dimension(190, 190));
     speedGauge.setOrientation(eu.hansolo.steelseries.tools.Orientation.CENTER);
-    speedGauge.setPreferredSize(new java.awt.Dimension(190, 190));
     speedGauge.setTitle("");
     speedGauge.setTitleAndUnitFontEnabled(true);
     speedGauge.setUnitString("km/h");
@@ -166,6 +166,17 @@ public class DriverCabPanel extends JPanel implements LocomotiveDirectionEventLi
 
     southPanel.setMinimumSize(new java.awt.Dimension(440, 45));
     southPanel.setPreferredSize(new java.awt.Dimension(450, 45));
+
+    speed0Button.setText("0");
+    speed0Button.setMargin(new java.awt.Insets(2, 2, 2, 2));
+    speed0Button.setMinimumSize(new java.awt.Dimension(30, 30));
+    speed0Button.setPreferredSize(new java.awt.Dimension(30, 30));
+    speed0Button.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        speed0ButtonActionPerformed(evt);
+      }
+    });
+    southPanel.add(speed0Button);
 
     speed1Button.setText("I");
     speed1Button.setMargin(new java.awt.Insets(2, 2, 2, 2));
@@ -215,8 +226,6 @@ public class DriverCabPanel extends JPanel implements LocomotiveDirectionEventLi
     forwardReverseBG.add(reverseButton);
     reverseButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/left-24.png"))); // NOI18N
     reverseButton.setActionCommand("Backwards");
-    reverseButton.setMinimumSize(new java.awt.Dimension(30, 30));
-    reverseButton.setPreferredSize(new java.awt.Dimension(30, 30));
     reverseButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/media/left-Y-24.png"))); // NOI18N
     reverseButton.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -229,8 +238,6 @@ public class DriverCabPanel extends JPanel implements LocomotiveDirectionEventLi
     forwardButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/right-24.png"))); // NOI18N
     forwardButton.setSelected(true);
     forwardButton.setActionCommand("Forwards");
-    forwardButton.setMinimumSize(new java.awt.Dimension(30, 30));
-    forwardButton.setPreferredSize(new java.awt.Dimension(30, 30));
     forwardButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/media/right-Y-24.png"))); // NOI18N
     forwardButton.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -346,6 +353,14 @@ public class DriverCabPanel extends JPanel implements LocomotiveDirectionEventLi
       }
     }
   }//GEN-LAST:event_speedSliderStateChanged
+
+  private void speed0ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_speed0ButtonActionPerformed
+    if (locomotiveBean != null) {
+      speedSlider.setValue(0);
+    } else {
+      Logger.trace(evt.getActionCommand());
+    }
+  }//GEN-LAST:event_speed0ButtonActionPerformed
 
   private void changeVelocity(int newVelocity, LocomotiveBean locomotiveBean) {
     if (JCS.getJcsCommandStation() != null && locomotiveBean != null && locomotiveBean.getId() != null) {
@@ -523,6 +538,7 @@ public class DriverCabPanel extends JPanel implements LocomotiveDirectionEventLi
   private javax.swing.JToggleButton reverseButton;
   private javax.swing.JPanel sliderPanel;
   private javax.swing.JPanel southPanel;
+  private javax.swing.JButton speed0Button;
   private javax.swing.JButton speed1Button;
   private javax.swing.JButton speed2Button;
   private javax.swing.JButton speed3Button;
