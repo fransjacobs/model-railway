@@ -218,6 +218,14 @@ public class LocomotiveSettingsPanel extends JPanel implements PropertyChangeLis
         this.speed4Spinner.setValue(0);
       }
 
+      Integer trainLenght = selectedLocomotive.getTrainLenght();
+
+      if (trainLenght != null) {
+        this.trainLenghtSpinner.setValue(trainLenght);
+      } else {
+        this.trainLenghtSpinner.setValue(0);
+      }
+
     } else {
       //this.imageLbl.setText("ICON");
       this.addressSpinner.setValue(0);
@@ -317,6 +325,8 @@ public class LocomotiveSettingsPanel extends JPanel implements PropertyChangeLis
     speed4Lbl = new JLabel();
     speed4Spinner = new JSpinner();
     row7Panel = new JPanel();
+    trainLenghthLbl = new JLabel();
+    trainLenghtSpinner = new JSpinner();
     row9Panel = new JPanel();
     filler2 = new Box.Filler(new Dimension(0, 50), new Dimension(0, 50), new Dimension(32767, 300));
     buttonPanel = new JPanel();
@@ -655,6 +665,8 @@ public class LocomotiveSettingsPanel extends JPanel implements PropertyChangeLis
     speed1Lbl.setPreferredSize(new Dimension(100, 17));
     row6Panel.add(speed1Lbl);
 
+    speed1Spinner.setModel(new SpinnerNumberModel(0, 0, 100, 1));
+    speed1Spinner.setPreferredSize(new Dimension(75, 23));
     speed1Spinner.addChangeListener(new ChangeListener() {
       public void stateChanged(ChangeEvent evt) {
         speed1SpinnerStateChanged(evt);
@@ -668,6 +680,8 @@ public class LocomotiveSettingsPanel extends JPanel implements PropertyChangeLis
     speed2Lbl.setPreferredSize(new Dimension(60, 17));
     row6Panel.add(speed2Lbl);
 
+    speed2Spinner.setModel(new SpinnerNumberModel(0, 0, 100, 1));
+    speed2Spinner.setPreferredSize(new Dimension(75, 23));
     speed2Spinner.addChangeListener(new ChangeListener() {
       public void stateChanged(ChangeEvent evt) {
         speed2SpinnerStateChanged(evt);
@@ -681,6 +695,8 @@ public class LocomotiveSettingsPanel extends JPanel implements PropertyChangeLis
     speed3Lbl.setPreferredSize(new Dimension(60, 17));
     row6Panel.add(speed3Lbl);
 
+    speed3Spinner.setModel(new SpinnerNumberModel(0, 0, 100, 1));
+    speed3Spinner.setPreferredSize(new Dimension(75, 23));
     speed3Spinner.addChangeListener(new ChangeListener() {
       public void stateChanged(ChangeEvent evt) {
         speed3SpinnerStateChanged(evt);
@@ -694,6 +710,8 @@ public class LocomotiveSettingsPanel extends JPanel implements PropertyChangeLis
     speed4Lbl.setPreferredSize(new Dimension(60, 17));
     row6Panel.add(speed4Lbl);
 
+    speed4Spinner.setModel(new SpinnerNumberModel(0, 0, 100, 1));
+    speed4Spinner.setPreferredSize(new Dimension(75, 23));
     speed4Spinner.addChangeListener(new ChangeListener() {
       public void stateChanged(ChangeEvent evt) {
         speed4SpinnerStateChanged(evt);
@@ -708,6 +726,22 @@ public class LocomotiveSettingsPanel extends JPanel implements PropertyChangeLis
     FlowLayout flowLayout9 = new FlowLayout(FlowLayout.LEFT);
     flowLayout9.setAlignOnBaseline(true);
     row7Panel.setLayout(flowLayout9);
+
+    trainLenghthLbl.setHorizontalAlignment(SwingConstants.TRAILING);
+    trainLenghthLbl.setLabelFor(trainLenghtSpinner);
+    trainLenghthLbl.setText("Train Lenght:");
+    trainLenghthLbl.setPreferredSize(new Dimension(100, 17));
+    row7Panel.add(trainLenghthLbl);
+
+    trainLenghtSpinner.setModel(new SpinnerNumberModel(0, 0, null, 1));
+    trainLenghtSpinner.setPreferredSize(new Dimension(75, 23));
+    trainLenghtSpinner.addChangeListener(new ChangeListener() {
+      public void stateChanged(ChangeEvent evt) {
+        trainLenghtSpinnerStateChanged(evt);
+      }
+    });
+    row7Panel.add(trainLenghtSpinner);
+
     locoDetailPanel.add(row7Panel);
 
     row9Panel.setMinimumSize(new Dimension(380, 30));
@@ -1003,6 +1037,11 @@ public class LocomotiveSettingsPanel extends JPanel implements PropertyChangeLis
     Integer speed4 = (Integer) speed4Spinner.getValue();
     selectedLocomotive.setSpeedFour(speed4);
   }//GEN-LAST:event_speed4SpinnerStateChanged
+
+  private void trainLenghtSpinnerStateChanged(ChangeEvent evt) {//GEN-FIRST:event_trainLenghtSpinnerStateChanged
+    Integer trainLenght = (Integer) trainLenghtSpinner.getValue();
+    selectedLocomotive.setTrainLenght(trainLenght);
+  }//GEN-LAST:event_trainLenghtSpinnerStateChanged
 
   private LocomotiveBean crudFunctionBeans(LocomotiveBean locomotiveBean) {
     int functionCount = (int) this.functionCountSpinner.getValue();
@@ -1346,6 +1385,8 @@ public class LocomotiveSettingsPanel extends JPanel implements PropertyChangeLis
   JLabel tachoMaxLbl;
   JSpinner tachoMaxSpinner;
   JPanel topPanel;
+  JSpinner trainLenghtSpinner;
+  JLabel trainLenghthLbl;
   JLabel uidLbl;
   JLabel uidNameLbl;
   JLabel vMinLbl;

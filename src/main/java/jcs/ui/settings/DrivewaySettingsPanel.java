@@ -164,6 +164,9 @@ public class DrivewaySettingsPanel extends JPanel {
       RouteState routeState = selectedRoute.getRouteState();
       routeStateCBModel.setSelectedItem(routeState);
 
+      allowCommutersCB.setSelected(selectedRoute.isAllowCommuterOnly());
+      allowNonCommutersCB.setSelected(selectedRoute.isAllowNonCommuterOnly());
+
       alignDrivewayCommandsTable();
     } else {
       idLbl.setText(null);
@@ -175,10 +178,11 @@ public class DrivewaySettingsPanel extends JPanel {
       selectedRoute = null;
       fromBlockCBModel.setSelectedItem(new BlockBean());
       toBlockCBModel.setSelectedItem(new BlockBean());
+      allowCommutersCB.setSelected(true);
+      allowNonCommutersCB.setSelected(true);
     }
 
     setDeparureSignalFields(selectedRoute);
-
     enableFields(selectedRoute != null);
   }
 
@@ -230,6 +234,10 @@ public class DrivewaySettingsPanel extends JPanel {
     nameLbl = new JLabel();
     lockedCB = new JCheckBox();
     row4Panel = new JPanel();
+    allowNonCommutersLbl = new JLabel();
+    allowNonCommutersCB = new JCheckBox();
+    allowCommutersLbl = new JLabel();
+    allowCommutersCB = new JCheckBox();
     row5Panel = new JPanel();
     row6Panel = new JPanel();
     row7Panel = new JPanel();
@@ -315,7 +323,7 @@ public class DrivewaySettingsPanel extends JPanel {
     fromLbl.setLabelFor(fromCB);
     fromLbl.setText("From:");
     fromLbl.setToolTipText("");
-    fromLbl.setPreferredSize(new Dimension(120, 17));
+    fromLbl.setPreferredSize(new Dimension(140, 17));
     row0Panel.add(fromLbl);
 
     fromCB.setPreferredSize(new Dimension(120, 23));
@@ -349,7 +357,7 @@ public class DrivewaySettingsPanel extends JPanel {
     fromLbl1.setLabelFor(fromBlockStateCB);
     fromLbl1.setText("From Block State:");
     fromLbl1.setToolTipText("");
-    fromLbl1.setPreferredSize(new Dimension(120, 17));
+    fromLbl1.setPreferredSize(new Dimension(140, 17));
     row1Panel.add(fromLbl1);
 
     fromBlockStateCB.setToolTipText("The Accessory protocol");
@@ -390,7 +398,7 @@ public class DrivewaySettingsPanel extends JPanel {
     statusLbl.setHorizontalAlignment(SwingConstants.TRAILING);
     statusLbl.setLabelFor(routeStateCB);
     statusLbl.setText("Route State:");
-    statusLbl.setPreferredSize(new Dimension(120, 16));
+    statusLbl.setPreferredSize(new Dimension(140, 16));
     row2Panel.add(statusLbl);
 
     routeStateCB.setToolTipText("The Accessory protocol");
@@ -414,7 +422,7 @@ public class DrivewaySettingsPanel extends JPanel {
     nameLbl.setHorizontalAlignment(SwingConstants.TRAILING);
     nameLbl.setLabelFor(lockedCB);
     nameLbl.setText("Route Locked:");
-    nameLbl.setPreferredSize(new Dimension(120, 16));
+    nameLbl.setPreferredSize(new Dimension(140, 16));
     row3Panel.add(nameLbl);
     row3Panel.add(lockedCB);
 
@@ -425,6 +433,38 @@ public class DrivewaySettingsPanel extends JPanel {
     FlowLayout flowLayout5 = new FlowLayout(FlowLayout.LEFT);
     flowLayout5.setAlignOnBaseline(true);
     row4Panel.setLayout(flowLayout5);
+
+    allowNonCommutersLbl.setHorizontalAlignment(SwingConstants.TRAILING);
+    allowNonCommutersLbl.setLabelFor(allowNonCommutersCB);
+    allowNonCommutersLbl.setText("Allow Non Commuters:");
+    allowNonCommutersLbl.setPreferredSize(new Dimension(140, 16));
+    row4Panel.add(allowNonCommutersLbl);
+
+    allowNonCommutersCB.setSelected(true);
+    allowNonCommutersCB.setToolTipText("Allow Non Commuter Trains Only");
+    allowNonCommutersCB.setHorizontalAlignment(SwingConstants.TRAILING);
+    allowNonCommutersCB.setHorizontalTextPosition(SwingConstants.CENTER);
+    allowNonCommutersCB.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        allowNonCommutersCBActionPerformed(evt);
+      }
+    });
+    row4Panel.add(allowNonCommutersCB);
+
+    allowCommutersLbl.setHorizontalAlignment(SwingConstants.TRAILING);
+    allowCommutersLbl.setText("Allow Commuters:");
+    allowCommutersLbl.setPreferredSize(new Dimension(140, 17));
+    row4Panel.add(allowCommutersLbl);
+
+    allowCommutersCB.setSelected(true);
+    allowCommutersCB.setToolTipText("Allow Commutor Trains Only");
+    allowCommutersCB.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        allowCommutersCBActionPerformed(evt);
+      }
+    });
+    row4Panel.add(allowCommutersCB);
+
     detailPanel.add(row4Panel);
 
     row5Panel.setMinimumSize(new Dimension(380, 30));
@@ -598,6 +638,14 @@ public class DrivewaySettingsPanel extends JPanel {
     selectedRoute.setDepartureSignalValue(signalValue.getSignalValue());
   }//GEN-LAST:event_departureSignalValueCBActionPerformed
 
+  private void allowNonCommutersCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_allowNonCommutersCBActionPerformed
+    selectedRoute.setAllowNonCommuterOnly(allowNonCommutersCB.isSelected());
+  }//GEN-LAST:event_allowNonCommutersCBActionPerformed
+
+  private void allowCommutersCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_allowCommutersCBActionPerformed
+    selectedRoute.setAllowCommuterOnly(allowCommutersCB.isSelected());
+  }//GEN-LAST:event_allowCommutersCBActionPerformed
+
   private void alignDrivewayCommandsTable() {
     DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
     centerRenderer.setHorizontalAlignment(JLabel.CENTER);
@@ -672,6 +720,7 @@ public class DrivewaySettingsPanel extends JPanel {
   }
 
   class RouteBeanListModel extends AbstractListModel<RouteBean> {
+
     private final List<RouteBean> all;
 
     public RouteBeanListModel() {
@@ -828,6 +877,10 @@ public class DrivewaySettingsPanel extends JPanel {
   }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
+  JCheckBox allowCommutersCB;
+  JLabel allowCommutersLbl;
+  JCheckBox allowNonCommutersCB;
+  JLabel allowNonCommutersLbl;
   JPanel bottomPanel;
   JPanel buttonPanel;
   JPanel commandPanel;

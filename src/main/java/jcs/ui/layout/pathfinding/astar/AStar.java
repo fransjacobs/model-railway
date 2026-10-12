@@ -36,26 +36,26 @@ import org.tinylog.Logger;
  *
  */
 public class AStar {
-
+  
   protected final Graph graph;
   protected final Map<String, RouteBean> routes;
-
+  
   public AStar() {
     this.routes = new HashMap<>();
     this.graph = new Graph();
   }
-
+  
   @SuppressWarnings("unused")
   Graph getGraph() {
     return graph;
   }
-
+  
   List<List<Node>> getAllBlockToBlockNodes() {
     List<List<Node>> fromToList = new LinkedList<>();
-
+    
     List<Node> fromNodes = graph.getBlockNodes();
     List<Node> toNodes = graph.getBlockNodes();
-
+    
     for (Node from : fromNodes) {
       boolean fromBlock = from.isBlock();
       String fromId = from.getId();
@@ -63,11 +63,11 @@ public class AStar {
         for (Node to : toNodes) {
           if (to.isBlock()) {
             String toId = to.getId();
-
+            
             if (!fromId.equals(toId) && !from.getTile().equals(to.getTile())) {
               List<Node> fromTo = new ArrayList<>();
               fromTo.add(from);
-
+              
               fromTo.add(to);
               fromToList.add(fromTo);
             }
@@ -77,7 +77,7 @@ public class AStar {
     }
     return fromToList;
   }
-
+  
   String pathToString(List<Node> path) {
     if (path.isEmpty()) {
       return "";
@@ -95,7 +95,7 @@ public class AStar {
       sb.append(path.get(last).getSuffix());
     }
     sb.append("]: ");
-
+    
     for (int i = 0; i < path.size(); i++) {
       Node n = path.get(i);
       sb.append(n.getId());
@@ -116,21 +116,24 @@ public class AStar {
     }
     return sb.toString();
   }
-
+  
   protected RouteBean createRouteBeanFromNodePath(List<Node> path) {
     Node first = path.get(0);
     Node last = path.get(path.size() - 1);
-
+    
     String fromId = first.getId();
     String fromSuffix = first.getSuffix();
-
+    
     String toId = last.getId();
     String toSuffix = last.getSuffix();
-
+    
     String routeId = "[" + fromId + fromSuffix + "]->[" + toId + toSuffix + "]";
     RouteBean route = new RouteBean(routeId, fromId, fromSuffix, toId, toSuffix);
+    route.setAllowCommuterOnly(true);
+    route.setAllowNonCommuterOnly(true);
+    
     Logger.trace("From {} to: {} route id {}; {}", fromId, toId, routeId, route);
-
+    
     List<RouteElementBean> rel = new LinkedList<>();
 
     //Start with the first element"
@@ -139,24 +142,24 @@ public class AStar {
     for (Node n : path) {
       String nodeId = n.getId() + (n.getSuffix() != null ? n.getSuffix() : "");
       RouteElementBean re = new RouteElementBean(routeId, nodeId, n.getTile().getId(), n.getAccessoryState(), elementOrder);
-
+      
       re.setIncomingOrientation(n.getIncomingSide());
       elementOrder++;
       rel.add(re);
     }
-
+    
     route.setRouteElements(rel);
-
+    
     return route;
   }
-
+  
   public void persistRoutes() {
     for (RouteBean route : routes.values()) {
       PersistenceFactory.getService().persist(route);
     }
-
+    
     List<Node> blockNodes = graph.getBlockNodes();
-
+    
     for (Node block : blockNodes) {
       BlockBean bb = block.getTile().getBlockBean();
       if (bb == null) {
@@ -172,25 +175,25 @@ public class AStar {
       PersistenceFactory.getService().persist(bb);
     }
   }
-
+  
   RouteBean getRoute(String id) {
     return this.routes.get(id);
   }
-
+  
   public Map<String, RouteBean> getRoutes() {
     return this.routes;
   }
-
+  
   List<Node> findPath(String fromNodeId, String fromSuffix, String toNodeId, String toSuffix) {
     Node from = graph.getNode(fromNodeId);
     Node to = graph.getNode(toNodeId);
     return findPath(from, fromSuffix, to, toSuffix);
   }
-
+  
   List<Node> findPath(Node from, String fromSuffix, Node to, String toSuffix) {
     return graph.findPath(from, fromSuffix, to, toSuffix);
   }
-
+  
   public List<RouteBean> routeAll() {
     routes.clear();
     List<List<Node>> blockToBlockList = getAllBlockToBlockNodes();
@@ -202,19 +205,19 @@ public class AStar {
       Node to = fromTo.get(1);
       Set<Edge> fromEdges = from.getEdges();
       Set<Edge> toEdges = from.getEdges();
-
+      
       for (Edge fromEdge : fromEdges) {
         if (fromEdge.getFrom().isBlock()) {
           String fromSuffix = fromEdge.getFromSuffix();
           for (Edge toEdge : toEdges) {
             if (toEdge.getFrom().isBlock()) {
               String toSuffix = toEdge.getFromSuffix();
-
+              
               String fid = from.getId() + fromSuffix;
               String tid = to.getId() + toSuffix;
-
+              
               List<Node> path = findPath(from, fromSuffix, to, toSuffix);
-
+              
               if (path.isEmpty()) {
                 Logger.debug("No Path from " + fid + " to " + tid);
               } else {
@@ -226,11 +229,11 @@ public class AStar {
         }
       }
     }
-
+    
     Logger.trace("Found " + routes.size() + " routes");
     return new ArrayList<>(routes.values());
   }
-
+  
   public Graph buildGraph(List<Tile> tiles) {
     graph.clear();
     //Every Tile becomes atlease 1 node
@@ -242,7 +245,7 @@ public class AStar {
         graph.addNode(new Node(tile));
       }
     }
-
+    
     Logger.trace("Graph has " + graph.size() + " nodes...");
 
     //Create the links or connection between the Nodes
@@ -260,7 +263,7 @@ public class AStar {
       } else {
         neighborPoints = node.getTile().getNeighborPoints().values();
       }
-
+      
       Logger.trace("Node: {} has {} neighbor points. {}{}{}{} id: {} ", node.getId(), neighborPoints.size(), (node.isBlock() ? "[Block]" : ""), (node.isJunction() ? "[Junction]" : ""), (node.isCross() ? "[Cross]" : ""), (node.isCrossing() ? "[Crossing]" : ""), node.getId());
       for (Point p : neighborPoints) {
         //Logger.trace("Node {} check NeighborPoint: ({},{})", node.getId(), p.x, p.y);
@@ -302,7 +305,7 @@ public class AStar {
     }
     return graph;
   }
-
+  
   List<Node> getNodes() {
     return graph.getNodes();
   }
