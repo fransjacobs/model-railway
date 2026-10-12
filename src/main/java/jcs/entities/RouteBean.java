@@ -196,7 +196,7 @@ public class RouteBean implements Serializable {
     this.departureSignalValue = departureSignalValue;
   }
 
-  @Column(name = "allow_non_commuter_only", nullable = false, columnDefinition = "allow_commuter_only bool default '0'")
+  @Column(name = "allow_non_commuter_only", nullable = false, columnDefinition = "allow_non_commuter_only bool default '0'")
   public boolean isAllowNonCommuterOnly() {
     return allowNonCommuterOnly;
   }

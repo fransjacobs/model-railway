@@ -203,7 +203,7 @@ public class BlockDialog extends javax.swing.JDialog {
       blockIdTF.setText(block.getId());
       blockNameTF.setText(bb.getDescription());
 
-      Integer blockLenght = block.getBlockBean().getBlockLenght();
+      Integer blockLenght = block.getBlockBean().getBlockLength();
       if (blockLenght != null) {
         blockLenghtSpinner.setValue(blockLenght);
       } else {
@@ -565,7 +565,7 @@ public class BlockDialog extends javax.swing.JDialog {
   }//GEN-LAST:event_minSignalCBActionPerformed
 
   private void blockLenghtSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_blockLenghtSpinnerStateChanged
-    this.block.getBlockBean().setBlockLenght((Integer) blockLenghtSpinner.getValue());
+    this.block.getBlockBean().setBlockLength((Integer) blockLenghtSpinner.getValue());
   }//GEN-LAST:event_blockLenghtSpinnerStateChanged
 
   // Variables declaration - do not modify//GEN-BEGIN:variables

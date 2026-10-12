@@ -218,7 +218,7 @@ public class LocomotiveSettingsPanel extends JPanel implements PropertyChangeLis
         this.speed4Spinner.setValue(0);
       }
 
-      Integer trainLenght = selectedLocomotive.getTrainLenght();
+      Integer trainLenght = selectedLocomotive.getTrainLength();
 
       if (trainLenght != null) {
         this.trainLenghtSpinner.setValue(trainLenght);
@@ -1040,7 +1040,7 @@ public class LocomotiveSettingsPanel extends JPanel implements PropertyChangeLis
 
   private void trainLenghtSpinnerStateChanged(ChangeEvent evt) {//GEN-FIRST:event_trainLenghtSpinnerStateChanged
     Integer trainLenght = (Integer) trainLenghtSpinner.getValue();
-    selectedLocomotive.setTrainLenght(trainLenght);
+    selectedLocomotive.setTrainLength(trainLenght);
   }//GEN-LAST:event_trainLenghtSpinnerStateChanged
 
   private LocomotiveBean crudFunctionBeans(LocomotiveBean locomotiveBean) {

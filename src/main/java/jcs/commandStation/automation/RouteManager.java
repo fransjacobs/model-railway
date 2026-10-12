@@ -130,22 +130,21 @@ class RouteManager {
 
   private List<RouteBean> getUsableRoutes(List<RouteBean> routes, boolean commuter) {
     List<RouteBean> checkedRoutes = new ArrayList<>();
+    LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
+    int trainLenght;
+    if (locomotive.getTrainLength() != null) {
+      trainLenght = locomotive.getTrainLength();
+    } else {
+      trainLenght = 0;
+    }
+
     for (RouteBean possibleRoute : routes) {
-      String departureTileId = possibleRoute.getFromTileId();
       String destinationTileId = possibleRoute.getToTileId();
 
-      BlockBean departureBlock = PersistenceFactory.getService().getBlockByTileId(departureTileId);
-      LocomotiveBean locomotive = PersistenceFactory.getService().getLocomotive(departureBlock.getLocomotiveId());
-      int trainLenght;
-      if (locomotive.getTrainLenght() != null) {
-        trainLenght = locomotive.getTrainLenght();
-      } else {
-        trainLenght = 0;
-      }
       BlockBean destinationBlock = PersistenceFactory.getService().getBlockByTileId(destinationTileId);
       int blockLenght;
-      if (destinationBlock.getBlockLenght() != null) {
-        blockLenght = destinationBlock.getBlockLenght();
+      if (destinationBlock.getBlockLength() != null) {
+        blockLenght = destinationBlock.getBlockLength();
       } else {
         blockLenght = 0;
       }
@@ -155,7 +154,7 @@ class RouteManager {
       boolean allowedBlock = isAllowed(destinationBlock.isAllowCommuterOnly(), destinationBlock.isAllowNonCommuterOnly(), commuter);
       boolean allowedRoute = isAllowed(possibleRoute.isAllowCommuterOnly(), possibleRoute.isAllowNonCommuterOnly(), commuter);
 
-      Logger.tag(TAG).debug("Destination {} Commuter: {} Permission- Block: {} Route: {}  + sensor: {} - sensor: {} length: {} TrainLenght {}",
+      Logger.tag(TAG).debug("Destination {} Commuter: {} Permission- Block: {} Route: {}  + sensor: {} - sensor: {} length: {} TrainLength {}",
               destinationBlock.getId(),
               commuter,
               allowedBlock,
@@ -167,7 +166,7 @@ class RouteManager {
 
       boolean trainFitInBlock;
       if (trainLenght > 0 && blockLenght > 0) {
-        trainFitInBlock = blockLenght <= trainLenght;
+        trainFitInBlock = trainLenght <= blockLenght;
       } else {
         trainFitInBlock = true;
       }
@@ -287,11 +286,10 @@ class RouteManager {
   }
 
   private boolean isNextRouteAvailable(RouteBean route, boolean commuter, int trainLenght) {
-
     BlockBean destination = PersistenceFactory.getService().getBlockByTileId(route.getToTileId());
     int blockLenght;
-    if (destination.getBlockLenght() != null) {
-      blockLenght = destination.getBlockLenght();
+    if (destination.getBlockLength() != null) {
+      blockLenght = destination.getBlockLength();
     } else {
       blockLenght = 0;
     }
@@ -303,7 +301,7 @@ class RouteManager {
 
     boolean trainFitInBlock;
     if (trainLenght > 0 && blockLenght > 0) {
-      trainFitInBlock = blockLenght <= trainLenght;
+      trainFitInBlock = trainLenght <= blockLenght;
     } else {
       trainFitInBlock = true;
     }
@@ -341,8 +339,8 @@ class RouteManager {
     LocomotiveBean.Direction nextLogicalDirection = locomotive.getDirection();
     boolean commuter = locomotive.isCommuter();
     int trainLenght;
-    if (locomotive.getTrainLenght() != null) {
-      trainLenght = locomotive.getTrainLenght();
+    if (locomotive.getTrainLength() != null) {
+      trainLenght = locomotive.getTrainLength();
     } else {
       trainLenght = 0;
     }
@@ -357,7 +355,6 @@ class RouteManager {
     Logger.tag(TAG).debug("Dispatcher {} is entering block {}. Direction {}. DepartureSuffix {} searching next route...", dispatcher.getName(), departureBlock.getId(), nextLogicalDirection.getDirection(), departureSuffix);
 
     List<RouteBean> routes = PersistenceFactory.getService().getRoutes(departureBlock.getId(), departureSuffix);
-
     List<RouteBean> candidates = new ArrayList<>();
 
     for (RouteBean nextRoute : routes) {
@@ -391,10 +388,12 @@ class RouteManager {
       return false;
     }
 
-    boolean commuter = dispatcher.getLocomotiveBean().isCommuter();
+    LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
+
+    boolean commuter = locomotive.isCommuter();
     int trainLenght;
-    if (dispatcher.getLocomotiveBean() != null) {
-      trainLenght = dispatcher.getLocomotiveBean().getTrainLenght();
+    if (locomotive.getTrainLength() != null) {
+      trainLenght = locomotive.getTrainLength();
     } else {
       trainLenght = 0;
     }

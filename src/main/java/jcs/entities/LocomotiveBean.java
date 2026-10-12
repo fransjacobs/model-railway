@@ -63,9 +63,8 @@ public class LocomotiveBean implements Serializable {
   private Integer speedTwo;
   private Integer speedThree;
   private Integer speedFour;
-  
-  private Integer trainLenght;
-  
+
+  private Integer trainLength;
 
   private ImageIcon locIcon;
   private CommandStationBean commandStationBean;
@@ -375,19 +374,14 @@ public class LocomotiveBean implements Serializable {
   }
 
   @Column(name = "train_length")
-  public Integer getTrainLenght() {
-    return trainLenght;
+  public Integer getTrainLength() {
+    return trainLength;
   }
 
-  public void setTrainLenght(Integer trainLenght) {
-    this.trainLenght = trainLenght;
+  public void setTrainLength(Integer trainLength) {
+    this.trainLength = trainLength;
   }
 
-  
-  
-  
-  
-  
   @Transient
   public CommandStationBean getCommandStationBean() {
     return commandStationBean;
