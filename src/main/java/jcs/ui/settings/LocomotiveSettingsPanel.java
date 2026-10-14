@@ -729,7 +729,7 @@ public class LocomotiveSettingsPanel extends JPanel implements PropertyChangeLis
 
     trainLenghthLbl.setHorizontalAlignment(SwingConstants.TRAILING);
     trainLenghthLbl.setLabelFor(trainLenghtSpinner);
-    trainLenghthLbl.setText("Train Lenght:");
+    trainLenghthLbl.setText("Train Length:");
     trainLenghthLbl.setPreferredSize(new Dimension(100, 17));
     row7Panel.add(trainLenghthLbl);
 

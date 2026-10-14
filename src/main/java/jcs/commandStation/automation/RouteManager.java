@@ -109,6 +109,7 @@ class RouteManager {
     }
 
     if (checkedRoutes.isEmpty()) {
+      Logger.tag(TAG).debug("Dispatcher {} could not find a route", dispatcher.getName());
       return false;
     }
 
@@ -149,12 +150,23 @@ class RouteManager {
         blockLenght = 0;
       }
 
-      boolean plusInactive = !destinationBlock.getPlusSensorBean().isActive();
-      boolean minInactive = !destinationBlock.getMinSensorBean().isActive();
+      boolean plusInactive = !dispatcher.getSensorMonitor().isSensorActive(destinationBlock.getPlusSensorId());
+      boolean minInactive = !dispatcher.getSensorMonitor().isSensorActive(destinationBlock.getMinSensorId());
+
+      Logger.trace("Block {} plus sensor {} bean={} live={}, min sensor {} bean={} live={}",
+              destinationBlock.getId(),
+              destinationBlock.getPlusSensorId(),
+              destinationBlock.getPlusSensorBean().isActive(),
+              dispatcher.getSensorMonitor().isSensorActive(destinationBlock.getPlusSensorId()),
+              destinationBlock.getMinSensorId(),
+              destinationBlock.getMinSensorBean().isActive(),
+              dispatcher.getSensorMonitor().isSensorActive(destinationBlock.getMinSensorId())
+      );
+
       boolean allowedBlock = isAllowed(destinationBlock.isAllowCommuterOnly(), destinationBlock.isAllowNonCommuterOnly(), commuter);
       boolean allowedRoute = isAllowed(possibleRoute.isAllowCommuterOnly(), possibleRoute.isAllowNonCommuterOnly(), commuter);
 
-      Logger.tag(TAG).debug("Destination {} Commuter: {} Permission- Block: {} Route: {}  + sensor: {} - sensor: {} length: {} TrainLength {}",
+      Logger.tag(TAG).trace("Destination {} Commuter: {} Permission- Block: {} Route: {}  + sensor: {} - sensor: {} length: {} TrainLength {}",
               destinationBlock.getId(),
               commuter,
               allowedBlock,
@@ -173,6 +185,8 @@ class RouteManager {
 
       if (plusInactive && minInactive && allowedBlock && allowedRoute && trainFitInBlock && turnoutsNotLocked(possibleRoute)) {
         checkedRoutes.add(possibleRoute);
+
+        Logger.tag(TAG).debug("Dispatcher {} Route {} added as candidate.", this.dispatcher.getName(), possibleRoute.getId());
       }
     }
 
@@ -285,6 +299,10 @@ class RouteManager {
     return ast;
   }
 
+  private boolean isSensorFree(Integer sensorId) {
+    return sensorId == null || !dispatcher.getSensorMonitor().isSensorActive(sensorId);
+  }
+
   private boolean isNextRouteAvailable(RouteBean route, boolean commuter, int trainLenght) {
     BlockBean destination = PersistenceFactory.getService().getBlockByTileId(route.getToTileId());
     int blockLenght;
@@ -294,8 +312,9 @@ class RouteManager {
       blockLenght = 0;
     }
 
-    boolean plusFree = !destination.getPlusSensorBean().isActive();
-    boolean minFree = !destination.getMinSensorBean().isActive();
+    boolean plusFree = isSensorFree(destination.getPlusSensorId());
+    boolean minFree = isSensorFree(destination.getMinSensorId());
+
     boolean allowedBlock = isAllowed(destination.isAllowCommuterOnly(), destination.isAllowNonCommuterOnly(), commuter);
     boolean allowedRoute = isAllowed(route.isAllowCommuterOnly(), route.isAllowNonCommuterOnly(), commuter);
 

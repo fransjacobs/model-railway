@@ -126,7 +126,7 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
       //Try to reserve the next route
       int permits = RailController.avialablePermits();
       Logger.trace("Obtaining a lock. There are currently {} available permits...", permits);
-      if (permits > 0) {
+      //if (permits > 0) {
         if (RailController.tryAquireLock()) {
           try {
             Logger.trace("##### Locked N ####");
@@ -141,10 +141,10 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
           nextRouteAvaliable = false;
           nextRouteFound = false;
         }
-      } else {
-        nextRouteFound = false;
-        Logger.tag(TAG).trace("Dispatcher {} No semaphore permits available!", dispatcher.getName());
-      }
+      //} else {
+      //  nextRouteFound = false;
+      //  Logger.tag(TAG).trace("Dispatcher {} No semaphore permits available!", dispatcher.getName());
+      //}
 
       boolean automodeInActive = !dispatcher.getRailController().isAutoModeActive();
 

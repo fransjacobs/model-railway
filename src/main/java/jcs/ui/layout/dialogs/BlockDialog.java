@@ -394,7 +394,7 @@ public class BlockDialog extends javax.swing.JDialog {
 
     blockLengthLbl.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
     blockLengthLbl.setLabelFor(blockLenghtSpinner);
-    blockLengthLbl.setText("Block Lenght:");
+    blockLengthLbl.setText("Block Length:");
     blockLengthLbl.setPreferredSize(new java.awt.Dimension(90, 17));
     autoLinkPanel.add(blockLengthLbl);
 
