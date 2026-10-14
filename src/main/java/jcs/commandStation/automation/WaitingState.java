@@ -15,10 +15,10 @@
  */
 package jcs.commandStation.automation;
 
-import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import static jcs.commandStation.automation.AbstractState.State.WAIT;
 import static jcs.commandStation.automation.RailController.TAG;
@@ -29,7 +29,8 @@ import org.tinylog.Logger;
 /**
  * The Waiting State is used when a Train is in a block and must wait, or after a route is searched and nothing is found.
  */
-class WaitingState extends AbstractState {
+class WaitingState
+        extends AbstractState {
 
   private ScheduledExecutorService scheduler;
   private ScheduledFuture<?> countdownTask;
@@ -77,24 +78,24 @@ class WaitingState extends AbstractState {
           // Automode disabled - cancel waiting
           Logger.tag(TAG).debug("Automode is disabled for " + dispatcher.getName() + " Exit " + dispatcher.getStateName());
           cancelled = true;
-          stopScheduler();
-
           dispatcher.fireStateListeners(getName(), getName(), " (-)");
 
+          stopScheduler();
+          dispatcher.wakeup();
           return;
         }
 
-        dispatcher.fireStateListeners(getName(), getName(), " (" + remainingTime + ")");
+        dispatcher.fireStateListeners(getName(), getName(), " (" + Math.max(remainingTime, 0) + ")");
         //Logger.trace("Remaining time for " + dispatcher.getName() + " " + remainingTime + " s...");
 
         remainingTime--;
-        if (remainingTime < 0) {
+        if (remainingTime <= 0) {
           waitCompleted = true;
-          stopScheduler();
           Logger.tag(TAG).trace(dispatcher.getName() + " waittime of " + waitTime + " s " + (waitCompleted ? "completed" : "waiting") + "...");
+          stopScheduler();
           dispatcher.wakeup();
         }
-      }, 0, 1, TimeUnit.SECONDS); // Initial delay 0, period 1 second
+      }, 1, 1, TimeUnit.SECONDS); // Initial delay 0, period 1 second
 
     } else {
       waitCompleted = true;
@@ -129,61 +130,48 @@ class WaitingState extends AbstractState {
   }
 
   private void stopScheduler() {
-    if (countdownTask != null && !countdownTask.isCancelled()) {
-      countdownTask.cancel(false);
+    ScheduledFuture<?> task = countdownTask;
+    if (task != null && !task.isCancelled()) {
+      task.cancel(false);
     }
-    if (scheduler != null && !scheduler.isShutdown()) {
-      scheduler.shutdown();
-      try {
-        if (!scheduler.awaitTermination(1, TimeUnit.SECONDS)) {
-          scheduler.shutdownNow();
-        }
-      } catch (InterruptedException e) {
-        scheduler.shutdownNow();
-        Thread.currentThread().interrupt();
-      }
+
+    ScheduledExecutorService executor = scheduler;
+    if (executor != null && !executor.isShutdown()) {
+      executor.shutdown();
     }
   }
 
   private long calculateWaitTime(BlockBean blockBean) {
 
-    int minWait = blockBean.getMinWaitTime();
-    int maxWait;
+    Integer configuredMin = blockBean.getMinWaitTime();
+    Integer configuredMax = blockBean.getMaxWaitTime();
 
-    if (blockBean.getMaxWaitTime() != null) {
-      maxWait = blockBean.getMaxWaitTime();
-    } else {
-      maxWait = Integer.getInteger("default.max.waittime", 20);
-    }
+    int defaultMax = Integer.getInteger("default.max.waittime", 20);
+
+    int minWait = configuredMin != null ? configuredMin : 0;
+    int maxWait = configuredMax != null ? configuredMax : defaultMax;
 
     long waitTime;
 
     if (blockBean.isRandomWait()) {
-      Random random = new Random();
-      // Seed a bit....
-      for (int i = 0; i < 10; i++) {
-        random.ints(minWait, maxWait).findFirst();
-      }
-      waitTime = random.ints(minWait, maxWait).findFirst().getAsInt();
-    } else {
-      if (blockBean.getMaxWaitTime() != null && blockBean.getMinWaitTime() == null) {
-        waitTime = blockBean.getMaxWaitTime();
+      if (maxWait > minWait) {
+        waitTime = ThreadLocalRandom.current().nextInt(minWait, maxWait + 1);
       } else {
-        if (blockBean.getMinWaitTime() != null) {
-          waitTime = minWait;
-        } else {
-          waitTime = maxWait;
-        }
+        waitTime = minWait;
       }
+
+    } else if (configuredMin != null) {
+      waitTime = configuredMin;
+
+    } else if (configuredMax != null) {
+      waitTime = configuredMax;
+
+    } else {
+      waitTime = defaultMax;
     }
 
-    //In case the train had to stop because the next route could not yet be found wait shorter
-    //then the block waittime
-    boolean alwayStop = blockBean.isAlwaysStop();
-    if (!alwayStop) {
-      //waitTime = Integer.getInteger("default.no.stop.waittime", 1);
-      //Use a shorter time...
-      waitTime = waitTime / 2;
+    if (!blockBean.isAlwaysStop()) {
+      waitTime /= 2;
     }
 
     return waitTime;

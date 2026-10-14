@@ -109,6 +109,7 @@ class RouteManager {
     }
 
     if (checkedRoutes.isEmpty()) {
+      Logger.tag(TAG).debug("Dispatcher {} could not find a route", dispatcher.getName());
       return false;
     }
 
@@ -130,24 +131,62 @@ class RouteManager {
 
   private List<RouteBean> getUsableRoutes(List<RouteBean> routes, boolean commuter) {
     List<RouteBean> checkedRoutes = new ArrayList<>();
+    LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
+    int trainLenght;
+    if (locomotive.getTrainLength() != null) {
+      trainLenght = locomotive.getTrainLength();
+    } else {
+      trainLenght = 0;
+    }
+
     for (RouteBean possibleRoute : routes) {
       String destinationTileId = possibleRoute.getToTileId();
 
       BlockBean destinationBlock = PersistenceFactory.getService().getBlockByTileId(destinationTileId);
+      int blockLenght;
+      if (destinationBlock.getBlockLength() != null) {
+        blockLenght = destinationBlock.getBlockLength();
+      } else {
+        blockLenght = 0;
+      }
 
-      boolean plusInactive = !destinationBlock.getPlusSensorBean().isActive();
-      boolean minInactive = !destinationBlock.getMinSensorBean().isActive();
-      boolean allowed = isAllowed(destinationBlock.isAllowCommuterOnly(), destinationBlock.isAllowNonCommuterOnly(), commuter);
+      boolean plusInactive = !dispatcher.getSensorMonitor().isSensorActive(destinationBlock.getPlusSensorId());
+      boolean minInactive = !dispatcher.getSensorMonitor().isSensorActive(destinationBlock.getMinSensorId());
 
-      Logger.tag(TAG).debug("Destination {} Train type commuter: {} Permission {} sensor: {} - sensor: {}",
+      Logger.trace("Block {} plus sensor {} bean={} live={}, min sensor {} bean={} live={}",
+              destinationBlock.getId(),
+              destinationBlock.getPlusSensorId(),
+              destinationBlock.getPlusSensorBean().isActive(),
+              dispatcher.getSensorMonitor().isSensorActive(destinationBlock.getPlusSensorId()),
+              destinationBlock.getMinSensorId(),
+              destinationBlock.getMinSensorBean().isActive(),
+              dispatcher.getSensorMonitor().isSensorActive(destinationBlock.getMinSensorId())
+      );
+
+      boolean allowedBlock = isAllowed(destinationBlock.isAllowCommuterOnly(), destinationBlock.isAllowNonCommuterOnly(), commuter);
+      boolean allowedRoute = isAllowed(possibleRoute.isAllowCommuterOnly(), possibleRoute.isAllowNonCommuterOnly(), commuter);
+
+      Logger.tag(TAG).trace("Destination {} Commuter: {} Permission- Block: {} Route: {}  + sensor: {} - sensor: {} length: {} TrainLength {}",
               destinationBlock.getId(),
               commuter,
-              allowed,
+              allowedBlock,
+              allowedRoute,
               plusInactive ? "Free" : "Occupied",
-              minInactive ? "Free" : "Occupied");
+              minInactive ? "Free" : "Occupied",
+              blockLenght,
+              trainLenght);
 
-      if (plusInactive && minInactive && allowed && turnoutsNotLocked(possibleRoute)) {
+      boolean trainFitInBlock;
+      if (trainLenght > 0 && blockLenght > 0) {
+        trainFitInBlock = trainLenght <= blockLenght;
+      } else {
+        trainFitInBlock = true;
+      }
+
+      if (plusInactive && minInactive && allowedBlock && allowedRoute && trainFitInBlock && turnoutsNotLocked(possibleRoute)) {
         checkedRoutes.add(possibleRoute);
+
+        Logger.tag(TAG).debug("Dispatcher {} Route {} added as candidate.", this.dispatcher.getName(), possibleRoute.getId());
       }
     }
 
@@ -260,49 +299,33 @@ class RouteManager {
     return ast;
   }
 
-  boolean validateAndReserveNextRoute(RouteBean candidateRoute) {
-    if (candidateRoute == null) {
-      return false;
-    }
-
-    //Refresh the available routes while holding the RailController semaphore.
-    //This checks route.locked and destination block FREE.
-    List<RouteBean> availableRoutes = PersistenceFactory.getService().getRoutes(candidateRoute.getFromTileId(), candidateRoute.getFromSuffix());
-    RouteBean validatedRoute = null;
-
-    for (RouteBean availableRoute : availableRoutes) {
-      if (candidateRoute.getId().equals(availableRoute.getId())) {
-        validatedRoute = availableRoute;
-        break;
-      }
-    }
-
-    if (validatedRoute == null) {
-      Logger.tag(TAG).debug("Dispatcher {} candidate next route {} is no longer available", dispatcher.getName(), candidateRoute.getId());
-      return false;
-    }
-
-    boolean commuter = dispatcher.getLocomotiveBean().isCommuter();
-
-    if (!isNextRouteAvailable(validatedRoute, commuter)) {
-      Logger.tag(TAG).debug("Dispatcher {} candidate next route {} failed final validation", dispatcher.getName(), validatedRoute.getId());
-      return false;
-    }
-
-    //Only now does the candidate become the real next route.
-    dispatcher.setNextRouteBean(validatedRoute);
-    return reserveNextRoute();
+  private boolean isSensorFree(Integer sensorId) {
+    return sensorId == null || !dispatcher.getSensorMonitor().isSensorActive(sensorId);
   }
 
-  private boolean isNextRouteAvailable(RouteBean route, boolean commuter) {
-
+  private boolean isNextRouteAvailable(RouteBean route, boolean commuter, int trainLenght) {
     BlockBean destination = PersistenceFactory.getService().getBlockByTileId(route.getToTileId());
+    int blockLenght;
+    if (destination.getBlockLength() != null) {
+      blockLenght = destination.getBlockLength();
+    } else {
+      blockLenght = 0;
+    }
 
-    boolean plusFree = !destination.getPlusSensorBean().isActive();
-    boolean minFree = !destination.getMinSensorBean().isActive();
-    boolean allowed = isAllowed(destination.isAllowCommuterOnly(), destination.isAllowNonCommuterOnly(), commuter);
+    boolean plusFree = isSensorFree(destination.getPlusSensorId());
+    boolean minFree = isSensorFree(destination.getMinSensorId());
 
-    return plusFree && minFree && allowed && turnoutsNotLocked(route);
+    boolean allowedBlock = isAllowed(destination.isAllowCommuterOnly(), destination.isAllowNonCommuterOnly(), commuter);
+    boolean allowedRoute = isAllowed(route.isAllowCommuterOnly(), route.isAllowNonCommuterOnly(), commuter);
+
+    boolean trainFitInBlock;
+    if (trainLenght > 0 && blockLenght > 0) {
+      trainFitInBlock = trainLenght <= blockLenght;
+    } else {
+      trainFitInBlock = true;
+    }
+
+    return plusFree && minFree && allowedBlock && allowedRoute && trainFitInBlock && turnoutsNotLocked(route);
   }
 
   RouteBean selectRandomRoute(List<RouteBean> candidates) {
@@ -328,47 +351,18 @@ class RouteManager {
     return nextRoute;
   }
 
-  RouteBean findNextRouteOld() {
-    Logger.trace("Search a free next route for " + dispatcher.getLocomotiveBean().getName() + "...");
-
-    // In this state the we are checking whether there is a valid nextRoute from the destination to the next block.
-    BlockBean departureBlock = dispatcher.getDestinationBlock();
-
-    //Use the current running locomotive direction
-    LocomotiveBean.Direction nextLogicalDirection = dispatcher.getLocomotiveBean().getDirection();
-    boolean commuter = dispatcher.getLocomotiveBean().isCommuter();
-
-    TileBean tileBean = PersistenceFactory.getService().getTileBean(departureBlock.getTileId());
-    TileBean.Orientation blockOrientation = tileBean.getOrientation();
-
-    String departureSuffix = departureBlock.getDepartureSuffix();
-    if (departureSuffix == null) {
-      departureSuffix = Block.getDepartureSuffix(blockOrientation, nextLogicalDirection);
-    }
-
-    Logger.tag(TAG).debug("Dispatcher " + dispatcher.getName() + " is entering block " + departureBlock.getId() + ". Direction " + nextLogicalDirection.getDirection() + ". DepartureSuffix " + departureSuffix + " searching next route...");
-
-    //Search for the possible routes
-    List<RouteBean> routes = PersistenceFactory.getService().getRoutes(departureBlock.getId(), departureSuffix);
-    Logger.trace("There " + (routes.size() == 1 ? "is" : "are") + " " + routes.size() + " possible route(s)...");
-
-    List<RouteBean> candidates = new ArrayList<>();
-    //Found possible routes check on the destination for the sensors and permissions
-    for (RouteBean nextRoute : routes) {
-      if (isNextRouteAvailable(nextRoute, commuter)) {
-        candidates.add(nextRoute);
-      }
-    }
-    return selectRandomRoute(candidates);
-  }
-
   RouteBean findNextRoute() {
-
     Logger.trace("Search a free next route for {}...", dispatcher.getLocomotiveBean().getName());
     BlockBean departureBlock = dispatcher.getDestinationBlock();
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
     LocomotiveBean.Direction nextLogicalDirection = locomotive.getDirection();
     boolean commuter = locomotive.isCommuter();
+    int trainLenght;
+    if (locomotive.getTrainLength() != null) {
+      trainLenght = locomotive.getTrainLength();
+    } else {
+      trainLenght = 0;
+    }
 
     TileBean tileBean = PersistenceFactory.getService().getTileBean(departureBlock.getTileId());
     String departureSuffix = departureBlock.getDepartureSuffix();
@@ -380,16 +374,57 @@ class RouteManager {
     Logger.tag(TAG).debug("Dispatcher {} is entering block {}. Direction {}. DepartureSuffix {} searching next route...", dispatcher.getName(), departureBlock.getId(), nextLogicalDirection.getDirection(), departureSuffix);
 
     List<RouteBean> routes = PersistenceFactory.getService().getRoutes(departureBlock.getId(), departureSuffix);
-
     List<RouteBean> candidates = new ArrayList<>();
 
     for (RouteBean nextRoute : routes) {
-      if (isNextRouteAvailable(nextRoute, commuter)) {
+      if (isNextRouteAvailable(nextRoute, commuter, trainLenght)) {
         candidates.add(nextRoute);
       }
     }
 
     return selectRandomRoute(candidates);
+  }
+
+  boolean validateAndReserveNextRoute(RouteBean candidateRoute) {
+    if (candidateRoute == null) {
+      return false;
+    }
+
+    //Refresh the available routes while holding the RailController semaphore.
+    //This checks route.locked and destination block FREE.
+    List<RouteBean> availableRoutes = PersistenceFactory.getService().getRoutes(candidateRoute.getFromTileId(), candidateRoute.getFromSuffix());
+    RouteBean validatedRoute = null;
+
+    for (RouteBean availableRoute : availableRoutes) {
+      if (candidateRoute.getId().equals(availableRoute.getId())) {
+        validatedRoute = availableRoute;
+        break;
+      }
+    }
+
+    if (validatedRoute == null) {
+      Logger.tag(TAG).debug("Dispatcher {} candidate next route {} is no longer available", dispatcher.getName(), candidateRoute.getId());
+      return false;
+    }
+
+    LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
+
+    boolean commuter = locomotive.isCommuter();
+    int trainLenght;
+    if (locomotive.getTrainLength() != null) {
+      trainLenght = locomotive.getTrainLength();
+    } else {
+      trainLenght = 0;
+    }
+
+    if (!isNextRouteAvailable(validatedRoute, commuter, trainLenght)) {
+      Logger.tag(TAG).debug("Dispatcher {} candidate next route {} failed final validation", dispatcher.getName(), validatedRoute.getId());
+      return false;
+    }
+
+    //Only now does the candidate become the real next route.
+    dispatcher.setNextRouteBean(validatedRoute);
+    return reserveNextRoute();
   }
 
   boolean reserveNextRoute() {
@@ -499,17 +534,17 @@ class RouteManager {
   }
 
   private boolean isAllowed(boolean allowCommuter, boolean allowNonCommuter, boolean commuter) {
-    //both flags are the same → all trains allowed
+    //both flags are the same → all trains allowedBlock
     if (allowCommuter == allowNonCommuter) {
       return true;
     }
 
-    // only non-commuter allowed
+    // only non-commuter allowedBlock
     if (!allowCommuter && allowNonCommuter) {
       return !commuter;
     }
 
-    // only commuter allowed
+    // only commuter allowedBlock
     if (allowCommuter && !allowNonCommuter) {
       return commuter;
     }

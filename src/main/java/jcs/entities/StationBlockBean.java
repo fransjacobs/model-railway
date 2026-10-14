@@ -133,7 +133,7 @@ public class StationBlockBean {
     hash = 59 * hash + Objects.hashCode(this.id);
     hash = 59 * hash + Objects.hashCode(this.stationId);
     hash = 59 * hash + Objects.hashCode(this.blockId);
-    hash = 59 * hash + Objects.hashCode(this.lastUpdated);
+    //hash = 59 * hash + Objects.hashCode(this.lastUpdated);
     return hash;
   }
 

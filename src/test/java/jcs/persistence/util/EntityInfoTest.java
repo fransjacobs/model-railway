@@ -137,10 +137,10 @@ public class EntityInfoTest {
     Object bean = createBean();
     EntityInfo instance = new EntityInfo(bean.getClass());
 
-    String[] cols = new String[]{"speed_2", "speed_3", "speed_1", "dispatcher_direction", "speed_4", "id", "name", "address", "tacho_max", "v_min", "velocity", "locomotive_direction", "commuter", "show", "icon", "imported", "command_station_id", "synchronize", "uid", "decoder_type"};
+    String[] cols = new String[]{"train_length","speed_2", "speed_3", "speed_1", "dispatcher_direction", "speed_4", "id", "name", "address", "tacho_max", "v_min", "velocity", "locomotive_direction", "commuter", "show", "icon", "imported", "command_station_id", "synchronize", "uid", "decoder_type"};
     List<String> expResult = Arrays.asList(cols);
-
     List<String> result = instance.getAllColumnNames();
+    //System.out.println("is:"+result);
     assertEquals(expResult, result);
   }
 
@@ -153,11 +153,12 @@ public class EntityInfoTest {
     Object bean = createBean();
     EntityInfo instance = new EntityInfo(bean.getClass(), true);
 
-    String[] cols = new String[]{"commandStationBean", "functions", "functionCount", "dispatcher_direction", "id", "active", "speed_2", "speed_3", "speed_1", "speed_4", "image", "name", "address", "decoder", "tacho_max", "v_min", "velocity", "locomotive_direction", "commuter", "show", "icon", "imported", "command_station_id", "synchronize", "uid", "richtung", "decoder_type"};
+    String[] cols = new String[]{"commandStationBean", "functions", "train_length", "functionCount", "dispatcher_direction", "id", "active", "speed_2", "speed_3", "speed_1", "speed_4", "image", "name", "address", "decoder", "tacho_max", "v_min", "velocity", "locomotive_direction", "commuter", "show", "icon", "imported", "command_station_id", "synchronize", "uid", "richtung", "decoder_type"};
 
     List<String> expResult = Arrays.asList(cols);
 
     List<String> result = instance.getAllColumnNames();
+    //System.out.println("is:"+result);
     assertEquals(expResult, result);
   }
 

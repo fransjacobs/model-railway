@@ -1140,32 +1140,33 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
       showSensorMonitor();
     }//GEN-LAST:event_showFeedbackMonitorBtnActionPerformed
 
+  private void QuitAppNoDialog() {
+    try {
+      boolean powerOnWhenQuit = Boolean.parseBoolean("keep.power.on.when.quit");
+      if (!powerOnWhenQuit) {
+        JCS.getJcsCommandStation().switchPower(false);
+        //Give the communication time to switchoff
+        JCS.getJcsCommandStation().pause(5);
+      }
+      JCS.getJcsCommandStation().disconnect();
+    } catch (Exception e) {
+      Logger.error("Error closinbg resources! {}", e.getMessage());
+    }
+    setVisible(false);
+    dispose();
+
+    //Force close ports
+    SerialPortUtil.closeAllPorts();
+    Logger.debug("Shutting down");
+    //Force!
+    System.exit(0);
+  }
+
   private boolean QuitApp() {
     int result = JOptionPane.showConfirmDialog(this, "Are you sure you want to exit JCS?", "Exit JCS", JOptionPane.YES_NO_OPTION);
     if (result == JOptionPane.YES_OPTION) {
       setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-      try {
-
-        boolean powerOnWhenQuit = Boolean.parseBoolean("keep.power.on.when.quit");
-        if (!powerOnWhenQuit) {
-          JCS.getJcsCommandStation().switchPower(false);
-          //Give the communication time to switchoff
-          JCS.getJcsCommandStation().pause(5);
-        }
-        JCS.getJcsCommandStation().disconnect();
-
-      } catch (Exception e) {
-        Logger.error("Error closinbg resources! " + e.getMessage());
-      }
-
-      setVisible(false);
-      dispose();
-
-      //Force close ports
-      SerialPortUtil.closeAllPorts();
-      Logger.debug("Shutting down");
-      //Force!
-      System.exit(0);
+      QuitAppNoDialog();
     }
     return false;
   }
@@ -1415,8 +1416,8 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
         Backup.restore(backupFile);
 
         java.awt.EventQueue.invokeLater(() -> {
-          JOptionPane.showMessageDialog(this, "Restored JCS database.\nPlease Restart JCS!", "RESTART JCS!", JOptionPane.WARNING_MESSAGE);
-          QuitApp();
+          JOptionPane.showMessageDialog(this, "Restored JCS database.\nJCS will now shutdown!", "Restart JCS!", JOptionPane.WARNING_MESSAGE);
+          QuitAppNoDialog();
         });
       });
     } else {
@@ -1463,8 +1464,8 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
           Backup.restore(emptyJcsFile);
 
           java.awt.EventQueue.invokeLater(() -> {
-            JOptionPane.showMessageDialog(this, "Cleared JCS database.\nPlease Restart JCS!", "RESTART JCS!", JOptionPane.WARNING_MESSAGE);
-            QuitApp();
+            JOptionPane.showMessageDialog(this, "Cleared JCS database.\nJCS will now shutdown!", "Restart JCS!", JOptionPane.WARNING_MESSAGE);
+            QuitAppNoDialog();
           });
         });
       } catch (IllegalStateException | URISyntaxException e) {

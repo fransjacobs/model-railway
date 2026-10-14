@@ -48,6 +48,9 @@ public class RouteBean implements Serializable {
   private String status;
   private String departureSignalValue;
 
+  private boolean allowCommuterOnly;
+  private boolean allowNonCommuterOnly;
+
   private List<RouteElementBean> routeElements;
 
   public RouteBean() {
@@ -191,6 +194,24 @@ public class RouteBean implements Serializable {
 
   public void setDepartureSignalValue(String departureSignalValue) {
     this.departureSignalValue = departureSignalValue;
+  }
+
+  @Column(name = "allow_non_commuter_only", nullable = false, columnDefinition = "allow_non_commuter_only bool default '0'")
+  public boolean isAllowNonCommuterOnly() {
+    return allowNonCommuterOnly;
+  }
+
+  public void setAllowNonCommuterOnly(boolean allowNonCommuterOnly) {
+    this.allowNonCommuterOnly = allowNonCommuterOnly;
+  }
+
+  @Column(name = "allow_commuter_only", nullable = false, columnDefinition = "allow_commuter_only bool default '0'")
+  public boolean isAllowCommuterOnly() {
+    return allowCommuterOnly;
+  }
+
+  public void setAllowCommuterOnly(boolean allowCommuterOnly) {
+    this.allowCommuterOnly = allowCommuterOnly;
   }
 
   @Transient

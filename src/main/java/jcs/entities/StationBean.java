@@ -86,8 +86,9 @@ public class StationBean {
   @Transient
   public List<StationBlockBean> getBlocks() {
     List<StationBlockBean> stationBlockList = new ArrayList(stationBlockBeans.values());
+    //stationBlockList.sort(Comparator.comparing(StationBlockBean::getLastUpdated)); 
+    stationBlockList.sort(Comparator.comparing(StationBlockBean::getLastUpdated, Comparator.nullsLast(Comparator.naturalOrder())));
 
-    stationBlockList.sort(Comparator.comparing(StationBlockBean::getLastUpdated));
     return stationBlockList;
   }
 

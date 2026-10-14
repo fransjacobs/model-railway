@@ -109,7 +109,6 @@ public class BlockDialog extends javax.swing.JDialog {
 
       // filter the list, remove sensors which are already linked to other blocks.
       Set<Integer> linkedSensorIds = getLinkedSensorIds();
-
       Set<String> linkedSignalIds = getLinkedSignalIds();
 
       for (SensorBean sb : allSensors) {
@@ -131,14 +130,14 @@ public class BlockDialog extends javax.swing.JDialog {
       freeSensors.add(emptyBean);
       freeSignals.add(emptySignal);
 
-      BlockBean bb = this.block.getBlockBean();
+      BlockBean bb = block.getBlockBean();
       if (bb == null) {
-        Logger.tags("bb is null for " + this.block.getId());
+        Logger.tags("bb is null for {}", block.getId());
         bb = new BlockBean();
         bb.setTile(block.getTileBean());
         bb.setTileId(this.block.getId());
         bb.setBlockState(BlockBean.BlockState.FREE);
-        this.block.setBlockBean(bb);
+        block.setBlockBean(bb);
       }
 
       SensorBean plusSb, minSb;
@@ -201,33 +200,40 @@ public class BlockDialog extends javax.swing.JDialog {
       plusSignalCB.setModel(plusSignalComboBoxModel);
       minSignalCB.setModel(minSignalComboBoxModel);
 
-      this.blockIdTF.setText(this.block.getId());
-      this.blockNameTF.setText(bb.getDescription());
-      String desc = this.block.getBlockBean().getDescription();
-      this.saveExitBtn.setEnabled((desc != null && desc.length() > 1));
+      blockIdTF.setText(block.getId());
+      blockNameTF.setText(bb.getDescription());
+
+      Integer blockLenght = block.getBlockBean().getBlockLength();
+      if (blockLenght != null) {
+        blockLenghtSpinner.setValue(blockLenght);
+      } else {
+        blockLenghtSpinner.setValue(0);
+      }
+
+      String desc = block.getBlockBean().getDescription();
+      saveExitBtn.setEnabled((desc != null && desc.length() > 1));
 
       if (plusSb != null) {
-        this.plusSensorComboBoxModel.setSelectedItem(plusSb);
+        plusSensorComboBoxModel.setSelectedItem(plusSb);
       } else {
-        this.plusSensorComboBoxModel.setSelectedItem(emptyBean);
+        plusSensorComboBoxModel.setSelectedItem(emptyBean);
       }
       if (minSb != null) {
-        this.minSensorComboBoxModel.setSelectedItem(minSb);
+        minSensorComboBoxModel.setSelectedItem(minSb);
       } else {
-        this.minSensorComboBoxModel.setSelectedItem(emptyBean);
+        minSensorComboBoxModel.setSelectedItem(emptyBean);
       }
 
       if (plusSig != null) {
-        this.plusSignalComboBoxModel.setSelectedItem(plusSig);
+        plusSignalComboBoxModel.setSelectedItem(plusSig);
       } else {
-        this.plusSignalComboBoxModel.setSelectedItem(emptySignal);
+        plusSignalComboBoxModel.setSelectedItem(emptySignal);
       }
       if (minSig != null) {
-        this.minSignalComboBoxModel.setSelectedItem(minSig);
+        minSignalComboBoxModel.setSelectedItem(minSig);
       } else {
-        this.minSignalComboBoxModel.setSelectedItem(emptySignal);
+        minSignalComboBoxModel.setSelectedItem(emptySignal);
       }
-
     }
   }
 
@@ -238,9 +244,7 @@ public class BlockDialog extends javax.swing.JDialog {
 
     Logger.trace("Neighbor point +: " + pnp + " -: " + mnp);
 
-    //Tile neighborPlus = this.layoutCanvas.findTile(pnp);
     Tile neighborPlus = TileCache.findTile(pnp);
-    //Tile neighborMin = this.layoutCanvas.findTile(mnp);
     Tile neighborMin = TileCache.findTile(mnp);
 
     if (neighborPlus != null && neighborPlus instanceof Sensor) {
@@ -282,6 +286,8 @@ public class BlockDialog extends javax.swing.JDialog {
     autoLinkPanel = new javax.swing.JPanel();
     autoLinkLbl = new javax.swing.JLabel();
     autoLinkButton = new javax.swing.JButton();
+    blockLengthLbl = new javax.swing.JLabel();
+    blockLenghtSpinner = new javax.swing.JSpinner();
     sensorPanel = new javax.swing.JPanel();
     plusSensorLbl = new javax.swing.JLabel();
     plusSensorCB = new javax.swing.JComboBox<>();
@@ -385,6 +391,21 @@ public class BlockDialog extends javax.swing.JDialog {
       }
     });
     autoLinkPanel.add(autoLinkButton);
+
+    blockLengthLbl.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
+    blockLengthLbl.setLabelFor(blockLenghtSpinner);
+    blockLengthLbl.setText("Block Length:");
+    blockLengthLbl.setPreferredSize(new java.awt.Dimension(90, 17));
+    autoLinkPanel.add(blockLengthLbl);
+
+    blockLenghtSpinner.setModel(new javax.swing.SpinnerNumberModel(0, 0, null, 1));
+    blockLenghtSpinner.setPreferredSize(new java.awt.Dimension(75, 23));
+    blockLenghtSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
+      public void stateChanged(javax.swing.event.ChangeEvent evt) {
+        blockLenghtSpinnerStateChanged(evt);
+      }
+    });
+    autoLinkPanel.add(blockLenghtSpinner);
 
     getContentPane().add(autoLinkPanel);
 
@@ -543,6 +564,10 @@ public class BlockDialog extends javax.swing.JDialog {
     this.block.getBlockBean().setMinSignal((AccessoryBean) minSignalCB.getSelectedItem());
   }//GEN-LAST:event_minSignalCBActionPerformed
 
+  private void blockLenghtSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_blockLenghtSpinnerStateChanged
+    this.block.getBlockBean().setBlockLength((Integer) blockLenghtSpinner.getValue());
+  }//GEN-LAST:event_blockLenghtSpinnerStateChanged
+
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JButton autoLinkButton;
   private javax.swing.JLabel autoLinkLbl;
@@ -550,6 +575,8 @@ public class BlockDialog extends javax.swing.JDialog {
   private javax.swing.JLabel blockDescLbl;
   private javax.swing.JLabel blockIdLbl;
   private javax.swing.JTextField blockIdTF;
+  private javax.swing.JSpinner blockLenghtSpinner;
+  private javax.swing.JLabel blockLengthLbl;
   private javax.swing.JTextField blockNameTF;
   private javax.swing.JPanel deviceIdPanel;
   private javax.swing.JLabel headingLbl;

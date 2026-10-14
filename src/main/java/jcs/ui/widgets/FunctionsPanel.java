@@ -178,8 +178,13 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
         btn.setActionCommand("F" + fb.getNumber());
         btn.setEnabled(true);
-
-        boolean isOn = fb.getValue() == 1;
+        
+        boolean isOn;
+        if(fb.getValue() != null) {
+          isOn = fb.getValue() == 1;
+        } else {
+          isOn = false;
+        }  
         if (isOn) {
           btn.doClick();
         }

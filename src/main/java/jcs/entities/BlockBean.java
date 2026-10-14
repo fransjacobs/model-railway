@@ -50,6 +50,7 @@ public class BlockBean implements Comparable<BlockBean> {
   private boolean allowCommuterOnly;
   private boolean allowNonCommuterOnly;
   private boolean allowDirectionChange;
+  private Integer blockLength;
 
   private String logicalDirection;
 
@@ -294,7 +295,7 @@ public class BlockBean implements Comparable<BlockBean> {
     this.alwaysStop = alwaysStop;
   }
 
-  @Column(name = "allow_non_commuter_only", nullable = false, columnDefinition = "allow_commuter_only bool default '0'")
+  @Column(name = "allow_non_commuter_only", nullable = false, columnDefinition = "allow_non_commuter_only bool default '0'")
   public boolean isAllowNonCommuterOnly() {
     return allowNonCommuterOnly;
   }
@@ -328,6 +329,15 @@ public class BlockBean implements Comparable<BlockBean> {
 
   public void setLogicalDirection(String logicalDirection) {
     this.logicalDirection = logicalDirection;
+  }
+
+  @Column(name = "block_length")
+  public Integer getBlockLength() {
+    return blockLength;
+  }
+
+  public void setBlockLength(Integer blockLength) {
+    this.blockLength = blockLength;
   }
 
   public void addPropertyChangeListener(PropertyChangeListener listener) {
