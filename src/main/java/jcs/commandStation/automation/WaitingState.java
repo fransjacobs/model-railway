@@ -95,7 +95,7 @@ class WaitingState
           stopScheduler();
           dispatcher.wakeup();
         }
-      }, 0, 1, TimeUnit.SECONDS); // Initial delay 0, period 1 second
+      }, 1, 1, TimeUnit.SECONDS); // Initial delay 0, period 1 second
 
     } else {
       waitCompleted = true;
@@ -130,21 +130,6 @@ class WaitingState
   }
 
   private void stopScheduler() {
-//    if (countdownTask != null && !countdownTask.isCancelled()) {
-//      countdownTask.cancel(false);
-//    }
-//    if (scheduler != null && !scheduler.isShutdown()) {
-//      scheduler.shutdown();
-//      try {
-//        if (!scheduler.awaitTermination(1, TimeUnit.SECONDS)) {
-//          scheduler.shutdownNow();
-//        }
-//      } catch (InterruptedException e) {
-//        scheduler.shutdownNow();
-//        Thread.currentThread().interrupt();
-//      }
-//    }
-
     ScheduledFuture<?> task = countdownTask;
     if (task != null && !task.isCancelled()) {
       task.cancel(false);
