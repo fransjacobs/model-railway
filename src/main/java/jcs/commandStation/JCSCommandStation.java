@@ -974,7 +974,7 @@ public class JCSCommandStation {
     }
   }
 
-  private void handleSensorEvent(SensorEvent event) {
+  private void handleSensorEvent_old(SensorEvent event) {
     SensorBean sb = event.getSensorBean();
     boolean newValue = event.isActive();
     SensorBean dbsb = null;
@@ -995,9 +995,9 @@ public class JCSCommandStation {
     }
 
     if (dbsb != null) {
-      if (sb.getId() == null) {
-        sb.setId(dbsb.getId());
-      }
+      //if (sb.getId() == null) {
+      sb.setId(dbsb.getId());
+      //}
 
       sb.setName(dbsb.getName());
       //make sure the previous vale is set by setting the current and the new one
@@ -1025,6 +1025,67 @@ public class JCSCommandStation {
       for (AllSensorEventsListener sl : snapshot) {
         if (sl != null) {
           sl.onSensorChange(event);
+        }
+      }
+    }
+  }
+
+  private void handleSensorEvent(SensorEvent event) {
+    SensorBean incoming = event.getSensorBean();
+    boolean newValue = event.isActive();
+
+    SensorBean sensor = null;
+
+    if (incoming.getDeviceId() != null && incoming.getContactId() != null) {
+
+      sensor = PersistenceFactory.getService().getSensor(incoming.getDeviceId(), incoming.getContactId());
+    }
+
+    if (sensor == null && incoming.getId() != null) {
+      sensor = PersistenceFactory.getService().getSensor(incoming.getId());
+    }
+
+    if (sensor == null) {
+      Logger.warn("Could not resolve sensor event: id={}, device={}, contact={}, commandStation={}",
+              incoming.getId(),
+              incoming.getDeviceId(),
+              incoming.getContactId(),
+              incoming.getCommandStationId());
+      return;
+    }
+
+    // Preserve the previous DB state first.
+    sensor.setActive(sensor.isActive());
+
+    // Apply received state.
+    sensor.setActive(newValue);
+
+    sensor.setLastUpdatedMillis(System.currentTimeMillis());
+
+    PersistenceFactory.getService().persist(sensor);
+
+    Integer sensorId = sensor.getId();
+
+    if (sensorListeners.containsKey(sensorId)) {
+      SensorEvent resolvedEvent = new SensorEvent(sensor);
+
+      List<SensorEventListener> snapshot = new ArrayList<>(sensorListeners.get(sensorId));
+
+      for (SensorEventListener listener : snapshot) {
+        if (listener != null) {
+          listener.onSensorChange(resolvedEvent);
+        }
+      }
+    }
+
+    if (!allSensorEventsListeners.isEmpty()) {
+      SensorEvent resolvedEvent = new SensorEvent(sensor);
+
+      List<AllSensorEventsListener> snapshot = new ArrayList<>(allSensorEventsListeners);
+
+      for (AllSensorEventsListener listener : snapshot) {
+        if (listener != null) {
+          listener.onSensorChange(resolvedEvent);
         }
       }
     }
