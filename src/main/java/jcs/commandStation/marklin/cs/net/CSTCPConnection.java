@@ -20,9 +20,10 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.SocketException;
-import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
@@ -52,34 +53,42 @@ class CSTCPConnection implements CSConnection {
   private final boolean debug;
   private final BlockingQueue<CanMessage> eventQueue;
 
-  private CSTCPConnection.PendingRequest pendingRequest;
+  private volatile CSTCPConnection.PendingRequest pendingRequest;
+  private final AtomicBoolean closing = new AtomicBoolean(false);
+  private final AtomicBoolean disconnectionNotified = new AtomicBoolean(false);
 
   CSTCPConnection(InetAddress csAddress) {
     centralStationAddress = csAddress;
     debug = System.getProperty("message.debug", "false").equalsIgnoreCase("true");
     eventQueue = new LinkedBlockingQueue<>();
 
-    disconnectionEventListeners = new ArrayList<>();
+    disconnectionEventListeners = new CopyOnWriteArrayList<>();
     checkConnection();
   }
 
   private void checkConnection() {
+    Socket socket = new Socket();
     try {
-      if (clientSocket == null || !clientSocket.isConnected()) {
-        clientSocket = new Socket(centralStationAddress, CSConnection.CS_RX_PORT);
-        clientSocket.setKeepAlive(true);
-        clientSocket.setTcpNoDelay(true);
-        dos = new DataOutputStream(clientSocket.getOutputStream());
+      int timeout = Math.max(1, Integer.getInteger("marklin.cs.tcp.connect.timeout.ms", 3000));
+      socket.connect(new InetSocketAddress(centralStationAddress, CSConnection.CS_RX_PORT), timeout);
+      socket.setKeepAlive(true);
+      socket.setTcpNoDelay(true);
 
-        messageReceiver = new ClientMessageReceiver(clientSocket);
-        messageReceiver.start();
-      } else {
-        Logger.trace("Already connected to " + centralStationAddress.getHostName());
-      }
+      DataOutputStream output = new DataOutputStream(socket.getOutputStream());
+      ClientMessageReceiver receiver = new ClientMessageReceiver(socket);
+      clientSocket = socket;
+      dos = output;
+      messageReceiver = receiver;
+      receiver.start();
     } catch (IOException ex) {
-      this.clientSocket = null;
-      Logger.error("Can't (re)connect with Central Station " + centralStationAddress.getHostAddress() + ". Cause: " + ex.getMessage());
-      Logger.trace(ex);
+      try {
+        socket.close();
+      } catch (IOException closeEx) {
+        Logger.debug("Error closing failed TCP connection: " + closeEx.getMessage());
+      }
+      clientSocket = null;
+      Logger.error("Can't connect with Central Station " + centralStationAddress.getHostAddress()
+              + ". Cause: " + ex.getMessage());
     }
   }
 
@@ -107,42 +116,38 @@ class CSTCPConnection implements CSConnection {
   public synchronized CanMessage sendCanMessage(CanMessage message) {
     if (message == null) {
       Logger.trace("Message is NULL?");
+      return null;
+    }
+    if (closing.get() || !isConnected() || dos == null) {
+      Logger.warn("Cannot send CAN message: TCP connection is closed");
       return message;
     }
 
+    long timeout = message.expectsLongResponse() ? LONG_TIMEOUT
+            : message.expectsResponse() ? SHORT_TIMEOUT : 0;
+    PendingRequest request = timeout > 0 ? new PendingRequest(message, timeout) : null;
+
     try {
-      long timeout;
-      if (message.expectsLongResponse()) {
-        timeout = LONG_TIMEOUT;
-      } else if (message.expectsResponse()) {
-        timeout = SHORT_TIMEOUT;
-      } else {
-        timeout = 0;
-      }
-
-      if (timeout > 0) {
-        pendingRequest = new CSTCPConnection.PendingRequest(message, timeout);
-      }
-
-      byte[] bytes = message.getMessage();
-      //Send the message
-      dos.write(bytes);
+      // Only publish a pending request while this specific message is in flight.
+      pendingRequest = request;
+      dos.write(message.getMessage());
       dos.flush();
-    } catch (IOException ex) {
-      Logger.error(ex.getMessage());
-      if (pendingRequest != null) {
-        pendingRequest.markComplete();
+
+      if (debug) {
+        Logger.trace("TX: " + message);
       }
-    }
-
-    //Do not log the ping response as this message is send every 5 seconds or so as a response to the CS ping request.
-    if (debug) {
-      Logger.trace("TX: " + message);
-    }
-
-    // Wait for response if needed
-    if (pendingRequest != null) {
-      waitForResponse(pendingRequest);
+      if (request != null) {
+        waitForResponse(request);
+      }
+    } catch (IOException ex) {
+      Logger.error("CAN message send failed: " + ex.getMessage());
+      if (request != null) {
+        request.markComplete();
+      }
+      signalConnectionLost();
+    } finally {
+      // A fire-and-forget command must never inherit the previous request.
+      pendingRequest = null;
     }
 
     Logger.trace("#TX: " + message + (message.isResponseMessage() ? " response msg" : ""));
@@ -158,6 +163,32 @@ class CSTCPConnection implements CSConnection {
     }
 
     return message;
+  }
+
+  /**
+   * Never run a controller's disconnect logic on the socket receiver thread.
+   * Reporting is once-only; a deliberate close does not generate a lost-connection event.
+   */
+  private void signalConnectionLost() {
+    if (closing.get() || !disconnectionNotified.compareAndSet(false, true)) {
+      return;
+    }
+    Thread notifier = new Thread(() -> {
+      if (closing.get()) {
+        return;
+      }
+      ConnectionEvent event = new ConnectionEvent(
+              "Host " + centralStationAddress.getHostAddress(), false, false);
+      for (ConnectionEventListener listener : disconnectionEventListeners) {
+        try {
+          listener.onConnectionChange(event);
+        } catch (RuntimeException ex) {
+          Logger.error("Disconnection listener failed: " + ex.getMessage());
+        }
+      }
+    }, "CS-CAN-CONNECTION-LOST");
+    notifier.setDaemon(true);
+    notifier.start();
   }
 
   private void waitForResponse(CSTCPConnection.PendingRequest request) {
@@ -427,31 +458,50 @@ class CSTCPConnection implements CSConnection {
   }
 
   @Override
-  public void close() throws Exception {
+  public void close() {
+    if (!closing.compareAndSet(false, true)) {
+      return;
+    }
 
-    disconnectionEventListeners.clear();
+    // Release any caller waiting for a CAN response before touching the socket.
+    PendingRequest request = pendingRequest;
+    if (request != null) {
+      request.markComplete();
+    }
 
-    if (messageReceiver != null) {
-      messageReceiver.quit();
-      messageReceiver.join();
+    ClientMessageReceiver receiver = messageReceiver;
+    if (receiver != null) {
+      receiver.quit();
+    }
+
+    // Closing the socket unblocks a thread blocked in readFully().
+    if (clientSocket != null) {
+      try {
+        clientSocket.close();
+      } catch (IOException ex) {
+        Logger.warn("Can't close TCP socket: " + ex.getMessage());
+      }
     }
     if (dos != null) {
       try {
         dos.close();
       } catch (IOException ex) {
-        Logger.error("Can't close output stream. Cause: " + ex.getMessage());
-        Logger.trace(ex);
+        Logger.warn("Can't close TCP output: " + ex.getMessage());
       }
     }
 
-    if (clientSocket != null) {
+    if (receiver != null && Thread.currentThread() != receiver) {
       try {
-        clientSocket.close();
-      } catch (IOException ex) {
-        Logger.error("Can't close socket. Cause: " + ex.getMessage());
-        Logger.trace(ex);
+        receiver.join(1000);
+        if (receiver.isAlive()) {
+          Logger.warn("TCP receiver has not yet stopped");
+        }
+      } catch (InterruptedException ex) {
+        Thread.currentThread().interrupt();
       }
     }
+    disconnectionEventListeners.clear();
+    eventQueue.clear();
   }
 
   @Override
@@ -461,27 +511,25 @@ class CSTCPConnection implements CSConnection {
 
   @Override
   public boolean isConnected() {
-    return messageReceiver != null && messageReceiver.isRunning();
+    return !closing.get() && clientSocket != null && !clientSocket.isClosed()
+            && messageReceiver != null && messageReceiver.isRunning();
   }
 
   private class ClientMessageReceiver extends Thread {
 
-    private volatile boolean running = false;
-    private DataInputStream din;
+    // Must be set before start() so an immediate isConnected() check is accurate.
+    private volatile boolean running = true;
+    private final DataInputStream din;
 
-    public ClientMessageReceiver(Socket socket) {
+    ClientMessageReceiver(Socket socket) throws IOException {
       super("CS-CAN-RX");
-      try {
-        BufferedInputStream bis = new BufferedInputStream(socket.getInputStream());
-        din = new DataInputStream(bis);
-      } catch (IOException ex) {
-        Logger.error("Failed to create input stream", ex);
-      }
+      setDaemon(true);
+      din = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
     }
 
     void quit() {
       running = false;
-      interrupt(); // Wake up from blocking read
+      interrupt();
     }
 
     boolean isRunning() {
@@ -490,102 +538,79 @@ class CSTCPConnection implements CSConnection {
 
     @Override
     public void run() {
-      running = true;
-      Logger.trace("Started listening on port " + clientSocket.getLocalPort() + "...");
+      boolean unexpectedDisconnect = false;
+      Logger.trace("Started listening for CAN messages on port " + clientSocket.getLocalPort());
 
-      while (running) {
-        try {
+      try {
+        while (running && !closing.get()) {
           CanMessage rx = readCanMessage();
-
-          if (rx != null) {
-            routeMessage(rx);
-          }
-
-        } catch (SocketException se) {
-          // Only notify if not intentionally closed
-          if (running) {
-            handleDisconnection();
-            running = false;
-          }
-
+          routeMessage(rx);
+        }
+      } catch (IOException ex) {
+        if (running && !closing.get()) {
+          unexpectedDisconnect = true;
+          Logger.warn("CAN connection lost: " + ex.getMessage());
+        }
+      } finally {
+        running = false;
+        PendingRequest request = pendingRequest;
+        if (request != null) {
+          request.markComplete();
+        }
+        try {
+          din.close();
         } catch (IOException ex) {
-          if (running) {
-            Logger.error("Error reading CAN message", ex);
-          }
+          Logger.debug("Error closing TCP input: " + ex.getMessage());
+        }
+        try {
+          clientSocket.close();
+        } catch (IOException ex) {
+          Logger.debug("Error closing disconnected socket: " + ex.getMessage());
+        }
+        Logger.debug("Stop receiving");
+        if (unexpectedDisconnect) {
+          signalConnectionLost();
         }
       }
-
-      Logger.debug("Stop receiving");
-      cleanup();
     }
 
-    /**
-     * Read a single CAN message from the stream
-     */
     private CanMessage readCanMessage() throws IOException {
-      // Read CAN message header (5 bytes)
       int prio = din.readUnsignedByte();
       int cmd = din.readUnsignedByte();
       int hash = din.readUnsignedShort();
       int dlc = din.readUnsignedByte();
 
-      // Read data bytes (always 8 bytes, even if DLC < 8)
       byte[] data = new byte[CanMessage.DATA_SIZE];
       din.readFully(data);
-
       return new CanMessage(prio, cmd, hash, dlc, data);
     }
 
-    /**
-     * Route message to either a pending request or the event queue
-     */
     private void routeMessage(CanMessage rx) {
-      int cmd = rx.getCommand();
+      PendingRequest request = pendingRequest;
       boolean routed = false;
 
-      if (pendingRequest != null && pendingRequest.matchesResponse(cmd)) {
-        // This is a response to a pending request
+      if (request != null && request.matchesResponse(rx.getCommand())) {
         try {
           int remainingBytes = din.available();
-          boolean complete = pendingRequest.addResponse(rx, remainingBytes);
-
+          boolean complete = request.addResponse(rx, remainingBytes);
           if (debug) {
-            Logger.trace("RX (response): " + rx + " remaining=" + remainingBytes + " complete=" + complete);
+            Logger.trace("RX (response): " + rx + " remaining=" + remainingBytes
+                    + " complete=" + complete);
           }
-
           routed = true;
         } catch (IOException ex) {
-          Logger.error("Error checking available bytes", ex);
-          pendingRequest.markComplete();
+          Logger.error("Error checking available bytes: " + ex.getMessage());
+          request.markComplete();
         }
       }
 
-      // If not routed to a pending request, it's an unsolicited event
-      if (!routed) {
+      if (!routed && !closing.get()) {
         eventQueue.offer(rx);
-
         if (debug) {
           Logger.trace("RX (event): " + rx + " QueueSize: " + eventQueue.size());
         }
       }
     }
-
-    private void handleDisconnection() {
-      String msg = "Host " + centralStationAddress.getHostName();
-      ConnectionEvent de = new ConnectionEvent(msg, false, false);
-      for (ConnectionEventListener listener : disconnectionEventListeners) {
-        listener.onConnectionChange(de);
-      }
-    }
-
-    private void cleanup() {
-      try {
-        if (din != null) {
-          din.close();
-        }
-      } catch (IOException ex) {
-        Logger.error("Error closing input stream", ex);
-      }
-    }
   }
+
 }

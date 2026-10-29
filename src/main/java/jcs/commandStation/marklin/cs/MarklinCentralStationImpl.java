@@ -30,6 +30,7 @@ import java.util.TimerTask;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import jcs.JCS;
 import jcs.commandStation.AbstractController;
 import jcs.commandStation.AccessoryController;
@@ -112,6 +113,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   private Long canBootLoaderLastCallMillis;
   private WatchdogTask watchdogTask;
   private Timer watchDogTimer;
+  private final AtomicBoolean disconnecting = new AtomicBoolean(false);
 
   private final AccessoryManager accessoryManager;
   private final BoosterManager boosterManager;
@@ -226,50 +228,57 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       connection = CSConnectionFactory.getConnection(commandStationBean);
 
       if (connection != null) {
-        long now = System.currentTimeMillis();
-        long timeout = now + 5000L;
-
-        while (!connected && now < timeout) {
-          connected = connection.isConnected();
-          now = System.currentTimeMillis();
-        }
-        if (!connected && now > timeout) {
-          Logger.error("Could not establish a connection");
+        // The transport connects with a bounded timeout. No busy-spin is needed.
+        connected = connection.isConnected();
+        if (!connected) {
+          Logger.error("Could not establish a Central Station connection");
+          disconnect();
+          return false;
         }
 
         if (connected) {
-          CanDevice gfp = getGFP();
-          canDevices.put(gfp.getUidInt(), gfp);
-          csUid = gfp.getUidInt();
-
-          canBootLoaderLastCallMillis = System.currentTimeMillis();
-
-          JCS.logProgress("Obtaining Device information...");
-          if (virtual) {
-            List<CanDevice> devices = getCS3Devices();
-            for (CanDevice device : devices) {
-              if (CanDeviceJSONParser.GFP.equals(device.getName())) {
-                canDevices.put(device.getUidInt(), device);
-              }
+          try {
+            CanDevice gfp = getGFP();
+            if (gfp == null || gfp.getUid() == null) {
+              throw new IllegalStateException("GFP information unavailable over HTTP");
             }
-          } else {
-            csUid = Integer.parseUnsignedInt(gfp.getUid(), 16);
-            obtainDevices();
+            canDevices.put(gfp.getUidInt(), gfp);
+            csUid = gfp.getUidInt();
+
+            canBootLoaderLastCallMillis = System.currentTimeMillis();
+
+            JCS.logProgress("Obtaining Device information...");
+            if (virtual) {
+              List<CanDevice> devices = getCS3Devices();
+              for (CanDevice device : devices) {
+                if (CanDeviceJSONParser.GFP.equals(device.getName())) {
+                  canDevices.put(device.getUidInt(), device);
+                }
+              }
+            } else {
+              csUid = Integer.parseUnsignedInt(gfp.getUid(), 16);
+              obtainDevices();
+            }
+
+            //The eventMessageHandler Thread is in charge to handle all event messages which are send from the CS to JCS
+            eventMessageHandler = new EventMessageHandler(connection);
+            eventMessageHandler.start();
+
+            connection.addDisconnectionEventListener(this);
+            startWatchdog();
+
+            //Load the accessories in the Accessory manager
+            getAccessories();
+
+            power = isPower();
+            JCS.logProgress("Power is " + (power ? "On" : "Off"));
+            Logger.trace("Connected to " + gfp.getName() + ", " + gfp.getArticleNumber()
+                    + " SerialNumber: " + gfp.getSerial());
+          } catch (RuntimeException ex) {
+            Logger.error("Central Station initialization failed: " + ex.getMessage());
+            disconnect();
+            return false;
           }
-
-          //The eventMessageHandler Thread is in charge to handle all event messages which are send from the CS to JCS
-          eventMessageHandler = new EventMessageHandler(connection);
-          eventMessageHandler.start();
-
-          connection.addDisconnectionEventListener(this);
-          startWatchdog();
-
-          //Load the accessories in the Accessory manager
-          getAccessories();
-
-          power = isPower();
-          JCS.logProgress("Power is " + (power ? "On" : "Off"));
-          Logger.trace("Connected to " + gfp.getName() + ", " + gfp.getArticleNumber() + " SerialNumber: " + gfp.getSerial());
         }
       } else {
         Logger.warn("Can't connect with Central Station!");
@@ -633,48 +642,64 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 
   @Override
   public void disconnect() {
+    if (!disconnecting.compareAndSet(false, true)) {
+      return;
+    }
     try {
       Logger.trace("Start disconnecting...");
+      connected = false;
+      power = false;
 
       if (watchDogTimer != null) {
         watchDogTimer.cancel();
+        watchDogTimer = null;
       }
 
-      boosterManager.notifyLastMeasurement();
-    } catch (Exception ex) {
-      Logger.error(ex);
-    }
+      try {
+        boosterManager.notifyLastMeasurement();
+      } catch (RuntimeException ex) {
+        Logger.error("Stopping measurements failed: " + ex.getMessage());
+      }
 
-    //Stop Threads
-    if (executor != null) {
-      executor.shutdown();
-    }
+      EventMessageHandler handler = eventMessageHandler;
+      eventMessageHandler = null;
+      if (handler != null) {
+        handler.quit();
+      }
 
-    if (connection != null) {
-      if (eventMessageHandler != null) {
-        eventMessageHandler.quit();
-
+      // Close before joining workers; this releases pending network operations.
+      CSConnection oldConnection = connection;
+      connection = null;
+      if (oldConnection != null) {
         try {
-          eventMessageHandler.join(2000);
+          oldConnection.close();
+        } catch (Exception ex) {
+          Logger.warn("Error closing Central Station connection: " + ex.getMessage());
+        }
+      }
+
+      if (handler != null && handler != Thread.currentThread()) {
+        try {
+          handler.join(1000);
         } catch (InterruptedException ex) {
           Thread.currentThread().interrupt();
-
-        }
-
-        try {
-          connection.close();
-        } catch (Exception ex) {
-          Logger.trace(ex.getMessage());
         }
       }
-      connected = false;
+
+      if (executor != null) {
+        executor.shutdownNow();
+        executor = null;
+      }
+      CSConnectionFactory.disconnectAll();
+      canDevices.clear();
+      infoBean = null;
+      csUid = 0;
+      linkS88Uid = 0;
+
+      Logger.trace("Disconnected");
+    } finally {
+      disconnecting.set(false);
     }
-
-    executor = null;
-    connection = null;
-
-    CSConnectionFactory.disconnectAll();
-    Logger.trace("Disconnected");
   }
 
   @Override
@@ -967,17 +992,19 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 
     @SuppressWarnings("FieldMayBeFinal")
     private boolean stop = false;
-    private boolean quit = true;
+    private volatile boolean quit = true;
 
     private final BlockingQueue<CanMessage> eventMessageQueue;
 
     EventMessageHandler(CSConnection csConnection) {
       super(threadGroup, "CS-EVENT-MESSAGE-HANDLER");
+      setDaemon(true);
       eventMessageQueue = csConnection.getEventQueue();
     }
 
     void quit() {
       this.quit = true;
+      interrupt();
     }
 
     boolean isRunning() {
@@ -1147,7 +1174,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 
     if (checkInterval > 0 && !virtual) {
       watchdogTask = new WatchdogTask(this);
-      watchDogTimer = new Timer("WatchDogTimer");
+      watchDogTimer = new Timer("WatchDogTimer", true);
       watchDogTimer.schedule(watchdogTask, 0, checkInterval);
       Logger.debug("Started Watchdog Timer with an interval of " + checkInterval + "ms");
     } else {
@@ -1176,20 +1203,8 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
           Logger.trace("The last CANBootLoader request is received more than " + (checkInterval / 1000) + "s ago!");
           ConnectionEvent de = new ConnectionEvent("Marklin Central Station", false, false);
           commandStation.onConnectionChange(de);
-        } else {
-          synchronized (this) {
-            notifyAll();
-          }
         }
-      } else {
-        //Try to reconnect
-        if (!virtual && "true".equalsIgnoreCase(System.getProperty("controller.autoconnect", "true"))) {
-          boolean con = commandStation.connect();
-          if (con) {
-            ConnectionEvent de = new ConnectionEvent("Marklin Central Station", true, false);
-            commandStation.onConnectionChange(de);
-          }
-        }
+      // Reconnection is intentionally not performed by this timer (step 2).
       }
     }
   }
