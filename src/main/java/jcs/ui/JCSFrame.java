@@ -1142,7 +1142,8 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
 
   private void QuitAppNoDialog() {
     try {
-      boolean powerOnWhenQuit = Boolean.parseBoolean("keep.power.on.when.quit");
+      boolean powerOnWhenQuit = Boolean.parseBoolean(System.getProperty("keep.power.on.when.quit", "false"));
+
       if (!powerOnWhenQuit) {
         JCS.getJcsCommandStation().switchPower(false);
         //Give the communication time to switchoff
