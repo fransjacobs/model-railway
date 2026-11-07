@@ -154,12 +154,12 @@ public class CanDeviceParserTest {
     expResult.setZeroPoint(0);
     expResult.setRangeGreen(552);
     expResult.setRangeYellow(576);
-    expResult.setRangeRed(576);
+    expResult.setRangeRed(600);
     expResult.setRangeMax(660);
     expResult.setStartValue(0.0);
     expResult.setEndValue(5.5);
     expResult.setUnit("A");
-
+    
     expDeviceResult.addMeasuringChannel(expResult);
 
     assertEquals(expDeviceResult, canDevice);
@@ -250,9 +250,6 @@ public class CanDeviceParserTest {
 
     CanDevice resultDev = canDevice;
     
-//expected:<CanDevice{uid=0x53385c41, name=Link S88, identifier=0x40, articleNumber=60883, measureChannelCount=0, configChannelCount=12, version=1.1, configChannels={1=ConfigChannel{number=1, choicesCount=2, valueId=0, choiceDescription=Auswertung 1 - 16, choices=[Einzeln, Tastaturmatrix]}}}> 
-// but was:<CanDevice{uid=0x53385c41, name=Link S88, identifier=0x40, articleNumber=60883, measureChannelCount=0, configChannelCount=12, version=1.1, configChannels={1=ConfigChannel{number=1, choicesCount=2, valueId=0, choiceDescription=Auswertung 1 - 16, choices=[Einzeln]}}}>
-    
     assertEquals(expResultDev, resultDev);
 
     ConfigChannel result = canDevice.getConfigChannel(1);
@@ -301,7 +298,7 @@ public class CanDeviceParserTest {
     expResult.setChoiceDescription("Länge Bus 1 (RJ45-1)");
     expResult.setActualValue(2);
     expResult.setLowValue(0);
-    expResult.setHighValue(0);
+    expResult.setHighValue(31);
     expResult.setStartName("0");
     expResult.setEndName("31");
 
@@ -313,6 +310,10 @@ public class CanDeviceParserTest {
 
     ConfigChannel result = canDevice.getConfigChannel(2);
     assertNotNull(result);
+    
+   //expected:<CanDevice{uid=0x53385c41, name=Link S88, identifier=0x40, articleNumber=60883, measureChannelCount=0, configChannelCount=12, version=1.1, configChannels={2=ConfigChannel{number=2, valueId=2, choiceDescription=Länge Bus 1 (RJ45-1), lowValue=0, highValue=0, actualValue=2, startName=0, endName=31}}}> 
+   // but was:<CanDevice{uid=0x53385c41, name=Link S88, identifier=0x40, articleNumber=60883, measureChannelCount=0, configChannelCount=12, version=1.1, configChannels={2=ConfigChannel{number=2, valueId=2, choiceDescription=Länge Bus 1 (RJ45-1), lowValue=0, highValue=31, actualValue=2, startName=0, endName=31}}}>
+    
 
     assertEquals(expResult, result);
   }

@@ -93,7 +93,8 @@ public final class RailController {
 
   final static long ALL_DISPATCHER_STOPPING_TIMEOUT = 600000L;
 
-  private boolean automodeOn = false;
+  private volatile boolean automodeOn = false;
+  private volatile boolean suspendedForConnectionLoss = false;
 
   private String status;
 
@@ -168,6 +169,13 @@ public final class RailController {
   }
 
   boolean startAutoMode() {
+    if (suspendedForConnectionLoss
+            || !JCS.getJcsCommandStation().isConnected()
+            || !JCS.getJcsCommandStation().isPowerOn()) {
+      Logger.tag(TAG).warn("Can't start Automode: command station is unavailable");
+      fireStatusListeners(STOPPED);
+      return false;
+    }
     if (JCS.getJcsCommandStation().isPowerOn()) {
       if (sensorMonitor != null && sensorMonitor.isRunning()) {
         Logger.trace("Already running");
@@ -196,11 +204,29 @@ public final class RailController {
         }
 
         Logger.trace("SensorMonitor Initialized in " + (now - start) + " ms...");
+        // A connection loss might have happened during sensor initialization.
+        if (suspendedForConnectionLoss || !JCS.getJcsCommandStation().isConnected()) {
+          sensorMonitor.stopMonitor();
+          return false;
+        }
         automodeOn = true;
+
+        if (suspendedForConnectionLoss) {
+          sensorMonitor.stopMonitor();
+          return false;
+        }
 
         //TODO: Do this every time the Automode is started or just once?
         //restoreLocomotiveFunctions();
+        if (suspendedForConnectionLoss) {
+          return false;
+        }
         prepareAllDispatchers();
+        if (suspendedForConnectionLoss) {
+          // Emergency suspension has already been requested.
+          // Never advertise STARTED after the controller was lost.
+          return false;
+        }
 
         Logger.tag(TAG).debug("Railway Controller Auto Drive initialized with " + dispatchers.size() + " Dispatchers");
         fireStatusListeners(STARTED);
@@ -243,7 +269,48 @@ public final class RailController {
     }
   }
 
+  /**
+   * Emergency suspension after the command station disappears.
+   *
+   * Unlike stopAutoMode(), this does not wait for sensors, clear dispatchers,
+   * reset routes or alter the persisted railway position.
+   * It deliberately does NOT send locomotive speed commands over a dead link.
+   *
+   * The operator must explicitly restart Automode after reconnection.
+   */
+  public void suspendForConnectionLoss() {
+    if (suspendedForConnectionLoss) {
+      return;
+    }
+    suspendedForConnectionLoss = true;
+    automodeOn = false;
+
+    if (sensorMonitor == null && dispatchers.isEmpty() && !STARTED.equals(status)) {
+      return;
+    }
+
+    Logger.tag(TAG).warn("Command station lost: suspending automatic driving");
+    fireStatusListeners(STOPPING);
+
+    for (Dispatcher dispatcher : new HashSet<>(dispatchers.values())) {
+      dispatcher.suspendForConnectionLoss();
+    }
+
+    SensorMonitor monitor = sensorMonitor;
+    if (monitor != null) {
+      monitor.stopMonitor();
+    }
+    // No joins here: this method may be called by a connection notification.
+    // The monitor and state-machine threads are asked to exit asynchronously.
+    sensorMonitor = null;
+    fireStatusListeners(STOPPED);
+  }
+
   void stopAutoMode() {
+    if (suspendedForConnectionLoss) {
+      // A queued normal stop must not clear dispatchers after emergency suspension.
+      return;
+    }
     if (sensorMonitor != null) {
       //Notify all dispachers so that the ones which waiting and Idle will stop
       Set<Dispatcher> snapshot = new HashSet<>(dispatchers.values());
@@ -262,12 +329,15 @@ public final class RailController {
 
       automodeOn = false;
 
-      while (dispatcherRunning && now < timeout) {
+      while (dispatcherRunning && !suspendedForConnectionLoss && now < timeout) {
         dispatcherRunning = isAnyDispatcherRunning();
         now = System.currentTimeMillis();
         pause(100);
       }
 
+      if (suspendedForConnectionLoss) {
+        return; // Emergency suspension owns cleanup and preserves dispatchers.
+      }
       Logger.tag(TAG).trace("All dispatchers are stopped in " + (now - start) + " ms...");
       sensorMonitor.stopMonitor();
 
@@ -335,6 +405,13 @@ public final class RailController {
 
   public void enableAutomode(boolean flag) {
     if (flag) {
+      // Only an explicit user action AFTER the station is back can release
+      // the connection-loss suspension.
+      if (!JCS.getJcsCommandStation().isConnected()) {
+        Logger.tag(TAG).warn("Cannot enable Automode without command station");
+        return;
+      }
+      suspendedForConnectionLoss = false;
       enqueCommand(new RailControllerCommand(CMD_START));
     } else {
       enqueCommand(new RailControllerCommand(CMD_STOP));

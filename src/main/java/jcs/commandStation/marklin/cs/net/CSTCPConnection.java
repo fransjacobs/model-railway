@@ -29,6 +29,11 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.atomic.AtomicInteger;
+import jcs.commandStation.marklin.cs.can.CanMessageFactory;
 import jcs.commandStation.events.ConnectionEvent;
 import jcs.commandStation.marklin.cs.can.CanMessage;
 import org.tinylog.Logger;
@@ -57,6 +62,23 @@ class CSTCPConnection implements CSConnection {
   private final AtomicBoolean closing = new AtomicBoolean(false);
   private final AtomicBoolean disconnectionNotified = new AtomicBoolean(false);
 
+  // An application-level ping detects silent cable loss faster than TCP keepalive.
+  private static final int HEARTBEAT_TIMEOUT_MS =
+          Math.max(200, Integer.getInteger("marklin.cs.heartbeat.timeout.ms", 600));
+  private static final int HEARTBEAT_INTERVAL_MS =
+          Math.max(200, Integer.getInteger("marklin.cs.heartbeat.interval.ms", 600));
+  private static final int HEARTBEAT_FAILURE_LIMIT =
+          Math.max(1, Integer.getInteger("marklin.cs.heartbeat.failures", 2));
+  private final AtomicInteger heartbeatFailures = new AtomicInteger();
+  private final ScheduledExecutorService heartbeatExecutor =
+          Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread thread = new Thread(r, "CS-CAN-HEARTBEAT");
+            thread.setDaemon(true);
+            return thread;
+          });
+  private volatile ScheduledFuture<?> heartbeatFuture;
+  private volatile long lastReceivedNanos = System.nanoTime();
+
   CSTCPConnection(InetAddress csAddress) {
     centralStationAddress = csAddress;
     debug = System.getProperty("message.debug", "false").equalsIgnoreCase("true");
@@ -80,6 +102,12 @@ class CSTCPConnection implements CSConnection {
       dos = output;
       messageReceiver = receiver;
       receiver.start();
+      if (Boolean.parseBoolean(
+              System.getProperty("marklin.cs.heartbeat.enabled", "true"))) {
+        heartbeatFuture = heartbeatExecutor.scheduleWithFixedDelay(
+                this::checkHeartbeat, HEARTBEAT_INTERVAL_MS,
+                HEARTBEAT_INTERVAL_MS, TimeUnit.MILLISECONDS);
+      }
     } catch (IOException ex) {
       try {
         socket.close();
@@ -123,7 +151,8 @@ class CSTCPConnection implements CSConnection {
       return message;
     }
 
-    long timeout = message.expectsLongResponse() ? LONG_TIMEOUT
+    long timeout = message.getCommand() == CanMessage.PING_REQ ? HEARTBEAT_TIMEOUT_MS
+            : message.expectsLongResponse() ? LONG_TIMEOUT
             : message.expectsResponse() ? SHORT_TIMEOUT : 0;
     PendingRequest request = timeout > 0 ? new PendingRequest(message, timeout) : null;
 
@@ -150,15 +179,18 @@ class CSTCPConnection implements CSConnection {
       pendingRequest = null;
     }
 
-    Logger.trace("#TX: " + message + (message.isResponseMessage() ? " response msg" : ""));
-    if (!message.isResponseMessage()) {
-      if (message.getResponses().size() > 1) {
-        List<CanMessage> responses = message.getResponses();
-        for (int i = 0; i < responses.size(); i++) {
-          Logger.trace("#RX " + i + ": " + message.getResponse(i));
+    // Heartbeat traffic is intentionally quiet during normal operation.
+    if (message.getCommand() != CanMessage.PING_REQ) {
+      Logger.trace("#TX: " + message + (message.isResponseMessage() ? " response msg" : ""));
+      if (!message.isResponseMessage()) {
+        if (message.getResponses().size() > 1) {
+          List<CanMessage> responses = message.getResponses();
+          for (int i = 0; i < responses.size(); i++) {
+            Logger.trace("#RX " + i + ": " + message.getResponse(i));
+          }
+        } else {
+          Logger.trace("#RX: " + message.getResponse());
         }
-      } else {
-        Logger.trace("#RX: " + message.getResponse());
       }
     }
 
@@ -266,7 +298,12 @@ class CSTCPConnection implements CSConnection {
       }
 
       // Check if we're done
-      if (txMessage.isResponseComplete() && expectedPackets == 0) {
+      // A participant ping may receive responses from several devices. For
+      // liveness, one valid DLC=8 participant response is sufficient.
+      boolean complete = txMessage.getCommand() == CanMessage.PING_REQ
+              ? rx.getDlc() == CanMessage.DLC_8
+              : txMessage.isResponseComplete() && expectedPackets == 0;
+      if (complete) {
         markComplete();
         return true;
       }
@@ -457,11 +494,66 @@ class CSTCPConnection implements CSConnection {
     }
   }
 
+  /**
+   * Runs outside the receiver thread. A ping response proves application-level
+   * connectivity; timeouts are counted independently of TCP socket status.
+   */
+  private void checkHeartbeat() {
+    if (closing.get() || disconnectionNotified.get() || !isConnected()) {
+      return;
+    }
+
+    // Recent inbound CAN traffic already proves the connection is alive.
+    long quietMs = TimeUnit.NANOSECONDS.toMillis(
+            System.nanoTime() - lastReceivedNanos);
+    if (quietMs < HEARTBEAT_INTERVAL_MS) {
+      heartbeatFailures.set(0);
+      return;
+    }
+
+    try {
+      CanMessage ping = CanMessageFactory.getMembersPing();
+      sendCanMessage(ping);
+      if (closing.get() || disconnectionNotified.get()) {
+        return;
+      }
+      // Avoid iterating the receiver-owned response list concurrently.
+      CanMessage response = ping.getResponse(0);
+      boolean answered = response != null
+              && response.getCommand() == CanMessage.PING_RESP
+              && response.getDlc() == CanMessage.DLC_8;
+
+      if (answered) {
+        heartbeatFailures.set(0);
+      } else {
+        int misses = heartbeatFailures.incrementAndGet();
+        Logger.debug("Märklin heartbeat missed (" + misses
+                + "/" + HEARTBEAT_FAILURE_LIMIT + ")");
+        if (misses >= HEARTBEAT_FAILURE_LIMIT) {
+          Logger.warn("Märklin Central Station stopped responding to CAN ping");
+          signalConnectionLost();
+        }
+      }
+    } catch (RuntimeException ex) {
+      // Never kill the scheduled heartbeat task on a transient parser failure.
+      Logger.warn("CAN heartbeat check failed: " + ex.getMessage());
+      if (heartbeatFailures.incrementAndGet() >= HEARTBEAT_FAILURE_LIMIT) {
+        signalConnectionLost();
+      }
+    }
+  }
+
   @Override
   public void close() {
     if (!closing.compareAndSet(false, true)) {
       return;
     }
+
+    ScheduledFuture<?> task = heartbeatFuture;
+    if (task != null) {
+      task.cancel(true);
+    }
+    heartbeatExecutor.shutdownNow();
 
     // Release any caller waiting for a CAN response before touching the socket.
     PendingRequest request = pendingRequest;
@@ -544,6 +636,8 @@ class CSTCPConnection implements CSConnection {
       try {
         while (running && !closing.get()) {
           CanMessage rx = readCanMessage();
+          lastReceivedNanos = System.nanoTime();
+          heartbeatFailures.set(0);
           routeMessage(rx);
         }
       } catch (IOException ex) {

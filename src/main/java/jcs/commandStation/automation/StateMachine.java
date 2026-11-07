@@ -42,6 +42,7 @@ class StateMachine {
   private volatile AbstractState currentState;
   private StateMachineRunner stateMachineRunner;
   private volatile boolean requestStop = false;
+  private volatile boolean suspendedForConnectionLoss = false;
 
   /**
    *
@@ -55,6 +56,10 @@ class StateMachine {
   }
 
   void startStateMachineThread() {
+    if (suspendedForConnectionLoss) {
+      Logger.tag(TAG).warn("Cannot restart a suspended state machine; reinitialize dispatcher first");
+      return;
+    }
     if (stateMachineRunner == null || !stateMachineRunner.isRunning()) {
       requestStop = false;
       stateMachineRunner = new StateMachineRunner(this);
@@ -66,6 +71,19 @@ class StateMachine {
       stateMachineRunner.start();
     } else {
       Logger.tag(TAG).trace("Thread for " + dispatcher.getName() + " is already running...");
+    }
+  }
+
+  /**
+   * Emergency suspension: retain the current state/route for reconciliation
+   * after reconnection. Do not run the normal on-exit speed command.
+   */
+  void suspendForConnectionLoss() {
+    suspendedForConnectionLoss = true;
+    StateMachineRunner runner = stateMachineRunner;
+    if (runner != null) {
+      runner.shutdown();
+      runner.wakeUp();
     }
   }
 
@@ -94,11 +112,16 @@ class StateMachine {
   }
 
   boolean isRunning() {
-    return stateMachineRunner != null && stateMachineRunner.isRunning();
+    return !suspendedForConnectionLoss
+            && stateMachineRunner != null && stateMachineRunner.isRunning();
   }
 
   boolean isRequestStop() {
     return requestStop;
+  }
+
+  boolean isSuspendedForConnectionLoss() {
+    return suspendedForConnectionLoss;
   }
 
   boolean isThreadEnabled() {
@@ -259,7 +282,7 @@ class StateMachine {
     public void run() {
       running = true;
 
-      while (running) {
+      while (running && !suspendedForConnectionLoss) {
 
         if (Logger.isTraceEnabled() && 1 == 2) {
           BlockBean departureBlock = dispatcher.getDepartureBlock();
@@ -298,7 +321,14 @@ class StateMachine {
           Logger.trace(">>" + sb.toString());
         }
 
+        // The connection can disappear while executeState() is working.
+        if (suspendedForConnectionLoss) {
+          break;
+        }
         boolean stateChanged = stateMachine.executeState();
+        if (suspendedForConnectionLoss) {
+          break;
+        }
 
         if (stateMachine.requestStop && stateMachine.getCurrentState().canStopLocomotive()) {
           running = false;
@@ -317,8 +347,11 @@ class StateMachine {
         }
       }
 
-      //Make sure the locomotive is stopped
-      dispatcher.changeLocomotiveVelocity(0);
+      // Do not send a speed command after the command station is lost.
+      // Its physical locomotive state is unknown until communication resumes.
+      if (!suspendedForConnectionLoss) {
+        dispatcher.changeLocomotiveVelocity(0);
+      }
 
       stateMachine.requestStop = false;
       dispatcher.locomotiveStarted = false;

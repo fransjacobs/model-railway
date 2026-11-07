@@ -79,6 +79,19 @@ public class CanMessageFactory implements MarklinCan {
   }
 
   /**
+   * Per-locomotive emergency stop (System command 0x00, subcommand 0x03).
+   * This differs from LOC_VELOCITY 0, which uses the decoder's braking delay.
+   * See Märklin CAN protocol 2.0, page 15.
+   */
+  public static CanMessage locomotiveEmergencyStop(int locomotiveId, int gfpUid) {
+    byte[] data = new byte[CanMessage.DATA_SIZE];
+    System.arraycopy(CanMessage.to4Bytes(locomotiveId), 0, data, 0, 4);
+    data[SUBCMD_IDX] = LOC_STOP_SUB_CMD;
+    byte[] hash = gfpUid > 0 ? CanMessage.generateHash(gfpUid) : MAGIC_HASH;
+    return new CanMessage(PRIO_1, SYSTEM_COMMAND, hash, DLC_5, data);
+  }
+
+  /**
    * Query the Power Status of the System.Undocumented feature, by by sending query DLC you get an answer which contains the Power Status of the System, but also the GFP UID which is needed for
    * further processing...
    *
@@ -119,14 +132,14 @@ public class CanMessageFactory implements MarklinCan {
   public static CanMessage getMemberPingResponse(int uid, int swVersion, int deviceId) {
     byte[] data = new byte[CanMessage.DATA_SIZE];
 
-    byte[] deviceUID = CanMessage.to4Bytes(JCS_UID);
+    byte[] deviceUID = CanMessage.to4Bytes(uid);
     System.arraycopy(deviceUID, 0, data, 0, deviceUID.length);
     byte[] swv = CanMessage.to2Bytes(swVersion);
     System.arraycopy(swv, 0, data, 4, swv.length);
-    byte[] dev = CanMessage.to2Bytes(JCS_DEVICE_ID);
+    byte[] dev = CanMessage.to2Bytes(deviceId);
     System.arraycopy(dev, 0, data, 6, dev.length);
 
-    CanMessage m = new CanMessage(PRIO_1, PING_RESP, CanMessage.generateHash(JCS_UID), DLC_8, data);
+    CanMessage m = new CanMessage(PRIO_1, PING_RESP, CanMessage.generateHash(uid), DLC_8, data);
     return m;
   }
 
@@ -228,8 +241,15 @@ public class CanMessageFactory implements MarklinCan {
 
     byte[] addressBytes = CanMessage.to2Bytes(address);
     System.arraycopy(addressBytes, 0, data, 2, addressBytes.length);
-    //TODO for signal other values are also supported
-    data[ACCESSORY_VALUE_IDX] = (byte) (AccessoryValue.GREEN.equals(value) ? 1 : 0);
+    // CS2 protocol §4.1: MM multi-aspect positions 0=red, 1=green,
+    // 2=yellow, 3=white. DCC accessories support only positions 0 and 1;
+    // callers must not request extended positions for a DCC address.
+    data[ACCESSORY_VALUE_IDX] = (byte) switch (value) {
+      case GREEN, GREEN2 -> 1;
+      case YELLOW -> 2;
+      case WHITE -> 3;
+      default -> 0;
+    };
     data[ACCESSORY_ACTIVE_IDX] = (byte) (on ? 1 : 0);
 
     byte[] st = CanMessage.to2Bytes(switchTime);
@@ -361,6 +381,9 @@ public class CanMessageFactory implements MarklinCan {
   }
 
   public static CanMessage setLocSpeed(int uid, int speed, int gfpUid) {
+    if (speed < 0 || speed > 1024) {
+      throw new IllegalArgumentException("Märklin locomotive speed must be between 0 and 1024: " + speed);
+    }
     byte[] data = new byte[CanMessage.DATA_SIZE];
     byte[] hash;
     if (gfpUid > 0) {

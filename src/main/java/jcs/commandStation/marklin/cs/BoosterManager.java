@@ -58,6 +58,8 @@ class BoosterManager implements ConnectionEventListener {
 
   private MeasurementTask measurementTask;
   private volatile Timer measurementTimer;
+  // Invalidates even a measurement task that is already executing.
+  private volatile long measurementGeneration;
 
   //The Marklin CS has 4 analog Channels
   private MeasuringChannel main;
@@ -99,6 +101,7 @@ class BoosterManager implements ConnectionEventListener {
   private void stopWorkers() {
     ChannelConfigurationQueryThread query;
     synchronized (this) {
+      measurementGeneration++;
       if (measurementTimer != null) {
         measurementTimer.cancel();
         measurementTimer = null;
@@ -145,45 +148,74 @@ class BoosterManager implements ConnectionEventListener {
     }
   }
 
-  private void performMeasurements() {
-    if (marklinCentralStationImpl.isConnected()) {
-      long now = System.currentTimeMillis();
-      Map<String, MeasurementBean> measurementRow = new HashMap<>();
+  /**
+   * A Timer.cancel() does not stop a task which is already executing.
+   * Check the connection and the generation before each CAN request.
+   */
+  private boolean measurementActive(long generation) {
+    return measurementGeneration == generation && marklinCentralStationImpl.isConnected()
+            && !marklinCentralStationImpl.isVirtual();
+  }
 
-      int channelNumber = main.getNumber();
-      CanMessage message = marklinCentralStationImpl.sendMessage(CanMessageFactory.systemStatus(this.marklinCentralStationImpl.csUid, channelNumber));
-      MeasurementBean mainMeasurement = SystemStatusMessage.parse(main, message, now);
-      measurementRow.put(CanMessage.MAIN, mainMeasurement);
+  private MeasurementBean queryMeasurement(MeasuringChannel channel, long now, long generation) {
+    if (!measurementActive(generation) || channel == null) {
+      return null;
+    }
+    CanMessage message = marklinCentralStationImpl.sendMessage(
+            CanMessageFactory.systemStatus(marklinCentralStationImpl.csUid, channel.getNumber()));
+    if (!measurementActive(generation)) {
+      return null;
+    }
+    return SystemStatusMessage.parse(channel, message, now);
+  }
 
-      channelNumber = prog.getNumber();
-      message = marklinCentralStationImpl.sendMessage(CanMessageFactory.systemStatus(this.marklinCentralStationImpl.csUid, channelNumber));
-      MeasurementBean progMeasurement = SystemStatusMessage.parse(prog, message, now);
-      measurementRow.put(CanMessage.PROG, progMeasurement);
+  private void performMeasurements(long generation) {
+    if (!measurementActive(generation)) {
+      return;
+    }
 
-      channelNumber = volt.getNumber();
-      message = marklinCentralStationImpl.sendMessage(CanMessageFactory.systemStatus(this.marklinCentralStationImpl.csUid, channelNumber));
-      MeasurementBean voltMeasurement = SystemStatusMessage.parse(volt, message, now);
-      measurementRow.put(CanMessage.VOLT, voltMeasurement);
+    long now = System.currentTimeMillis();
+    Map<String, MeasurementBean> measurementRow = new HashMap<>();
 
-      channelNumber = temp.getNumber();
-      message = marklinCentralStationImpl.sendMessage(CanMessageFactory.systemStatus(this.marklinCentralStationImpl.csUid, channelNumber));
-      MeasurementBean tempMeasurement = SystemStatusMessage.parse(temp, message, now);
-      measurementRow.put(CanMessage.TEMP, tempMeasurement);
+    MeasurementBean mainMeasurement = queryMeasurement(main, now, generation);
+    if (mainMeasurement == null || !measurementActive(generation)) {
+      return;
+    }
+    measurementRow.put(CanMessage.MAIN, mainMeasurement);
 
-      measurements.put(now, measurementRow);
+    MeasurementBean progMeasurement = queryMeasurement(prog, now, generation);
+    if (progMeasurement == null || !measurementActive(generation)) {
+      return;
+    }
+    measurementRow.put(CanMessage.PROG, progMeasurement);
 
-      if (measurements.size() > maxMeasurementEntries) {
-        @SuppressWarnings("unused")
-        Map.Entry<Long, Map<String, MeasurementBean>> oldestRow = measurements.pollFirstEntry();
-        //Logger.trace("Removing measuement of " + new Date(oldestRow.getKey()));
+    MeasurementBean voltMeasurement = queryMeasurement(volt, now, generation);
+    if (voltMeasurement == null || !measurementActive(generation)) {
+      return;
+    }
+    measurementRow.put(CanMessage.VOLT, voltMeasurement);
+
+    MeasurementBean tempMeasurement = queryMeasurement(temp, now, generation);
+    if (tempMeasurement == null || !measurementActive(generation)) {
+      return;
+    }
+    measurementRow.put(CanMessage.TEMP, tempMeasurement);
+
+    // Never publish an incomplete cycle, including one invalidated by disconnect.
+    if (!measurementActive(generation)) {
+      return;
+    }
+    measurements.put(now, measurementRow);
+    if (measurements.size() > maxMeasurementEntries) {
+      measurements.pollFirstEntry();
+    }
+
+    MeasurementEvent me = new MeasurementEvent(measurementRow, true);
+    for (MeasurementEventListener listener : measurementEventListeners) {
+      if (!measurementActive(generation)) {
+        break;
       }
-
-      MeasurementEvent me = new MeasurementEvent(measurementRow, true);
-      for (MeasurementEventListener listener : measurementEventListeners) {
-        listener.onMeasurement(me);
-      }
-    } else {
-      Logger.warn("No measurement channels available");
+      listener.onMeasurement(me);
     }
   }
 
@@ -297,7 +329,7 @@ class BoosterManager implements ConnectionEventListener {
             synchronized (boosterManager) {
               if (running && boosterManager.marklinCentralStationImpl.isConnected()
                       && measureInterval > 0 && !boosterManager.marklinCentralStationImpl.isVirtual()) {
-                boosterManager.measurementTask = new MeasurementTask(boosterManager);
+                boosterManager.measurementTask = new MeasurementTask(boosterManager, boosterManager.measurementGeneration);
                 boosterManager.measurementTimer = new Timer("MeasurementsTimer", true);
                 boosterManager.measurementTimer.schedule(measurementTask, 10, measureInterval);
                 Logger.debug("Started Measurements Timer with an interval of " + measureInterval + " ms");
@@ -329,26 +361,28 @@ class BoosterManager implements ConnectionEventListener {
   private class MeasurementTask extends TimerTask {
 
     private final BoosterManager boosterManager;
+    private final long generation;
 
-    MeasurementTask(BoosterManager boosterManager) {
+    MeasurementTask(BoosterManager boosterManager, long generation) {
       this.boosterManager = boosterManager;
+      this.generation = generation;
     }
 
     @Override
     public void run() {
-      if (boosterManager.marklinCentralStationImpl.isConnected() && !boosterManager.marklinCentralStationImpl.isVirtual()) {
-        try {
-          if (boosterManager.marklinCentralStationImpl.isSupportTrackMeasurements()) {
-            boosterManager.performMeasurements();
-          } else {
-            Logger.debug("Track Measurements are not supported. Cancelling the Measurements schedule...");
-            Timer timer = measurementTimer;
-            if (timer != null) {
-              timer.cancel();
-            }
-          }
-        } catch (Exception e) {
-          Logger.error(e);
+      if (!boosterManager.measurementActive(generation)) {
+        return;
+      }
+      try {
+        if (boosterManager.marklinCentralStationImpl.isSupportTrackMeasurements()) {
+          boosterManager.performMeasurements(generation);
+        } else {
+          Logger.debug("Track Measurements are not supported. Cancelling the Measurements schedule...");
+          boosterManager.stopWorkers();
+        }
+      } catch (Exception ex) {
+        if (boosterManager.measurementActive(generation)) {
+          Logger.error(ex);
         }
       }
     }

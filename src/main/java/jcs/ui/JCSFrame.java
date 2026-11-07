@@ -345,10 +345,8 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
 
       java.awt.EventQueue.invokeLater(() -> {
         if (info != null) {
-          this.connectButton.setSelected(JCS.getJcsCommandStation().isConnected());
           this.powerButton.setSelected(JCS.getJcsCommandStation().isPowerOn());
         } else {
-          this.connectButton.setSelected(JCS.getJcsCommandStation().isConnected());
           this.powerButton.setSelected(JCS.getJcsCommandStation().isConnected());
         }
         boolean virt = JCS.getJcsCommandStation().isVirtual();
@@ -392,10 +390,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   public void setVisible(boolean b) {
     Logger.debug("Showing main screen");
     super.setVisible(b);
-//    if (!JCS.getJcsCommandStation().isConnected()) {
-//      Logger.info("Try to connect with a command station...");
-//      JCS.getJcsCommandStation().connectInBackground();
-//    }
   }
 
   /**
@@ -411,7 +405,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     jcsToolBar = new JToolBar();
     powerButton = new JToggleButton();
     filler1 = new Box.Filler(new Dimension(5, 0), new Dimension(5, 0), new Dimension(5, 32767));
-    connectButton = new JToggleButton();
     filler2 = new Box.Filler(new Dimension(10, 0), new Dimension(10, 0), new Dimension(10, 32767));
     showOverviewBtn = new JButton();
     showEditDesignBtn = new JButton();
@@ -449,7 +442,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     flipTileVerticallyMI = new JMenuItem();
     deleteTileMI = new JMenuItem();
     commandStationMenu = new JMenu();
-    connectMI = new JMenuItem();
     virtualCBMI = new JCheckBoxMenuItem();
     railControllerMenu = new JMenu();
     autoDrivingMI = new JMenuItem();
@@ -523,27 +515,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
 
     filler1.setName("filler1"); // NOI18N
     jcsToolBar.add(filler1);
-
-    connectButton.setIcon(new ImageIcon(getClass().getResource("/media/monitor-off-24.png"))); // NOI18N
-    connectButton.setToolTipText("Connect/Disconnect with Central Station");
-    connectButton.setBorder(BorderFactory.createLineBorder(new Color(204, 204, 204)));
-    connectButton.setDoubleBuffered(true);
-    connectButton.setEnabled(false);
-    connectButton.setFocusable(false);
-    connectButton.setHorizontalTextPosition(SwingConstants.CENTER);
-    connectButton.setMargin(new Insets(0, 0, 0, 0));
-    connectButton.setMaximumSize(new Dimension(40, 40));
-    connectButton.setMinimumSize(new Dimension(40, 40));
-    connectButton.setName("connectButton"); // NOI18N
-    connectButton.setPreferredSize(new Dimension(40, 40));
-    connectButton.setSelectedIcon(new ImageIcon(getClass().getResource("/media/monitor-on-24.png"))); // NOI18N
-    connectButton.setVerticalTextPosition(SwingConstants.BOTTOM);
-    connectButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        connectButtonActionPerformed(evt);
-      }
-    });
-    jcsToolBar.add(connectButton);
 
     filler2.setName("filler2"); // NOI18N
     jcsToolBar.add(filler2);
@@ -897,15 +868,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     commandStationMenu.setText("Command Station");
     commandStationMenu.setName("commandStationMenu"); // NOI18N
 
-    connectMI.setText("Connect");
-    connectMI.setName("connectMI"); // NOI18N
-    connectMI.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        connectMIActionPerformed(evt);
-      }
-    });
-    commandStationMenu.add(connectMI);
-
     virtualCBMI.setText("Virtual Connection");
     virtualCBMI.setName("virtualCBMI"); // NOI18N
     virtualCBMI.addActionListener(new ActionListener() {
@@ -1149,7 +1111,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
         //Give the communication time to switchoff
         JCS.getJcsCommandStation().pause(5);
       }
-      JCS.getJcsCommandStation().disconnect();
+      JCS.getJcsCommandStation().shutdown();
     } catch (Exception e) {
       Logger.error("Error closinbg resources! {}", e.getMessage());
     }
@@ -1196,18 +1158,13 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
         connected = JCS.getJcsCommandStation().isConnected();
 
         if (info != null && connected) {
-          connectButton.setSelected(true);
           powerButton.setSelected(JCS.getJcsCommandStation().isPowerOn());
-          connectMI.setText("Disconnect");
         } else {
-          connectButton.setSelected(false);
           powerButton.setSelected(JCS.getJcsCommandStation().isPowerOn());
         }
       } else {
-        if (JCS.getJcsCommandStation().isConnected()) {
-          JCS.getJcsCommandStation().disconnect();
-        }
-        connectMI.setText("Connect");
+        // Also cancel lifecycle retries when the station is offline.
+        JCS.getJcsCommandStation().disconnect();
       }
     }
 
@@ -1217,11 +1174,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     showVNCBtn.setEnabled(connect && connected);
     setControllerProperties();
   }
-
-    private void connectButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_connectButtonActionPerformed
-      boolean connect = ((JToggleButton) evt.getSource()).isSelected();
-      connect(connect);
-    }//GEN-LAST:event_connectButtonActionPerformed
 
     private void showHomeActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showHomeActionPerformed
       showLayoutControlPanel();
@@ -1238,12 +1190,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     private void showSensorMonitorActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showSensorMonitorActionPerformed
       showSensorMonitor();
     }//GEN-LAST:event_showSensorMonitorActionPerformed
-
-    private void connectMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_connectMIActionPerformed
-      boolean connect = "Connect".equals(((JMenuItem) evt.getSource()).getText());
-      connect(connect);
-      connectButton.setSelected(connect);
-    }//GEN-LAST:event_connectMIActionPerformed
 
   private void showCommandStationsMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showCommandStationsMIActionPerformed
     showCommandStations();
@@ -1268,21 +1214,15 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   }//GEN-LAST:event_autoPilotBtnActionPerformed
 
   private void startAutopilot() {
-    if (autoPilotBtn.isSelected()) {
-      //startAllLocsBtn.setEnabled(true);
-      //dispatcherStatusPanel.showDispatcherTab();
-      // startAllLocsBtn.setIcon(new ImageIcon(getClass().getResource("/media/arrowhead-right-gn.png")));
-    } else {
-      //startAllLocsBtn.setEnabled(false);
-      //dispatcherStatusPanel.showLocomotiveTab();
-    }
-
-    //AutoPilot.runAutoPilot(autoPilotBtn.isSelected());
     RailController.getInstance().enableAutomode(autoPilotBtn.isSelected());
   }
 
   @Override
   public void onControllerStatusChange(String status) {
+    if (!SwingUtilities.isEventDispatchThread()) {
+      SwingUtilities.invokeLater(() -> onControllerStatusChange(status));
+      return;
+    }
     Logger.trace(status);
 
     if (status == null) {
@@ -1305,6 +1245,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
         autoPilotBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/cruise-control-on-red.png")));
       }
       case RailController.STOPPED -> {
+        autoPilotBtn.setSelected(false);
         autoPilotBtn.setEnabled(true);
         autoPilotBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/cruise-control-on-black.png")));
         autoPilotBtn.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/media/cruise-control-on-yellow.png")));
@@ -1503,28 +1444,22 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   @Override
   public void onConnectionChange(ConnectionEvent event) {
     Logger.tag(TAG).debug("Command Station {} is {}", event.getSource(), (event.isConnected() ? "Connected" : "DisConnected"));
-
-//    if (event.isConnected()) {
-//      
-//      java.awt.EventQueue.invokeLater(() -> {
-//        connectMI.setText("DisConnect");
-//        connectButton.setSelected(true);
-//        if (JCS.getJcsCommandStation().isSupportVNC()) {
-//          showVNCBtn.setEnabled(true);
-//        } else {
-//          showVNCBtn.setEnabled(false);
-//        }
-//        setTitle(getTitleString());
-//      });
-//    } else {
-//      java.awt.EventQueue.invokeLater(() -> {
-//        connectMI.setText("Connect");
-//        connectButton.setSelected(false);
-//        showVNCBtn.setEnabled(false);
-//        setTitle(getTitleString());
-//        JOptionPane.showMessageDialog(this, "CommandStation " + event.getSource() + " is not connected.", "Not Connected", JOptionPane.ERROR_MESSAGE);
-//      });
-//    }
+    // A terminated JCS-WORKER cannot accept power commands while reconnecting.
+    // Keep the power control disabled until the lifecycle reports CONNECTED.
+    SwingUtilities.invokeLater(() -> {
+      boolean connected = event.isConnected();
+      powerButton.setEnabled(connected);
+      if (!connected) {
+        powerButton.setSelected(false);
+      }
+      showFeedbackMonitorBtn.setEnabled(connected);
+      showVNCBtn.setEnabled(connected && JCS.getJcsCommandStation().isSupportVNC());
+      // While reconnecting, the disconnect action must still cancel retries.
+      var state = JCS.getJcsCommandStation().getConnectionState();
+      boolean connecting = state == jcs.commandStation.lifecycle.ConnectionState.CONNECTING
+              || state == jcs.commandStation.lifecycle.ConnectionState.RECONNECTING;
+      setTitle(getTitleString());
+    });
   }
 
   @Override
@@ -1585,8 +1520,6 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   private JFileChooser backupRestoreFileDialog;
   private JPanel centerPanel;
   private JMenu commandStationMenu;
-  private JToggleButton connectButton;
-  private JMenuItem connectMI;
   private JMenuItem deleteTileMI;
   private DispatcherStatusPanel dispatcherStatusPanel;
   private JMenuItem editLayout;
