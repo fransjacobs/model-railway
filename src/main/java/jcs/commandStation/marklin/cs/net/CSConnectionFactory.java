@@ -108,19 +108,28 @@ public class CSConnectionFactory {
     return httpConnection;
   }
 
-  public static void disconnectAll() {
-    if (controllerConnection != null) {
-      try {
-        if (controllerConnection.isConnected()) {
-          controllerConnection.close();
-        }
-      } catch (Exception ex) {
-        Logger.trace("Error during disconnect " + ex);
-      }
-    }
+  public static synchronized void disconnectAll() {
+    CSConnection oldConnection = controllerConnection;
+    CSHTTPConnection oldHttp = httpConnection;
     controllerConnection = null;
     httpConnection = null;
     controllerHost = null;
+
+    // A disconnected transport may still own a socket or receiver thread.
+    if (oldConnection != null) {
+      try {
+        oldConnection.close();
+      } catch (Exception ex) {
+        Logger.warn("Error closing Central Station transport: " + ex.getMessage());
+      }
+    }
+    if (oldHttp != null) {
+      try {
+        oldHttp.close();
+      } catch (Exception ex) {
+        Logger.warn("Error closing Central Station HTTP client: " + ex.getMessage());
+      }
+    }
   }
 
   public static String getControllerIp() {

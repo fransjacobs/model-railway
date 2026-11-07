@@ -967,7 +967,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 
     @SuppressWarnings("FieldMayBeFinal")
     private boolean stop = false;
-    private boolean quit = true;
+    private volatile boolean quit = true;
 
     private final BlockingQueue<CanMessage> eventMessageQueue;
 
@@ -978,6 +978,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 
     void quit() {
       this.quit = true;
+      interrupt();
     }
 
     boolean isRunning() {
@@ -1130,8 +1131,12 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
               }
             }
           } catch (InterruptedException ex) {
-            Logger.error(ex);
+            // Expected when quit() wakes the event queue consumer.
+            if (!quit) {
+              Logger.warn("CAN event handler interrupted unexpectedly");
+            }
             Thread.currentThread().interrupt();
+            break;
           }
         } catch (Exception e) {
           Logger.error("Error in Handling Thread. Cause: " + e.getMessage());

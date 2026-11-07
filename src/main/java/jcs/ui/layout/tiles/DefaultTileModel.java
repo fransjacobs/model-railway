@@ -85,8 +85,10 @@ public class DefaultTileModel implements TileModel {
 
   @Override
   public void setSelected(boolean selected) {
-    this.selected = selected;
-    fireStateChanged();
+    if (this.selected != selected) {
+      this.selected = selected;
+      fireStateChanged();
+    }
   }
 
   @Override
@@ -115,8 +117,10 @@ public class DefaultTileModel implements TileModel {
 
   @Override
   public void setScaleImage(boolean scaleImage) {
-    this.scaleImage = scaleImage;
-    fireStateChanged();
+    if (this.scaleImage != scaleImage) {
+      this.scaleImage = scaleImage;
+      fireStateChanged();
+    }
   }
 
   @Override
@@ -126,8 +130,10 @@ public class DefaultTileModel implements TileModel {
 
   @Override
   public void setShowCenter(boolean showCenter) {
-    this.showCenter = showCenter;
-    fireStateChanged();
+    if (this.showCenter != showCenter) {
+      this.showCenter = showCenter;
+      fireStateChanged();
+    }
   }
 
   @Override
@@ -137,8 +143,10 @@ public class DefaultTileModel implements TileModel {
 
   @Override
   public void setTileOrienation(Orientation tileOrienation) {
-    this.tileOrienation = tileOrienation;
-    fireStateChanged();
+    if (this.tileOrienation != tileOrienation) {
+      this.tileOrienation = tileOrienation;
+      fireStateChanged();
+    }
   }
 
   @Override
@@ -158,8 +166,10 @@ public class DefaultTileModel implements TileModel {
 
   @Override
   public void setShowRoute(boolean showRoute) {
-    this.showRoute = showRoute;
-    fireStateChanged();
+    if (this.showRoute != showRoute) {
+      this.showRoute = showRoute;
+      fireStateChanged();
+    }
   }
 
   @Override
@@ -224,8 +234,10 @@ public class DefaultTileModel implements TileModel {
 
   @Override
   public void setSensorActive(boolean sensorActive) {
-    this.sensorActive = sensorActive;
-    fireStateChanged();
+    if (this.sensorActive != sensorActive) {
+      this.sensorActive = sensorActive;
+      fireStateChanged();
+    }
   }
 
   @Override
@@ -248,8 +260,10 @@ public class DefaultTileModel implements TileModel {
 
   @Override
   public void setSignalValue(SignalValue signalValue) {
-    this.signalValue = signalValue;
-    fireStateChanged();
+    if (this.signalValue != signalValue) {
+      this.signalValue = signalValue;
+      fireStateChanged();
+    }
   }
 
   @Override

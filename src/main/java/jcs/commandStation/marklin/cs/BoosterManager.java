@@ -57,7 +57,7 @@ class BoosterManager implements ConnectionEventListener {
   private ChannelConfigurationQueryThread channelConfigurationQuery;
 
   private MeasurementTask measurementTask;
-  private Timer measurementTimer;
+  private volatile Timer measurementTimer;
 
   //The Marklin CS has 4 analog Channels
   private MeasuringChannel main;
@@ -81,12 +81,47 @@ class BoosterManager implements ConnectionEventListener {
   }
 
   void initChannels() {
-    channelConfigurationQuery = new ChannelConfigurationQueryThread(this);
-    channelConfigurationQuery.start();
+    stopWorkers();
+    synchronized (this) {
+      main = null;
+      prog = null;
+      volt = null;
+      temp = null;
+      channelConfigurationQuery = new ChannelConfigurationQueryThread(this);
+      channelConfigurationQuery.start();
+    }
   }
 
+  /**
+   * Always stop the query thread and timer, even when no measurement was recorded.
+   * The query thread is interruptible and must not schedule a new timer after stop.
+   */
+  private void stopWorkers() {
+    ChannelConfigurationQueryThread query;
+    synchronized (this) {
+      if (measurementTimer != null) {
+        measurementTimer.cancel();
+        measurementTimer = null;
+      }
+      query = channelConfigurationQuery;
+      channelConfigurationQuery = null;
+      if (query != null) {
+        query.quit();
+      }
+    }
+    if (query != null && query != Thread.currentThread()) {
+      try {
+        query.join(1000);
+      } catch (InterruptedException ex) {
+        Thread.currentThread().interrupt();
+      }
+    }
+  }
+
+
   void notifyLastMeasurement() {
-    //Let all listeners know the the values are 0 as we have disconnected
+    stopWorkers();
+    // Let all listeners know the values are 0 as we have disconnected.
     if (!measurements.isEmpty()) {
       long now = System.currentTimeMillis();
       Map<String, MeasurementBean> measurementRow = new HashMap<>();
@@ -107,18 +142,6 @@ class BoosterManager implements ConnectionEventListener {
         listener.onMeasurement(me);
       }
 
-      if (measurementTimer != null) {
-        measurementTimer.cancel();
-      }
-      if (channelConfigurationQuery != null) {
-        channelConfigurationQuery.quit();
-
-        try {
-          channelConfigurationQuery.join(2000);
-        } catch (InterruptedException ex) {
-          Thread.currentThread().interrupt();
-        }
-      }
     }
   }
 
@@ -190,14 +213,7 @@ class BoosterManager implements ConnectionEventListener {
   @Override
   public void onConnectionChange(ConnectionEvent event) {
     if (!event.isConnected()) {
-      if (channelConfigurationQuery != null && channelConfigurationQuery.isRunning()) {
-        channelConfigurationQuery.quit();
-      }
-
-      if (measurementTimer != null) {
-        measurementTimer.cancel();
-      }
-
+      stopWorkers();
     }
   }
 
@@ -205,16 +221,18 @@ class BoosterManager implements ConnectionEventListener {
 
     private final BoosterManager boosterManager;
 
-    private volatile boolean running = false;
+    private volatile boolean running = true;
     private volatile boolean configured = false;
 
     public ChannelConfigurationQueryThread(BoosterManager boosterManager) {
       super("BM-CHANNEL-CONFIG-QUERY-THREAD");
+      setDaemon(true);
       this.boosterManager = boosterManager;
     }
 
     void quit() {
       this.running = false;
+      interrupt();
     }
 
     boolean isRunning() {
@@ -231,13 +249,15 @@ class BoosterManager implements ConnectionEventListener {
 
     @Override
     public void run() {
-      running = true;
-
-      //Wait for 5 seconds before querying the channels
+      // Wait before querying, but exit promptly when the connection is stopped.
       zleep(5000);
+      if (!running || !marklinCentralStationImpl.isConnected()) {
+        running = false;
+        return;
+      }
 
       Logger.debug("Obtaining channel configuration...");
-      while (!configured && running) {
+      while (!configured && running && marklinCentralStationImpl.isConnected()) {
         CanDevice gfp = boosterManager.marklinCentralStationImpl.getCanDevice(this.boosterManager.marklinCentralStationImpl.getCsUid());
         if (gfp != null) {
           List<MeasuringChannel> measuringChannels = gfp.getMeasuringChannels();
@@ -266,20 +286,22 @@ class BoosterManager implements ConnectionEventListener {
             }
           }
 
-          configured = boosterManager.main != null && boosterManager.prog != null && boosterManager.volt != null && boosterManager.volt != null;
+          configured = boosterManager.main != null && boosterManager.prog != null
+                  && boosterManager.volt != null && boosterManager.temp != null;
           if (configured) {
             Logger.trace("Start measurements...");
 
             long measureInterval = Long.parseLong(System.getProperty("measurement.interval", "5"));
             measureInterval = measureInterval * 1000;
 
-            if (measureInterval > 0 && !boosterManager.marklinCentralStationImpl.isVirtual()) {
-              boosterManager.measurementTask = new MeasurementTask(boosterManager);
-
-              boosterManager.measurementTimer = new Timer("MeasurementsTimer");
-              boosterManager.measurementTimer.schedule(measurementTask, 10, measureInterval);
-
-              Logger.debug("Started Measurements Timer with an interval of " + measureInterval + " ms");
+            synchronized (boosterManager) {
+              if (running && boosterManager.marklinCentralStationImpl.isConnected()
+                      && measureInterval > 0 && !boosterManager.marklinCentralStationImpl.isVirtual()) {
+                boosterManager.measurementTask = new MeasurementTask(boosterManager);
+                boosterManager.measurementTimer = new Timer("MeasurementsTimer", true);
+                boosterManager.measurementTimer.schedule(measurementTask, 10, measureInterval);
+                Logger.debug("Started Measurements Timer with an interval of " + measureInterval + " ms");
+              }
             }
           } else {
             zleep(10000);
@@ -320,7 +342,10 @@ class BoosterManager implements ConnectionEventListener {
             boosterManager.performMeasurements();
           } else {
             Logger.debug("Track Measurements are not supported. Cancelling the Measurements schedule...");
-            measurementTimer.cancel();
+            Timer timer = measurementTimer;
+            if (timer != null) {
+              timer.cancel();
+            }
           }
         } catch (Exception e) {
           Logger.error(e);

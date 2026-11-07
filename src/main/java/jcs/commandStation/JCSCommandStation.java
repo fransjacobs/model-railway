@@ -461,8 +461,6 @@ public class JCSCommandStation {
       }
     }
 
-    this.executor.shutdown();
-
     stopEventHandler(locomotiveEventHandlerThread);
     stopEventHandler(accessoryEventHandlerThread);
     stopEventHandler(sensorEventHandlerThread);
@@ -485,16 +483,28 @@ public class JCSCommandStation {
     decoderController = null;
     commandStation = null;
     ControllerFactory.reset();
+
+    // All controller callbacks have finished; no further work should be accepted.
+    if (executor != null) {
+      executor.shutdown();
+    }
   }
 
   private void notifyConnectionListeners(final ConnectionEvent connectionEvent) {
     if (!isVirtual()) {
       if (!connectionEventListeners.isEmpty()) {
-        executor.execute(() -> {
-          for (ConnectionEventListener cel : connectionEventListeners) {
-            cel.onConnectionChange(connectionEvent);
-          }
-        });
+        if (executor == null || executor.isShutdown()) {
+          return;
+        }
+        try {
+          executor.execute(() -> {
+            for (ConnectionEventListener cel : connectionEventListeners) {
+              cel.onConnectionChange(connectionEvent);
+            }
+          });
+        } catch (java.util.concurrent.RejectedExecutionException ignored) {
+          // Connection notification raced with intentional shutdown.
+        }
       }
     }
   }
@@ -505,6 +515,9 @@ public class JCSCommandStation {
       if (powerEventRunning.compareAndSet(false, true)) {
         try {
           if (!powerEventListeners.isEmpty()) {
+            if (executor == null || executor.isShutdown()) {
+              return;
+            }
             executor.execute(() -> {
               for (PowerEventListener pel : powerEventListeners) {
                 pel.onPowerChange(powerEvent);
@@ -515,8 +528,8 @@ public class JCSCommandStation {
           powerEventRunning.set(false);
         }
       }
-    } catch (Exception e) {
-      Logger.trace(e.getMessage());
+    } catch (java.util.concurrent.RejectedExecutionException ignored) {
+      // A callback raced with executor shutdown; normal during disconnect.
     }
   }
 
@@ -1370,7 +1383,10 @@ public class JCSCommandStation {
           }
         } catch (InterruptedException ex) {
           Thread.currentThread().interrupt();
-          Logger.error(ex.getMessage());
+          // quit() interrupts poll() during normal shutdown.
+          if (running) {
+            Logger.warn(getName() + " interrupted unexpectedly");
+          }
           break;
         } catch (Exception e) {
           Logger.error("Error in " + getName() + ". Cause: " + e.getMessage());
