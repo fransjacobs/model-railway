@@ -28,8 +28,7 @@ import javax.imageio.ImageIO;
 import org.tinylog.Logger;
 
 /**
- *
- * @author fransjacobs
+ * Util class to scale images
  */
 public class ImageUtil {
 
@@ -112,19 +111,12 @@ public class ImageUtil {
     return img;
   }
 
-//  public static BufferedImage resizeImageFast(BufferedImage image, int width, int height) {
-//    BufferedImage resizedImage = new BufferedImage(width, height, image.getType());
-//
-//    Graphics2D g = resizedImage.createGraphics();
-//    g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-//    g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-//    g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-//
-//    g.drawImage(image, 0, 0, width, height, null);
-//    g.dispose();
-//    return resizedImage;
-//  }
   public static BufferedImage resizeImage(BufferedImage image, int targetWidth, int targetHeight) {
+
+    if (targetWidth <= 0 || targetHeight <= 0) {
+      throw new IllegalArgumentException("Target dimensions must be positive");
+    }
+
     int currentWidth = image.getWidth();
     int currentHeight = image.getHeight();
     BufferedImage current = image;
@@ -146,8 +138,40 @@ public class ImageUtil {
     return current;
   }
 
+  public static BufferedImage resizeImageTwoPass(BufferedImage image, int targetWidth, int targetHeight) {
+
+    if (targetWidth <= 0 || targetHeight <= 0) {
+      throw new IllegalArgumentException("Target dimensions must be positive");
+    }
+
+    int sourceWidth = image.getWidth();
+    int sourceHeight = image.getHeight();
+
+    if (sourceWidth == targetWidth && sourceHeight == targetHeight) {
+      return image;
+    }
+
+    // For small reductions or upscaling,
+    // a single pass is sufficient.
+    if (sourceWidth <= targetWidth * 3 && sourceHeight <= targetHeight * 3) {
+      return scaleStep(image, targetWidth, targetHeight);
+    }
+
+    // Intermediate size: approximately 3x the final size.
+    int intermediateWidth = Math.min(sourceWidth, targetWidth * 3);
+    int intermediateHeight = Math.min(sourceHeight, targetHeight * 3);
+
+    BufferedImage intermediate = scaleStep(image, intermediateWidth, intermediateHeight);
+
+    BufferedImage result = scaleStep(intermediate, targetWidth, targetHeight);
+    intermediate.flush();
+    return result;
+  }
+
   private static BufferedImage scaleStep(BufferedImage src, int w, int h) {
-    BufferedImage dest = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+    int type = src.getColorModel().hasAlpha() ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB;
+    BufferedImage dest = new BufferedImage(w, h, type);
+
     Graphics2D g = dest.createGraphics();
     g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
     g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);

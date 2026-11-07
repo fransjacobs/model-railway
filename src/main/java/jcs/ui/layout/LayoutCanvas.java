@@ -23,6 +23,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DropTargetDropEvent;
@@ -33,7 +34,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -51,6 +51,7 @@ import jcs.commandStation.automation.RailController;
 import jcs.entities.BlockBean;
 import jcs.entities.BlockBean.BlockState;
 import jcs.entities.LocomotiveBean;
+import jcs.entities.RouteBean;
 import jcs.entities.TileBean;
 import jcs.entities.TileBean.Direction;
 import jcs.entities.TileBean.Orientation;
@@ -116,6 +117,7 @@ public class LayoutCanvas extends JPanel {
   private boolean showCenter;
 
   private volatile boolean loading;
+  private boolean initialLoadRequested = false;
 
   private static final BasicStroke GRID_STROKE = new BasicStroke(1f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 
@@ -128,7 +130,6 @@ public class LayoutCanvas extends JPanel {
     setLayout(null);
     setOpaque(true);
 
-    //setDoubleBuffered(true);
     showCenter = "true".equalsIgnoreCase(System.getProperty("tile.show.center", "false"));
 
     this.readonly = readonly;
@@ -164,25 +165,44 @@ public class LayoutCanvas extends JPanel {
   }
 
   public void setReadonly(boolean readonly) {
+
+    if (!SwingUtilities.isEventDispatchThread()) {
+      SwingUtilities.invokeLater(() -> setReadonly(readonly));
+      return;
+    }
+
+    boolean modeChanged = this.readonly != readonly;
+
+    // Remove any editor selection before changing modes.
+    // Previously this happened indirectly during reload.
+    if (modeChanged) {
+      resetSelection();
+    }
+
     this.readonly = readonly;
+    this.mode = readonly ? Mode.CONTROL : Mode.EDIT;
+
+    // Enable drag-and-drop only in edit mode.
     if (readonly) {
-      mode = Mode.CONTROL;
-    } else {
-      mode = Mode.EDIT;
-    }
-
-    if (!readonly) {
-      setTransferHandler(new TileBeanDropHandler());
-    } else {
       setTransferHandler(null);
+    } else if (getTransferHandler() == null) {
+      setTransferHandler(new TileBeanDropHandler());
     }
 
-    loadLayoutInBackground();
-    
-    if(routesDialog != null) {
+    if (routesDialog != null) {
       routesDialog.setReadonly(readonly);
     }
 
+    // Load the layout only once during initial setup.
+    // Do not reload just because the operating mode changes.
+    if (!initialLoadRequested) {
+      initialLoadRequested = true;
+      loadLayoutInBackground();
+    }
+
+    if (modeChanged) {
+      repaint();
+    }
   }
 
   /**
@@ -227,35 +247,112 @@ public class LayoutCanvas extends JPanel {
     return component;
   }
 
+//  private void paintLineGridOld(Graphics g) {
+//    int width = getWidth();
+//    int height = getHeight();
+//
+//    Graphics2D gc = (Graphics2D) g;
+//    //Paint p = gc.getPaint();
+//    gc.setPaint(Color.lightGray);
+//    gc.setStroke(GRID_STROKE);
+//
+//    int grid = LayoutScale.getInstance().scaledGrid() * 2;
+//
+//    for (int x = 0; x < width; x += grid) {
+//      gc.drawLine(x, 0, x, height);
+//    }
+//
+//    for (int y = 0; y < height; y += grid) {
+//      gc.drawLine(0, y, width, y);
+//    }
+//  }
   private void paintLineGrid(Graphics g) {
-    int width = getWidth();
-    int height = getHeight();
+    Rectangle clip = g.getClipBounds();
 
-    Graphics2D gc = (Graphics2D) g;
-    //Paint p = gc.getPaint();
-    gc.setPaint(Color.lightGray);
-    gc.setStroke(GRID_STROKE);
+    if (clip == null) {
+      clip = new Rectangle(0, 0, getWidth(), getHeight());
+    }
 
     int grid = LayoutScale.getInstance().scaledGrid() * 2;
 
-    for (int x = 0; x < width; x += grid) {
-      gc.drawLine(x, 0, x, height);
+    if (grid <= 0) {
+      return;
     }
 
-    for (int y = 0; y < height; y += grid) {
-      gc.drawLine(0, y, width, y);
+    // Limit painting to the canvas itself
+    Rectangle visible = clip.intersection(
+            new Rectangle(0, 0, getWidth(), getHeight())
+    );
+
+    if (visible.isEmpty()) {
+      return;
+    }
+
+    Graphics2D gc = (Graphics2D) g.create();
+
+    try {
+      gc.setPaint(Color.lightGray);
+      gc.setStroke(GRID_STROKE);
+
+      // Start at the nearest grid line before the visible area
+      int startX = (visible.x / grid) * grid;
+      int startY = (visible.y / grid) * grid;
+
+      int endX = visible.x + visible.width;
+      int endY = visible.y + visible.height;
+
+      // Vertical grid lines
+      for (int x = startX; x < endX; x += grid) {
+        gc.drawLine(x, visible.y, x, endY);
+      }
+
+      // Horizontal grid lines
+      for (int y = startY; y < endY; y += grid) {
+        gc.drawLine(visible.x, y, endX, y);
+      }
+    } finally {
+      gc.dispose();
     }
   }
 
   private void paintDotGrid(Graphics g) {
-    int step = LayoutScale.getInstance().scaledTileSize();  // was: 40
-    int width = getWidth();
-    int height = getHeight();
-    Graphics2D gc = (Graphics2D) g;
-    for (int x = 0; x < width; x += step) {
-      for (int y = 0; y < height; y += step) {
-        gc.fillOval(x - 2, y - 2, 4, 4);
+    Rectangle clip = g.getClipBounds();
+
+    if (clip == null) {
+      clip = new Rectangle(0, 0, getWidth(), getHeight());
+    }
+
+    int step = LayoutScale.getInstance().scaledTileSize();
+
+    if (step <= 0) {
+      return;
+    }
+
+    Rectangle visible = clip.intersection(
+            new Rectangle(0, 0, getWidth(), getHeight())
+    );
+
+    if (visible.isEmpty()) {
+      return;
+    }
+
+    Graphics2D gc = (Graphics2D) g.create();
+
+    try {
+      // Include dots that partially overlap the visible area
+      int startX = (Math.max(0, visible.x - 2) / step) * step;
+      int startY = (Math.max(0, visible.y - 2) / step) * step;
+
+      int endX = visible.x + visible.width + 2;
+      int endY = visible.y + visible.height + 2;
+
+      for (int x = startX; x < endX; x += step) {
+        for (int y = startY; y < endY; y += step) {
+          gc.fillOval(x - 2, y - 2, 4, 4);
+        }
       }
+    } finally {
+      gc.dispose();
     }
   }
 
@@ -278,112 +375,56 @@ public class LayoutCanvas extends JPanel {
     Logger.trace("TileType: " + tileType + " Current mode: " + mode);
   }
 
-  public void setScaleOld(int scalePercent) {
-    if (selectedTile != null) {
-      selectedTile.setSelected(false);
-      selectedTile = null;
-    }
-
-    LayoutScale.getInstance().setScalePercent(scalePercent);
-
-    //Don't do the scaling on the Event Disaptch Thread
-    executor.execute(() -> {
-      //Scale all tiles
-//      Component[] components = getComponents();
-//      for (Component c : components) {
-//        if (c instanceof Tile tile) {
-//          tile.setScaleImage(true);
-//          tile.markImageDirty();
-//          tile.setBounds(tile.getTileBounds());
-//        }
-//      }
-//
-//      Dimension canonicalSize = TileCache.getMinCanvasSize();
-//
-//        LayoutScale scale = LayoutScale.getInstance();
-//        setPreferredSize(new Dimension(
-//                scale.toDisplay(canonicalSize.width),
-//                scale.toDisplay(canonicalSize.height)
-//        ));
-
-      java.awt.EventQueue.invokeLater(() -> {
-        long now = System.currentTimeMillis();
-        Component[] components = getComponents();
-        for (Component c : components) {
-          if (c instanceof Tile tile) {
-            tile.setScaleImage(true);
-            tile.markImageDirty();
-            tile.setBounds(tile.getTileBounds());
-          }
-        }
-
-        // Resize and reposition every tile on the canvas
-        // Update canvas preferred size (TileCache uses canonical, so scale it)
-        Dimension canonicalSize = TileCache.getMinCanvasSize();
-        LayoutScale scale = LayoutScale.getInstance();
-        setPreferredSize(new Dimension(
-                scale.toDisplay(canonicalSize.width),
-                scale.toDisplay(canonicalSize.height)
-        ));
-
-        revalidate();
-        repaint();
-        long duration = System.currentTimeMillis() - now;
-        Logger.trace("Scaling {} tiles finished in {} ms...", getComponents().length, duration);
-      });
-    });
-  }
-
   public void setScale(int scalePercent) {
+    // All Swing component changes must happen on the EDT.
+    if (!SwingUtilities.isEventDispatchThread()) {
+      SwingUtilities.invokeLater(() -> setScale(scalePercent));
+      return;
+    }
+
+    long started = System.currentTimeMillis();
+
+    // Clear selection before changing the scale.
     if (selectedTile != null) {
       selectedTile.setSelected(false);
       selectedTile = null;
     }
 
-    LayoutScale.getInstance().setScalePercent(scalePercent);
+    LayoutScale scale = LayoutScale.getInstance();
+    scale.setScalePercent(scalePercent);
 
-    // Snapshot the component array on the EDT before handing off to worker.
-    final Component[] components = getComponents();
+    // Update every tile's dimensions and position.
+    for (Component c : getComponents()) {
+      if (c instanceof Tile tile) {
+        // Keep the existing scaled-image mode.
+        tile.setScaleImage(true);
 
-    executor.execute(() -> {
-      // Phase 1 — worker thread: pre-render all tile images at the new scale.
-      // resizeImage() is the slow part. tileImage is volatile so the EDT
-      // will see the freshly rendered image without a data race.
-      for (Component c : components) {
-        if (c instanceof Tile tile) {
-          tile.getUI().preRender(tile);  // renders + clears dirty flag
-        }
+        // A new zoom percentage requires a new cached image,
+        // even if isScaleImage() was already true.
+        tile.markImageDirty();
+        // Recalculate bounds using the new scale.
+        tile.setBounds(tile.getTileBounds());
       }
+    }
 
-      // Phase 2 — single EDT block: apply all Swing mutations atomically.
-      // Because we are on the EDT, all setBounds() → repaint() calls are
-      // coalesced by RepaintManager and fire as ONE combined repaint after
-      // this invokeLater block completes. No tile-by-tile display.
-      SwingUtilities.invokeLater(() -> {
-        for (Component c : components) {
-          if (c instanceof Tile tile) {
-            tile.setScaleImage(true);        // setSize / setPreferredSize
-            tile.setBounds(tile.getTileBounds());  // coalesced, not immediate
-          }
-        }
+    // Resize the canvas to the new zoom level.
+    Dimension canonical = TileCache.getMinCanvasSize();
 
-        LayoutScale scale = LayoutScale.getInstance();
-        Dimension canonical = TileCache.getMinCanvasSize();
-        setPreferredSize(new Dimension(
-                scale.toDisplay(canonical.width),
-                scale.toDisplay(canonical.height)));
+    setPreferredSize(new Dimension(
+            scale.toDisplay(canonical.width),
+            scale.toDisplay(canonical.height)
+    ));
 
-        revalidate();
-        repaint();  // all tiles clean → pure blit, fast
-      });
-    });
+    revalidate();
+    repaint();
+
+    Logger.debug("Updated layout scale to {}% for {} tiles in {} ms", scalePercent, getComponentCount(), System.currentTimeMillis() - started);
   }
 
-  @SuppressWarnings("unused")
-  void setDirection(Direction direction) {
-    this.direction = direction;
-  }
-
+//  @SuppressWarnings("unused")
+//  void setDirection(Direction direction) {
+//    this.direction = direction;
+//  }
   void loadLayoutInBackground() {
     if (!loading) {
       executor.execute(() -> {
@@ -391,8 +432,6 @@ public class LayoutCanvas extends JPanel {
           loading = true;
           List<Tile> tiles = TileCache.loadTiles(readonly);
 
-          //try {
-          //java.awt.EventQueue.invokeAndWait(() -> {
           java.awt.EventQueue.invokeLater(() -> {
             long now = System.currentTimeMillis();
 
@@ -403,11 +442,6 @@ public class LayoutCanvas extends JPanel {
             long duration = System.currentTimeMillis() - now;
             Logger.trace("Loading {} tiles finished in {} ms...", tiles.size(), duration);
           });
-//            } catch (InterruptedException ex) {
-//              Thread.currentThread().interrupt();
-//            } catch (InvocationTargetException ex) {
-//              Logger.error(ex.getMessage());
-//            }
         } finally {
           loading = false;
         }
@@ -676,17 +710,37 @@ public class LayoutCanvas extends JPanel {
   }
 
   private void mouseReleasedAction(MouseEvent evt) {
+    if (Mode.CONTROL.equals(mode)
+            || evt.getButton() != MouseEvent.BUTTON1
+            || selectedTile == null) {
+      return;
+    }
+
     Point snapPoint = LayoutUtil.snapToGrid(evt.getPoint());
-    if (!Mode.CONTROL.equals(mode) && MouseEvent.BUTTON1 == evt.getButton() && selectedTile != null) {
+
+    // Only validate and persist when the position changes.
+    if (!snapPoint.equals(selectedTile.getCenter())) {
       if (TileCache.canMoveTo(selectedTile, snapPoint)) {
         TileCache.moveTo(selectedTile, snapPoint);
-      } else {
-        selectedTile.setSelectedColor(Tile.DEFAULT_SELECTED_COLOR);
-        selectedTile.setBounds(selectedTile.getTileBounds());
       }
     }
+
+    // Always restore the correct appearance and bounds.
+    selectedTile.setSelectedColor(Tile.DEFAULT_SELECTED_COLOR);
+    selectedTile.setBounds(selectedTile.getTileBounds());
   }
 
+//  private void mouseReleasedAction(MouseEvent evt) {
+//    Point snapPoint = LayoutUtil.snapToGrid(evt.getPoint());
+//    if (!Mode.CONTROL.equals(mode) && MouseEvent.BUTTON1 == evt.getButton() && selectedTile != null) {
+//      if (TileCache.canMoveTo(selectedTile, snapPoint)) {
+//        TileCache.moveTo(selectedTile, snapPoint);
+//      } else {
+//        selectedTile.setSelectedColor(Tile.DEFAULT_SELECTED_COLOR);
+//        selectedTile.setBounds(selectedTile.getTileBounds());
+//      }
+//    }
+//  }
   private void executeControlActionForTile(Tile tile) {
     TileBean.TileType tt = tile.getTileType();
     switch (tt) {
@@ -938,9 +992,14 @@ public class LayoutCanvas extends JPanel {
     astar.buildGraph(TileCache.getTiles());
     astar.routeAll();
     astar.persistRoutes();
-    if (routesDialog.isVisible()) {
-      routesDialog.loadRoutes();
-    }
+
+    // Read the routes on the worker thread.
+    List<RouteBean> routes = PersistenceFactory.getService().getRoutes();
+    SwingUtilities.invokeLater(() -> {
+      if (routesDialog.isVisible()) {
+        routesDialog.displayRoutes(routes);
+      }
+    });
   }
 
   void showRoutesDialog() {
