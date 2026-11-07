@@ -79,7 +79,7 @@ class StatusPanelLifecycleTest {
     };
 
     onEdt(() -> {
-      StatusPanel panel = new StatusPanel();
+      StatusPanel panel = new StatusPanel(false);
       JLabel icon = label(panel, "statusIconLbl");
       JLabel caption = label(panel, "statusLbl");
 
@@ -97,7 +97,7 @@ class StatusPanelLifecycleTest {
   @Test
   void clearsPreviousMeasurementsAndHidesThemDuringReconnect() throws Exception {
     onEdt(() -> {
-      StatusPanel panel = new StatusPanel();
+      StatusPanel panel = new StatusPanel(false);
       JLabel current = label(panel, "currentLbl");
       JLabel voltage = label(panel, "voltageLbl");
       JLabel temperature = label(panel, "tempLbl");
@@ -121,7 +121,7 @@ class StatusPanelLifecycleTest {
   @Test
   void defaultsToDisconnectedForNullStateAndUsesCaptionAsTooltip() throws Exception {
     onEdt(() -> {
-      StatusPanel panel = new StatusPanel();
+      StatusPanel panel = new StatusPanel(false);
       render(panel, ConnectionState.CONNECTED, "online");
       render(panel, null, null);
 
@@ -134,7 +134,7 @@ class StatusPanelLifecycleTest {
   @Test
   void lifecycleUpdateFromWorkerRunsOnSwingEventThread() throws Exception {
     AtomicReference<StatusPanel> holder = new AtomicReference<>();
-    onEdt(() -> holder.set(new StatusPanel()));
+    onEdt(() -> holder.set(new StatusPanel(false)));
     StatusPanel panel = holder.get();
 
     // Called from the test thread, not the EDT. Rendering must be deferred.
@@ -151,7 +151,7 @@ class StatusPanelLifecycleTest {
   @Test
   void automodeStatusIsIndependentOfConnectionStatus() throws Exception {
     onEdt(() -> {
-      StatusPanel panel = new StatusPanel();
+      StatusPanel panel = new StatusPanel(false);
       render(panel, ConnectionState.RECONNECTING, "network lost");
 
       panel.onControllerStatusChange(RailController.STOPPED);

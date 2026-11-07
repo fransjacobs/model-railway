@@ -55,8 +55,26 @@ public class StatusPanel extends javax.swing.JPanel implements MeasurementEventL
    * Creates new form StatusPanel
    */
   public StatusPanel() {
+    this(true);
+  }
+
+  /**
+   * Allows isolated Swing tests to create the panel without initializing
+   * application-wide JCS singletons or registering event listeners.
+   * NetBeans-generated initComponents() remains unchanged.
+   */
+  StatusPanel(boolean registerApplicationListeners) {
     initComponents();
-    postInit();
+    if (registerApplicationListeners) {
+      postInit();
+    } else {
+      virtualConnectionLbl.setVisible(false);
+      railControllerStatusLbl.setVisible(false);
+      currentLbl.setVisible(false);
+      voltageLbl.setVisible(false);
+      tempLbl.setVisible(false);
+      updateConnectionState(ConnectionState.DISCONNECTED, null);
+    }
   }
 
   private void postInit() {
@@ -116,11 +134,10 @@ public class StatusPanel extends javax.swing.JPanel implements MeasurementEventL
 
     String iconName = effectiveState.name().toLowerCase(java.util.Locale.ROOT);
     java.net.URL iconUrl = getClass().getResource(STATE_ICON_PREFIX + iconName + ".png");
-    // Do not let a missing resource hide a lifecycle transition.
-    statusLbl.setText(label);
-    statusIconLbl.setIcon(iconUrl != null ? new ImageIcon(iconUrl) : null);
-    if (iconUrl == null) {
-      Logger.warn("Missing connection-state icon: " + STATE_ICON_PREFIX + iconName + ".png");
+    if (iconUrl != null) {
+      statusLbl.setText(label);
+      statusIconLbl.setIcon(new ImageIcon(iconUrl));
+
     }
 
     Color color = switch (effectiveState) {
