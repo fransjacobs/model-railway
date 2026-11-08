@@ -1106,12 +1106,9 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
     try {
       boolean powerOnWhenQuit = Boolean.parseBoolean(System.getProperty("keep.power.on.when.quit", "false"));
 
-      if (!powerOnWhenQuit) {
-        JCS.getJcsCommandStation().switchPower(false);
-        //Give the communication time to switchoff
-        JCS.getJcsCommandStation().pause(5);
-      }
-      JCS.getJcsCommandStation().shutdown();
+      // STOP must complete before the lifecycle manager closes the socket.
+      // Do not enqueue an asynchronous STOP and sleep for 5 ms.
+      JCS.getJcsCommandStation().shutdown(!powerOnWhenQuit);
     } catch (Exception e) {
       Logger.error("Error closinbg resources! {}", e.getMessage());
     }

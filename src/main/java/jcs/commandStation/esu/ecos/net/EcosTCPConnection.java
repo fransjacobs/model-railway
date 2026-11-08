@@ -135,7 +135,6 @@ class EcosTCPConnection implements EcosConnection {
       writer = null;
       messageReceiver = null;
       Logger.error("Can't (re)connect with ESU Ecos " + ecosAddress.getHostAddress() + ". Cause: " + ex.getMessage());
-      //Logger.trace(ex);
     }
   }
 
@@ -196,12 +195,10 @@ class EcosTCPConnection implements EcosConnection {
 
     try {
       replyQueue.clear();
-      Logger.trace("TX: {}",message);
-
       writeCommand(writer, message);
 
       if (DEBUG) {
-        Logger.trace("TX: " + message.getMessage());
+        Logger.trace("TX: {}", message);
       }
 
       long start = System.currentTimeMillis();
@@ -230,10 +227,8 @@ class EcosTCPConnection implements EcosConnection {
         Logger.warn("No matching reply received for [{}] within {} ms", message.getMessage().trim(), TIMEOUT_MS);
       } else {
         message.addResponse(reply);
-       
-        Logger.trace("RX: {}",reply);
-        
         if (DEBUG) {
+          Logger.trace("RX: {}", reply);
           Logger.trace("Reply in {} ms, complete={}",
                   System.currentTimeMillis() - start, message.isResponseComplete());
         }
@@ -241,18 +236,11 @@ class EcosTCPConnection implements EcosConnection {
     } catch (IOException ex) {
       Logger.error("I/O error sending message: {}", ex.getMessage());
       markDisconnected("I/O error sending message: " + ex.getMessage());
-
-      //notifyDisconnect();
     } catch (InterruptedException ex) {
       Thread.currentThread().interrupt();
       Logger.error("Interrupted while waiting for reply: {}", ex.getMessage());
       markDisconnected("Interrupted while waiting for reply: " + ex.getMessage());
-
-      //notifyDisconnect();
     }
-
-   
-    
     return message;
   }
 

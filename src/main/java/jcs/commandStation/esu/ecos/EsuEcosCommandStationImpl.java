@@ -18,6 +18,7 @@ package jcs.commandStation.esu.ecos;
 import java.awt.Image;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Collection;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -74,6 +75,8 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
   private volatile BoosterManager boosterManager;
   
   private volatile DriveSimulator simulator;
+  // Controlled by JCSCommandStation before an attempt begins.
+  private volatile boolean recoveryMode;
 
   // STOP must cancel any delayed GO retry. Only the actual TCP exchange is
   // serialized; the retry delay never holds this lock.
@@ -88,22 +91,51 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     
     factory.setIpAddress(commandStationBean.getIpAddress());
     factory.setVirtual(commandStationBean.isVirtual());
-    factory.setAutoReAcquireConnection(true);
-    factory.startEcosConnector();
+    // ConnectionLifecycleManager owns all connection attempts and backoff.
+    factory.setConnectionLostListener(this::onTransportLost);
   }
   
   @Override
   public void setVirtual(boolean flag) {
+    virtual = flag;
     factory.setVirtual(flag);
     Logger.info("Switching Virtual Mode " + (flag ? "On" : "Off"));
-    
     disconnect();
+    // For direct driver use, retain the legacy reconnect behavior.
+    // JCSCommandStation's lifecycle-managed mode switch does not call here.
     connect();
   }
   
+  /**
+   * Recovery mode must be set before reconnect begins, never afterward.
+   * The first command on the new TCP session will then be STOP.
+   */
+  public void setRecoveryMode(boolean recovery) {
+    recoveryMode = recovery;
+    if (recovery) {
+      powerRetryPolicy.cancelPending();
+    }
+  }
+
+  private void onTransportLost(EcosConnection lostConnection) {
+    powerRetryPolicy.cancelPending();
+    connected = false;
+    recoveryMode = true;
+    // Do not close sockets or join the event handler on the receiver thread.
+    ConnectionEvent event = new ConnectionEvent(
+            commandStationBean.getDescription(), false, factory.isVirtual());
+    for (ConnectionEventListener listener : new ArrayList<>(connectionEventListeners)) {
+      try {
+        listener.onConnectionChange(event);
+      } catch (RuntimeException ex) {
+        Logger.warn("ECoS disconnection listener failed: {}", ex.getMessage());
+      }
+    }
+  }
+
   @Override
   public final synchronized boolean connect() {
-    if (factory.isConnected() && ecosManager != null) {
+    if (connected && factory.isConnected() && ecosManager != null) {
       return true;
     }
     
@@ -118,9 +150,11 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
       return false;
     }
     
-    EcosConnection connection = factory.awaitConnection(EcosConnection.DEFAULT_CONNECT_TIMEOUT_MS);
+    // Called by ConnectionLifecycleManager's worker: one synchronous attempt.
+    // Retry timing and cancellation belong exclusively to that manager.
+    EcosConnection connection = factory.acquireConnection();
     
-    if (!factory.isConnected()) {
+    if (connection == null || !factory.isConnected()) {
       Logger.warn("Can't connect with a ESU ECoS Command Station within {} ms!", EcosConnection.DEFAULT_CONNECT_TIMEOUT_MS);
       JCS.logProgress("Can't connect with ESU ECoS Command Station!");
       return false;
@@ -128,6 +162,18 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     
     if (connection.getControllerAddress() != null) {
       commandStationBean.setIpAddress(connection.getControllerAddress().getHostAddress());
+    }
+
+    if (recoveryMode) {
+      // STOP must precede all roster/subscription queries on reconnect.
+      EcosMessage stopped = connection.sendMessage(EcosMessageFactory.setPowerStatus(false));
+      EcosMessage actual = connection.sendMessage(EcosMessageFactory.getPowerStatus());
+      if (!isSuccessfulReply(stopped) || !isSuccessfulReply(actual)
+              || !Ecos.STOP.equals(actual.getValueMap().get(Ecos.STATUS))) {
+        Logger.warn("ECoS recovery STOP not confirmed; retrying safely");
+        return false;
+      }
+      power = false;
     }
 
     //Start the EventHandler
@@ -156,16 +202,20 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     
     Logger.trace("{}", (factory.isConnected() ? "Connected" : "NOT Connected"));
     
-    return factory.isConnected();
+    connected = factory.isConnected();
+    return connected;
   }
-  
+
   @Override
   public boolean isConnected() {
-    return factory.isConnected();
+    return connected && factory.isConnected() && ecosManager != null;
   }
   
   private void initBaseObject() {
     EcosMessage reply = factory.getConnection().sendMessage(EcosMessageFactory.getBaseObject());
+    if (!isSuccessfulReply(reply)) {
+      throw new IllegalStateException("ECoS base-object query failed: " + responseDescription(reply));
+    }
     ecosManager = new EcosManager(this, reply);
     
     factory.getConnection().sendMessage(EcosMessageFactory.subscribeBaseObject());
@@ -197,9 +247,10 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
   
   private void initAccessoryManager() {
     EcosMessage reply = factory.getConnection().sendMessage(EcosMessageFactory.getAccessories());
-    Logger.info(reply.getResponse());
-    
-    if (reply == null || !reply.isValid()) {
+    if (reply != null) {
+      Logger.info(reply.getResponse());
+    }
+    if (!isSuccessfulReply(reply)) {
       throw new IllegalStateException("ECoS accessory-list query failed: "
               + (reply == null ? "no response" : reply.getResponseCode()));
     }
@@ -231,6 +282,9 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
   
   private void initBoosterManager() {
     EcosMessage reply = factory.getConnection().sendMessage(EcosMessageFactory.getBoosters());
+    if (!isSuccessfulReply(reply)) {
+      throw new IllegalStateException("ECoS booster-list query failed: " + responseDescription(reply));
+    }
     boosterManager = new BoosterManager(this, reply);
     factory.getConnection().sendMessage(EcosMessageFactory.subscribeBoosterManager());
     
@@ -248,55 +302,40 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
   }
   
   @Override
-  public void disconnect() {
+  public synchronized void disconnect() {
     powerRetryPolicy.cancelPending();
-    try {
-      if (connected) {
-        power(false);
-        
-        Logger.trace("Unsubsribe from " + boosterManager.getSize() + " Boosters...");
-        for (EcosBooster b : boosterManager.getBoosters()) {
-          factory.getConnection().sendMessage(EcosMessageFactory.unSubscribeBooster(b.getId()));
-        }
-        Logger.trace("Unsubsribe from " + feedbackManager.getSize() + " feedback modules...");
-        for (FeedbackModule fm : feedbackManager.getModules().values()) {
-          factory.getConnection().sendMessage(EcosMessageFactory.unSubscribeFeedbackModule(fm.getId()));
-        }
-        Logger.trace("Unsubscribe from " + accessoryManager.getSize() + " accessories...");
-        for (AccessoryBean a : accessoryManager.getAccessories().values()) {
-          factory.getConnection().sendMessage(EcosMessageFactory.unSubscribeAccessory(a.getId()));
-        }
-        Logger.trace("Unsubscribe from " + locomotiveManager.getSize() + " locomotives...");
-        for (LocomotiveBean l : locomotiveManager.getLocomotives().values()) {
-          factory.getConnection().sendMessage(EcosMessageFactory.unSubscribeLocomotive(l.getId()));
-        }
-        
-        factory.getConnection().sendMessage(EcosMessageFactory.unSubscribeBoosterManager());
-        factory.getConnection().sendMessage(EcosMessageFactory.unSubscribeAccessoryManager());
-        factory.getConnection().sendMessage(EcosMessageFactory.unSubscribeLokManager());
-        factory.getConnection().sendMessage(EcosMessageFactory.unSubscribeFeedbackManager());
-        factory.getConnection().sendMessage(EcosMessageFactory.unSubscribeBaseObject());
-      }
-      if (eventMessageHandler != null) {
-        Logger.trace("Stopping event handling...");
-        eventMessageHandler.quit();
-        
-        eventMessageHandler.join();
-        eventMessageHandler = null;
-      }
-      factory.disconnectAll();
-      
-      this.ecosManager = null;
-      this.accessoryManager = null;
-      this.locomotiveManager = null;
-      this.boosterManager = null;
-      this.feedbackManager = null;
-    } catch (InterruptedException ex) {
-      Thread.currentThread().interrupt();
-      Logger.error(ex);
+    connected = false;
+    EventHandler handler = eventMessageHandler;
+    eventMessageHandler = null;
+    if (handler != null) {
+      handler.quit();
+      handler.interrupt();
     }
+    // No remote commands on an offline or partially initialized session.
+    factory.disconnectAll();
+    if (handler != null && Thread.currentThread() != handler) {
+      try {
+        handler.join(1500L);
+      } catch (InterruptedException ex) {
+        Thread.currentThread().interrupt();
+      }
+    }
+    if (ecosManager != null) {
+      removePowerEventListener(ecosManager);
+    }
+    if (locomotiveManager != null) {
+      removeLocomotiveSpeedEventListener(locomotiveManager);
+      removeLocomotiveDirectionEventListener(locomotiveManager);
+      removeLocomotiveFunctionEventListener(locomotiveManager);
+    }
+    ecosManager = null;
+    accessoryManager = null;
+    locomotiveManager = null;
+    boosterManager = null;
+    feedbackManager = null;
+    simulator = null;
   }
-  
+
   @Override
   public void onConnectionChange(ConnectionEvent event) {
     String s = event.getSource();
@@ -304,9 +343,10 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     if (con) {
       Logger.trace(s + " has re-connected");
     } else {
-      disconnect();
+      powerRetryPolicy.cancelPending();
+      connected = false;
     }
-    
+
     for (ConnectionEventListener listener : connectionEventListeners) {
       listener.onConnectionChange(event);
     }
@@ -522,6 +562,95 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
       }
     }
     return power;
+  }
+
+  /**
+   * Synchronous shutdown STOP with an explicit fresh protocol readback.
+   * power(false) cancels any pending GO retry; a failed status query must
+   * never be misinterpreted as confirmation that track power is OFF.
+   */
+  public boolean stopTrackPowerForShutdown() {
+    power(false);
+    if (!factory.isConnected()) {
+      return false;
+    }
+    EcosMessage status = factory.getConnection().sendMessage(EcosMessageFactory.getPowerStatus());
+    if (!isSuccessfulReply(status)) {
+      Logger.warn("Shutdown STOP readback failed: {}", responseDescription(status));
+      return false;
+    }
+    ecosManager.update(status);
+    power = Ecos.GO.equals(ecosManager.getStatus());
+    return Ecos.STOP.equals(status.getValueMap().get(Ecos.STATUS));
+  }
+
+  /**
+   * ECoS recovery: verify STOP and zero velocity for every known locomotive.
+   * Never send GO here. The operator must explicitly re-enable track power.
+   */
+  public boolean stopLocomotivesForRecovery(Collection<Integer> ids) {
+    powerRetryPolicy.cancelPending();
+    if (!isConnected() || !recoveryMode) {
+      Logger.warn("ECoS recovery requested without a ready recovery session");
+      return false;
+    }
+    final EcosConnection session = factory.getConnection();
+    synchronized (powerCommandLock) {
+      EcosMessage stop = session.sendMessage(EcosMessageFactory.setPowerStatus(false));
+      EcosMessage status = session.sendMessage(EcosMessageFactory.getPowerStatus());
+      if (!isSuccessfulReply(stop) || !isSuccessfulReply(status)
+              || !Ecos.STOP.equals(status.getValueMap().get(Ecos.STATUS))) {
+        Logger.warn("Cannot confirm ECoS STOP during recovery");
+        return false;
+      }
+      ecosManager.update(status);
+      power = false;
+
+      for (Integer id : ids) {
+        if (id == null) {
+          continue;
+        }
+        boolean ok = false;
+        try {
+          EcosMessage control = session.sendMessage(EcosMessageFactory.getRequestLocomotiveControl(id));
+          if (!isSuccessfulReply(control)) {
+            Logger.warn("Unable to obtain ECoS control of locomotive {} during recovery", id);
+            return false;
+          }
+          EcosMessage zero = session.sendMessage(EcosMessageFactory.setLocomotiveSpeed(id, 0));
+          if (!isSuccessfulReply(zero)) {
+            Logger.warn("Unable to STOP ECoS locomotive {} during recovery", id);
+            return false;
+          }
+          EcosMessage readback = session.sendMessage(EcosMessageFactory.getLocomotiveDetails(id));
+          if (!isSuccessfulReply(readback)
+                  || !"0".equals(readback.getValueMap().get(Ecos.SPEED))) {
+            Logger.warn("ECoS locomotive {} zero-speed verification failed", id);
+            return false;
+          }
+          ok = true;
+        } finally {
+          EcosMessage release = session.sendMessage(EcosMessageFactory.getReleaseLocomotiveControl(id));
+          if (!isSuccessfulReply(release)) {
+            Logger.warn("Unable to release ECoS control of locomotive {} after recovery stop", id);
+            ok = false;
+          }
+        }
+        if (!ok) {
+          return false;
+        }
+      }
+      EcosMessage finalStatus = session.sendMessage(EcosMessageFactory.getPowerStatus());
+      if (!isSuccessfulReply(finalStatus)
+              || !Ecos.STOP.equals(finalStatus.getValueMap().get(Ecos.STATUS))) {
+        Logger.warn("Track power not confirmed OFF after ECoS locomotive reset");
+        return false;
+      }
+      recoveryMode = false;
+      Logger.warn("ECoS recovery complete: {} locomotive(s) confirmed at speed zero; track power remains OFF",
+              ids.size());
+      return true;
+    }
   }
 
   private static boolean isSuccessfulReply(EcosMessage reply) {
@@ -788,13 +917,14 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
   //Communication from Ecos reply messages to JCS
   private class EventHandler extends Thread {
     
-    private volatile boolean running = false;
+    private volatile boolean running = true;
     private final BlockingQueue<EcosMessage> eventQueue;
     
     public EventHandler(EcosConnection connection) {
       super("ECoS-EVENT-HANDLER");
+      setDaemon(true);
       //eventQueue = connection.getEventQueue();
-      eventQueue = EcosConnectionFactory.getInstance().getConnection().getEventQueue();
+      eventQueue = connection.getEventQueue();
     }
     
     void quit() {
@@ -803,7 +933,6 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     
     @Override
     public void run() {
-      running = true;
       
       Logger.trace("Event Handler Started...");
       
@@ -848,10 +977,8 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
             }
           }
         } catch (InterruptedException ex) {
-          if (!running) {
-            Logger.error(ex);
-          }
-          Thread.currentThread().interrupt();
+          // Normal shutdown; do not busy-spin on an interrupted poll.
+          break;
         }
       }
       
