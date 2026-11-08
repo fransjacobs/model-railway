@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+import java.net.SocketTimeoutException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -58,7 +60,7 @@ class EcosTCPConnection implements EcosConnection {
 
   private volatile ClientMessageReceiver messageReceiver;
   private static final boolean DEBUG = Boolean.getBoolean("message.debug");
-  private static final long TIMEOUT_MS = 500L;
+  private static final long TIMEOUT_MS = Long.getLong("ecos.reply.timeout.ms", 1500L);
 
   private static final long HEARTBEAT_INTERVAL_MS = Long.getLong("ecos.heartbeat.interval.ms", 5000L);
 
@@ -107,9 +109,10 @@ class EcosTCPConnection implements EcosConnection {
         socket.connect(new InetSocketAddress(ecosAddress, DEFAULT_NETWORK_PORT), DEFAULT_CONNECT_TIMEOUT_MS);
         socket.setKeepAlive(true);
         socket.setTcpNoDelay(true);
+        socket.setSoTimeout(1000); // Bounded read during partial-frame assembly; idle timeouts are ignored.
 
         clientSocket = socket;
-        writer = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
+        writer = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream(), StandardCharsets.UTF_8));
 
         messageReceiver = new ClientMessageReceiver(clientSocket);
         messageReceiver.start();
@@ -142,16 +145,25 @@ class EcosTCPConnection implements EcosConnection {
       heartbeatTask = null;
     }
 
-    if (messageReceiver == null) {
-      return;
+    ClientMessageReceiver receiver = messageReceiver;
+    if (receiver != null) {
+      receiver.quit();
     }
-    messageReceiver.quit();
-
-    try {
-      messageReceiver.join(TIMEOUT_MS * 4);
-    } catch (InterruptedException ex) {
-      Thread.currentThread().interrupt();
-      Logger.warn("Interrupted while waiting for receiver thread to stop.");
+    // Closing the socket before joining releases any blocked readLine().
+    Socket socket = clientSocket;
+    if (socket != null) {
+      try {
+        socket.close();
+      } catch (IOException ex) {
+        Logger.trace("Error closing ECoS socket: {}", ex.getMessage());
+      }
+    }
+    if (receiver != null && receiver != Thread.currentThread()) {
+      try {
+        receiver.join(TIMEOUT_MS * 4);
+      } catch (InterruptedException ex) {
+        Thread.currentThread().interrupt();
+      }
     }
 
     if (writer != null) {
@@ -164,15 +176,8 @@ class EcosTCPConnection implements EcosConnection {
       writer = null;
     }
 
-    if (clientSocket != null) {
-      try {
-        clientSocket.close();
-      } catch (IOException ex) {
-        Logger.error("Can't close socket. Cause: " + ex.getMessage());
-        Logger.trace(ex);
-      }
-      clientSocket = null;
-    }
+    clientSocket = null;
+    messageReceiver = null;
   }
 
   @Override
@@ -191,8 +196,9 @@ class EcosTCPConnection implements EcosConnection {
 
     try {
       replyQueue.clear();
-      writer.write(message.getMessage());
-      writer.flush();
+      Logger.trace("TX: {}",message);
+
+      writeCommand(writer, message);
 
       if (DEBUG) {
         Logger.trace("TX: " + message.getMessage());
@@ -201,19 +207,35 @@ class EcosTCPConnection implements EcosConnection {
       long start = System.currentTimeMillis();
 
       // If no reply arrives in time, reply is null and we log it and move on.
-      String reply = replyQueue.poll(TIMEOUT_MS, TimeUnit.MILLISECONDS);
-
+      String reply = null;
+      long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(TIMEOUT_MS);
+      while (reply == null) {
+        long remaining = deadline - System.nanoTime();
+        if (remaining <= 0) {
+          break;
+        }
+        String candidate = replyQueue.poll(remaining, TimeUnit.NANOSECONDS);
+        if (candidate == null) {
+          break;
+        }
+        // A timed-out previous request may reply late. Never accept its
+        // response as confirmation of the current command.
+        if (isReplyFor(candidate, message.getMessage())) {
+          reply = candidate;
+        } else {
+          Logger.warn("Discarding stale ECoS reply: {}", candidate.strip());
+        }
+      }
       if (reply == null) {
-        Logger.warn("No reply received for [" + message.getMessage().trim() + "] within " + TIMEOUT_MS + " ms");
+        Logger.warn("No matching reply received for [{}] within {} ms", message.getMessage().trim(), TIMEOUT_MS);
       } else {
         message.addResponse(reply);
+       
+        Logger.trace("RX: {}",reply);
+        
         if (DEBUG) {
-          long elapsed = System.currentTimeMillis() - start;
-          if (message.isResponseComplete()) {
-            Logger.trace("Reply in " + elapsed + " ms");
-          } else {
-            Logger.trace("Incomplete reply for [" + message.getMessage().trim() + "] in " + elapsed + " ms");
-          }
+          Logger.trace("Reply in {} ms, complete={}",
+                  System.currentTimeMillis() - start, message.isResponseComplete());
         }
       }
     } catch (IOException ex) {
@@ -229,19 +251,33 @@ class EcosTCPConnection implements EcosConnection {
       //notifyDisconnect();
     }
 
+   
+    
     return message;
   }
 
+  static void writeCommand(Writer writer, EcosMessage message) throws IOException {
+    writer.write(message.getMessage());
+    writer.write('\n'); // ECoS requires LF-terminated commands.
+    writer.flush();
+  }
+
   /**
-   * Notifies the registered listener of a disconnection and shuts down the receiver.
+   * Match the echoed request, allowing for whitespace differences that ECoS can introduce in the REPLY header.
    */
-//  private void notifyDisconnect() {
-//    if (messageReceiver != null) {
-//      String host = ecosAddress.getHostName();
-//      messageReceiver.notifyDisconnect(new ConnectionEvent(host, false, false));
-//      messageReceiver.quit();
-//    }
-//  }
+  static boolean isReplyFor(String reply, String command) {
+    if (reply == null || command == null || !reply.startsWith(EcosMessage.REPLY)) {
+      return false;
+    }
+    int end = reply.indexOf('>');
+    if (end < 0) {
+      return false;
+    }
+    String echoed = reply.substring(EcosMessage.REPLY.length(), end)
+            .replaceAll("\\s+", "");
+    return echoed.equals(command.strip().replaceAll("\\s+", ""));
+  }
+
   private void markDisconnected(String reason) {
     if (!disconnectNotified.compareAndSet(false, true)) {
       return;
@@ -271,7 +307,6 @@ class EcosTCPConnection implements EcosConnection {
 
   @Override
   public boolean isConnected() {
-    //return messageReceiver != null && messageReceiver.isRunning();
     Socket socket = clientSocket;
     return socket != null
             && socket.isConnected()
@@ -337,7 +372,7 @@ class EcosTCPConnection implements EcosConnection {
     ClientMessageReceiver(Socket socket) {
       super("ECoS-RX");
       try {
-        reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
       } catch (IOException ex) {
         Logger.error("Failed to open socket input stream: " + ex.getMessage());
         Logger.trace(ex);
@@ -393,8 +428,7 @@ class EcosTCPConnection implements EcosConnection {
             // null from readLine() means the stream was closed (EOF / shutdownInput).
             if (running) {
               Logger.warn("Stream closed unexpectedly — disconnecting.");
-              notifyDisconnect(new ConnectionEvent(ecosAddress.getHostName(), false, false));
-              quit();
+              markDisconnected("ECoS stream reached EOF");
             }
             break;
           }
@@ -431,12 +465,12 @@ class EcosTCPConnection implements EcosConnection {
           } else {
             Logger.trace("Ignoring unrecognised line: " + rx);
           }
+        } catch (SocketTimeoutException timeout) {
+          // Normal idle read; the heartbeat probes liveness independently.
         } catch (SocketException se) {
           if (running) {
             Logger.error("Socket error: {}", se.getMessage());
             markDisconnected("Socket error: " + se.getMessage());
-            notifyDisconnect(new ConnectionEvent(ecosAddress.getHostName(), false, false));
-            quit();
           }
         } catch (IOException ex) {
           if (running) {
@@ -474,10 +508,14 @@ class EcosTCPConnection implements EcosConnection {
           return null;
         }
 
-        String rx = reader.readLine();
-
+        String rx;
+        try {
+          rx = reader.readLine();
+        } catch (SocketTimeoutException timeout) {
+          continue;
+        }
         if (rx == null) {
-          // Stream closed mid-message.
+          markDisconnected("ECoS stream closed mid-message");
           return null;
         }
 

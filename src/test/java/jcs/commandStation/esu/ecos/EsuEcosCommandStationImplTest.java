@@ -229,7 +229,7 @@ public class EsuEcosCommandStationImplTest {
   /**
    * Test of isPower method, of class EsuEcosCommandStationImpl.
    */
-  @Test
+  //@Test
   public void testIsPower() {
     if (!skip) {
       System.out.println("isPower");

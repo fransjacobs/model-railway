@@ -372,49 +372,73 @@ class AccessoryManager implements AccessoryEventListener {
     }
   }
 
+  /**
+   * Handle an ECoS accessory-manager LIST_CHANGED event.
+   *
+   * ECoS reports the appended object's ID on its own line:
+   *   <EVENT 11>\n11 msg[LIST_CHANGED]\n20006 appended\n11 size[7]\n<END 0 (OK)>
+   *
+   * Older virtual/test fixtures concatenate those lines:
+   *   <EVENT 11>11 msg[LIST_CHANGED]20006 appended11 size[7]<END 0 (OK)>
+   *
+   * Parse these manager-specific tokens from the event body rather than
+   * depending on synthetic getValueMap() keys such as "appended11 size".
+   */
   String updateManager(EcosMessage event) {
-    Map<String, Object> values = event.getValueMap();
-
-    String addedId = null;
-    boolean accessoryAdded = false;
-    int newSize = 0;
-    for (String key : values.keySet()) {
-      Object o = values.get(key);
-      if (o instanceof Map) {
-        Map<String, Object> vm = (Map<String, Object>) o;
-        if (vm.containsKey(Ecos.ID)) {
-          addedId = vm.get(Ecos.ID).toString();
-        }
-
-        Logger.trace(vm.keySet());
-        Logger.trace(vm.values());
-        //id, appended11 size]
-
-        if (vm.containsKey("appended11 size")) {
-          String s = vm.get("appended11 size").toString();
-          newSize = Integer.parseInt(s);
-        }
-
-      } else {
-        if (Ecos.MSG.equals(key)) {
-          accessoryAdded = "LIST_CHANGED".equals(o);
-        } else if (Ecos.SIZE.equals(key) && o != null) {
-          size = Integer.parseInt(o.toString());
-        }
-      }
-    }
-
-    if (accessoryAdded && getSize() <= newSize) {
-      if (ecosCommandStation != null) {
-        EcosMessage reply = ecosCommandStation.factory.getConnection().sendMessage(EcosMessageFactory.getAccessoryDetails(addedId));
-        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
-        //this.update(reply);
-      }
-
-      return addedId;
-    } else {
+    if (event == null || !event.isEvent() || !event.isResponseComplete()) {
       return null;
     }
+
+    String body = event.getResponseContent();
+    if (body == null) {
+      return null;
+    }
+
+    if (!java.util.regex.Pattern.compile(
+            "(?:^|\\s|\\])11\\s+msg\\[LIST_CHANGED\\]")
+            .matcher(body).find()) {
+      return null;
+    }
+
+    java.util.regex.Matcher appended = java.util.regex.Pattern.compile(
+            "(?<!\\d)(2\\d{4})\\s+appended(?=\\s|11\\s+size\\[|$)")
+            .matcher(body);
+
+    java.util.regex.Matcher count = java.util.regex.Pattern.compile(
+            "(?<!\\d)11\\s+size\\[(\\d+)\\]")
+            .matcher(body);
+
+    int previousSize = size;
+    Integer reportedSize = count.find() ? Integer.valueOf(count.group(1)) : null;
+    if (reportedSize != null) {
+      size = reportedSize;
+    }
+
+    if (!appended.find()) {
+      // A LIST_CHANGED event can also describe a deletion or reordering.
+      return null;
+    }
+
+    String addedId = appended.group(1);
+    if (reportedSize != null && reportedSize <= previousSize) {
+      Logger.trace("ECoS accessory manager event did not increase size: {} -> {}",
+              previousSize, reportedSize);
+      return null;
+    }
+
+    if (ecosCommandStation != null) {
+      EcosMessage reply = ecosCommandStation.factory.getConnection()
+              .sendMessage(EcosMessageFactory.getAccessoryDetails(addedId));
+      if (reply != null && reply.isResponseComplete() && reply.isValid()) {
+        update(reply);
+        ecosCommandStation.factory.getConnection()
+                .sendMessage(EcosMessageFactory.subscribeAccessory(addedId));
+      } else {
+        Logger.warn("Could not load newly added ECoS accessory {}: {}",
+                addedId, reply == null ? "no reply" : reply.getResponse());
+      }
+    }
+    return addedId;
   }
 
   static String deriveType(String symbol) {
