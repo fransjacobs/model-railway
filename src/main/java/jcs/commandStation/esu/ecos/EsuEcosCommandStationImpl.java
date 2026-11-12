@@ -789,8 +789,8 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
   
   @Override
   public void switchAccessory(Integer address, String protocol, AccessoryBean.AccessoryValue value, Integer switchTime) {
-    Logger.trace("Using Address " + address + " to find the AccessoryId...");
-    String id = accessoryManager.findId(address);
+    Logger.trace("Using Address: {} and Protocol: {} to find the AccessoryId...", address, protocol);
+    String id = accessoryManager.findId(address, protocol);
     if (id != null) {
       switchAccessory(id, value);
     } else {
