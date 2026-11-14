@@ -370,19 +370,7 @@ public class EsuEcosCommandStationImplTest {
     instance.switchAccessory(address, protocol, value, switchTime);
   }
 
-  /**
-   * Test of switchAccessory method, of class EsuEcosCommandStationImpl.
-   */
-  //@Test
-  public void testSwitchAccessory_String_AccessoryBeanAccessoryValue() {
-    System.out.println("switchAccessory");
-    EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
-    instance.connect();
-
-    String id = "";
-    AccessoryBean.AccessoryValue value = null;
-    instance.switchAccessory(id, value);
-  }
+ 
 
   /**
    * Test of getAccessories method, of class EsuEcosCommandStationImpl.

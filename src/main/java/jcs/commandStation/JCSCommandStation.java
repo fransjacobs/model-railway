@@ -1223,14 +1223,12 @@ public class JCSCommandStation {
 
   private void changeAccessory(final Integer address, final String protocol, final AccessoryValue value, final Integer switchTime) {
     DecoderController controller = decoderController;
-    if (controller == null || !controller.isConnected() || shuttingDown
-            || recoveryStopPending || !lifecycleReady(controller)) {
-      Logger.debug("Ignoring accessory switch while command station is unavailable");
+    if (controller == null || !controller.isConnected() || shuttingDown || recoveryStopPending || !lifecycleReady(controller)) {
+      Logger.warn("Ignoring accessory switch while command station is unavailable");
       return;
     }
     Runnable task = () -> {
-      if (shuttingDown || recoveryStopPending || controller != decoderController
-              || !controller.isConnected() || !lifecycleReady(controller)) {
+      if (shuttingDown || recoveryStopPending || controller != decoderController || !controller.isConnected() || !lifecycleReady(controller)) {
         return;
       }
       for (AccessoryController accessoryController : new ArrayList<>(accessoryControllers.values())) {
@@ -1441,62 +1439,6 @@ public class JCSCommandStation {
     }
   }
 
-  private void handleSensorEvent_old(SensorEvent event) {
-    SensorBean sb = event.getSensorBean();
-    boolean newValue = event.isActive();
-    SensorBean dbsb = null;
-
-    //TODO: Add CommandStationID!
-    if (dbsb == null && event.getSensorId() != null) {
-      dbsb = PersistenceFactory.getService().getSensor(event.getSensorId());
-    }
-
-    if (sb.getDeviceId() != null && sb.getContactId() != null) {
-      dbsb = PersistenceFactory.getService().getSensor(sb.getDeviceId(), sb.getContactId());
-    }
-
-    //SensorBean dbsb = PersistenceFactory.getService().getSensor(event.getSensorId());
-    if (dbsb == null) {
-      //Try using the deviceId and contactId and command station...
-      dbsb = PersistenceFactory.getService().getSensor(sb.getDeviceId(), sb.getContactId());
-    }
-
-    if (dbsb != null) {
-      //if (sb.getId() == null) {
-      sb.setId(dbsb.getId());
-      //}
-
-      sb.setName(dbsb.getName());
-      //make sure the previous vale is set by setting the current and the new one
-      sb.setActive(dbsb.isActive());
-      //Sensor bean will set the prev value to indicate a (real) sensor change
-      sb.setActive(newValue);
-
-      PersistenceFactory.getService().persist(sb);
-    }
-
-    if (sb.getId() != null && sensorListeners.containsKey(sb.getId())) {
-      //Avoid concurrent modification exceptions
-      List<SensorEventListener> snapshot = new ArrayList<>(sensorListeners.get(sb.getId()));
-
-      for (SensorEventListener sl : snapshot) {
-        if (sl != null) {
-          sl.onSensorChange(event);
-        }
-      }
-    }
-
-    //For generic sensor listeners which are interested in every event...
-    if (!allSensorEventsListeners.isEmpty()) {
-      List<AllSensorEventsListener> snapshot = new ArrayList<>(allSensorEventsListeners);
-      for (AllSensorEventsListener sl : snapshot) {
-        if (sl != null) {
-          sl.onSensorChange(event);
-        }
-      }
-    }
-  }
-
   private void handleSensorEvent(SensorEvent event) {
     SensorBean incoming = event.getSensorBean();
     boolean newValue = event.isActive();
@@ -1561,6 +1503,7 @@ public class JCSCommandStation {
   private void handleAccessoryEvent(AccessoryEvent event) {
     AccessoryBean ab = event.getAccessoryBean();
     int address = ab.getAddress();
+    String protocol = ab.getProtocol().getValue();
     String commandStationId = ab.getCommandStationId();
     AccessoryBean dbab = PersistenceFactory.getService().getAccessory(event.getId());
 
