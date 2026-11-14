@@ -148,9 +148,11 @@ public class Dispatcher {
     if (railController.isAutoModeActive()) {
       if (stateMachine == null || !stateMachine.isRunning()) {
         // Explicitly clean up old state machine if present
-        if (stateMachine != null) {
+        if (stateMachine != null && !stateMachine.isSuspendedForConnectionLoss()) {
           stateMachine.getCurrentState().onExit();
         }
+        // A suspended state machine retains its last state until the user
+        // explicitly starts a new Automode session.
         locomotiveStarted = false;
         stateMachine = new StateMachine(this, new IdleState());
       } else {
@@ -195,6 +197,18 @@ public class Dispatcher {
     } else {
       return locomotiveStarted;
     }
+  }
+
+  /**
+   * Stop the automation thread without discarding dispatcher, state or route.
+   * No TCP/CAN commands are attempted while the CS is unavailable.
+   */
+  void suspendForConnectionLoss() {
+    StateMachine current = stateMachine;
+    if (current != null) {
+      current.suspendForConnectionLoss();
+    }
+    locomotiveStarted = false;
   }
 
   public void stopLocomotive() {

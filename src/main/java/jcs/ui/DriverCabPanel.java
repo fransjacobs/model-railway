@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 frans.
+ * Copyright 2023 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import org.tinylog.Logger;
 
 /**
  *
- * @author frans
+ * Panel for manual drivein locomotives
  */
 public class DriverCabPanel extends JPanel implements LocomotiveDirectionEventListener, LocomotiveSpeedEventListener, PowerEventListener {
 
@@ -69,17 +69,6 @@ public class DriverCabPanel extends JPanel implements LocomotiveDirectionEventLi
     }
   }
 
-//  @Override
-//  public void setVisible(boolean aFlag) {
-//    if (!aFlag && JCS.getJcsCommandStation() != null && locomotiveBean != null) {
-//      JCS.getJcsCommandStation().removePowerEventListener(this);
-//
-//      JCS.getJcsCommandStation().removeLocomotiveSpeedEventListener(locomotiveBean.getId(), this);
-//      JCS.getJcsCommandStation().removeLocomotiveDirectionEventListener(locomotiveBean.getId(), this);
-//      JCS.getJcsCommandStation().removeLocomotiveFunctionEventListener(locomotiveBean.getId(), functionsPanel);
-//    }
-//    super.setVisible(aFlag);
-//  }
   void setDirectionListener(LocomotiveDirectionEventListener directionListener) {
     this.directionListener = directionListener;
   }
@@ -348,7 +337,6 @@ public class DriverCabPanel extends JPanel implements LocomotiveDirectionEventLi
         double value = slider.getValue();
         //Velocity is always between 0 and 1000
         int velocity = (int) Math.round(value / max * 1000);
-        //this.velocityLbl.setText(velocity / 10 + "%");
         executor.execute(() -> changeVelocity(velocity, locomotiveBean));
       }
     }
@@ -382,11 +370,12 @@ public class DriverCabPanel extends JPanel implements LocomotiveDirectionEventLi
     if (JCS.getJcsCommandStation() != null && locomotiveBean != null && locomotiveBean.getId() != null) {
       Logger.trace("Changing direction of " + locomotiveBean + " to: " + newDirection);
       JCS.getJcsCommandStation().changeLocomotiveDirection(newDirection, locomotiveBean);
+      speedSlider.setValue(0);
     }
 
-    if (this.directionListener != null && locomotiveBean != null) {
+    if (directionListener != null && locomotiveBean != null) {
       LocomotiveDirectionEvent dme = new LocomotiveDirectionEvent(locomotiveBean);
-      this.directionListener.onDirectionChange(dme);
+      directionListener.onDirectionChange(dme);
     }
   }
 

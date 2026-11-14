@@ -34,6 +34,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Objects;
 import java.util.List;
 import java.util.Map;
 import javax.swing.AbstractListModel;
@@ -1191,12 +1193,33 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
     }
 
     if ("done".equals(evt.getPropertyName())) {
-      Logger.trace("Done: " + evt.getNewValue());
-      //this.connectionTestResultLbl.setText((String) evt.getNewValue());
+      String result = String.valueOf(evt.getNewValue());
+      Logger.info("Accessory synchronization: {}", result);
       this.synchPB.setVisible(false);
       this.accessoryList.setEnabled(true);
       accessoryList.clearSelection();
+      // A silent "success" would conceal duplicate-address records.
+      if (result.contains(" skipped, ") || result.contains(" errors.")
+              || result.startsWith("Can't ") || result.startsWith("Accessory controller did not")) {
+        boolean clean = result.contains("0 skipped, 0 errors.");
+        if (!clean) {
+          javax.swing.JOptionPane.showMessageDialog(this, result,
+                  "Accessory synchronization", javax.swing.JOptionPane.WARNING_MESSAGE);
+        }
+      }
     }
+  }
+
+  /**
+   * The database has a unique constraint on (address, protocol,
+   * command_station_id), whereas ECoS can contain aliases for the same decoder
+   * address. Never choose an alias by database insertion order.
+   */
+  static String synchronizationAddressKey(AccessoryBean accessory) {
+    if (accessory == null || accessory.getAddress() == null || accessory.getProtocol() == null) {
+      return null;
+    }
+    return accessory.getAddress() + "|" + accessory.getProtocol().getValue();
   }
 
   class SynchronizationTask extends SwingWorker<Void, Void> {
@@ -1211,58 +1234,107 @@ public class AccessorySettingsPanel extends JPanel implements PropertyChangeList
       }
 
       if (accessoryController == null || !accessoryController.isConnected()) {
-
         Logger.warn("No Controller or No connection!");
-        firePropertyChange("done", "", "Can't Connect with Controller!");
-        setProgress(0);
+        firePropertyChange("done", "", "Can't connect with accessory controller.");
         return null;
       }
 
-      List<AccessoryBean> fromController = accessoryController.getAccessories();
-      String importedFrom = commandStationBean.getShortName();
-
-      int accCount = fromController.size();
-      int processedCount = 0;
-
-      for (AccessoryBean accessory : fromController) {
-        String id = accessory.getId();
-        AccessoryBean dbAccessory = PersistenceFactory.getService().getAccessory(id);
-        boolean store = true;
-
-        if (dbAccessory != null && accessory.getId().equals(dbAccessory.getId())) {
-          if (dbAccessory.isSynchronize()) {
-            Logger.trace("Accessory id: " + accessory.getId() + ", " + accessory.getName() + " Addres: " + accessory.getAddress() + " Exists");
-            accessory.setSource(importedFrom);
-            accessory.setSynchronize(true);
-          } else {
-            Logger.trace("Skip Accessory id: " + accessory.getId() + ", " + accessory.getName() + " Addres: " + accessory.getAddress() + " Exists");
-            store = false;
-          }
-        } else {
-          Logger.trace("New Accessory, id:" + accessory.getId() + ", " + accessory.getName() + " Addres: " + accessory.getAddress());
-          accessory.setSynchronize(true);
-          accessory.setSource(importedFrom);
-        }
-
-        if (store) {
-          try {
-            PersistenceFactory.getService().persist(accessory);
-
-            firePropertyChange("updated", null, accessory);
-
-          } catch (Exception e) {
-            Logger.error(e);
-          }
-
-        }
-        processedCount++;
-
-        double progress = (double) processedCount / accCount * 100;
-        setProgress((int) progress);
+      List<AccessoryBean> controllerAccessories = accessoryController.getAccessories();
+      if (controllerAccessories == null) {
+        Logger.warn("Accessory controller returned a null roster");
+        firePropertyChange("done", "", "Accessory controller did not return a roster.");
+        return null;
       }
 
-      firePropertyChange("done", "", "Accessories Synchronized");
+      // ECoS response order comes from HashMap. Sort by ECoS object ID so
+      // duplicate-address handling is predictable from run to run.
+      List<AccessoryBean> fromController = new ArrayList<>(controllerAccessories);
+      fromController.sort(Comparator.nullsLast(Comparator.comparing(AccessoryBean::getId,
+              Comparator.nullsLast(String::compareTo))));
 
+      // Include existing records (both synchronized and manually edited).
+      // A record with the same address must not be replaced by another ID.
+      Map<String, AccessoryBean> reservedAddresses = new LinkedHashMap<>();
+      List<AccessoryBean> existing = PersistenceFactory.getService()
+              .getAccessoriesByCommandStationId(commandStationBean.getId());
+      for (AccessoryBean dbAccessory : existing) {
+        String key = synchronizationAddressKey(dbAccessory);
+        if (key != null) {
+          reservedAddresses.putIfAbsent(key, dbAccessory);
+        }
+      }
+
+      String importedFrom = commandStationBean.getShortName();
+      int imported = 0;
+      int skipped = 0;
+      int errors = 0;
+      int processed = 0;
+      StringBuilder conflicts = new StringBuilder();
+
+      for (AccessoryBean accessory : fromController) {
+        try {
+          String id = accessory == null ? null : accessory.getId();
+          String key = synchronizationAddressKey(accessory);
+          if (id == null || key == null) {
+            skipped++;
+            Logger.warn("Skipping ECoS accessory with missing id, address or protocol: {}", accessory);
+            continue;
+          }
+
+          AccessoryBean dbAccessory = PersistenceFactory.getService().getAccessory(id);
+          // Do not update another command station's accessory with a coincident ID.
+          if (dbAccessory != null
+                  && !Objects.equals(commandStationBean.getId(), dbAccessory.getCommandStationId())) {
+            skipped++;
+            Logger.warn("Skipping ECoS accessory {}: ID belongs to command station {}",
+                    id, dbAccessory.getCommandStationId());
+            continue;
+          }
+
+          AccessoryBean occupant = reservedAddresses.get(key);
+          if (occupant != null && !Objects.equals(occupant.getId(), id)) {
+            skipped++;
+            String warning = "ECoS accessory " + id + " (" + accessory.getName()
+                    + ") conflicts with " + occupant.getId() + " (" + occupant.getName()
+                    + ") at address " + accessory.getAddress()
+                    + ", protocol " + accessory.getProtocol();
+            Logger.warn("Skipping duplicate address: {}", warning);
+            if (conflicts.length() < 1000) {
+              conflicts.append("\n").append(warning);
+            }
+            continue;
+          }
+
+          if (dbAccessory != null && !dbAccessory.isSynchronize()) {
+            skipped++;
+            Logger.info("Keeping manually managed accessory {}, address {}",
+                    id, accessory.getAddress());
+            continue;
+          }
+
+          accessory.setSource(importedFrom);
+          accessory.setSynchronize(true);
+          PersistenceFactory.getService().persist(accessory);
+          reservedAddresses.put(key, accessory);
+          imported++;
+          firePropertyChange("updated", null, accessory);
+        } catch (Exception e) {
+          errors++;
+          Logger.error("Could not synchronize ECoS accessory: {}", e.getMessage());
+          Logger.trace(e);
+        } finally {
+          processed++;
+          setProgress((int) (100.0 * processed / Math.max(1, fromController.size())));
+        }
+      }
+
+      String summary = "Accessories synchronized: " + imported + " imported/updated, "
+              + skipped + " skipped, " + errors + " errors.";
+      Logger.info(summary);
+      if (conflicts.length() > 0) {
+        summary += "\n\nDuplicate ECoS entries were not imported:" + conflicts;
+      }
+      firePropertyChange("done", "", summary);
       return null;
     }
 

@@ -64,6 +64,12 @@ import jcs.entities.SensorBean;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 import jcs.commandStation.events.ConnectionEventListener;
+import jcs.commandStation.automation.RailController;
+import jcs.commandStation.lifecycle.ConnectionLifecycleManager;
+import jcs.commandStation.lifecycle.ConnectionState;
+import jcs.commandStation.lifecycle.ConnectionStateListener;
+import jcs.commandStation.marklin.cs.MarklinCentralStationImpl;
+import jcs.commandStation.esu.ecos.EsuEcosCommandStationImpl;
 import jcs.commandStation.events.AllSensorEventsListener;
 import jcs.commandStation.events.LocomotiveEvent;
 import jcs.commandStation.events.MeasurementEvent;
@@ -97,6 +103,12 @@ public class JCSCommandStation {
   private CommandStationBean commandStation;
 
   private ExecutorService executor;
+  // One lifecycle manager for the default command station (not per controller role).
+  private volatile ConnectionLifecycleManager connectionLifecycleManager;
+  private final List<ConnectionStateListener> connectionStateListeners
+          = new java.util.concurrent.CopyOnWriteArrayList<>();
+  private volatile boolean shuttingDown;
+  private volatile boolean cleaningUpControllers;
 
   private final BlockingQueue<SensorEvent> sensorEventQueue;
   private final BlockingQueue<AccessoryEvent> accessoryEventQueue;
@@ -115,6 +127,12 @@ public class JCSCommandStation {
   private final Object lock = new Object();
 
   private boolean signalsRestored = false;
+  // Track power is cached while the transport is healthy. Querying the driver
+  // after TCP failure can incorrectly report OFF and lose the operator's setting.
+  private volatile boolean lastKnownPowerOn;
+  private volatile boolean powerWasOnBeforeLoss;
+  private volatile boolean connectedSession;
+  private volatile boolean recoveryStopPending;
 
   /**
    * Wrapper around the "real" CommandStation implementation.<br>
@@ -185,16 +203,47 @@ public class JCSCommandStation {
     }
   }
 
-  public final void connectInBackground() {
-    long now = System.currentTimeMillis();
-    long start = now;
+  /**
+   * Connect asynchronously. The default Märklin station uses the shared lifecycle manager. Other drivers continue to use the existing path until migrated.
+   */
+  private static boolean supportsManagedLifecycle(CommandStationBean bean) {
+    if (bean == null || bean.getClassName() == null) {
+      return false;
+    }
+    return MarklinCentralStationImpl.class.getName().equals(bean.getClassName())
+            || EsuEcosCommandStationImpl.class.getName().equals(bean.getClassName());
+  }
 
+  private boolean lifecycleReady(DecoderController controller) {
+    ConnectionLifecycleManager manager = connectionLifecycleManager;
+    if (controller instanceof MarklinCentralStationImpl
+            || controller instanceof EsuEcosCommandStationImpl) {
+      return manager == null || manager.getState() == ConnectionState.CONNECTED;
+    }
+    return true;
+  }
+
+  public final void connectInBackground() {
+    if (shuttingDown) {
+      return;
+    }
+    CommandStationBean bean = getCommandStationBean();
+    if (supportsManagedLifecycle(bean)) {
+      getOrCreateLifecycleManager(bean).start();
+      return;
+    }
+
+    // Existing behavior for command-station implementations not yet migrated.
+    if (executor == null || executor.isShutdown()) {
+      executor = Executors.newCachedThreadPool(runnable -> new Thread(threadGroup, runnable, "JCS-WORKER"));
+    }
+    long start = System.currentTimeMillis();
     executor.execute(() -> {
       try {
         if (connect()) {
           long end = System.currentTimeMillis();
-          Logger.trace("Connected to " + decoderController.getCommandStationBean().getDescription() + " in " + (end - start) + " ms");
-
+          Logger.trace("Connected to " + decoderController.getCommandStationBean().getDescription()
+                  + " in " + (end - start) + " ms");
           if (!isVirtual()) {
             ConnectionEvent ce = new ConnectionEvent(commandStation.getDescription(), true, isVirtual());
             for (ConnectionEventListener cel : connectionEventListeners) {
@@ -210,10 +259,8 @@ public class JCSCommandStation {
           }
         }
 
-        //Switch the track power on
-        //TODO: make this configurable via property
+        // Existing track-power policy for non-migrated drivers.
         switchPower(true);
-
         boolean p = isPowerOn();
         PowerEvent pe = new PowerEvent(p);
         for (PowerEventListener pl : powerEventListeners) {
@@ -223,6 +270,69 @@ public class JCSCommandStation {
         Logger.error(e.getMessage());
       }
     });
+  }
+
+  private synchronized ConnectionLifecycleManager getOrCreateLifecycleManager(CommandStationBean bean) {
+    if (connectionLifecycleManager != null) {
+      return connectionLifecycleManager;
+    }
+    final ConnectionLifecycleManager manager = new ConnectionLifecycleManager(
+            bean.getId(),
+            () -> connect() && isConnected(),
+            this::disconnectControllers);
+
+    manager.addConnectionStateListener(event -> {
+      for (ConnectionStateListener listener : connectionStateListeners) {
+        try {
+          listener.onConnectionStateChanged(event);
+        } catch (RuntimeException ex) {
+          Logger.warn("Connection state listener failed: " + ex.getMessage());
+        }
+      }
+      ConnectionState state = event.state();
+      if (state == ConnectionState.RECONNECTING || state == ConnectionState.DISCONNECTED) {
+        // Capture the last *confirmed* power value, not isPowerOn() on a
+        // broken TCP connection. Only a previously connected session needs
+        // emergency recovery; an initial failed connect does not.
+        if (connectedSession && !recoveryStopPending) {
+          powerWasOnBeforeLoss = lastKnownPowerOn;
+          recoveryStopPending = true;
+          Logger.warn("Connection lost: will stop all locomotives on reconnect; previous track power={}",
+                  powerWasOnBeforeLoss);
+        }
+        connectedSession = false;
+        // Preserve dispatchers and railway state when the CS vanishes.
+        if (recoveryStopPending) {
+          RailController.getInstance().suspendForConnectionLoss();
+        }
+      } else if (state == ConnectionState.CONNECTED) {
+        connectedSession = true;
+      }
+      if (state == ConnectionState.CONNECTED
+              || state == ConnectionState.RECONNECTING
+              || state == ConnectionState.DISCONNECTED) {
+        notifyConnectionListeners(new ConnectionEvent(
+                bean.getDescription(), state == ConnectionState.CONNECTED, isVirtual()));
+      }
+    });
+    connectionLifecycleManager = manager;
+    return manager;
+  }
+
+  public void addConnectionStateListener(ConnectionStateListener listener) {
+    connectionStateListeners.add(java.util.Objects.requireNonNull(listener));
+  }
+
+  public void removeConnectionStateListener(ConnectionStateListener listener) {
+    connectionStateListeners.remove(listener);
+  }
+
+  public ConnectionState getConnectionState() {
+    ConnectionLifecycleManager manager = connectionLifecycleManager;
+    if (manager != null) {
+      return manager.getState();
+    }
+    return isConnected() ? ConnectionState.CONNECTED : ConnectionState.DISCONNECTED;
   }
 
   public final synchronized boolean connect() {
@@ -253,6 +363,20 @@ public class JCSCommandStation {
 
     if (decoderController == null && commandStation != null) {
       decoderController = ControllerFactory.getDecoderController(commandStation, false);
+    }
+
+    if (decoderController instanceof MarklinCentralStationImpl marklin) {
+      // Do not tear down TCP resources on its receiver thread; the manager owns cleanup.
+      ConnectionLifecycleManager manager = connectionLifecycleManager;
+      marklin.setLifecycleManaged(manager != null
+              && manager.getState() != ConnectionState.DISCONNECTED
+              && manager.getState() != ConnectionState.STOPPING);
+    }
+
+    if (decoderController instanceof EsuEcosCommandStationImpl ecos) {
+      // Must be set BEFORE transport opens: the first command on a recovered
+      // session must be STOP, before any subscriptions or roster reads.
+      ecos.setRecoveryMode(recoveryStopPending);
     }
 
     if (decoderController == null) {
@@ -286,26 +410,22 @@ public class JCSCommandStation {
       Logger.warn("No Feedback Controllers configured!");
     }
 
-    if (decoderController != null && !decoderControllerConnected) {
-      decoderControllerConnected = decoderController.isConnected();
-      if (!decoderControllerConnected) {
-        decoderControllerConnected = decoderController.connect();
-      }
-    }
+    // The decoder, accessory and feedback roles can share the same physical
+    // controller (e.g. a single Märklin CS). An unsuccessful connect() must not
+    // be repeated for each role during the same lifecycle attempt.
+    Map<GenericController, Boolean> connectionAttempts = new java.util.IdentityHashMap<>();
+    decoderControllerConnected = connectControllerOnce(decoderController, connectionAttempts);
 
     //Connect the Accessories controllers if needed
     if (!accessoryControllers.isEmpty() && !alreadyConnected) {
       for (AccessoryController ac : accessoryControllers.values()) {
-        if (ac.isConnected()) {
-          accessoryCntrConnected++;
-        } else {
-          try {
-            if (ac.connect()) {
-              accessoryCntrConnected++;
-            }
-          } catch (Exception e) {
-            Logger.warn(" Can't connected to " + ac.getCommandStationBean().getDescription());
+        try {
+          if (connectControllerOnce(ac, connectionAttempts)) {
+            accessoryCntrConnected++;
           }
+        } catch (Exception e) {
+          Logger.warn("Can't connect to accessory controller "
+                  + ac.getCommandStationBean().getDescription() + ": " + e.getMessage());
         }
       }
     }
@@ -313,24 +433,19 @@ public class JCSCommandStation {
     //Connect the Feedback Controllers controllers if needed
     if (!feedbackControllers.isEmpty() && !alreadyConnected) {
       for (FeedbackController fc : feedbackControllers.values()) {
-        if (fc.isConnected()) {
-          fc.addAllSensorEventsListener(new AllSensorEventsHandler(this));
-          if (fc.getConnectionEventListeners().isEmpty()) {
-            fc.addConnectionEventListener(new ControllerConnectionListener(this));
-          }
-          feedbackCntrConnected++;
-        } else {
-          try {
-            if (fc.connect()) {
-              fc.addAllSensorEventsListener(new AllSensorEventsHandler(this));
-              if (fc.getConnectionEventListeners().isEmpty()) {
-                fc.addConnectionEventListener(new ControllerConnectionListener(this));
-              }
-              feedbackCntrConnected++;
+        try {
+          if (connectControllerOnce(fc, connectionAttempts)) {
+            fc.addAllSensorEventsListener(new AllSensorEventsHandler(this));
+            // A single physical station can implement decoder, feedback and
+            // accessory roles. Its decoder listener is installed below.
+            if (fc != decoderController && fc.getConnectionEventListeners().isEmpty()) {
+              fc.addConnectionEventListener(new ControllerConnectionListener(this, null));
             }
-          } catch (Exception e) {
-            Logger.warn(" Can't connected to " + fc.getCommandStationBean().getDescription());
+            feedbackCntrConnected++;
           }
+        } catch (Exception e) {
+          Logger.warn("Can't connect to feedback controller "
+                  + fc.getCommandStationBean().getDescription() + ": " + e.getMessage());
         }
       }
     }
@@ -350,7 +465,7 @@ public class JCSCommandStation {
     Logger.debug("Connected Controllers:  Decoder: " + (decoderControllerConnected ? "Yes" : "No") + " Accessory: " + accessoryCntrConnected + " Feedback: " + feedbackCntrConnected);
 
     if (decoderControllerConnected && !alreadyConnected && decoderController != null) {
-      decoderController.addConnectionEventListener(new ControllerConnectionListener(this));
+      decoderController.addConnectionEventListener(new ControllerConnectionListener(this, decoderController));
 
       decoderController.addPowerEventListener(new ControllerPowerListener(this));
 
@@ -367,25 +482,198 @@ public class JCSCommandStation {
         if (ac.isConnected()) {
           ac.addAccessoryEventListener(new AccessoryChangeEventListener(this));
 
-          if (ac.getConnectionEventListeners().isEmpty()) {
-            ac.addConnectionEventListener(new ControllerConnectionListener(this));
+          if (ac != decoderController && ac.getConnectionEventListeners().isEmpty()) {
+            ac.addConnectionEventListener(new ControllerConnectionListener(this, null));
           }
         }
       }
     }
 
+    if (!decoderControllerConnected) {
+      return false;
+    }
+
+    // A TCP reconnect is NOT an ordinary startup. Never announce CONNECTED
+    // before zero-speed commands have been issued to the station.
+    boolean wasRecovering = recoveryStopPending;
+    if (wasRecovering) {
+      if (!stopTrainsAfterReconnect(decoderController, powerWasOnBeforeLoss)) {
+        Logger.warn("Reconnect safety stop did not complete; retrying connection");
+        return false;
+      }
+      recoveryStopPending = false;
+    }
+
+    // Managed Märklin connections do not use connectInBackground()'s legacy
+    // switchPower(true). Initial startup must request GO here, before the
+    // lifecycle manager publishes CONNECTED. Never do this on recovery.
+    if (!wasRecovering && decoderController instanceof MarklinCentralStationImpl) {
+      Logger.info("Initial connection: requesting track power ON");
+      if (!decoderController.power(true) || !decoderController.isPower()) {
+        Logger.warn("Initial connection established, but track power could not be switched on");
+      }
+    }
+
     boolean power = isPowerOn();
+    lastKnownPowerOn = power;
     PowerEvent pe = new PowerEvent(power);
     for (PowerEventListener pl : powerEventListeners) {
       pl.onPowerChange(pe);
     }
 
-    //Restore is only possible when the power is on
-    if (!signalsRestored && this.isPowerOn()) {
+    // Restoring saved signal aspects can set a proceed signal. Do not restore
+    // them automatically after an unexpected loss of sensor/position tracking.
+    if (!wasRecovering && !signalsRestored && power) {
       restoreSignalValues();
+    } else if (wasRecovering) {
+      Logger.warn("Signal restoration deferred after reconnect; verify locomotive positions and routes");
     }
 
-    return decoderControllerConnected;
+    return true;
+  }
+
+  /**
+   * Fail-safe recovery for ALL DecoderController implementations. The command station must support power(boolean) and changeVelocity(...). Never write a nonzero speed during reconnection.
+   *
+   * STOP first removes track energy. Sending zero while stopped gives drivers which accept speed changes in STOP mode a chance to clear their cached speeds before GO. Re-send zero after GO, because
+   * not all drivers do.
+   *
+   * Returns false if the requested power-on state could not be confirmed.
+   */
+  private boolean stopTrainsAfterReconnect(DecoderController controller, boolean restorePower) {
+    Logger.warn("Reconnected after connection loss: stopping locomotives; previous track power={}",
+            restorePower);
+    try {
+      // Immediately remove track energy before HTTP/CAN locomotive enumeration.
+      // Reading the locomotive roster can take seconds; postponing STOP until
+      // afterwards could let an engine resume during that interval.
+      // The ECoS driver already sent STOP as the first command on the
+      // reconnected TCP session. Its recovery method verifies STOP again
+      // before touching locomotive speeds. Do not send a third STOP here.
+      // Märklin and other drivers still require this immediate command.
+      if (!(controller instanceof EsuEcosCommandStationImpl)) {
+        controller.power(false);
+      }
+
+      // An active locomotive may not be assigned to a layout block. Include
+      // all station locomotives, not only JCS's "on track" selection.
+      Map<Integer, LocomotiveBean> byAddress = new java.util.LinkedHashMap<>();
+      List<LocomotiveBean> known = controller.getLocomotives();
+      if (known != null) {
+        for (LocomotiveBean locomotive : known) {
+          if (locomotive != null) {
+            byAddress.put(resolveAddress(locomotive), locomotive);
+          }
+        }
+      }
+      List<LocomotiveBean> onTrack = PersistenceFactory.getService().getOnTrackLocomotives();
+      if (onTrack != null) {
+        for (LocomotiveBean locomotive : onTrack) {
+          if (locomotive != null
+                  && (!(controller instanceof EsuEcosCommandStationImpl)
+                  || "esu-ecos".equals(locomotive.getCommandStationId()))) {
+            byAddress.put(resolveAddress(locomotive), locomotive);
+          }
+        }
+      }
+      if (controller instanceof EsuEcosCommandStationImpl ecos) {
+        // Different from Märklin: NEVER restore GO after unexpected loss.
+        // Every locomotive speed is checked against a fresh ECoS reply.
+        Logger.warn("ECoS recovery: previous power was {}, leaving track power OFF",
+                restorePower ? "ON" : "OFF");
+        return ecos.stopLocomotivesForRecovery(new java.util.ArrayList<>(byAddress.keySet()));
+      }
+      if (controller instanceof MarklinCentralStationImpl marklin) {
+        // Raw CAN zero-speed commands must also be sent with track power OFF.
+        // MarklinCentralStationImpl.changeVelocity() deliberately gates normal
+        // commands on power, so that API cannot implement STOP -> zero -> GO.
+        return marklin.stopLocomotivesForRecovery(
+                new java.util.ArrayList<>(byAddress.keySet()), restorePower);
+      }
+      return safelyRestoreAfterReconnect(controller, restorePower,
+              () -> new java.util.ArrayList<>(byAddress.values()), this::resolveAddress);
+    } catch (RuntimeException ex) {
+      Logger.error("Unable to enumerate locomotives for reconnect safety: {}", ex.getMessage());
+      // Never enable power after a failed recovery.
+      try {
+        controller.power(false);
+      } catch (RuntimeException stopEx) {
+        Logger.error("Emergency recovery STOP failed: {}", stopEx.getMessage());
+      }
+      return false;
+    }
+  }
+
+  /**
+   * Package-visible for regression tests. This order is deliberate: STOP -> zero speeds -> optional GO -> zero speeds. No work is submitted to the disposable JCS-WORKER executor.
+   */
+  static boolean safelyRestoreAfterReconnect(
+          DecoderController controller,
+          boolean restorePower,
+          java.util.function.Supplier<List<LocomotiveBean>> locomotivesSupplier,
+          java.util.function.ToIntFunction<LocomotiveBean> addressResolver) {
+    try {
+      controller.power(false);
+      if (controller.isPower()) {
+        Logger.warn("STOP could not be confirmed; refusing to restore track power");
+        return false;
+      }
+      List<LocomotiveBean> locomotives = locomotivesSupplier.get();
+      if (locomotives == null) {
+        Logger.warn("Could not enumerate locomotives for recovery stop");
+        return false;
+      }
+      sendZeroVelocityForRecovery(controller, locomotives, addressResolver);
+
+      if (restorePower) {
+        if (!controller.power(true) || !controller.isPower()) {
+          Logger.warn("Could not restore track power; keeping reconnect recovery pending");
+          return false;
+        }
+        sendZeroVelocityForRecovery(controller, locomotives, addressResolver);
+      } else if (controller.isPower()) {
+        Logger.warn("Command station reports track power ON after requested STOP");
+        return false;
+      }
+      Logger.warn("Reconnect zero-speed commands dispatched for {} locomotives", locomotives.size());
+      return true;
+    } catch (RuntimeException ex) {
+      Logger.error("Reconnect safety stop failed: {}", ex.getMessage());
+      return false;
+    }
+  }
+
+  /**
+   * Synchronous, no executor: called by the lifecycle connection worker.
+   */
+  static void sendZeroVelocityForRecovery(
+          DecoderController controller,
+          List<LocomotiveBean> locomotives,
+          java.util.function.ToIntFunction<LocomotiveBean> addressResolver) {
+    for (LocomotiveBean locomotive : locomotives) {
+      if (locomotive == null) {
+        continue;
+      }
+      controller.changeVelocity(addressResolver.applyAsInt(locomotive),
+              0, locomotive.getDirection());
+    }
+  }
+
+  /**
+   * Connect a physical controller at most once per outer connect() invocation. Identity semantics are intentional: one controller object may implement DecoderController, AccessoryController and
+   * FeedbackController.
+   *
+   * Failures are cached too, so a failed TCP connect is not retried for each role. The ConnectionLifecycleManager owns subsequent retry attempts.
+   */
+  static boolean connectControllerOnce(GenericController controller,
+          Map<GenericController, Boolean> attempts) {
+    Boolean priorResult = attempts.get(controller);
+    if (priorResult != null) {
+      return priorResult;
+    }
+    boolean connected = controller.isConnected() || controller.connect();
+    attempts.put(controller, connected);
+    return connected;
   }
 
   private synchronized void startLocomotiveEventHandler() {
@@ -448,53 +736,134 @@ public class JCSCommandStation {
     }
   }
 
+  /**
+   * Intentional user disconnect: cancels retries but permits a later reconnect.
+   */
   public void disconnect() {
-    Logger.debug("Disconnecting...");
-    for (FeedbackController fc : feedbackControllers.values()) {
-      if (fc != decoderController) {
-        fc.disconnect();
+    connectedSession = false;
+    recoveryStopPending = false;
+    ConnectionLifecycleManager manager = connectionLifecycleManager;
+    if (manager != null) {
+      manager.stop();
+    } else {
+      disconnectControllers();
+    }
+  }
+
+  /**
+   * Terminal application shutdown, preserving the legacy no-extra-STOP API.
+   */
+  public void shutdown() {
+    shutdown(false);
+  }
+
+  /**
+   * Shutdown with an optional synchronous track STOP. Invoked before the lifecycle manager closes the TCP session. A failed confirmation is logged; no GO is ever attempted.
+   */
+  public void shutdown(boolean stopTrackPower) {
+    shuttingDown = true; // Reject new queued user commands before STOP.
+    connectedSession = false;
+    recoveryStopPending = false;
+    try {
+      if (stopTrackPower) {
+        DecoderController controller = decoderController;
+        if (controller == null || !controller.isConnected()) {
+          Logger.warn("Shutdown STOP not confirmed: command station unavailable");
+        } else {
+          boolean stopped;
+          if (controller instanceof EsuEcosCommandStationImpl ecos) {
+            stopped = ecos.stopTrackPowerForShutdown();
+          } else {
+            controller.power(false);
+            stopped = controller.isConnected() && !controller.isPower();
+          }
+          if (stopped) {
+            Logger.info("Shutdown track STOP confirmed before disconnect");
+          } else {
+            Logger.warn("Shutdown track STOP NOT confirmed; disconnecting anyway");
+          }
+        }
+      }
+    } catch (RuntimeException ex) {
+      Logger.error("Shutdown STOP failed: {}", ex.getMessage());
+    } finally {
+      ConnectionLifecycleManager manager = connectionLifecycleManager;
+      if (manager != null) {
+        manager.close();
+      } else {
+        disconnectControllers();
       }
     }
-    for (AccessoryController ac : accessoryControllers.values()) {
-      if (ac != decoderController) {
-        ac.disconnect();
-      }
+  }
+
+  /**
+   * Called by the manager's worker; must not call manager.stop() recursively.
+   */
+  private synchronized void disconnectControllers() {
+    if (cleaningUpControllers) {
+      return;
     }
-
-    this.executor.shutdown();
-
-    stopEventHandler(locomotiveEventHandlerThread);
-    stopEventHandler(accessoryEventHandlerThread);
-    stopEventHandler(sensorEventHandlerThread);
-
-    locomotiveEventHandlerThread = null;
-    accessoryEventHandlerThread = null;
-    sensorEventHandlerThread = null;
-
-    if (decoderController != null) {
-      if (measurementEventHandler != null) {
-        decoderController.removeMeasurementEventListener(measurementEventHandler);
+    cleaningUpControllers = true;
+    try {
+      Logger.debug("Disconnecting controllers...");
+      for (FeedbackController fc : feedbackControllers.values()) {
+        if (fc != decoderController) {
+          fc.disconnect();
+        }
       }
-      measurementEventHandler = null;
+      for (AccessoryController ac : accessoryControllers.values()) {
+        if (ac != decoderController) {
+          ac.disconnect();
+        }
+      }
 
-      decoderController.disconnect();
+      stopEventHandler(locomotiveEventHandlerThread);
+      stopEventHandler(accessoryEventHandlerThread);
+      stopEventHandler(sensorEventHandlerThread);
+
+      locomotiveEventHandlerThread = null;
+      accessoryEventHandlerThread = null;
+      sensorEventHandlerThread = null;
+
+      if (decoderController != null) {
+        if (measurementEventHandler != null) {
+          decoderController.removeMeasurementEventListener(measurementEventHandler);
+        }
+        measurementEventHandler = null;
+
+        decoderController.disconnect();
+      }
+
+      accessoryControllers.clear();
+      feedbackControllers.clear();
+      decoderController = null;
+      commandStation = null;
+      ControllerFactory.reset();
+
+      // All controller callbacks have finished; no further work should be accepted.
+      if (executor != null) {
+        executor.shutdown();
+      }
+    } finally {
+      cleaningUpControllers = false;
     }
-
-    accessoryControllers.clear();
-    feedbackControllers.clear();
-    decoderController = null;
-    commandStation = null;
-    ControllerFactory.reset();
   }
 
   private void notifyConnectionListeners(final ConnectionEvent connectionEvent) {
-    if (!isVirtual()) {
+    if (!shuttingDown && !isVirtual()) {
       if (!connectionEventListeners.isEmpty()) {
-        executor.execute(() -> {
-          for (ConnectionEventListener cel : connectionEventListeners) {
-            cel.onConnectionChange(connectionEvent);
-          }
-        });
+        if (executor == null || executor.isShutdown()) {
+          return;
+        }
+        try {
+          executor.execute(() -> {
+            for (ConnectionEventListener cel : connectionEventListeners) {
+              cel.onConnectionChange(connectionEvent);
+            }
+          });
+        } catch (java.util.concurrent.RejectedExecutionException ignored) {
+          // Connection notification raced with intentional shutdown.
+        }
       }
     }
   }
@@ -505,6 +874,9 @@ public class JCSCommandStation {
       if (powerEventRunning.compareAndSet(false, true)) {
         try {
           if (!powerEventListeners.isEmpty()) {
+            if (executor == null || executor.isShutdown()) {
+              return;
+            }
             executor.execute(() -> {
               for (PowerEventListener pel : powerEventListeners) {
                 pel.onPowerChange(powerEvent);
@@ -515,17 +887,33 @@ public class JCSCommandStation {
           powerEventRunning.set(false);
         }
       }
-    } catch (Exception e) {
-      Logger.trace(e.getMessage());
+    } catch (java.util.concurrent.RejectedExecutionException ignored) {
+      // A callback raced with executor shutdown; normal during disconnect.
     }
   }
 
   public void setVirtual(boolean flag) {
     Logger.info("Switch Virtual Mode " + (flag ? "On" : "Off"));
-    commandStation.setVirtual(flag);
-    PersistenceFactory.getService().persist(commandStation);
+    CommandStationBean bean = getCommandStationBean();
+    if (bean == null) {
+      Logger.warn("No command station configured for virtual mode");
+      return;
+    }
 
-    decoderController.setVirtual(flag);
+    ConnectionLifecycleManager manager = connectionLifecycleManager;
+    if (manager != null && supportsManagedLifecycle(bean)) {
+      // The mode change replaces the transport, so suspend retries first.
+      manager.stop();
+      bean.setVirtual(flag);
+      PersistenceFactory.getService().persist(bean);
+      manager.start();
+    } else {
+      bean.setVirtual(flag);
+      PersistenceFactory.getService().persist(bean);
+      if (decoderController != null) {
+        decoderController.setVirtual(flag);
+      }
+    }
   }
 
   public boolean isVirtual() {
@@ -647,14 +1035,37 @@ public class JCSCommandStation {
   }
 
   public void switchPower(boolean on) {
-    if (decoderController != null && !SwingUtilities.isEventDispatchThread()) {
-      decoderController.power(on);
+    DecoderController controller = decoderController;
+    // No power changes while the old worker has terminated or recovery is
+    // in progress. In particular, never queue a stale GO for after recovery.
+    if (shuttingDown || controller == null || !controller.isConnected()
+            || recoveryStopPending || !lifecycleReady(controller)) {
+      Logger.debug("Ignoring track power request: command station not ready");
+      return;
+    }
+    Runnable task = () -> {
+      if (controller != decoderController || !controller.isConnected()
+              || recoveryStopPending || shuttingDown
+              || !lifecycleReady(controller)) {
+        return;
+      }
+      controller.power(on);
+      lastKnownPowerOn = controller.isPower();
+    };
+    if (!SwingUtilities.isEventDispatchThread()) {
+      task.run();
     } else {
-      executor.execute(() -> {
-        if (decoderController != null) {
-          decoderController.power(on);
-        }
-      });
+      ExecutorService pool = executor;
+      if (pool == null || pool.isShutdown()) {
+        Logger.debug("Ignoring track power request: worker is stopped");
+        return;
+      }
+      try {
+        pool.execute(task);
+      } catch (java.util.concurrent.RejectedExecutionException ignored) {
+        // A connection loss can shut down the worker between the check and execute().
+        Logger.debug("Track power request cancelled by disconnect");
+      }
     }
   }
 
@@ -687,33 +1098,62 @@ public class JCSCommandStation {
   }
 
   public void changeLocomotiveDirection(Direction newDirection, LocomotiveBean locomotive) {
-    Logger.debug("Changing direction to " + newDirection + " for: " + locomotive.getName() + " id: " + locomotive.getId() + " velocity: " + locomotive.getVelocity());
+    DecoderController controller = decoderController;
+    if (controller == null || !controller.isConnected() || shuttingDown
+            || recoveryStopPending || !lifecycleReady(controller)) {
+      Logger.debug("Ignoring locomotive direction while command station is unavailable");
+      return;
+    }
     int address = resolveAddress(locomotive);
-
-    if (decoderController != null && !SwingUtilities.isEventDispatchThread()) {
-      //Marklin CS does not need a zero velocity. this is handled by the CS
-      if (!"marklin.cs".equals(this.commandStation.getId())) {
-        decoderController.changeVelocity(address, 0, locomotive.getDirection());
+    Runnable task = () -> {
+      if (shuttingDown || recoveryStopPending || controller != decoderController
+              || !controller.isConnected() || !lifecycleReady(controller)) {
+        return;
       }
-      decoderController.changeDirection(address, newDirection);
-    } else {
-      executor.execute(() -> {
-        if (!"marklin.cs".equals(this.commandStation.getId())) {
-          decoderController.changeVelocity(address, 0, locomotive.getDirection());
-        }
-        decoderController.changeDirection(address, newDirection);
-      });
+      if (!(controller instanceof MarklinCentralStationImpl)) {
+        controller.changeVelocity(address, 0, locomotive.getDirection());
+      }
+      controller.changeDirection(address, newDirection);
+    };
+    if (!SwingUtilities.isEventDispatchThread()) {
+      task.run();
+    } else if (executor != null && !executor.isShutdown()) {
+      try {
+        executor.execute(task);
+      } catch (java.util.concurrent.RejectedExecutionException ignored) {
+        Logger.debug("Locomotive direction cancelled by disconnect");
+      }
     }
   }
 
   public void changeLocomotiveSpeed(Integer newVelocity, LocomotiveBean locomotive) {
+    DecoderController controller = decoderController;
+    if (controller == null || !controller.isConnected() || shuttingDown
+            || recoveryStopPending || !lifecycleReady(controller)) {
+      Logger.debug("Ignoring locomotive speed request while command station is unavailable");
+      return;
+    }
     Logger.trace("Changing velocity to " + newVelocity + " for " + locomotive.getName());
     int address = resolveAddress(locomotive);
-
-    if (decoderController != null && !SwingUtilities.isEventDispatchThread()) {
-      decoderController.changeVelocity(address, newVelocity, locomotive.getDirection());
+    Runnable task = () -> {
+      if (!shuttingDown && !recoveryStopPending && controller == decoderController
+              && controller.isConnected()
+              && lifecycleReady(controller)) {
+        controller.changeVelocity(address, newVelocity, locomotive.getDirection());
+      }
+    };
+    if (!SwingUtilities.isEventDispatchThread()) {
+      task.run();
     } else {
-      executor.execute(() -> decoderController.changeVelocity(address, newVelocity, locomotive.getDirection()));
+      ExecutorService pool = executor;
+      if (pool == null || pool.isShutdown()) {
+        return;
+      }
+      try {
+        pool.execute(task);
+      } catch (java.util.concurrent.RejectedExecutionException ignored) {
+        Logger.debug("Locomotive speed request cancelled by disconnect");
+      }
     }
   }
 
@@ -727,15 +1167,27 @@ public class JCSCommandStation {
   }
 
   public void changeLocomotiveFunction(Boolean newValue, Integer functionNumber, LocomotiveBean locomotive) {
-    Logger.trace("Changing Function " + functionNumber + " to " + (newValue ? "on" : "off") + " on " + locomotive.getName());
+    DecoderController controller = decoderController;
+    if (controller == null || !controller.isConnected() || shuttingDown
+            || recoveryStopPending || !lifecycleReady(controller)) {
+      Logger.debug("Ignoring locomotive function while command station is unavailable");
+      return;
+    }
     int address = resolveAddress(locomotive);
-
-    if (decoderController != null && !SwingUtilities.isEventDispatchThread()) {
-      decoderController.changeFunctionValue(address, functionNumber, newValue);
-    } else if (decoderController != null) {
-      executor.execute(() -> decoderController.changeFunctionValue(address, functionNumber, newValue));
-    } else {
-      Logger.warn("Can't switch function decoderController is null!");
+    Runnable task = () -> {
+      if (!shuttingDown && !recoveryStopPending && controller == decoderController
+              && controller.isConnected() && lifecycleReady(controller)) {
+        controller.changeFunctionValue(address, functionNumber, newValue);
+      }
+    };
+    if (!SwingUtilities.isEventDispatchThread()) {
+      task.run();
+    } else if (executor != null && !executor.isShutdown()) {
+      try {
+        executor.execute(task);
+      } catch (java.util.concurrent.RejectedExecutionException ignored) {
+        Logger.debug("Locomotive function cancelled by disconnect");
+      }
     }
   }
 
@@ -765,21 +1217,34 @@ public class JCSCommandStation {
       protocol = AccessoryBean.Protocol.DCC;
     }
 
-    Logger.trace("Changing accessory with address: " + address + ", " + accessory.getName() + " to " + value.getValue());
+    Logger.trace("Changing accessory with address: {}, {} Name: {} to {}", address, protocol, accessory.getName(), value.getValue());
     changeAccessory(address, protocol.getValue(), value, switchTime);
   }
 
   private void changeAccessory(final Integer address, final String protocol, final AccessoryValue value, final Integer switchTime) {
-    if (!SwingUtilities.isEventDispatchThread()) {
-      for (AccessoryController ac : accessoryControllers.values()) {
-        ac.switchAccessory(address, protocol, value, switchTime);
+    DecoderController controller = decoderController;
+    if (controller == null || !controller.isConnected() || shuttingDown || recoveryStopPending || !lifecycleReady(controller)) {
+      Logger.warn("Ignoring accessory switch while command station is unavailable");
+      return;
+    }
+    Runnable task = () -> {
+      if (shuttingDown || recoveryStopPending || controller != decoderController || !controller.isConnected() || !lifecycleReady(controller)) {
+        return;
       }
-    } else {
-      executor.execute(() -> {
-        for (AccessoryController ac : accessoryControllers.values()) {
-          ac.switchAccessory(address, protocol, value, switchTime);
+      for (AccessoryController accessoryController : new ArrayList<>(accessoryControllers.values())) {
+        if (accessoryController.isConnected()) {
+          accessoryController.switchAccessory(address, protocol, value, switchTime);
         }
-      });
+      }
+    };
+    if (!SwingUtilities.isEventDispatchThread()) {
+      task.run();
+    } else if (executor != null && !executor.isShutdown()) {
+      try {
+        executor.execute(task);
+      } catch (java.util.concurrent.RejectedExecutionException ignored) {
+        Logger.debug("Accessory command cancelled by disconnect");
+      }
     }
   }
 
@@ -974,62 +1439,6 @@ public class JCSCommandStation {
     }
   }
 
-  private void handleSensorEvent_old(SensorEvent event) {
-    SensorBean sb = event.getSensorBean();
-    boolean newValue = event.isActive();
-    SensorBean dbsb = null;
-
-    //TODO: Add CommandStationID!
-    if (dbsb == null && event.getSensorId() != null) {
-      dbsb = PersistenceFactory.getService().getSensor(event.getSensorId());
-    }
-
-    if (sb.getDeviceId() != null && sb.getContactId() != null) {
-      dbsb = PersistenceFactory.getService().getSensor(sb.getDeviceId(), sb.getContactId());
-    }
-
-    //SensorBean dbsb = PersistenceFactory.getService().getSensor(event.getSensorId());
-    if (dbsb == null) {
-      //Try using the deviceId and contactId and command station...
-      dbsb = PersistenceFactory.getService().getSensor(sb.getDeviceId(), sb.getContactId());
-    }
-
-    if (dbsb != null) {
-      //if (sb.getId() == null) {
-      sb.setId(dbsb.getId());
-      //}
-
-      sb.setName(dbsb.getName());
-      //make sure the previous vale is set by setting the current and the new one
-      sb.setActive(dbsb.isActive());
-      //Sensor bean will set the prev value to indicate a (real) sensor change
-      sb.setActive(newValue);
-
-      PersistenceFactory.getService().persist(sb);
-    }
-
-    if (sb.getId() != null && sensorListeners.containsKey(sb.getId())) {
-      //Avoid concurrent modification exceptions
-      List<SensorEventListener> snapshot = new ArrayList<>(sensorListeners.get(sb.getId()));
-
-      for (SensorEventListener sl : snapshot) {
-        if (sl != null) {
-          sl.onSensorChange(event);
-        }
-      }
-    }
-
-    //For generic sensor listeners which are interested in every event...
-    if (!allSensorEventsListeners.isEmpty()) {
-      List<AllSensorEventsListener> snapshot = new ArrayList<>(allSensorEventsListeners);
-      for (AllSensorEventsListener sl : snapshot) {
-        if (sl != null) {
-          sl.onSensorChange(event);
-        }
-      }
-    }
-  }
-
   private void handleSensorEvent(SensorEvent event) {
     SensorBean incoming = event.getSensorBean();
     boolean newValue = event.isActive();
@@ -1094,6 +1503,7 @@ public class JCSCommandStation {
   private void handleAccessoryEvent(AccessoryEvent event) {
     AccessoryBean ab = event.getAccessoryBean();
     int address = ab.getAddress();
+    String protocol = ab.getProtocol().getValue();
     String commandStationId = ab.getCommandStationId();
     AccessoryBean dbab = PersistenceFactory.getService().getAccessory(event.getId());
 
@@ -1303,6 +1713,10 @@ public class JCSCommandStation {
 
     @Override
     public void onPowerChange(PowerEvent powerEvent) {
+      if (this.jcsCommandStation.isConnected()
+              && !this.jcsCommandStation.recoveryStopPending) {
+        this.jcsCommandStation.lastKnownPowerOn = powerEvent.isPower();
+      }
       this.jcsCommandStation.notifyPowerListeners(powerEvent);
     }
   }
@@ -1310,19 +1724,42 @@ public class JCSCommandStation {
   private class ControllerConnectionListener implements ConnectionEventListener {
 
     final JCSCommandStation jcsCommandStation;
+    private final Object registeredController;
 
     ControllerConnectionListener(JCSCommandStation jcsCommandStation) {
+      this(jcsCommandStation, null);
+    }
+
+    ControllerConnectionListener(JCSCommandStation jcsCommandStation, Object controller) {
       this.jcsCommandStation = jcsCommandStation;
+      this.registeredController = controller;
     }
 
     @Override
     public void onConnectionChange(ConnectionEvent event) {
+      // Ignore late events from a previous connection generation.
+      if (registeredController != null && registeredController != decoderController) {
+        return;
+      }
       if (event.isConnected()) {
         Logger.trace(event.getSource() + " has re-connected!");
       } else {
         Logger.trace(event.getSource() + " is Disconnected!");
       }
-      jcsCommandStation.notifyConnectionListeners(event);
+      if (shuttingDown || cleaningUpControllers) {
+        return;
+      }
+      ConnectionLifecycleManager manager = connectionLifecycleManager;
+      if (manager != null && event.getSource() != null
+              && (decoderController instanceof MarklinCentralStationImpl
+              || decoderController instanceof EsuEcosCommandStationImpl)) {
+        if (!event.isConnected()) {
+          manager.connectionLost(null);
+        }
+        // The lifecycle manager is the sole source of UI connection events.
+      } else {
+        jcsCommandStation.notifyConnectionListeners(event);
+      }
     }
   }
 
@@ -1370,7 +1807,10 @@ public class JCSCommandStation {
           }
         } catch (InterruptedException ex) {
           Thread.currentThread().interrupt();
-          Logger.error(ex.getMessage());
+          // quit() interrupts poll() during normal shutdown.
+          if (running) {
+            Logger.warn(getName() + " interrupted unexpectedly");
+          }
           break;
         } catch (Exception e) {
           Logger.error("Error in " + getName() + ". Cause: " + e.getMessage());

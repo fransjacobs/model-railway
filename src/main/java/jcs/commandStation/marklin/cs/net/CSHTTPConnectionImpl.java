@@ -20,6 +20,7 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -98,12 +99,24 @@ public class CSHTTPConnectionImpl implements CSHTTPConnection {
     return url.replace(" ", "%20");
   }
 
+  private static final int HTTP_CONNECT_TIMEOUT_MS =
+          Math.max(1, Integer.getInteger("marklin.cs.http.connect.timeout.ms", 3000));
+  private static final int HTTP_READ_TIMEOUT_MS =
+          Math.max(1, Integer.getInteger("marklin.cs.http.read.timeout.ms", 3000));
+
+  private static URLConnection openConnection(URL url) throws IOException {
+    URLConnection connection = url.openConnection();
+    connection.setConnectTimeout(HTTP_CONNECT_TIMEOUT_MS);
+    connection.setReadTimeout(HTTP_READ_TIMEOUT_MS);
+    return connection;
+  }
+
   @Override
   public String getLocomotivesFile() {
     StringBuilder locs = new StringBuilder();
     try {
       URL cs = URI.create(HTTP + csAddress.getHostAddress() + CONFIG + LOCOMOTIVE).toURL();
-      URLConnection lc = cs.openConnection();
+      URLConnection lc = openConnection(cs);
       try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
         String inputLine;
         while ((inputLine = in.readLine()) != null) {
@@ -124,7 +137,7 @@ public class CSHTTPConnectionImpl implements CSHTTPConnection {
     StringBuilder loks = new StringBuilder();
     try {
       URL url = URI.create(HTTP + csAddress.getHostAddress() + LOCOMOTIVE_JSON).toURL();
-      URLConnection lc = url.openConnection();
+      URLConnection lc = openConnection(url);
       try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
         String inputLine;
         while ((inputLine = in.readLine()) != null) {
@@ -145,7 +158,7 @@ public class CSHTTPConnectionImpl implements CSHTTPConnection {
     StringBuilder locs = new StringBuilder();
     try {
       URL url = URI.create(HTTP + csAddress.getHostAddress() + CONFIG + MAGNETARTIKEL).toURL();
-      URLConnection lc = url.openConnection();
+      URLConnection lc = openConnection(url);
       try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
         String inputLine;
         while ((inputLine = in.readLine()) != null) {
@@ -166,7 +179,7 @@ public class CSHTTPConnectionImpl implements CSHTTPConnection {
     StringBuilder json = new StringBuilder();
     try {
       URL url = URI.create(HTTP + csAddress.getHostAddress() + FUNCTION_SVG_URL).toURL();
-      URLConnection lc = url.openConnection();
+      URLConnection lc = openConnection(url);
       try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
         String inputLine;
         while ((inputLine = in.readLine()) != null) {
@@ -187,7 +200,7 @@ public class CSHTTPConnectionImpl implements CSHTTPConnection {
     StringBuilder json = new StringBuilder();
     try {
       URL url = URI.create(HTTP + csAddress.getHostAddress() + ACCESSORIES_SVG_URL).toURL();
-      URLConnection lc = url.openConnection();
+      URLConnection lc = openConnection(url);
       try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
         String inputLine;
         while ((inputLine = in.readLine()) != null) {
@@ -208,7 +221,7 @@ public class CSHTTPConnectionImpl implements CSHTTPConnection {
     StringBuilder json = new StringBuilder();
     try {
       URL url = URI.create(HTTP + csAddress.getHostAddress() + ACCESSORIES_URL).toURL();
-      URLConnection lc = url.openConnection();
+      URLConnection lc = openConnection(url);
       try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
         String inputLine;
         while ((inputLine = in.readLine()) != null) {
@@ -230,7 +243,7 @@ public class CSHTTPConnectionImpl implements CSHTTPConnection {
     if (this.csAddress != null && csAddress.getHostAddress() != null) {
       try {
         URL url = URI.create(HTTP + csAddress.getHostAddress() + DEVICES).toURL();
-        URLConnection lc = url.openConnection();
+        URLConnection lc = openConnection(url);
         try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
           String inputLine;
           while ((inputLine = in.readLine()) != null) {
@@ -254,7 +267,7 @@ public class CSHTTPConnectionImpl implements CSHTTPConnection {
     StringBuilder device = new StringBuilder();
     try {
       URL url = URI.create(HTTP + csAddress.getHostAddress() + CONFIG + DEVICE).toURL();
-      URLConnection lc = url.openConnection();
+      URLConnection lc = openConnection(url);
       try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
         String inputLine;
         while ((inputLine = in.readLine()) != null) {
@@ -274,7 +287,7 @@ public class CSHTTPConnectionImpl implements CSHTTPConnection {
     if (this.csAddress != null && csAddress.getHostAddress() != null) {
       try {
         URL url = URI.create(HTTP + csAddress.getHostAddress() + CS3_INFO_JSON).toURL();
-        URLConnection lc = url.openConnection();
+        URLConnection lc = openConnection(url);
         try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
           String inputLine;
           while ((inputLine = in.readLine()) != null) {
@@ -305,7 +318,9 @@ public class CSHTTPConnectionImpl implements CSHTTPConnection {
       }
 
       Logger.trace("image URL: " + url);
-      image = ImageIO.read(url);
+      try (InputStream in = openConnection(url).getInputStream()) {
+        image = ImageIO.read(in);
+      }
     } catch (IOException ex) {
       Logger.error("Image " + imageName + " not found. " + ex.getMessage());
     }
@@ -319,7 +334,9 @@ public class CSHTTPConnectionImpl implements CSHTTPConnection {
 
     try {
       URL url = URI.create(iurl).toURL();
-      image = ImageIO.read(url);
+      try (InputStream in = openConnection(url).getInputStream()) {
+        image = ImageIO.read(in);
+      }
     } catch (IIOException iio) {
       //Image not avalable
       Logger.warn("Image: " + iurl + " is not available");

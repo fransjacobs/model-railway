@@ -243,7 +243,7 @@ public class CanDeviceParser {
 
             int range1 = CanMessage.toInt(brange1);
             int range2 = CanMessage.toInt(brange2);
-            int range3 = CanMessage.toInt(brange2);
+            int range3 = CanMessage.toInt(brange3);
             int range4 = CanMessage.toInt(brange4);
 
             channel.setRangeGreen(range1);
@@ -333,7 +333,7 @@ public class CanDeviceParser {
               channel.setLowValue(lowValue);
               byte[] upperval = new byte[2];
               System.arraycopy(data, 4, upperval, 0, upperval.length);
-              int upperValue = CanMessage.toInt(lowval);
+              int upperValue = CanMessage.toInt(upperval);
               channel.setHighValue(upperValue);
               byte[] setval = new byte[2];
               System.arraycopy(data, 6, setval, 0, setval.length);

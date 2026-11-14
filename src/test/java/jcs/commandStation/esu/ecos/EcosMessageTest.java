@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 fransjacobs.
+ * Copyright 2024 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
- * @author fransjacobs
  */
 public class EcosMessageTest {
 
@@ -63,8 +62,38 @@ public class EcosMessageTest {
     System.out.println("setResponse");
     String tx = "get(1,objectclass,view,listview,control,list,size,minarguments,protocolversion,commandstationtype,name,serialnumber,hardwareversion,applicationversion,applicationversionsuffix,updateonerror,status,status2,prog-status,m4-status,railcomplus-status,watchdog,railcom,railcomplus,railcomplus-range,railcomplus-mode,allowlocotakeover,stoponlastdisconnect)";
 
-    String rx = "<REPLY get(1,objectclass,view,listview,control,list,size,minarguments,protocolversion,commandstationtype,name,serialnumber,hardwareversion,applicationversion,applicationversionsuffix,updateonerror,status,status2,prog-status,m4-status,railcomplus-status,watchdog,railcom,railcomplus,railcomplus-range,railcomplus-mode,allowlocotakeover,stoponlastdisconnect)>1 objectclass[model]1 view[none]1 listview[none]1 control[none]1 list1 size[10]1 minarguments[64]1 protocolversion[0.5]1 commandstationtype[\"ECoS\"]1 name[\"ECoS-50000\"]1 serialnumber[\"0x000480b5\"]1 hardwareversion[1.3]1 applicationversion[4.2.13]1 applicationversionsuffix[\"\"]1 updateonerror[0]1 status[GO]1 status2[ALL]1 prog-status[0]1 m4-status[none]1 railcomplus-status[none]1 watchdog[0,0]1 railcom[1]1 railcomplus[1]1 railcomplus-range[1000]1 railcomplus-mode[manual]1 allowlocotakeover[1]1 stoponlastdisconnect[0]<END 0 (OK)>";
-    String content = "1 objectclass[model]1 view[none]1 listview[none]1 control[none]1 list1 size[10]1 minarguments[64]1 protocolversion[0.5]1 commandstationtype[\"ECoS\"]1 name[\"ECoS-50000\"]1 serialnumber[\"0x000480b5\"]1 hardwareversion[1.3]1 applicationversion[4.2.13]1 applicationversionsuffix[\"\"]1 updateonerror[0]1 status[GO]1 status2[ALL]1 prog-status[0]1 m4-status[none]1 railcomplus-status[none]1 watchdog[0,0]1 railcom[1]1 railcomplus[1]1 railcomplus-range[1000]1 railcomplus-mode[manual]1 allowlocotakeover[1]1 stoponlastdisconnect[0]";
+    // Real ECoS and the corrected virtual connection use line-separated
+    // object attributes. The previous fixture concatenated "1 list1 size",
+    // which is not a valid ECoS attribute boundary.
+    String content = "\n" + String.join("\n",
+        "1 objectclass[model]",
+        "1 view[none]",
+        "1 listview[none]",
+        "1 control[none]",
+        "1 list",
+        "1 size[10]",
+        "1 minarguments[64]",
+        "1 protocolversion[0.5]",
+        "1 commandstationtype[\"ECoS\"]",
+        "1 name[\"ECoS-50000\"]",
+        "1 serialnumber[\"0x000480b5\"]",
+        "1 hardwareversion[1.3]",
+        "1 applicationversion[4.2.13]",
+        "1 applicationversionsuffix[\"\"]",
+        "1 updateonerror[0]",
+        "1 status[GO]",
+        "1 status2[ALL]",
+        "1 prog-status[0]",
+        "1 m4-status[none]",
+        "1 railcomplus-status[none]",
+        "1 watchdog[0,0]",
+        "1 railcom[1]",
+        "1 railcomplus[1]",
+        "1 railcomplus-range[1000]",
+        "1 railcomplus-mode[manual]",
+        "1 allowlocotakeover[1]",
+        "1 stoponlastdisconnect[0]") + "\n";
+    String rx = "<REPLY " + tx + ">" + content + "<END 0 (OK)>";
 
     EcosMessage instance = new EcosMessage(tx);
     instance.addResponse(rx);
@@ -79,7 +108,7 @@ public class EcosMessageTest {
 
     Map<String, Object> valueMap = instance.getValueMap();
 
-    assertEquals(27, valueMap.size());
+    assertEquals(28, valueMap.size()); // 27 ECoS attributes plus "id"
 
     assertEquals("1", valueMap.get("id"));
     assertEquals("0.5", valueMap.get("protocolversion"));
@@ -194,6 +223,21 @@ public class EcosMessageTest {
     assertEquals(expFunc, valueMap.get("func"));
     assertEquals(expFuncDesc, valueMap.get("funcdesc"));
 
+  }
+
+  @Test
+  public void testValuelessBaseObjectAttribute() {
+    String tx = "get(1,list,size,status)";
+    EcosMessage message = new EcosMessage(tx);
+    message.addResponse("<REPLY " + tx + ">\n"
+            + "1 list\n1 size[10]\n1 status[STOP]\n"
+            + "<END 0 (OK)>");
+
+    Map<String, Object> values = message.getValueMap();
+    assertTrue(values.containsKey("list"));
+    assertNull(values.get("list"));
+    assertEquals("10", values.get("size"));
+    assertEquals("STOP", values.get("status"));
   }
 
   @Test
