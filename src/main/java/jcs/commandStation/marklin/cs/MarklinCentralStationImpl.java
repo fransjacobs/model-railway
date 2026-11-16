@@ -116,9 +116,6 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   // When true, a network callback only reports loss; JCS owns cleanup and retry.
   private volatile boolean lifecycleManaged;
 
-  public void setLifecycleManaged(boolean managed) {
-    this.lifecycleManaged = managed;
-  }
   private final AtomicBoolean disconnecting = new AtomicBoolean(false);
 
   private final AccessoryManager accessoryManager;
@@ -149,6 +146,10 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 
   int getCsUid() {
     return csUid;
+  }
+
+  public void setLifecycleManaged(boolean managed) {
+    this.lifecycleManaged = managed;
   }
 
   boolean isCS3() {
@@ -212,10 +213,11 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
           } else {
             csAddr = InetAddress.getByName(commandStationBean.getIpAddress());
           }
+
           commandStationBean.setIpAddress(csAddr.getHostAddress());
           canConnect = csAddr.getHostAddress() != null;
         } catch (UnknownHostException ex) {
-          Logger.error("Invalid ip address : " + commandStationBean.getIpAddress());
+          Logger.error("Invalid ip address : {}", commandStationBean.getIpAddress());
           return false;
         }
       } else {
@@ -227,15 +229,15 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       }
 
       if (!canConnect) {
-        Logger.error("Can't connect to " + (commandStationBean.getIpAddress() == null ? "ip Address not set" : "can't reach ip " + commandStationBean.getIpAddress()));
+        Logger.error("Can't connect to {} {}", commandStationBean.getIpAddress() == null ? "ip Address not set" : "can't reach ip ", commandStationBean.getIpAddress());
         return false;
       }
 
       connection = CSConnectionFactory.getConnection(commandStationBean);
 
       if (connection != null) {
-        // The transport connects with a bounded timeout. No busy-spin is needed.
         connected = connection.isConnected();
+
         if (!connected) {
           Logger.error("Could not establish a Central Station connection");
           disconnect();
@@ -276,10 +278,18 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
             //Load the accessories in the Accessory manager
             getAccessories();
 
+            if (this.linkS88Uid == 0) {
+              this.obtainDevices();
+            }
+
+            if (this.linkS88Uid == 0) {
+              Logger.warn("Link S88 NOT found!");
+            }
+
             power = isPower();
             JCS.logProgress("Power is " + (power ? "On" : "Off"));
-            Logger.trace("Connected to " + gfp.getName() + ", " + gfp.getArticleNumber()
-                    + " SerialNumber: " + gfp.getSerial());
+            Logger.trace("Connected to {}, {} SerialNumber: {}", gfp.getName(), gfp.getArticleNumber(), gfp.getSerial());
+
           } catch (RuntimeException ex) {
             Logger.error("Central Station initialization failed: " + ex.getMessage());
             disconnect();
@@ -416,6 +426,46 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     for (CanDevice device : canDevices.values()) {
       queryDevice(device);
     }
+
+//    //Check the Link S88 could be tha it is not yest ready
+//    Logger.trace("Link S88 {}", linkS88Uid);
+//    if (linkS88Uid == 0) {
+//      msg = CanMessageFactory.getMembersPing();
+//      connection.sendCanMessage(msg);
+//
+//      devices = CanDeviceParser.parse(msg);
+//      Logger.trace("Found " + devices.size() + " CANDevices");
+//
+//      for (CanDevice d : devices) {
+//        CanDevice ed = canDevices.get(d.getUidInt());
+//        if (d.getSerial() != null) {
+//          ed.setSerial(d.getSerial());
+//        }
+//        if (d.getVersion() != null) {
+//          ed.setVersion(d.getVersion());
+//        }
+//        if (d.getIdentifier() != null) {
+//          ed.setIdentifier(d.getIdentifier());
+//        }
+//        if (d.getMeasureChannelCount() != null) {
+//          ed.setMeasureChannelCount(d.getMeasureChannelCount());
+//        }
+//        if (d.getConfigChannelCount() != null) {
+//          ed.setConfigChannelCount(d.getConfigChannelCount());
+//        }
+//        if (d.getArticleNumber() != null) {
+//          ed.setArticleNumber(d.getArticleNumber());
+//        }
+//        if (d.getName() != null) {
+//          ed.setName(d.getName());
+//        }
+//        Logger.trace("Updated: " + ed);
+//      }
+//      //Lets get some info about these members
+//      for (CanDevice device : canDevices.values()) {
+//        queryDevice(device);
+//      }
+//    }
   }
 
   void queryDevice(CanDevice device) {
@@ -800,15 +850,11 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   }
 
   /**
-   * Verified reconnect recovery. System STOP does NOT clear stored locomotive
-   * speeds (Märklin CS2 CAN specification 2.0, pages 12-13). Normal
-   * changeVelocity() cannot be used here, because it ignores calls while
-   * track power is OFF.
+   * Verified reconnect recovery. System STOP does NOT clear stored locomotive speeds (Märklin CS2 CAN specification 2.0, pages 12-13). Normal changeVelocity() cannot be used here, because it ignores
+   * calls while track power is OFF.
    *
-   * The zero-speed CAN commands are sent directly during STOP. If the GFP
-   * does not acknowledge every zero command, GO is NOT sent. Even a positive
-   * CAN acknowledgement cannot prove the train's physical state: supervise
-   * real hardware during recovery.
+   * The zero-speed CAN commands are sent directly during STOP. If the GFP does not acknowledge every zero command, GO is NOT sent. Even a positive CAN acknowledgement cannot prove the train's
+   * physical state: supervise real hardware during recovery.
    */
   public synchronized boolean stopLocomotivesForRecovery(List<Integer> locomotiveIds,
           boolean restorePower) {
@@ -892,10 +938,10 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     CanMessage command = sendMessage(CanMessageFactory.setLocSpeed(locomotiveId, 0, csUid));
     for (CanMessage response : command.getResponses()) {
       if (response.getCommand() == CanMessage.LOC_VELOCITY_RESP
-          && response.getDlc() == CanMessage.DLC_6
-          && response.getDeviceUidNumberFromMessage() == locomotiveId
-          && response.getDataByte(4) == 0
-          && response.getDataByte(5) == 0) {
+              && response.getDlc() == CanMessage.DLC_6
+              && response.getDeviceUidNumberFromMessage() == locomotiveId
+              && response.getDataByte(4) == 0
+              && response.getDataByte(5) == 0) {
         return true;
       }
     }
@@ -905,9 +951,9 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   private boolean hasSystemResponse(CanMessage request, int subCommand) {
     for (CanMessage response : request.getResponses()) {
       if (response.getCommand() == CanMessage.SYSTEM_COMMAND_RESP
-          && response.getDlc() == CanMessage.DLC_5
-          && response.getDeviceUidNumberFromMessage() == request.getDeviceUidNumberFromMessage()
-          && Byte.toUnsignedInt(response.getDataByte(4)) == subCommand) {
+              && response.getDlc() == CanMessage.DLC_5
+              && response.getDeviceUidNumberFromMessage() == request.getDeviceUidNumberFromMessage()
+              && Byte.toUnsignedInt(response.getDataByte(4)) == subCommand) {
         return true;
       }
     }
@@ -919,7 +965,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   ) {
     if (power && connected) {
       CanMessage message = sendMessage(CanMessageFactory.setFunction(locUid, functionNumber, flag, this.csUid));
-      
+
       notifyLocomotiveFunctionEventListeners(LocomotiveFunctionEventParser.parseMessage(message));
     }
   }
@@ -1340,7 +1386,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
           ConnectionEvent de = new ConnectionEvent("Marklin Central Station", false, false);
           commandStation.onConnectionChange(de);
         }
-      // Reconnection is intentionally not performed by this timer (step 2).
+        // Reconnection is intentionally not performed by this timer (step 2).
       }
     }
   }

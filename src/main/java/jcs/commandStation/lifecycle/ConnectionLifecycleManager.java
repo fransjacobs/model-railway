@@ -24,6 +24,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.tinylog.Logger;
 
 /**
  * Connection/retry coordinator for ONE command station.
@@ -45,12 +46,12 @@ public final class ConnectionLifecycleManager implements AutoCloseable {
   private final Connector connector;
   private final Runnable disconnect;
   private final ScheduledExecutorService scheduler;
-  private final CopyOnWriteArrayList<ConnectionStateListener> listeners = new CopyOnWriteArrayList<>();
-  private final Object lock = new Object();
+  private final CopyOnWriteArrayList<ConnectionStateListener> listeners;
+  private final Object lock;
   private final long[] retryDelaysMillis;
-  private final AtomicBoolean shutdown = new AtomicBoolean();
+  private final AtomicBoolean shutdown;
   private volatile Thread workerThread;
-  private volatile ConnectionState state = ConnectionState.DISCONNECTED;
+  private volatile ConnectionState state;
   private ScheduledFuture<?> scheduled;
   private boolean desiredConnected;
   private boolean attemptInProgress;
@@ -68,6 +69,11 @@ public final class ConnectionLifecycleManager implements AutoCloseable {
     this.id = Objects.requireNonNull(id);
     this.connector = Objects.requireNonNull(connector);
     this.disconnect = Objects.requireNonNull(disconnect);
+    this.listeners = new CopyOnWriteArrayList<>();
+    this.lock = new Object();
+    this.shutdown = new AtomicBoolean();
+    this.state = ConnectionState.DISCONNECTED;
+
     if (delays == null || delays.length == 0) {
       throw new IllegalArgumentException("delays required");
     }
@@ -145,13 +151,15 @@ public final class ConnectionLifecycleManager implements AutoCloseable {
   }
 
   /**
-   * Manually disconnect and suppress automatic retries. May block while the connector's close operation finishes; callers should not call on the EDT.
+   * Manually disconnect and suppress automatic retries.<br>
+   * May block while the connector's close operation finishes; callers should not call on the EDT.
    */
   public void stop() {
     synchronized (lock) {
       if (shutdown.get()) {
         return;
       }
+
       desiredConnected = false;
       generation++;
       if (scheduled != null) {
@@ -182,8 +190,7 @@ public final class ConnectionLifecycleManager implements AutoCloseable {
         return;
       }
       attemptInProgress = true;
-      publish(failures == 0 ? ConnectionState.CONNECTING : ConnectionState.RECONNECTING,
-              "Connecting");
+      publish(failures == 0 ? ConnectionState.CONNECTING : ConnectionState.RECONNECTING,"Connecting");
     }
     boolean success = false;
     String error = null;
@@ -237,8 +244,7 @@ public final class ConnectionLifecycleManager implements AutoCloseable {
       disconnect.run();
     } catch (RuntimeException e) {
       // Cleanup should continue even when the driver reports an exception.
-      System.getLogger(getClass().getName()).log(System.Logger.Level.WARNING,
-              "Error closing command station " + id, e);
+      Logger.warn("Error closing command station {}. {}", id, e);
     }
   }
 
@@ -254,8 +260,7 @@ public final class ConnectionLifecycleManager implements AutoCloseable {
       try {
         listener.onConnectionStateChanged(event);
       } catch (RuntimeException ex) {
-        System.getLogger(getClass().getName()).log(System.Logger.Level.WARNING,
-                "Connection state listener failed", ex);
+        Logger.warn("Connection state listener failed! {}", ex);
       }
     }
   }
@@ -283,8 +288,7 @@ public final class ConnectionLifecycleManager implements AutoCloseable {
     }
     try {
       if (!scheduler.awaitTermination(2, TimeUnit.SECONDS)) {
-        System.getLogger(getClass().getName()).log(System.Logger.Level.WARNING,
-                "Connection worker did not stop within 2 seconds: " + id);
+        Logger.warn("Connection worker did not stop within 2 seconds: {}", id);
       }
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();

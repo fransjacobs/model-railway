@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -105,8 +106,15 @@ public class JCSCommandStation {
   private ExecutorService executor;
   // One lifecycle manager for the default command station (not per controller role).
   private volatile ConnectionLifecycleManager connectionLifecycleManager;
-  private final List<ConnectionStateListener> connectionStateListeners
-          = new java.util.concurrent.CopyOnWriteArrayList<>();
+
+  // Changes only for an explicit Save & Activate. No automatic GO during the
+  // first connection to a newly activated station.
+  
+  private volatile boolean activationPowerOffPending;
+  // Retire callbacks from an earlier station after a session replacement.
+  private volatile long connectionSessionVersion;
+  private final Object activationLock = new Object();
+  private final List<ConnectionStateListener> connectionStateListeners;
   private volatile boolean shuttingDown;
   private volatile boolean cleaningUpControllers;
 
@@ -165,10 +173,8 @@ public class JCSCommandStation {
     accessoryEventQueue = new LinkedBlockingQueue<>();
 
     sensorEventQueue = new LinkedBlockingQueue<>();
+    connectionStateListeners = new CopyOnWriteArrayList<>();
 
-//    sensorEventHandlerThread = new EventHandlerThread<>(threadGroup, "SENSOR-EVENT-HANDLER", sensorEventQueue, this::handleSensorEvent);
-//    accessoryEventHandlerThread = new EventHandlerThread<>(threadGroup, "ACCESSORY-EVENT-HANDLER", accessoryEventQueue, this::handleAccessoryEvent);
-//    locomotiveEventHandlerThread = new EventHandlerThread<>(threadGroup, "LOCOMOTIVE-EVENT-HANDLER", locomotiveEventQueue, this::handleLocomotiveEvent);
     try {
       if (decoderController != null && (decoderController.getCommandStationBean() != null || !accessoryControllers.isEmpty() || !feedbackControllers.isEmpty())) {
         if (flag) {
@@ -204,20 +210,26 @@ public class JCSCommandStation {
   }
 
   /**
-   * Connect asynchronously. The default Märklin station uses the shared lifecycle manager. Other drivers continue to use the existing path until migrated.
+   * Connect asynchronously.<br>
+   * Märklin Central Station, ESU ECoS are using the shared lifecycle manager.
    */
   private static boolean supportsManagedLifecycle(CommandStationBean bean) {
     if (bean == null || bean.getClassName() == null) {
       return false;
     }
+    
+    //TODO: use Command Station ID for this
+    
     return MarklinCentralStationImpl.class.getName().equals(bean.getClassName())
             || EsuEcosCommandStationImpl.class.getName().equals(bean.getClassName());
   }
 
   private boolean lifecycleReady(DecoderController controller) {
     ConnectionLifecycleManager manager = connectionLifecycleManager;
+    
     if (controller instanceof MarklinCentralStationImpl
             || controller instanceof EsuEcosCommandStationImpl) {
+    
       return manager == null || manager.getState() == ConnectionState.CONNECTED;
     }
     return true;
@@ -227,6 +239,7 @@ public class JCSCommandStation {
     if (shuttingDown) {
       return;
     }
+    
     CommandStationBean bean = getCommandStationBean();
     if (supportsManagedLifecycle(bean)) {
       getOrCreateLifecycleManager(bean).start();
@@ -239,11 +252,15 @@ public class JCSCommandStation {
     }
     long start = System.currentTimeMillis();
     executor.execute(() -> {
+      // Preserve the Save & Activate safety policy for older (non-managed)
+      // drivers as well; their legacy startup path otherwise issues GO.
+      final boolean activating = activationPowerOffPending;
+      
       try {
         if (connect()) {
           long end = System.currentTimeMillis();
-          Logger.trace("Connected to " + decoderController.getCommandStationBean().getDescription()
-                  + " in " + (end - start) + " ms");
+          Logger.trace("Connected to: {} in {} ms", decoderController.getCommandStationBean().getDescription(), (end - start));
+          
           if (!isVirtual()) {
             ConnectionEvent ce = new ConnectionEvent(commandStation.getDescription(), true, isVirtual());
             for (ConnectionEventListener cel : connectionEventListeners) {
@@ -259,8 +276,11 @@ public class JCSCommandStation {
           }
         }
 
-        // Existing track-power policy for non-migrated drivers.
-        switchPower(true);
+        // Existing initial-startup policy for non-migrated drivers.
+        // Explicit activation must never turn on track power automatically.
+        if (!activating) {
+          switchPower(true);
+        }
         boolean p = isPowerOn();
         PowerEvent pe = new PowerEvent(p);
         for (PowerEventListener pl : powerEventListeners) {
@@ -276,12 +296,20 @@ public class JCSCommandStation {
     if (connectionLifecycleManager != null) {
       return connectionLifecycleManager;
     }
+    final long sessionVersion = connectionSessionVersion;
     final ConnectionLifecycleManager manager = new ConnectionLifecycleManager(
             bean.getId(),
-            () -> connect() && isConnected(),
-            this::disconnectControllers);
+            () -> sessionVersion == connectionSessionVersion && connect() && isConnected(),
+            () -> {
+              if (sessionVersion == connectionSessionVersion) {
+                disconnectControllers();
+              }
+            });
 
     manager.addConnectionStateListener(event -> {
+      if (sessionVersion != connectionSessionVersion) {
+        return;
+      }
       for (ConnectionStateListener listener : connectionStateListeners) {
         try {
           listener.onConnectionStateChanged(event);
@@ -376,7 +404,8 @@ public class JCSCommandStation {
     if (decoderController instanceof EsuEcosCommandStationImpl ecos) {
       // Must be set BEFORE transport opens: the first command on a recovered
       // session must be STOP, before any subscriptions or roster reads.
-      ecos.setRecoveryMode(recoveryStopPending);
+      // On activation, STOP before ECoS roster and subscription queries too.
+      ecos.setRecoveryMode(recoveryStopPending || activationPowerOffPending);
     }
 
     if (decoderController == null) {
@@ -504,10 +533,30 @@ public class JCSCommandStation {
       recoveryStopPending = false;
     }
 
-    // Managed Märklin connections do not use connectInBackground()'s legacy
-    // switchPower(true). Initial startup must request GO here, before the
-    // lifecycle manager publishes CONNECTED. Never do this on recovery.
-    if (!wasRecovering && decoderController instanceof MarklinCentralStationImpl) {
+    // Save & Activate always leaves track power OFF, irrespective of the
+    // previous physical state of the newly selected station.
+    if (activationPowerOffPending && !decoderController.isVirtual()) {
+      // Both ECoS and Märklin return the resulting POWER STATE from power(),
+      // not whether STOP succeeded: false is the expected STOP result.
+      boolean stopped;
+      if (decoderController instanceof EsuEcosCommandStationImpl ecos) {
+        stopped = ecos.stopTrackPowerForShutdown();
+      } else {
+        decoderController.power(false);
+        stopped = !decoderController.isPower();
+      }
+      if (!stopped) {
+        Logger.warn("Activation STOP could not be confirmed; refusing to activate {}",
+                commandStation.getId());
+        return false;
+      }
+      lastKnownPowerOn = false;
+    }
+
+    // Preserve legacy initial Märklin GO on ordinary startup, but never
+    // automatically power on a newly activated command station.
+    if (!wasRecovering && !activationPowerOffPending
+            && decoderController instanceof MarklinCentralStationImpl) {
       Logger.info("Initial connection: requesting track power ON");
       if (!decoderController.power(true) || !decoderController.isPower()) {
         Logger.warn("Initial connection established, but track power could not be switched on");
@@ -529,6 +578,7 @@ public class JCSCommandStation {
       Logger.warn("Signal restoration deferred after reconnect; verify locomotive positions and routes");
     }
 
+    activationPowerOffPending = false;
     return true;
   }
 
@@ -733,6 +783,67 @@ public class JCSCommandStation {
       thread.join(1000);
     } catch (InterruptedException ex) {
       Thread.currentThread().interrupt();
+    }
+  }
+
+  /**
+   * Commit the chosen station and replace the entire operational session.
+   * Called from a background worker, never the Swing EDT. A successful return
+   * means that the new default was saved and connection startup was requested;
+   * connection readiness is reported asynchronously by lifecycle events.
+   */
+  public void activateCommandStation(CommandStationBean next) {
+    synchronized (activationLock) {
+    if (next == null || next.getId() == null || !next.isDecoderControlSupport()) {
+      throw new IllegalArgumentException("A valid decoder command station is required");
+    }
+    RailController railController = RailController.getInstance();
+    String railStatus = railController.getStatus();
+    if (railController.isAutoModeActive()
+            || RailController.STARTED.equals(railStatus)
+            || RailController.STOPPING.equals(railStatus)
+            || RailController.PENDING.equals(railStatus)
+            || railController.getRunningDispatcherCount() > 0) {
+      throw new IllegalStateException("Cannot activate a command station while Automode is active or stopping");
+    }
+    if (isConnected() && isPowerOn()) {
+      throw new IllegalStateException("Turn track power OFF before changing command stations");
+    }
+    ConnectionLifecycleManager manager = connectionLifecycleManager;
+    if (manager != null) {
+      ConnectionState state = manager.getState();
+      if (state == ConnectionState.CONNECTING || state == ConnectionState.RECONNECTING
+              || state == ConnectionState.STOPPING) {
+        throw new IllegalStateException("Connection is changing; disconnect it before switching stations");
+      }
+    }
+
+    // Close the old session before updating the default. In particular, do not
+    // leave an old lifecycle manager holding callbacks for a different station.
+    if (manager != null) {
+      manager.close();
+      connectionLifecycleManager = null;
+    } else {
+      disconnectControllers();
+    }
+    connectionSessionVersion++;
+    connectedSession = false;
+    recoveryStopPending = false;
+    powerWasOnBeforeLoss = false;
+    lastKnownPowerOn = false;
+    signalsRestored = false;
+    supportedProtocols.clear();
+    activationPowerOffPending = true;
+
+    // Only Save & Activate commits the selected default; choosing a combobox
+    // entry and provisional connection testing never call these methods.
+    PersistenceFactory.getService().persist(next);
+    CommandStationBean committed = PersistenceFactory.getService().changeDefaultCommandStation(next);
+    if (committed == null) {
+      throw new IllegalStateException("Could not save the chosen command station");
+    }
+    Logger.info("Command station activation requested: {}", next.getId());
+    connectInBackground();
     }
   }
 

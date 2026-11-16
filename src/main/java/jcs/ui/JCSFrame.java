@@ -313,6 +313,21 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
   }
 
   private void showCommandStations() {
+    RailController rail = RailController.getInstance();
+    String status = rail.getStatus();
+
+    Logger.trace("RailControllerStatus: {}, Active: {}", status, rail.isAutoModeActive());
+
+    if (rail.isAutoModeActive()
+            || RailController.STARTED.equals(status)
+            || RailController.STOPPING.equals(status)
+            || rail.getRunningDispatcherCount() > 0) {
+
+      JOptionPane.showMessageDialog(this,
+              "Command station settings are unavailable while Automode is running or stopping.",
+              "Automode active", JOptionPane.WARNING_MESSAGE);
+      return;
+    }
     if (commandStationDialog == null) {
       commandStationDialog = new CommandStationDialog(this, true);
       commandStationDialog.pack();
