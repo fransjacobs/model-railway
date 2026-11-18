@@ -389,6 +389,13 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   void obtainDevices() {
     CanMessage msg = CanMessageFactory.getMembersPing();
     connection.sendCanMessage(msg);
+    
+    //00 31 37 7E 08 63 73 45 8D 02 05 FF FF
+    //00 31 7B 79 08 53 38 5C 41 01 01 00 40
+    //00 31 03 26 08 63 73 45 8C 0C 71 00 50
+    
+    
+    
 
     List<CanDevice> devices = CanDeviceParser.parse(msg);
     Logger.trace("Found " + devices.size() + " CANDevices");
@@ -422,9 +429,19 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       }
     }
 
-    //Lets get some info about these members
+    // Get details about all members, including the Link S88.
     for (CanDevice device : canDevices.values()) {
       queryDevice(device);
+
+      // createInfoBean() also sets linkS88Uid, but connect() checks that UID
+      // before getCommandStationInfo() necessarily creates the InfoBean.
+      // 0x0040 is the Link-S88 device identifier in CanDevice.getDeviceType().
+      if (CanDevice.FEEDBACK_DEVICE_NAME.equals(device.getName())
+              || (device.getIdentifier() != null
+              && device.getIdentifierInt() == 0x0040)) {
+        linkS88Uid = device.getUidInt();
+        Logger.debug("Link S88 discovered: UID {}", device.getUid());
+      }
     }
 
 //    //Check the Link S88 could be tha it is not yest ready
@@ -1448,12 +1465,12 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 //      Logger.debug("Power is " + (cs.isPower() ? "ON" : "Off"));
 //      cs.power(false);
 //      Logger.debug("Power is " + (cs.isPower() ? "ON" : "Off"));
-      cs.power(true);
+//      cs.power(true);
       cs.pause(1000);
 //      Logger.debug("Switch Accessory 2 to Red");
-      cs.switchAccessory(1, "MM", AccessoryValue.RED, 200);
+//      cs.switchAccessory(1, "MM", AccessoryValue.RED, 200);
       cs.pause(1000);
-      cs.switchAccessory(1, "MM", AccessoryValue.GREEN, 200);
+//      cs.switchAccessory(1, "MM", AccessoryValue.GREEN, 200);
 
 //
 //      Logger.debug("Switch Accessory 2 to Green");
@@ -1528,8 +1545,8 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 //    for (LocomotiveBean loc : locs) {
 //      Logger.trace(loc);
 //    }
-    //cs.pause(40000);
-    cs.pause(60000);
+     cs.pause(6000);
+//    cs.pause(60000);
     cs.disconnect();
 //    cs.pause(100L);
     Logger.debug("DONE");

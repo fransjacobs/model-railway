@@ -33,11 +33,13 @@ public class CanDeviceParser {
   public static List<CanDevice> parse(CanMessage memberPingmessage) {
     List<CanDevice> devices = new ArrayList<>();
     List<CanMessage> responses = memberPingmessage.getResponses();
+
     if (responses.isEmpty() && memberPingmessage.isResponseMessage()) {
       responses.add(memberPingmessage);
     }
 
     for (CanMessage response : responses) {
+      Logger.trace("Response: {}", response);
       CanDevice device = parseResponse(response);
       if (device != null) {
         devices.add(device);

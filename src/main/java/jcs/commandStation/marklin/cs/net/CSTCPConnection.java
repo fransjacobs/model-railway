@@ -54,6 +54,10 @@ class CSTCPConnection implements CSConnection {
 
   private static final long SHORT_TIMEOUT = 1000L;
   private static final long LONG_TIMEOUT = 5000L;
+  // A broadcast member ping has one response per CAN device (§6.1).
+  // Keep the pending request open briefly after the last response.
+  private static final long PING_QUIET_PERIOD_MS =
+          Math.max(50L, Long.getLong("marklin.cs.ping.quiet.ms", 250L));
 
   private final boolean debug;
   private final BlockingQueue<CanMessage> eventQueue;
@@ -81,7 +85,7 @@ class CSTCPConnection implements CSConnection {
 
   CSTCPConnection(InetAddress csAddress) {
     centralStationAddress = csAddress;
-    debug = System.getProperty("message.debug", "false").equalsIgnoreCase("true");
+    debug = System.getProperty("message.debug", "true").equalsIgnoreCase("true");
     eventQueue = new LinkedBlockingQueue<>();
 
     disconnectionEventListeners = new CopyOnWriteArrayList<>();
@@ -102,8 +106,8 @@ class CSTCPConnection implements CSConnection {
       dos = output;
       messageReceiver = receiver;
       receiver.start();
-      if (Boolean.parseBoolean(
-              System.getProperty("marklin.cs.heartbeat.enabled", "true"))) {
+      
+      if (Boolean.parseBoolean(System.getProperty("marklin.cs.heartbeat.enabled", "true"))) {
         heartbeatFuture = heartbeatExecutor.scheduleWithFixedDelay(
                 this::checkHeartbeat, HEARTBEAT_INTERVAL_MS,
                 HEARTBEAT_INTERVAL_MS, TimeUnit.MILLISECONDS);
@@ -162,9 +166,9 @@ class CSTCPConnection implements CSConnection {
       dos.write(message.getMessage());
       dos.flush();
 
-      if (debug) {
+      //if (debug) {
         Logger.trace("TX: " + message);
-      }
+      //}
       if (request != null) {
         waitForResponse(request);
       }
@@ -229,6 +233,13 @@ class CSTCPConnection implements CSConnection {
     try {
       // Wait with timeout using CountDownLatch (more efficient than sleep polling)
       boolean completed = request.await();
+      if (completed && request.getMessage().getCommand() == CanMessage.PING_REQ) {
+        // CountDownLatch signals the FIRST reply. Wait for a short quiet
+        // period so the other CAN participants can answer the same ping.
+        // The receiver continues appending replies while pendingRequest
+        // remains installed.
+        request.awaitPingSilence(PING_QUIET_PERIOD_MS);
+      }
 
       long elapsed = System.currentTimeMillis() - start;
 
@@ -251,6 +262,8 @@ class CSTCPConnection implements CSConnection {
     private final CanMessage txMessage;
     private final CountDownLatch responseLatch;
     private final long timeoutMs;
+    private final Object pingResponseMonitor = new Object();
+    private long lastPingResponseNanos;
     //private final long createdAt;
 
     // Track expected response packets
@@ -287,6 +300,15 @@ class CSTCPConnection implements CSConnection {
      */
     boolean addResponse(CanMessage rx, int remainingBytes) {
       txMessage.addResponse(rx);
+
+      if (txMessage.getCommand() == CanMessage.PING_REQ
+              && rx.getCommand() == CanMessage.PING_RESP
+              && rx.getDlc() == CanMessage.DLC_8) {
+        synchronized (pingResponseMonitor) {
+          lastPingResponseNanos = System.nanoTime();
+          pingResponseMonitor.notifyAll();
+        }
+      }
 
       // Determine if more packets are expected
       // This is a heuristic - adjust based on your protocol specifics
@@ -484,6 +506,28 @@ class CSTCPConnection implements CSConnection {
 //    }
     boolean await() throws InterruptedException {
       return responseLatch.await(timeoutMs, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * A CAN member ping is a broadcast: multiple devices may answer.
+     * The first answer releases await(), but keep collecting until no more
+     * ping replies arrive for quietMillis, with an overall bounded wait.
+     */
+    void awaitPingSilence(long quietMillis) throws InterruptedException {
+      long quietNanos = TimeUnit.MILLISECONDS.toNanos(quietMillis);
+      long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(timeoutMs);
+      synchronized (pingResponseMonitor) {
+        while (lastPingResponseNanos != 0L) {
+          long now = System.nanoTime();
+          long remainingQuiet = lastPingResponseNanos + quietNanos - now;
+          long remainingTotal = deadline - now;
+          if (remainingQuiet <= 0L || remainingTotal <= 0L) {
+            return;
+          }
+          TimeUnit.NANOSECONDS.timedWait(
+                  pingResponseMonitor, Math.min(remainingQuiet, remainingTotal));
+        }
+      }
     }
 
 //    boolean isTimedOut() {
