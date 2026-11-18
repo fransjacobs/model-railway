@@ -706,7 +706,7 @@
                     <Property name="text" type="java.lang.String" value="Connected to: command station"/>
                     <Property name="name" type="java.lang.String" value="connectedToLbl" noResource="true"/>
                     <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                      <Dimension value="[200, 17]"/>
+                      <Dimension value="[300, 17]"/>
                     </Property>
                   </Properties>
                 </Component>
@@ -715,7 +715,7 @@
                     <Property name="text" type="java.lang.String" value="Serial: xxxxxx"/>
                     <Property name="name" type="java.lang.String" value="serialLbl" noResource="true"/>
                     <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                      <Dimension value="[150, 17]"/>
+                      <Dimension value="[200, 17]"/>
                     </Property>
                   </Properties>
                 </Component>
@@ -724,7 +724,7 @@
                     <Property name="text" type="java.lang.String" value="Software version: xxxxxxx"/>
                     <Property name="name" type="java.lang.String" value="swVersionLbl" noResource="true"/>
                     <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                      <Dimension value="[160, 17]"/>
+                      <Dimension value="[200, 17]"/>
                     </Property>
                   </Properties>
                 </Component>
@@ -733,7 +733,7 @@
                     <Property name="text" type="java.lang.String" value="Hardware version: xxxxxx"/>
                     <Property name="name" type="java.lang.String" value="hwVersionLbl" noResource="true"/>
                     <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                      <Dimension value="[160, 17]"/>
+                      <Dimension value="[200, 17]"/>
                     </Property>
                   </Properties>
                 </Component>

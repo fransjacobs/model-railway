@@ -264,6 +264,38 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
     }
   }
 
+  /**
+   * Safety recovery uses an echoed zero-speed write, never a fire-and-forget
+   * command. Failure keeps the lifecycle in RECONNECTING with track power OFF.
+   */
+  synchronized boolean stopLocomotiveForRecovery(int address) {
+    Long id = locomotiveAddresses.get(address);
+    LocomotiveBean locomotive = id == null ? null : locomotives.get(id);
+    if (locomotive == null) {
+      Logger.warn("Cannot confirm zero speed for unknown Intellibox address {}", address);
+      return false;
+    }
+    Integer slot = locomotiveSlotsReverse.get(id);
+    if (slot == null || slot < 0) {
+      int resolved = requestSlotDataByAddress(locomotive);
+      if (resolved < 0) {
+        Logger.warn("Cannot confirm zero speed for Intellibox address {}: no slot", address);
+        return false;
+      }
+      slot = resolved;
+    }
+    LoconetMessage zero = LoconetMessageFactory.changeLocomotiveSpeed(slot, 0);
+    LoconetMessage echo = intelliboxImpl.loconet.sendMessage(zero);
+    if (echo == null || !echo.sameMessage(zero)) {
+      Logger.warn("Intellibox zero-speed command not acknowledged for address {}, slot {}",
+              address, slot);
+      return false;
+    }
+    locomotive.setVelocity(0);
+    Logger.info("Intellibox recovery zero speed confirmed: address {}, slot {}", address, slot);
+    return true;
+  }
+
   int requestSlotDataByAddress(LocomotiveBean locomotive) {
     if (locomotive.getAddress() == null) {
       return -1;

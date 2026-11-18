@@ -1468,8 +1468,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
       showVNCBtn.setEnabled(connected && JCS.getJcsCommandStation().isSupportVNC());
       // While reconnecting, the disconnect action must still cancel retries.
       var state = JCS.getJcsCommandStation().getConnectionState();
-      boolean connecting = state == jcs.commandStation.lifecycle.ConnectionState.CONNECTING
-              || state == jcs.commandStation.lifecycle.ConnectionState.RECONNECTING;
+      //boolean connecting = state == jcs.commandStation.lifecycle.ConnectionState.CONNECTING || state == jcs.commandStation.lifecycle.ConnectionState.RECONNECTING;
       setTitle(getTitleString());
     });
   }

@@ -75,6 +75,7 @@ import jcs.commandStation.entities.InfoBean;
 import jcs.commandStation.esu.ecos.EsuEcosCommandStationImpl;
 import jcs.commandStation.esu.ecos.net.EcosConnectionFactory;
 import jcs.commandStation.marklin.cs.MarklinCentralStationImpl;
+import jcs.commandStation.loconet.Intellibox2Impl;
 import jcs.commandStation.marklin.cs.net.CSConnectionFactory;
 import jcs.commandStation.virtual.VirtualCommandStationImpl;
 import jcs.entities.CommandStationBean;
@@ -265,10 +266,10 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
   private boolean automationBusy() {
     RailController rc = RailController.getInstance();
     String status = rc.getStatus();
+
     return rc.isAutoModeActive()
             || RailController.STARTED.equals(status)
             || RailController.STOPPING.equals(status)
-            //|| RailController.PENDING.equals(status)
             || rc.getRunningDispatcherCount() > 0;
   }
 
@@ -286,6 +287,7 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
     }
 
     ConnectionState state = JCS.getJcsCommandStation().getConnectionState();
+
     return state != ConnectionState.CONNECTING
             && state != ConnectionState.RECONNECTING
             && state != ConnectionState.STOPPING;
@@ -688,22 +690,22 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
 
     connectedToLbl.setText("Connected to: command station");
     connectedToLbl.setName("connectedToLbl"); // NOI18N
-    connectedToLbl.setPreferredSize(new Dimension(200, 17));
+    connectedToLbl.setPreferredSize(new Dimension(300, 17));
     controllerPanel.add(connectedToLbl);
 
     serialLbl.setText("Serial: xxxxxx");
     serialLbl.setName("serialLbl"); // NOI18N
-    serialLbl.setPreferredSize(new Dimension(150, 17));
+    serialLbl.setPreferredSize(new Dimension(200, 17));
     controllerPanel.add(serialLbl);
 
     swVersionLbl.setText("Software version: xxxxxxx");
     swVersionLbl.setName("swVersionLbl"); // NOI18N
-    swVersionLbl.setPreferredSize(new Dimension(160, 17));
+    swVersionLbl.setPreferredSize(new Dimension(200, 17));
     controllerPanel.add(swVersionLbl);
 
     hwVersionLbl.setText("Hardware version: xxxxxx");
     hwVersionLbl.setName("hwVersionLbl"); // NOI18N
-    hwVersionLbl.setPreferredSize(new Dimension(160, 17));
+    hwVersionLbl.setPreferredSize(new Dimension(200, 17));
     controllerPanel.add(hwVersionLbl);
 
     propertiesPanel.add(controllerPanel, BorderLayout.NORTH);
@@ -962,8 +964,19 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
         List<FeedbackModule> modules = ((FeedbackController) controller).getFeedbackModules();
         if (modules != null) {
           for (FeedbackModule module : modules) {
-            int bus = module.getBusNumber() == null ? 0 : module.getBusNumber();
-            int count = module.getBusSize() == null ? 0 : module.getBusSize();
+            int bus, count;
+            if (module.getBusNumber() == null) {
+              bus = 0;
+            } else {
+              bus = module.getBusNumber();
+            }
+
+            if (module.getBusSize() == null) {
+              count = 0;
+            } else {
+              count = module.getBusSize();
+            }
+
             switch (bus) {
               case 1 ->
                 bus1Spinner.setValue(count);
@@ -1066,10 +1079,10 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
   }
 
   private void applyIpEdit() {
-    if (updatingUi || !configurationAllowed() || workflowBusy
-            || selectedCommandStation == null) {
+    if (updatingUi || !configurationAllowed() || workflowBusy || selectedCommandStation == null) {
       return;
     }
+
     String address = ipTF.getText().trim();
     if (!Objects.equals(address, selectedCommandStation.getIpAddress())) {
       selectedCommandStation.setIpAddress(address);
@@ -1098,8 +1111,9 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
     }
 
     DecoderController active = activeControllerForSelection();
-    
+
     boolean sameActive = active != null;
+
     boolean verified = selectedCommandStation.isVirtual()
             || VIRTUAL.equals(selectedCommandStation.getId())
             || (provisionalController != null && provisionalController.isConnected()
@@ -1111,8 +1125,13 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
               "Not verified", JOptionPane.WARNING_MESSAGE);
       return;
     }
-    
-    if (sameActive && !Objects.equals(configKey(selectedCommandStation),configKey(active.getCommandStationBean()))) {
+
+    CommandStationBean csb = null;
+    if (active != null && active.getCommandStationBean() != null) {
+      csb = active.getCommandStationBean();
+    }
+
+    if (sameActive && !Objects.equals(configKey(selectedCommandStation), configKey(csb))) {
 
       int answer = JOptionPane.showConfirmDialog(this, """
                                                        You have edited the settings of the active station. Testing another address is not possible while its transport is in use.
@@ -1429,7 +1448,7 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
                 : new java.awt.Color(255, 226, 195));
       }
       if (!pingResult) {
-        showMessage("No ICMP ping reply from " + draft.getIpAddress()
+        showMessage("No Ping reply from " + draft.getIpAddress()
                 + ". This does not necessarily mean that the station protocol is unreachable. "
                 + "You can still try Connect.", "Reachability check",
                 JOptionPane.WARNING_MESSAGE);
@@ -1444,31 +1463,38 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
       if (!draft.isVirtual()
               && CommandStationBean.ConnectionType.NETWORK == draft.getConnectionType()
               && !Ping.isReachable(draft.getIpAddress())) {
-        Logger.warn("No ping response from {}; attempting protocol connection",
-                draft.getIpAddress());
+        
+        Logger.warn("No ping response from {}; attempting protocol connection",draft.getIpAddress());
       }
 
-      if (MARKLIN_CS.equals(draft.getId())) {
-        preview = new MarklinCentralStationImpl(draft);
-      } else if (ESU_ECOS.equals(draft.getId())) {
-        preview = new EsuEcosCommandStationImpl(draft);
-      } else if (VIRTUAL.equals(draft.getId())) {
-        preview = new VirtualCommandStationImpl(draft);
+      if (null == draft.getId()) {
+        throw new UnsupportedOperationException("Temporary property connection is not implemented for " + draft.getDescription());
       } else {
-        throw new UnsupportedOperationException(
-                "Temporary property connection is not implemented for "
-                + draft.getDescription() + ". Intellibox lifecycle migration is still pending.");
+        switch (draft.getId()) {
+          case MARKLIN_CS ->
+            preview = new MarklinCentralStationImpl(draft);
+          case ESU_ECOS ->
+            preview = new EsuEcosCommandStationImpl(draft);
+          case "intellibox2" ->
+            preview = new Intellibox2Impl(draft);
+          case VIRTUAL ->
+            preview = new VirtualCommandStationImpl(draft);
+          default ->
+            throw new UnsupportedOperationException(
+                    "Temporary property connection is not implemented for "
+                    + draft.getDescription() + ".");
+        }
       }
 
-      if (!preview.connect() || !preview.isConnected()) {
+      if (preview != null && (!preview.connect() || !preview.isConnected())) {
         throw new IllegalStateException("The station did not complete protocol initialization");
       }
 
       DecoderController connectedPreview = preview;
+
       SwingUtilities.invokeLater(() -> {
         // Recheck safety after a potentially long connection attempt.
-        if (!isShowing() || !configurationAllowed()
-                || !Objects.equals(configKey(draft), configKey(selectedCommandStation))) {
+        if (!isShowing() || !configurationAllowed() || !Objects.equals(configKey(draft), configKey(selectedCommandStation))) {
           executor.execute(connectedPreview::disconnect);
         } else {
           provisionalController = connectedPreview;

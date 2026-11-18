@@ -71,6 +71,7 @@ import jcs.commandStation.lifecycle.ConnectionState;
 import jcs.commandStation.lifecycle.ConnectionStateListener;
 import jcs.commandStation.marklin.cs.MarklinCentralStationImpl;
 import jcs.commandStation.esu.ecos.EsuEcosCommandStationImpl;
+import jcs.commandStation.loconet.Intellibox2Impl;
 import jcs.commandStation.events.AllSensorEventsListener;
 import jcs.commandStation.events.LocomotiveEvent;
 import jcs.commandStation.events.MeasurementEvent;
@@ -221,14 +222,16 @@ public class JCSCommandStation {
     //TODO: use Command Station ID for this
     
     return MarklinCentralStationImpl.class.getName().equals(bean.getClassName())
-            || EsuEcosCommandStationImpl.class.getName().equals(bean.getClassName());
+            || EsuEcosCommandStationImpl.class.getName().equals(bean.getClassName())
+            || Intellibox2Impl.class.getName().equals(bean.getClassName());
   }
 
   private boolean lifecycleReady(DecoderController controller) {
     ConnectionLifecycleManager manager = connectionLifecycleManager;
     
     if (controller instanceof MarklinCentralStationImpl
-            || controller instanceof EsuEcosCommandStationImpl) {
+            || controller instanceof EsuEcosCommandStationImpl
+            || controller instanceof Intellibox2Impl) {
     
       return manager == null || manager.getState() == ConnectionState.CONNECTED;
     }
@@ -401,6 +404,12 @@ public class JCSCommandStation {
               && manager.getState() != ConnectionState.STOPPING);
     }
 
+    if (decoderController instanceof Intellibox2Impl intellibox) {
+      // Allow the shared lifecycle manager to own retry and USB loss cleanup.
+      // Managed Intellibox sends STOP before querying devices or slots.
+      intellibox.setLifecycleManaged(connectionLifecycleManager != null);
+    }
+
     if (decoderController instanceof EsuEcosCommandStationImpl ecos) {
       // Must be set BEFORE transport opens: the first command on a recovered
       // session must be STOP, before any subscriptions or roster reads.
@@ -541,6 +550,8 @@ public class JCSCommandStation {
       boolean stopped;
       if (decoderController instanceof EsuEcosCommandStationImpl ecos) {
         stopped = ecos.stopTrackPowerForShutdown();
+      } else if (decoderController instanceof Intellibox2Impl intellibox) {
+        stopped = intellibox.stopTrackPowerForLifecycle();
       } else {
         decoderController.power(false);
         stopped = !decoderController.isPower();
@@ -601,7 +612,12 @@ public class JCSCommandStation {
       // reconnected TCP session. Its recovery method verifies STOP again
       // before touching locomotive speeds. Do not send a third STOP here.
       // Märklin and other drivers still require this immediate command.
-      if (!(controller instanceof EsuEcosCommandStationImpl)) {
+      if (controller instanceof Intellibox2Impl intellibox) {
+        if (!intellibox.stopTrackPowerForLifecycle()) {
+          Logger.warn("Intellibox recovery STOP not confirmed");
+          return false;
+        }
+      } else if (!(controller instanceof EsuEcosCommandStationImpl)) {
         controller.power(false);
       }
 
@@ -620,8 +636,12 @@ public class JCSCommandStation {
       if (onTrack != null) {
         for (LocomotiveBean locomotive : onTrack) {
           if (locomotive != null
-                  && (!(controller instanceof EsuEcosCommandStationImpl)
-                  || "esu-ecos".equals(locomotive.getCommandStationId()))) {
+                  && ((controller instanceof EsuEcosCommandStationImpl
+                  && "esu-ecos".equals(locomotive.getCommandStationId()))
+                  || (controller instanceof Intellibox2Impl
+                  && "intellibox2".equals(locomotive.getCommandStationId()))
+                  || (!(controller instanceof EsuEcosCommandStationImpl)
+                  && !(controller instanceof Intellibox2Impl)))) {
             byAddress.put(resolveAddress(locomotive), locomotive);
           }
         }
@@ -632,6 +652,12 @@ public class JCSCommandStation {
         Logger.warn("ECoS recovery: previous power was {}, leaving track power OFF",
                 restorePower ? "ON" : "OFF");
         return ecos.stopLocomotivesForRecovery(new java.util.ArrayList<>(byAddress.keySet()));
+      }
+      if (controller instanceof Intellibox2Impl intellibox) {
+        // Keep the serial station in STOP; do not restore GO on USB reinsertion.
+        // Each zero-speed write must receive an echo before accepting recovery.
+        return intellibox.stopLocomotivesForRecovery(
+                new java.util.ArrayList<>(byAddress.keySet()));
       }
       if (controller instanceof MarklinCentralStationImpl marklin) {
         // Raw CAN zero-speed commands must also be sent with track power OFF.
@@ -802,7 +828,6 @@ public class JCSCommandStation {
     if (railController.isAutoModeActive()
             || RailController.STARTED.equals(railStatus)
             || RailController.STOPPING.equals(railStatus)
-            || RailController.PENDING.equals(railStatus)
             || railController.getRunningDispatcherCount() > 0) {
       throw new IllegalStateException("Cannot activate a command station while Automode is active or stopping");
     }
@@ -884,6 +909,8 @@ public class JCSCommandStation {
           boolean stopped;
           if (controller instanceof EsuEcosCommandStationImpl ecos) {
             stopped = ecos.stopTrackPowerForShutdown();
+          } else if (controller instanceof Intellibox2Impl intellibox) {
+            stopped = intellibox.stopTrackPowerForLifecycle();
           } else {
             controller.power(false);
             stopped = controller.isConnected() && !controller.isPower();
@@ -1191,8 +1218,12 @@ public class JCSCommandStation {
   private int resolveAddress(LocomotiveBean locomotive) {
     int address;
 
-    if ("marklin.cs".equals(locomotive.getCommandStationId()) || "esu-ecos".equals(locomotive.getCommandStationId())) {
+    if ("marklin.cs".equals(locomotive.getCommandStationId())
+            || "esu-ecos".equals(locomotive.getCommandStationId())) {
       address = locomotive.getId().intValue();
+    } else if ("intellibox2".equals(locomotive.getCommandStationId())) {
+      // LocoNet uses decoder addresses; DB IDs are not LocoNet addresses.
+      address = locomotive.getAddress();
     } else {
       //TODO: check this probably not needed anymore
       if (supportedProtocols.size() == 1) {
@@ -1863,7 +1894,8 @@ public class JCSCommandStation {
       ConnectionLifecycleManager manager = connectionLifecycleManager;
       if (manager != null && event.getSource() != null
               && (decoderController instanceof MarklinCentralStationImpl
-              || decoderController instanceof EsuEcosCommandStationImpl)) {
+              || decoderController instanceof EsuEcosCommandStationImpl
+              || decoderController instanceof Intellibox2Impl)) {
         if (!event.isConnected()) {
           manager.connectionLost(null);
         }
