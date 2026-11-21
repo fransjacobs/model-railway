@@ -345,6 +345,7 @@ public class H2PersistenceService implements PersistenceService {
     return locos;
   }
 
+  @Override
   public List<LocomotiveBean> getOnTrackLocomotives() {
     String query = "select distinct l.* from blocks b join locomotives l on b.locomotive_id = l.id";
     List<LocomotiveBean> locos = database.sql(query).orderBy("id").results(LocomotiveBean.class);
@@ -576,11 +577,41 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public synchronized boolean isAccessoryLocked(String accessoryId) {
-    String commandStationId = getDefaultCommandStation().getId();
-    Object[] args = new Object[]{accessoryId, commandStationId};
-    Long count = database.sql("select count(*) from accessories a join tiles t on a.id = t.accessory_id join route_elements re on t.id = re.tile_id join routes r on re.route_id = r.id where r.locked = true and a.id = ? and command_station_id = ?", args).first(Long.class);
-    return count >= 1;
+  public synchronized boolean hasRouteConflict(String candidateRouteId) {
+    Object[] args = new Object[]{candidateRouteId, candidateRouteId};
+    String sql = """
+                 select count(*) 
+                 from route_elements re 
+                 where re.route_id = ? 
+                 and re.tile_id in (select re.tile_id 
+                                    from route_elements re 
+                                    join routes r on re.route_id = r.id and r.locked = true 
+                                    join tiles t on re.tile_id = t.id and t.tile_type <> 'Crossing' 
+                                    where r.id <> ?)
+                 """;
+
+    Long count = database.sql(sql, args).first(Long.class);
+    return count != null && count > 0;
+  }
+
+  @Override
+  public synchronized boolean hasNextRouteConflict(String candidateRouteId) {
+    Object[] args = new Object[]{candidateRouteId, candidateRouteId};
+    String sql = """
+                 select count(*)
+                 from route_elements re 
+                 join routes r on re.route_id = r.id
+                 where re.route_id = ? 
+                 and re.tile_id <> r.from_tile_id
+                 and re.tile_id in (select re.tile_id 
+                                    from route_elements re 
+                                    join routes r on re.route_id = r.id and r.locked = true 
+                                    join tiles t on re.tile_id = t.id and t.tile_type <> 'Crossing' 
+                                    where r.id <> ?)
+                 """;
+
+    Long count = database.sql(sql, args).first(Long.class);
+    return count != null && count > 0;
   }
 
   @Override
@@ -854,7 +885,7 @@ public class H2PersistenceService implements PersistenceService {
   @Override
   public synchronized List<RouteBean> getRoutes(String fromTileId, String fromSuffix) {
     Object[] args = new Object[]{fromTileId, fromSuffix};
-    List<RouteBean> routes = database.where("from_tile_id = ? and from_suffix = ? and locked = false", args).results(RouteBean.class);
+    List<RouteBean> routes = database.where("from_tile_id = ? and from_suffix = ? and locked = false and not (allow_non_commuter_only = false and allow_commuter_only = false)", args).results(RouteBean.class);
 
     List<RouteBean> filtered = new ArrayList<>();
 
@@ -871,6 +902,19 @@ public class H2PersistenceService implements PersistenceService {
       }
     }
     return filtered;
+  }
+
+  @Override
+  public synchronized RouteBean persistRouteOnly(RouteBean route) {
+    RouteBean prev = database.where("id=?", route.getId()).first(RouteBean.class);
+    if (prev != null) {
+      database.update(route);
+      changeSupport.firePropertyChange("data.route", prev, route);
+    } else {
+      Logger.warn("Can't Update Route {} Not found in database!", route);
+    }
+
+    return route;
   }
 
   @Override
@@ -967,40 +1011,65 @@ public class H2PersistenceService implements PersistenceService {
 
   @Override
   public List<BlockBean> getNonStationBlocks() {
-    List<BlockBean> blocks = database.sql("select b.* from blocks b left join station_blocks sb on b.id = sb.block_id where sb.block_id is null").results(BlockBean.class);
+    String sql = """
+                 select b.* 
+                 from blocks b 
+                 left join station_blocks sb on b.id = sb.block_id 
+                 where sb.block_id is null
+                 """;
+
+    List<BlockBean> blocks = database.sql(sql).results(BlockBean.class);
     return addBlockReleatedObjects(blocks);
   }
 
   @Override
   public List<BlockBean> getStationBlocks(StationBean stationBean) {
-    List<BlockBean> blocks = database.sql("select b.* from blocks b join station_blocks sb on b.id = sb.block_id where sb.station_id = ?", stationBean.getId()).results(BlockBean.class);
+    String sql = """
+                 select b.* 
+                 from blocks b 
+                 join station_blocks sb on b.id = sb.block_id 
+                 where sb.station_id = ?
+                 """;
+    List<BlockBean> blocks = database.sql(sql, stationBean.getId()).results(BlockBean.class);
     return addBlockReleatedObjects(blocks);
   }
 
   @Override
   public Long getLocomotiveCount(StationBean stationBean) {
-
-    String sql = "select count(*) "
-            + "from stations s "
-            + "join station_blocks sb on s.id = sb.station_id "
-            + "join blocks b on sb.block_id = b.id and b.locomotive_id is not null and b.status = 'Occupied' "
-            + "where s.id = ?";
+    String sql = """
+                 select count(*)
+                 from stations s
+                 join station_blocks sb on s.id = sb.station_id
+                 join blocks b on sb.block_id = b.id and b.locomotive_id is not null and b.status = 'Occupied'
+                 where s.id = ?
+                 """;
 
     return database.sql(sql, stationBean.getId()).first(Long.class);
   }
 
   @Override
   public Long getFirstLocomotiveId(StationBean stationBean) {
-    String sql = "with stations_locomotives as ("
-            + "select sb.station_id, sb.block_id, b.locomotive_id, s.min_locs , sb.last_updated"
-            + ", count(distinct b.locomotive_id) over (partition by sb.station_id) as loc_count"
-            + ", row_number() over (partition by sb.station_id order by sb.last_updated asc) as rn "
-            + "from station_blocks sb "
-            + "join stations s on sb.station_id = s.id "
-            + "join blocks b on sb.block_id = b.id and b.locomotive_id is not null and b.status = 'Occupied' "
-            + "where s.id = ? "
-            + "group by sb.station_id, sb.block_id, b.locomotive_id, s.min_locs) "
-            + "select locomotive_id from stations_locomotives where rn =1 ";
+    String sql = """
+                 with stations_locomotives as (
+                 select sb.station_id
+                 , sb.block_id
+                 , b.locomotive_id
+                 , s.min_locs
+                 , sb.last_updated
+                 , count(distinct b.locomotive_id) over (partition by sb.station_id) as loc_count
+                 , row_number() over (partition by sb.station_id order by sb.last_updated asc) as rn
+                 from station_blocks sb
+                 join stations s on sb.station_id = s.id
+                 join blocks b on sb.block_id = b.id and b.locomotive_id is not null and b.status = 'Occupied'
+                 where s.id = ?
+                 group by sb.station_id
+                 , sb.block_id
+                 , b.locomotive_id
+                 , s.min_locs)
+                 select locomotive_id 
+                 from stations_locomotives
+                 where rn = 1 
+                 """;
 
     Long locomotiveId = database.sql(sql, stationBean.getId()).first(Long.class);
     return locomotiveId;
@@ -1019,7 +1088,15 @@ public class H2PersistenceService implements PersistenceService {
   @Override
   public Integer getAverageAccessorySwitchTime(RouteBean routeBean) {
     if (routeBean != null) {
-      Double ast = database.sql("select ceil(avg(a.switch_time)) from routes r join route_elements re on r.id = re.route_id and re.accessory_value is not null join tiles t on re.tile_id = t.id join accessories a on t.accessory_id = a.id where r.id  = ?", routeBean.getId()).first(Double.class);
+      String sql = """
+                   select ceil(avg(a.switch_time)) 
+                   from routes r 
+                   join route_elements re on r.id = re.route_id and re.accessory_value is not null 
+                   join tiles t on re.tile_id = t.id 
+                   join accessories a on t.accessory_id = a.id 
+                   where r.id  = ?    
+                   """;
+      Double ast = database.sql(sql, routeBean.getId()).first(Double.class);
       if (ast != null) {
         return ast.intValue();
       } else {

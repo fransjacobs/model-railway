@@ -823,14 +823,6 @@ public class PersistenceServiceTest {
 
     // There should now be 10 tiles...
     assertEquals(12, current2.size());
-
-    // TileBean tb = instance.getTileBean(100, 100);
-    // assertEquals(sw22, tb);
-    // tbl.remove(sw22);
-    // instance.persist(tbl);
-    // current2 = instance.getTileBeans();
-    // There should now be 11 tiles...
-    // assertEquals(11, current2.size());
   }
 
   @Test
@@ -894,34 +886,188 @@ public class PersistenceServiceTest {
     assertEquals(expRel, rerl);
   }
 
+  // Conflict checks deliberately use the small standard SQL fixture loaded by
+  // PersistenceTestHelper. Each @Test starts with a fresh copy of that fixture.
+  private RouteBean createConflictTestRoute(
+          String id, String fromTileId, String toTileId, String... intermediateTileIds) {
+
+    RouteBean route = new RouteBean(
+            id, fromTileId, "+", toTileId, "-", "blue", false);
+    List<RouteElementBean> elements = new LinkedList<>();
+    int seq = 0;
+
+    elements.add(new RouteElementBean(
+            id, fromTileId + "+", fromTileId, null, seq++));
+
+    for (String tileId : intermediateTileIds) {
+      elements.add(new RouteElementBean(id, tileId, tileId, null, seq++));
+    }
+
+    elements.add(new RouteElementBean(
+            id, toTileId + "-", toTileId, null, seq));
+
+    route.setRouteElements(elements);
+    return PersistenceFactory.getService().persist(route);
+  }
+
+  private void lockConflictTestRoute(RouteBean route) {
+    route.setLocked(true);
+    PersistenceFactory.getService().persistRouteOnly(route);
+  }
+
+  private void createConflictTestTile(String id, TileBean.TileType type) {
+    // Unique positions outside the normal test layout.
+    TileBean tile = new TileBean(
+            id, type, Orientation.EAST, Direction.CENTER,
+            "cx-conflict-test".equals(id) ? 2000 : 2040,
+            2000, null, null, null);
+    PersistenceFactory.getService().persist(tile);
+  }
+
   @Test
-  @Order(30)
-  public void testLockRoute() {
-    System.out.println("LockRoute");
+  public void testHasRouteConflictWhenNoRoutesLocked() {
     PersistenceService instance = PersistenceFactory.getService();
-    RouteBean expResult = this.routes.get(0);
-    List<RouteElementBean> expRel = expResult.getRouteElements();
 
-    RouteBean result = instance.getRoute("bk-1", "+", "bk-2", "-");
-    assertEquals(expResult, result);
+    assertFalse(instance.hasRouteConflict("[bk-1+]->[bk-2-]"));
+    assertFalse(instance.hasNextRouteConflict("[bk-1+]->[bk-2-]"));
+  }
 
-    List<RouteElementBean> rerl = result.getRouteElements();
-    assertEquals(expRel, rerl);
+  @Test
+  public void testHasRouteConflictWhenTurnoutShared() {
+    PersistenceService instance = PersistenceFactory.getService();
+    RouteBean locked = instance.getRoute("[bk-1+]->[bk-2-]");
+    RouteBean candidate = createConflictTestRoute(
+            "[bk-3+]->[bk-4-]", "bk-3", "bk-4", "sw-1");
 
-    boolean locked = instance.isAccessoryLocked("2");
-    assertFalse(locked);
+    lockConflictTestRoute(locked);
 
-    result.setLocked(true);
-    instance.persist(result);
+    assertTrue("A shared turnout must block a normal route",
+            instance.hasRouteConflict(candidate.getId()));
+    assertTrue("A shared turnout must also block a next route",
+            instance.hasNextRouteConflict(candidate.getId()));
+  }
 
-    locked = instance.isAccessoryLocked("2");
-    assertTrue(locked);
+  @Test
+  public void testHasRouteConflictWhenRoutesDisjoint() {
+    PersistenceService instance = PersistenceFactory.getService();
+    RouteBean locked = instance.getRoute("[bk-1+]->[bk-2-]");
+    RouteBean candidate = createConflictTestRoute(
+            "[bk-3+]->[bk-4-]", "bk-3", "bk-4", "se-5");
 
-    result.setLocked(false);
-    instance.persist(result);
+    lockConflictTestRoute(locked);
 
-    locked = instance.isAccessoryLocked("2");
-    assertFalse(locked);
+    assertFalse(instance.hasRouteConflict(candidate.getId()));
+    assertFalse(instance.hasNextRouteConflict(candidate.getId()));
+  }
+
+  @Test
+  public void testHasRouteConflictIgnoresGradeSeparatedCrossing() {
+    PersistenceService instance = PersistenceFactory.getService();
+    createConflictTestTile("cr-conflict-test", TileBean.TileType.CROSSING);
+
+    RouteBean locked = createConflictTestRoute(
+            "[bk-1+]->[bk-3-]", "bk-1", "bk-3", "cr-conflict-test");
+    RouteBean candidate = createConflictTestRoute(
+            "[bk-2+]->[bk-4-]", "bk-2", "bk-4", "cr-conflict-test");
+
+    lockConflictTestRoute(locked);
+
+    assertFalse("Crossing represents independent levels",
+            instance.hasRouteConflict(candidate.getId()));
+    assertFalse(instance.hasNextRouteConflict(candidate.getId()));
+  }
+
+  @Test
+  public void testHasRouteConflictProtectsLevelCross() {
+    PersistenceService instance = PersistenceFactory.getService();
+    createConflictTestTile("cx-conflict-test", TileBean.TileType.CROSS);
+
+    RouteBean locked = createConflictTestRoute(
+            "[bk-1+]->[bk-3-]", "bk-1", "bk-3", "cx-conflict-test");
+    RouteBean candidate = createConflictTestRoute(
+            "[bk-2+]->[bk-4-]", "bk-2", "bk-4", "cx-conflict-test");
+
+    lockConflictTestRoute(locked);
+
+    assertTrue("Cross is a physical collision point",
+            instance.hasRouteConflict(candidate.getId()));
+    assertTrue(instance.hasNextRouteConflict(candidate.getId()));
+  }
+
+  @Test
+  public void testHasRouteConflictDoesNotConflictWithItself() {
+    PersistenceService instance = PersistenceFactory.getService();
+    RouteBean route = instance.getRoute("[bk-1+]->[bk-2-]");
+
+    lockConflictTestRoute(route);
+
+    assertFalse("The candidate's own locked row is excluded",
+            instance.hasRouteConflict(route.getId()));
+    assertFalse(instance.hasNextRouteConflict(route.getId()));
+  }
+
+  @Test
+  public void testHasNextRouteConflictPermitsHandoverBlock() {
+    PersistenceService instance = PersistenceFactory.getService();
+    RouteBean locked = instance.getRoute("[bk-1+]->[bk-2-]");
+    RouteBean candidate = createConflictTestRoute(
+            "[bk-2+]->[bk-3-]", "bk-2", "bk-3", "se-5");
+
+    lockConflictTestRoute(locked);
+
+    assertTrue("Normal routes protect even the departure block",
+            instance.hasRouteConflict(candidate.getId()));
+    assertFalse("Next routes exempt their departure block",
+            instance.hasNextRouteConflict(candidate.getId()));
+  }
+
+  @Test
+  public void testHasNextRouteConflictProtectsOtherSharedTiles() {
+    PersistenceService instance = PersistenceFactory.getService();
+    RouteBean locked = instance.getRoute("[bk-1+]->[bk-2-]");
+    RouteBean candidate = createConflictTestRoute(
+            "[bk-2+]->[bk-3-]", "bk-2", "bk-3", "sw-1");
+
+    lockConflictTestRoute(locked);
+
+    assertTrue("Only bk-2 is exempt; sw-1 must remain protected",
+            instance.hasNextRouteConflict(candidate.getId()));
+  }
+
+  @Test
+  public void testHasNextRouteConflictProtectsDestinationBlock() {
+    PersistenceService instance = PersistenceFactory.getService();
+    RouteBean locked = instance.getRoute("[bk-1+]->[bk-2-]");
+    RouteBean candidate = createConflictTestRoute(
+            "[bk-3+]->[bk-2-]", "bk-3", "bk-2", "se-5");
+
+    lockConflictTestRoute(locked);
+
+    assertTrue("The destination block must never be exempt",
+            instance.hasNextRouteConflict(candidate.getId()));
+  }
+
+  @Test
+  public void testPersistRouteOnlyPreservesElementsAndUnlocks() {
+    PersistenceService instance = PersistenceFactory.getService();
+    String routeId = "[bk-1+]->[bk-2-]";
+    RouteBean route = instance.getRoute(routeId);
+    List<RouteElementBean> before = new ArrayList<>(route.getRouteElements());
+
+    lockConflictTestRoute(route);
+
+    RouteBean locked = instance.getRoute(routeId);
+    assertTrue(locked.isLocked());
+    assertEquals("Lock update must not recreate route_elements",
+            before, locked.getRouteElements());
+
+    route.setLocked(false);
+    instance.persistRouteOnly(route);
+
+    RouteBean unlocked = instance.getRoute(routeId);
+    assertFalse(unlocked.isLocked());
+    assertEquals("Unlock update must not recreate route_elements",
+            before, unlocked.getRouteElements());
   }
 
   @Test

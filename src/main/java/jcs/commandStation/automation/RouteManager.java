@@ -16,9 +16,11 @@
 package jcs.commandStation.automation;
 
 import java.awt.Color;
+import static java.time.Instant.now;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import jcs.JCS;
 import static jcs.commandStation.automation.RailController.TAG;
 import jcs.commandStation.events.AccessoryEvent;
@@ -59,13 +61,14 @@ class RouteManager {
   }
 
   boolean searchRoute() {
-    Logger.trace("Search a free route for " + dispatcher.getName() + "...");
-    // Important: don't retain this from a previous search.
+    Logger.trace("Search a free route for {} ...", dispatcher.getName());
     swapLocomotiveDirection = false;
     route = null;
-
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
+    boolean commuter = locomotive.isCommuter();
+
     BlockBean departureBlock = PersistenceFactory.getService().getBlock(dispatcher.getDepartureBlockId());
+    String departureSuffix = departureBlock.getDepartureSuffix();
 
     if (departureBlock.getLogicalDirection() == null) {
       departureBlock.setLogicalDirection(locomotive.getDirection().getDirection());
@@ -75,17 +78,13 @@ class RouteManager {
     logicalDirection = LocomotiveBean.Direction.get(departureBlock.getLogicalDirection());
     TileBean tileBean = PersistenceFactory.getService().getTileBean(departureBlock.getTileId());
 
-    String departureSuffix = departureBlock.getDepartureSuffix();
-
     if (departureSuffix == null) {
       departureSuffix = Block.getDepartureSuffix(tileBean.getOrientation(), logicalDirection);
     }
 
-    boolean commuter = locomotive.isCommuter();
-
     // First try current direction.
     List<RouteBean> routes = PersistenceFactory.getService().getRoutes(departureBlock.getId(), departureSuffix);
-    List<RouteBean> checkedRoutes = getUsableRoutes(routes, commuter);
+    List<RouteBean> checkedRoutes = filterUsableRoutes(routes, commuter);
 
     // Nothing usable in current direction.
     if (checkedRoutes.isEmpty() && commuter && departureBlock.isAllowDirectionChange()) {
@@ -100,7 +99,7 @@ class RouteManager {
               reversedSuffix);
 
       List<RouteBean> reverseRoutes = PersistenceFactory.getService().getRoutes(departureBlock.getId(), reversedSuffix);
-      List<RouteBean> reverseCheckedRoutes = getUsableRoutes(reverseRoutes, commuter);
+      List<RouteBean> reverseCheckedRoutes = filterUsableRoutes(reverseRoutes, commuter);
 
       if (!reverseCheckedRoutes.isEmpty()) {
         checkedRoutes = reverseCheckedRoutes;
@@ -129,7 +128,7 @@ class RouteManager {
     return true;
   }
 
-  private List<RouteBean> getUsableRoutes(List<RouteBean> routes, boolean commuter) {
+  private List<RouteBean> filterUsableRoutes(List<RouteBean> routes, boolean commuter) {
     List<RouteBean> checkedRoutes = new ArrayList<>();
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
     int trainLenght;
@@ -183,9 +182,8 @@ class RouteManager {
         trainFitInBlock = true;
       }
 
-      if (plusInactive && minInactive && allowedBlock && allowedRoute && trainFitInBlock && turnoutsNotLocked(possibleRoute)) {
+      if (plusInactive && minInactive && allowedBlock && allowedRoute && trainFitInBlock && routeNotOverlapped(possibleRoute)) {
         checkedRoutes.add(possibleRoute);
-
         Logger.tag(TAG).debug("Dispatcher {} Route {} added as candidate.", this.dispatcher.getName(), possibleRoute.getId());
       }
     }
@@ -197,45 +195,44 @@ class RouteManager {
     if (route == null) {
       return false;
     }
-    Logger.trace("Reserving route " + route);
-    route.setLocked(true);
+    Logger.trace("Reserving route {}", route);
 
-    //Reserve the destination
-    String destinationTileId = route.getToTileId();
-    String arrivalSuffix = route.getToSuffix();
-    String departureSuffix = route.getFromSuffix();
+    if (routeNotOverlapped(route)) {
+      route.setLocked(true);
+      PersistenceFactory.getService().persistRouteOnly(route);
 
-    LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
-    Logger.trace("Destination: " + destinationTileId + " Arrival on the " + arrivalSuffix + " side of the block. Loco direction: " + locomotive.getDirection().getDirection());
+      //Reserve the destination
+      String destinationTileId = route.getToTileId();
+      String arrivalSuffix = route.getToSuffix();
+      String departureSuffix = route.getFromSuffix();
 
-    BlockBean departureBlock = PersistenceFactory.getService().getBlockByTileId(route.getFromTileId());
-    departureBlock.setBlockState(BlockBean.BlockState.OCCUPIED);
-    departureBlock.setDepartureSuffix(route.getFromSuffix());
+      LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
+      Logger.tag(TAG).debug("Destination: {} Arrival on the {} side of the block {}. Loco direction: {}", destinationTileId, arrivalSuffix, destinationTileId, locomotive.getDirection().getDirection());
 
-    BlockBean destinationBlock = PersistenceFactory.getService().getBlockByTileId(route.getToTileId());
-    destinationBlock.setBlockState(BlockBean.BlockState.LOCKED);
-    destinationBlock.setLocomotive(locomotive);
-    destinationBlock.setArrivalSuffix(arrivalSuffix);
-    destinationBlock.setLogicalDirection(locomotive.getDirection().getDirection());
+      BlockBean departureBlock = PersistenceFactory.getService().getBlockByTileId(route.getFromTileId());
+      departureBlock.setBlockState(BlockBean.BlockState.OCCUPIED);
+      departureBlock.setDepartureSuffix(route.getFromSuffix());
 
-    // Set Turnouts in the right state
-    List<RouteElementBean> turnouts = getTurnouts(route);
-    Logger.tag(TAG).debug("Dispatcher " + dispatcher.getName() + " There are " + turnouts.size() + " turnouts in route " + route.getId());
+      BlockBean destinationBlock = PersistenceFactory.getService().getBlockByTileId(route.getToTileId());
+      destinationBlock.setBlockState(BlockBean.BlockState.LOCKED);
+      destinationBlock.setLocomotive(locomotive);
+      destinationBlock.setArrivalSuffix(arrivalSuffix);
+      destinationBlock.setLogicalDirection(locomotive.getDirection().getDirection());
 
-    //Now start to persist and perform critical thinks
-    if (turnoutsNotLocked(route)) {
-      PersistenceFactory.getService().persist(route);
+      // Set Turnouts in the right state
+      List<RouteElementBean> turnouts = getTurnouts(route);
+      Logger.tag(TAG).debug("Dispatcher {} There are {} turnouts in route {}", dispatcher.getName(), turnouts.size(), route.getId());
 
       for (RouteElementBean reb : turnouts) {
         AccessoryBean.AccessoryValue av = reb.getAccessoryValue();
         AccessoryBean turnout = reb.getTileBean().getAccessoryBean();
-        Logger.trace("Setting Turnout " + turnout.getName() + " [" + turnout.getAddress() + "] to : " + av.getValue());
+        Logger.trace("Setting Turnout {}, [{}] to: {}", turnout.getName(), turnout.getAddress(), av.getValue());
         switchAccessory(turnout, av);
 
         //TODO: configurable wait time between switches
         pause(150);
       }
-      Logger.trace("Turnouts set for " + route);
+      Logger.trace("Turnouts set for {}", route);
 
       //Now that we have reserved the route lets determine which sensors are playing a role.
       //On the departure side we have the OccupiedSensor, i.e. the IN sensor when arriving.
@@ -263,15 +260,15 @@ class RouteManager {
       Logger.tag(TAG).debug("Dispatcher " + dispatcher.getName() + " Destination: " + destinationBlock.getId() + " Enter Sensor: " + dispatcher.getEnterSensorId() + " In Sensor: " + dispatcher.getInSensorId());
 
       showRoute(route, Color.green);
-      Logger.tag(TAG).debug("Dispatcher " + dispatcher.getName() + " " + route + " Locked");
+      Logger.tag(TAG).debug("Dispatcher {} Route {} Locked", dispatcher.getName(), route);
 
       if (swapLocomotiveDirection) {
         Direction newDir = LocomotiveBean.toggle(logicalDirection);
-        Logger.tag(TAG).trace("Swapping direction of " + dispatcher.getName() + " from: " + logicalDirection + " Swap to " + newDir);
-        Logger.tag(TAG).trace("Changing Direction to " + newDir);
+        Logger.tag(TAG).trace("Swapping direction of {} from: {} Swap to: {}", dispatcher.getName(), logicalDirection, newDir);
+        Logger.tag(TAG).trace("Changing Direction to: {}", newDir);
         dispatcher.changeLocomotiveDirection(newDir);
         //Wait a while to let the command station executing the command
-        pause(500);
+        pause(250);
         swapLocomotiveDirection = false;
       }
 
@@ -286,8 +283,7 @@ class RouteManager {
     } else {
       //Can't lock route
       route.setLocked(false);
-      PersistenceFactory.getService().persist(route);
-      Logger.tag(TAG).debug("Dispatcher " + dispatcher.getName() + " " + route + " NOT Locked");
+      Logger.tag(TAG).debug("Dispatcher {} Route: {} NOT Locked", dispatcher.getName(), route);
       dispatcher.setRouteBean(null);
       swapLocomotiveDirection = false;
       return false;
@@ -325,7 +321,7 @@ class RouteManager {
       trainFitInBlock = true;
     }
 
-    return plusFree && minFree && allowedBlock && allowedRoute && trainFitInBlock && turnoutsNotLocked(route);
+    return plusFree && minFree && allowedBlock && allowedRoute && trainFitInBlock && nextRouteNotOverlapped(route);
   }
 
   RouteBean selectRandomRoute(List<RouteBean> candidates) {
@@ -344,9 +340,9 @@ class RouteManager {
     RouteBean nextRoute = null;
     if (!candidates.isEmpty()) {
       nextRoute = candidates.get(rIdx);
-      Logger.tag(TAG).debug("Dispatcher " + dispatcher.getName() + " found next route " + nextRoute.toLogString());
+      Logger.tag(TAG).debug("Dispatcher {} found next route {}", dispatcher.getName(), nextRoute.toLogString());
     } else {
-      Logger.tag(TAG).debug("Dispatcher " + dispatcher.getName() + " no next route available...");
+      Logger.tag(TAG).debug("Dispatcher {} next route not available...", dispatcher.getName());
     }
     return nextRoute;
   }
@@ -390,8 +386,6 @@ class RouteManager {
       return false;
     }
 
-    //Refresh the available routes while holding the RailController semaphore.
-    //This checks route.locked and destination block FREE.
     List<RouteBean> availableRoutes = PersistenceFactory.getService().getRoutes(candidateRoute.getFromTileId(), candidateRoute.getFromSuffix());
     RouteBean validatedRoute = null;
 
@@ -434,38 +428,40 @@ class RouteManager {
     if (nextRoute == null) {
       return false;
     }
-    Logger.trace("Reserving next route " + nextRoute);
-    nextRoute.setLocked(true);
+    Logger.trace("Reserving next route {}", nextRoute);
 
-    //Reserve the destination
-    String nextDestinationTileId = nextRoute.getToTileId();
-    String nextArrivalSuffix = nextRoute.getToSuffix();
-    Logger.tag(TAG).debug("Next Destination: " + nextDestinationTileId + " Arrival on the " + nextArrivalSuffix + " side of the block. Loco direction: " + locomotive.getDispatcherDirection());
+    if (nextRouteNotOverlapped(nextRoute)) {
+      nextRoute.setLocked(true);
+      PersistenceFactory.getService().persistRouteOnly(nextRoute);
 
-    BlockBean departureBlock = dispatcher.getDestinationBlock();
-    BlockBean nextDestinationBlock = dispatcher.getNextDestinationBlock();
+      String nextDestinationTileId = nextRoute.getToTileId();
+      String nextArrivalSuffix = nextRoute.getToSuffix();
+      Logger.tag(TAG).debug("Next Destination: " + nextDestinationTileId + " Arrival on the " + nextArrivalSuffix + " side of the block. Loco direction: " + locomotive.getDispatcherDirection());
 
-    nextDestinationBlock.setBlockState(BlockBean.BlockState.LOCKED);
-    nextDestinationBlock.setLocomotive(locomotive);
-    nextDestinationBlock.setArrivalSuffix(nextArrivalSuffix);
-    nextDestinationBlock.setLogicalDirection(departureBlock.getLogicalDirection());
+      BlockBean departureBlock = dispatcher.getDestinationBlock();
+      BlockBean nextDestinationBlock = dispatcher.getNextDestinationBlock();
 
-    // Set Turnouts in the right state
-    List<RouteElementBean> turnouts = getTurnouts(nextRoute);
+      nextDestinationBlock.setBlockState(BlockBean.BlockState.LOCKED);
+      nextDestinationBlock.setLocomotive(locomotive);
+      nextDestinationBlock.setArrivalSuffix(nextArrivalSuffix);
+      nextDestinationBlock.setLogicalDirection(departureBlock.getLogicalDirection());
 
-    Logger.trace("There are " + turnouts.size() + " turnouts in the next route");
-
-    //Now start to persist and perform critical thinks
-    if (turnoutsNotLocked(nextRoute)) {
-      PersistenceFactory.getService().persist(nextRoute);
+      // Set Turnouts in the right state
+      List<RouteElementBean> turnouts = getTurnouts(nextRoute);
+      Logger.trace("There are {} turnouts in the next route.", turnouts.size());
 
       int turnoutCount = turnouts.size();
       int turnoutIdx = 0;
       for (RouteElementBean reb : turnouts) {
         AccessoryBean.AccessoryValue av = reb.getAccessoryValue();
         AccessoryBean turnout = reb.getTileBean().getAccessoryBean();
-        Logger.tag(TAG).debug("Setting Turnout " + turnout.getName() + " [" + turnout.getAddress() + "] to : " + av.getValue());
-        switchAccessory(turnout, av);
+        Logger.tag(TAG).debug("Setting Turnout {} [{}] to : {}", turnout.getName(), turnout.getAddress(), av.getValue());
+
+        boolean switchedOk = switchAccessory(turnout, av);
+        if (!switchedOk) {
+          Logger.tag(TAG).warn("Accessory {} with address {} Timed out on switch command to {}!", turnout.getName(), turnout.getAddress(), av.getValue());
+        }
+
         turnoutIdx++;
         //No need to wait...
         if (turnoutCount > turnoutIdx) {
@@ -476,7 +472,6 @@ class RouteManager {
       Logger.trace("Dispatcher " + dispatcher.getName() + " Turnouts set for " + nextRoute);
 
       PersistenceFactory.getService().persist(nextDestinationBlock);
-      PersistenceFactory.getService().persist(nextRoute);
       dispatcher.setNextRouteBean(nextRoute);
 
       showRoute(nextRoute, Color.yellow);
@@ -488,7 +483,8 @@ class RouteManager {
     } else {
       //Can't lock nextRoute
       nextRoute.setLocked(false);
-      PersistenceFactory.getService().persist(nextRoute);
+      dispatcher.setNextRouteBean(null);
+      //PersistenceFactory.getService().persist(nextRoute);
       Logger.trace(nextRoute + " NOT Locked");
 
       return false;
@@ -505,28 +501,46 @@ class RouteManager {
 
   private volatile boolean switched;
 
-  void switchAccessory(AccessoryBean accessory, AccessoryBean.AccessoryValue value) {
+  boolean switchAccessory(AccessoryBean accessory, AccessoryBean.AccessoryValue value) {
     AccessoryListener al = new AccessoryListener(accessory, value, this);
     try {
       switched = false;
       JCS.getJcsCommandStation().addAccessoryEventListener(accessory.getId(), al);
-      long now = System.currentTimeMillis();
-      long timemax = now + 5000;
-      long started = now;
+      long started = System.nanoTime();
+      long timemax = started + TimeUnit.SECONDS.toNanos(5);
 
       JCS.getJcsCommandStation().switchAccessory(accessory, value);
-      Logger.trace("Switched Accessory " + accessory.getId() + " to " + value + " Waiting for confirmation...");
+      Logger.trace("Switched Accessory {} to: {} Waiting for command confirmation...", accessory.getId(), value);
 
-      while (!switched && now < timemax) {
-        now = System.currentTimeMillis();
+      while (!switched && System.nanoTime() < timemax) {
         pause(10);
+
+        if (Thread.currentThread().isInterrupted()) {
+          return false;
+        }
       }
-      Logger.tag(TAG).debug("Dispatcher " + dispatcher.getName() + " has switched accessory " + accessory.getId() + " to " + value + " in " + (now - started) + " ms.");
+
+      long elapsedMs = TimeUnit.NANOSECONDS.toMillis(
+              System.nanoTime() - started
+      );
+
+      if (!switched) {
+        Logger.tag(TAG).warn(
+                "Dispatcher {} timeout waiting for accessory {} to report {}",
+                dispatcher.getName(),
+                accessory.getId(),
+                value
+        );
+      } else {
+        Logger.tag(TAG).debug("Dispatcher " + dispatcher.getName() + " has switched accessory " + accessory.getId() + " to " + value + " in " + elapsedMs + " ms.");
+      }
+      return switched;
     } catch (Exception e) {
       Logger.tag(TAG).error("Dispatcher " + dispatcher.getName() + " Error switching accessory " + accessory.getId() + " to " + value + " Cause: " + e.getMessage());
     } finally {
       JCS.getJcsCommandStation().removeAccessoryEventListener(accessory.getId(), al);
     }
+    return false;
   }
 
   void waitForAccessory(boolean switched) {
@@ -553,22 +567,16 @@ class RouteManager {
     return false;
   }
 
-  private boolean turnoutsNotLocked(RouteBean route) {
-    List<RouteElementBean> turnouts = getTurnouts(route);
+  private boolean routeNotOverlapped(RouteBean route) {
+    boolean conflict = PersistenceFactory.getService().hasRouteConflict(route.getId());
+    Logger.trace("Candidate Route {} conflicts with an other route: {}", route.getId(), conflict);
+    return !conflict;
+  }
 
-    boolean switchesNotLocked = true;
-    for (RouteElementBean reb : turnouts) {
-      //AccessoryBean.AccessoryValue av = reb.getAccessoryValue();
-      AccessoryBean turnout = reb.getTileBean().getAccessoryBean();
-      //check if the accessory is not set by an other reserved nextRoute
-      boolean locked = PersistenceFactory.getService().isAccessoryLocked(turnout.getId());
-      if (locked) {
-        Logger.trace("Turnout " + turnout.getName() + " [" + turnout.getAddress() + "] is locked!");
-        return false;
-      }
-    }
-    Logger.trace("There are " + turnouts.size() + " free turnouts in this route");
-    return switchesNotLocked;
+  private boolean nextRouteNotOverlapped(RouteBean route) {
+    boolean conflict = PersistenceFactory.getService().hasNextRouteConflict(route.getId());
+    Logger.trace("Candidate Next Route {} conflicts with an other route: {}", route.getId(), conflict);
+    return !conflict;
   }
 
   private List<RouteElementBean> getTurnouts(RouteBean routeBean) {
@@ -627,8 +635,8 @@ class RouteManager {
 
     @Override
     public void onAccessoryChange(AccessoryEvent accessoryEvent) {
-      if (accessoryEvent.isEventFor(accessoryBean)) {
-        routeManager.waitForAccessory(value == accessoryEvent.getValue());
+      if (accessoryEvent.isEventFor(accessoryBean) && value == accessoryEvent.getValue()) {
+        routeManager.waitForAccessory(true);
       }
     }
   }
