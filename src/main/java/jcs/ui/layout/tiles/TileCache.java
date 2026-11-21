@@ -16,9 +16,7 @@
 package jcs.ui.layout.tiles;
 
 import java.awt.Dimension;
-import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -446,34 +444,35 @@ public class TileCache {
   }
 
   public static List<Tile> loadTiles(boolean showvalues) {
-    long now = System.currentTimeMillis();
-    long start = now;
+    long start = System.currentTimeMillis();
+
     deRegisterListeners();
+
     altPointMap.clear();
     centerPointMap.clear();
     idMap.clear();
+
     maxX.set(0);
     maxY.set(0);
 
+    // Load tile data from the database.
     List<TileBean> tileBeans = persistenceService().getTileBeans();
+    long databaseLoaded = System.currentTimeMillis();
 
-    long end = System.currentTimeMillis();
-    long start2 = end;
+    Logger.trace("Loaded {} tileBeans from database in {} ms.", tileBeans.size(), databaseLoaded - start);
 
-    Logger.info("Loaded {} tileBeans from database in {} ms.", tileBeans.size(), (end - start));
-
-    BufferedImage bi = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
-    Graphics2D g2 = bi.createGraphics();
-
+    // Create tiles and populate the spatial cache.
+    // Do not force image rendering here.
     for (TileBean tb : tileBeans) {
       Tile tile = createTile(tb, showvalues);
-      tile.paint(g2);
       addTile(tile);
     }
 
-    end = System.currentTimeMillis();
+    long finished = System.currentTimeMillis();
 
-    Logger.info("Created {} Tiles. Max: ({}, {}) in {} ms Total {} ms.", idMap.size(), maxX, maxX, (end - start2), (end - start));
+    Logger.trace("Created {} Tiles. Max: ({}, {}) in {} ms. Total {} ms.",
+            idMap.size(), maxX.get(), maxY.get(), finished - databaseLoaded, finished - start);
+
     return new ArrayList<>(idMap.values());
   }
 
@@ -616,7 +615,7 @@ public class TileCache {
     boolean free = true;
     //check if a tile exist with point p
     //Check if the cache contains a Cp of a tile on p
-    Logger.trace("Checking tile: {} on new position ({}, {})", tile.id, p.x, p.y);
+    //Logger.trace("Checking tile: {} on new position ({}, {})", tile.id, p.x, p.y);
     if (centerPointMap.containsKey(p) && !tile.getCenter().equals(p) && !tile.getAltPoints().contains(p)) {
       free = false;
     }
@@ -635,7 +634,7 @@ public class TileCache {
         free = false;
       }
     }
-    Logger.info("Checked tile: {} for (new) position ({}, {}): {}", tile.id, p.x, p.y, (free ? "free" : "occupied"));
+    //Logger.trace("Checked tile: {} for (new) position ({}, {}): {}", tile.id, p.x, p.y, (free ? "free" : "occupied"));
 
     return free;
   }
@@ -643,6 +642,10 @@ public class TileCache {
   public static void moveTo(Tile tile, Point p) {
     if (tile == null || p == null) {
       throw new IllegalArgumentException("Tile or new Center Point cannot be null");
+    }
+    // No movement means there is nothing to persist.
+    if (tile.getCenter().equals(p)) {
+      return;
     }
 
     if (canMoveTo(tile, p)) {
@@ -656,15 +659,14 @@ public class TileCache {
       idMap.remove(tile.id);
       centerPointMap.remove(tile.getCenter());
 
-      Logger.info("Moving {} from ({},{}) to ({},{})", tile.getId(), tile.getCenterX(), tile.getCenterY(), p.x, p.y);
-
+      //Logger.trace("Moving {} from ({},{}) to ({},{})", tile.getId(), tile.getCenterX(), tile.getCenterY(), p.x, p.y);
       tile.setCenter(p);
       tile.getTileBean().setCenter(p);
 
       addAndSaveTile(tile);
     } else {
       Tile occ = findTile(p);
-      Logger.trace("Can't Move tile " + tile.id + " from " + tile.xyToString() + " to (" + p.x + "," + p.y + ") Is occupied by " + occ.id);
+      //Logger.trace("Can't Move tile " + tile.id + " from " + tile.xyToString() + " to (" + p.x + "," + p.y + ") Is occupied by " + occ.id);
     }
   }
 

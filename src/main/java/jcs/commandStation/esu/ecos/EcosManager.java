@@ -548,6 +548,3 @@ class EcosManager implements PowerEventListener {
   }
 
 }
-
-
-//<EVENT 1>1 shutdownreason[SHORTCIRCUIT]<END 0 (OK)>

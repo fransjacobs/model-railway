@@ -20,6 +20,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -32,6 +33,7 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.swing.BorderFactory;
@@ -44,8 +46,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -64,6 +64,10 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeSelectionModel;
 import jcs.JCS;
 import jcs.commandStation.DecoderController;
+import jcs.commandStation.JCSCommandStation;
+import jcs.commandStation.automation.RailController;
+import jcs.commandStation.events.PowerEventListener;
+import jcs.commandStation.lifecycle.ConnectionState;
 import jcs.commandStation.FeedbackController;
 import jcs.commandStation.entities.Device;
 import jcs.commandStation.entities.FeedbackModule;
@@ -71,23 +75,21 @@ import jcs.commandStation.entities.InfoBean;
 import jcs.commandStation.esu.ecos.EsuEcosCommandStationImpl;
 import jcs.commandStation.esu.ecos.net.EcosConnectionFactory;
 import jcs.commandStation.marklin.cs.MarklinCentralStationImpl;
+import jcs.commandStation.loconet.Intellibox2Impl;
 import jcs.commandStation.marklin.cs.net.CSConnectionFactory;
 import jcs.commandStation.virtual.VirtualCommandStationImpl;
 import jcs.entities.CommandStationBean;
-import static jcs.entities.CommandStationBean.DCC_EX;
 import static jcs.entities.CommandStationBean.ESU_ECOS;
-import static jcs.entities.CommandStationBean.HSI_S88;
 import static jcs.entities.CommandStationBean.MARKLIN_CS;
 import static jcs.entities.CommandStationBean.VIRTUAL;
 import jcs.entities.SensorBean;
 import jcs.persistence.PersistenceFactory;
-import jcs.ui.JCSFrame;
 import jcs.ui.swing.layout.VerticalFlowLayout;
 import jcs.util.Ping;
 import org.tinylog.Logger;
 
 /**
- *
+ * Command Station Panel is the Settings Panel to configure a Command Station in JCS
  *
  */
 public class CommandStationPanel extends JPanel implements TreeSelectionListener {
@@ -106,103 +108,280 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
   private CommandStationBean emptyCS;
   private CommandStationBean emptyFB;
 
+  // controller is for display only; it may be borrowed from the active JCS
+  // session and MUST NOT be disconnected by this panel.
   private DecoderController controller;
+  // The only transport owned by the panel. Never point this at the active one.
+  private DecoderController provisionalController;
+  private CommandStationBean selectedCatalogEntry;
+  private volatile boolean workflowBusy;
+  private boolean updatingUi;
+  private String verifiedConfigurationKey;
+
+  private final PowerEventListener powerListener = event -> SwingUtilities.invokeLater(this::refreshSafetyState);
+  private final jcs.commandStation.automation.RailControllerStatusListener railListener = status -> SwingUtilities.invokeLater(this::refreshSafetyState);
 
   public CommandStationPanel() {
     initComponents();
-    executor = Executors.newSingleThreadExecutor();
+    executor = Executors.newSingleThreadExecutor(r -> {
+      Thread t = new Thread(r, "JCS-CS-PANEL");
+      t.setDaemon(true);
+      return t;
+    });
     if (PersistenceFactory.getService() != null) {
       initModels(null);
     }
   }
 
+  @Override
+  public void addNotify() {
+    super.addNotify();
+    JCS.getJcsCommandStation().addPowerEventListener(powerListener);
+    RailController.getInstance().addStatusListener(railListener);
+    refreshSafetyState();
+  }
+
+  @Override
+  public void removeNotify() {
+    RailController.getInstance().removeStatusListener(railListener);
+    JCS.getJcsCommandStation().removePowerEventListener(powerListener);
+    super.removeNotify();
+  }
+
   private void initModels(CommandStationBean selected) {
-    if (selected == null) {
-      selectedCommandStation = PersistenceFactory.getService().getDefaultCommandStation();
-    } else {
-      selectedCommandStation = selected;
+    updatingUi = true;
+    try {
+      CommandStationBean saved = selected != null ? selected : PersistenceFactory.getService().getDefaultCommandStation();
+      List<CommandStationBean> commandStations = new ArrayList<>();
+      List<CommandStationBean> feedbackProviders = new ArrayList<>();
+
+      for (CommandStationBean candidate : PersistenceFactory.getService().getCommandStations()) {
+        if (candidate.isDecoderControlSupport()) {
+          commandStations.add(candidate);
+        } else {
+          feedbackProviders.add(candidate);
+        }
+      }
+
+      emptyCS = new CommandStationBean();
+      emptyCS.setDecoderControlSupport(true);
+      emptyFB = new CommandStationBean();
+      emptyFB.setFeedbackSupport(true);
+      commandStations.add(emptyCS);
+      feedbackProviders.add(emptyFB);
+
+      CommandStationBean currentActive = JCS.getJcsCommandStation().getCommandStationBean();
+      if (currentActive != null && JCS.getJcsCommandStation().isConnected() && JCS.getJcsCommandStation().isPowerOn()) {
+        saved = currentActive;
+      }
+      selectedCatalogEntry = findById(commandStations, saved == null ? null : saved.getId());
+      if (selectedCatalogEntry == null) {
+        selectedCatalogEntry = emptyCS;
+      }
+      selectedCommandStation = copyBean(selectedCatalogEntry);
+      commandStationCBM = new DefaultComboBoxModel<>(commandStations.toArray(CommandStationBean[]::new));
+      commandStationCB.setModel(commandStationCBM);
+      commandStationCB.setSelectedItem(selectedCatalogEntry);
+
+      CommandStationBean savedFB = PersistenceFactory.getService().getEnabledFeedbackProvider();
+      CommandStationBean fbEntry = findById(feedbackProviders, savedFB == null ? null : savedFB.getId());
+      if (fbEntry == null) {
+        fbEntry = emptyFB;
+      }
+      selectedFeedbackProvider = copyBean(fbEntry);
+      feedbackCBM = new DefaultComboBoxModel<>(feedbackProviders.toArray(CommandStationBean[]::new));
+      feedbackCB.setModel(feedbackCBM);
+      feedbackCB.setSelectedItem(fbEntry);
+
+      SerialPort[] ports = SerialPort.getCommPorts();
+      String[] names = new String[ports.length];
+      for (int i = 0; i < ports.length; i++) {
+        names[i] = ports[i].getSystemPortName();
+      }
+      serialPortCBM = new DefaultComboBoxModel<>(names);
+      fbpSerialPortCBM = new DefaultComboBoxModel<>(names);
+      serialCB.setModel(serialPortCBM);
+      fbpSerialCB.setModel(fbpSerialPortCBM);
+
+      serialCB.setSelectedItem(selectedCommandStation.getSerialPort());
+      fbpSerialCB.setSelectedItem(selectedFeedbackProvider.getSerialPort());
+      controller = activeControllerForSelection();
+    } finally {
+      updatingUi = false;
     }
+    setComponents();
+  }
 
-    if (selectedCommandStation != null && !selectedCommandStation.isFeedbackSupport()) {
-      selectedFeedbackProvider = PersistenceFactory.getService().getEnabledFeedbackProvider();
-    }
-
-    List<CommandStationBean> allCommandStations = PersistenceFactory.getService().getCommandStations();
-
-    List<CommandStationBean> commandStations = new ArrayList<>();
-    List<CommandStationBean> feedbackProviders = new ArrayList<>();
-
-    for (CommandStationBean csb : allCommandStations) {
-      if (csb.isDecoderControlSupport()) {
-        commandStations.add(csb);
-      } else {
-        feedbackProviders.add(csb);
+  private static CommandStationBean findById(List<CommandStationBean> beans, String id) {
+    for (CommandStationBean bean : beans) {
+      if (Objects.equals(bean.getId(), id)) {
+        return bean;
       }
     }
+    return null;
+  }
 
-    emptyCS = new CommandStationBean();
-    emptyCS.setDecoderControlSupport(true);
-    emptyFB = new CommandStationBean();
-    emptyFB.setFeedbackSupport(true);
+  // Staging is mandatory: ComboBox entries may be attached to persistence or
+  // the operational driver. Edits before activation must never mutate them.
+  private static CommandStationBean copyBean(CommandStationBean original) {
+    CommandStationBean bean = new CommandStationBean();
+    bean.setId(original.getId());
+    bean.setDescription(original.getDescription());
+    bean.setShortName(original.getShortName());
+    bean.setClassName(original.getClassName());
+    bean.setConnectVia(original.getConnectVia());
+    bean.setSerialPort(original.getSerialPort());
+    bean.setIpAddress(original.getIpAddress());
+    bean.setNetworkPort(original.getNetworkPort());
+    bean.setIpAutoConfiguration(original.isIpAutoConfiguration());
+    bean.setDecoderControlSupport(original.isDecoderControlSupport());
+    bean.setAccessoryControlSupport(original.isAccessoryControlSupport());
+    bean.setFeedbackSupport(original.isFeedbackSupport());
+    bean.setLocomotiveSynchronizationSupport(original.isLocomotiveSynchronizationSupport());
+    bean.setAccessorySynchronizationSupport(original.isAccessorySynchronizationSupport());
+    bean.setLocomotiveImageSynchronizationSupport(original.isLocomotiveImageSynchronizationSupport());
+    bean.setLocomotiveFunctionSynchronizationSupport(original.isLocomotiveFunctionSynchronizationSupport());
+    bean.setProtocols(original.getProtocols());
+    bean.setDefault(original.isDefault());
+    bean.setEnabled(original.isEnabled());
+    bean.setLastUsedSerial(original.getLastUsedSerial());
+    bean.setSupConnTypesStr(original.getSupConnTypesStr());
+    bean.setVirtual(original.isVirtual());
+    bean.setFeedbackModuleIdentifier(original.getFeedbackModuleIdentifier());
+    bean.setFeedbackChannelCount(original.getFeedbackChannelCount());
+    bean.setFeedbackBus0ModuleCount(original.getFeedbackBus0ModuleCount());
+    bean.setFeedbackBus1ModuleCount(original.getFeedbackBus1ModuleCount());
+    bean.setFeedbackBus2ModuleCount(original.getFeedbackBus2ModuleCount());
+    bean.setFeedbackBus3ModuleCount(original.getFeedbackBus3ModuleCount());
+    return bean;
+  }
 
-    commandStations.add(emptyCS);
-    feedbackProviders.add(emptyFB);
+  private static String configKey(CommandStationBean bean) {
+    return bean == null ? "" : String.join("|",
+            String.valueOf(bean.getId()), String.valueOf(bean.getConnectionType()),
+            String.valueOf(bean.isVirtual()), String.valueOf(bean.getIpAddress()),
+            String.valueOf(bean.getNetworkPort()), String.valueOf(bean.getSerialPort()));
+  }
 
-    if (selectedCommandStation == null) {
-      selectedCommandStation = emptyCS;
+  private boolean automationBusy() {
+    RailController rc = RailController.getInstance();
+    String status = rc.getStatus();
+
+    return rc.isAutoModeActive()
+            || RailController.STARTED.equals(status)
+            || RailController.STOPPING.equals(status)
+            || rc.getRunningDispatcherCount() > 0;
+  }
+
+  private boolean activePowerOn() {
+    JCSCommandStation jcs = JCS.getJcsCommandStation();
+    return jcs.isConnected() && jcs.isPowerOn();
+  }
+
+  private boolean configurationAllowed() {
+    if (automationBusy()) {
+      return false;
+    }
+    if (activePowerOn()) {
+      return false;
     }
 
-    if (selectedFeedbackProvider == null) {
-      selectedFeedbackProvider = emptyFB;
+    ConnectionState state = JCS.getJcsCommandStation().getConnectionState();
+
+    return state != ConnectionState.CONNECTING
+            && state != ConnectionState.RECONNECTING
+            && state != ConnectionState.STOPPING;
+  }
+
+  private boolean requireConfigurationAllowed() {
+    if (!configurationAllowed() || workflowBusy) {
+      showMessage("The command station cannot be changed while track power is ON, "
+              + "Automode is active/stopping, or the active connection is changing.",
+              "Configuration locked", JOptionPane.WARNING_MESSAGE);
+
+      refreshSafetyState();
+      return false;
     }
+    return true;
+  }
 
-    CommandStationBean[] csba = new CommandStationBean[commandStations.size()];
-    CommandStationBean[] fbpa = new CommandStationBean[feedbackProviders.size()];
-    commandStations.toArray(csba);
-    feedbackProviders.toArray(fbpa);
+  private void showMessage(String message, String title, int messageType) {
+    SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(this, message, title, messageType));
+  }
 
-    commandStationCBM = new DefaultComboBoxModel<>(csba);
-    commandStationCBM.setSelectedItem(selectedCommandStation);
-    commandStationCB.setModel(commandStationCBM);
-
-    feedbackCBM = new DefaultComboBoxModel<>(fbpa);
-    feedbackCBM.setSelectedItem(selectedFeedbackProvider);
-    feedbackCB.setModel(feedbackCBM);
-
-    SerialPort comPorts[] = SerialPort.getCommPorts();
-    String[] ports = new String[comPorts.length];
-    for (int i = 0; i < comPorts.length; i++) {
-      ports[i] = comPorts[i].getSystemPortName();
-    }
-
-    serialPortCBM = new DefaultComboBoxModel<>(ports);
-    fbpSerialPortCBM = new DefaultComboBoxModel<>(ports);
-    serialCB.setModel(serialPortCBM);
-    fbpSerialCB.setModel(fbpSerialPortCBM);
-
-    if (CommandStationBean.ConnectionType.SERIAL == selectedCommandStation.getConnectionType()) {
-      String port = selectedCommandStation.getSerialPort();
-      serialCB.setSelectedItem(port);
-      serialRB.setSelected(true);
-    } else {
-      networkRB.setSelected(true);
-    }
-
-    if (selectedFeedbackProvider.getConnectionType() != null && CommandStationBean.ConnectionType.SERIAL == selectedFeedbackProvider.getConnectionType()) {
-      String port = selectedFeedbackProvider.getSerialPort();
-      fbpSerialCB.setSelectedItem(port);
-    }
-
-    if (JCS.getJcsCommandStation() != null && JCS.getJcsCommandStation().isConnected()) {
-      this.controller = JCS.getJcsCommandStation().getDecoderController();
-      //Obtain some info from the controller
-      Logger.trace("Connected to " + controller.getCommandStationInfo());
-    }
-
+  private void setBusy(boolean busy) {
+    workflowBusy = busy;
     setComponents();
-    if (!selectedCommandStation.isVirtual() && CommandStationBean.ConnectionType.NETWORK == selectedCommandStation.getConnectionType() && selectedCommandStation.getIpAddress() != null && selectedCommandStation.getIpAddress().length() > 8) {
-      executor.execute(() -> checkConnection(selectedCommandStation));
+  }
+
+  private DecoderController activeControllerForSelection() {
+    JCSCommandStation station = JCS.getJcsCommandStation();
+    DecoderController active = station.getDecoderController();
+    return active != null && active.isConnected()
+            && selectedCommandStation != null
+            && Objects.equals(active.getCommandStationBean().getId(), selectedCommandStation.getId())
+            ? active : null;
+  }
+
+  private void refreshSafetyState() {
+    if (!SwingUtilities.isEventDispatchThread()) {
+      SwingUtilities.invokeLater(this::refreshSafetyState);
+      return;
     }
+
+    if (activePowerOn() || automationBusy()) {
+      // No provisional transport remains open during active operation.
+      closeProvisionalAsync();
+      // Even if another draft was selected earlier, show the currently active
+      // station when configuration becomes locked.
+      DecoderController active = JCS.getJcsCommandStation().getDecoderController();
+      if (active != null && active.isConnected()
+              && (selectedCommandStation == null || !Objects.equals(selectedCommandStation.getId(), active.getCommandStationBean().getId()))) {
+
+        CommandStationBean current = active.getCommandStationBean();
+        updatingUi = true;
+
+        try {
+          for (int i = 0; i < commandStationCB.getItemCount(); i++) {
+            CommandStationBean entry = commandStationCB.getItemAt(i);
+            if (Objects.equals(entry.getId(), current.getId())) {
+              selectedCatalogEntry = entry;
+              commandStationCB.setSelectedItem(entry);
+              break;
+            }
+          }
+
+          selectedCommandStation = copyBean(current);
+          controller = active;
+        } finally {
+          updatingUi = false;
+        }
+      }
+    }
+    setComponents();
+  }
+
+  private void closeProvisionalAsync() {
+    DecoderController preview = provisionalController;
+    provisionalController = null;
+    verifiedConfigurationKey = null;
+    if (preview != null) {
+      if (controller == preview) {
+        controller = activeControllerForSelection();
+      }
+      executor.execute(() -> {
+        try {
+          preview.disconnect();
+        } catch (RuntimeException ex) {
+          Logger.warn("Could not close provisional command station: {}", ex.getMessage());
+        }
+      });
+    }
+  }
+
+  private void invalidateVerification() {
+    verifiedConfigurationKey = null;
+    closeProvisionalAsync();
   }
 
   /**
@@ -235,7 +414,8 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
     fbpSerialLbl = new JLabel();
     fbpSerialCB = new JComboBox<>();
     filler1 = new Box.Filler(new Dimension(0, 23), new Dimension(0, 23), new Dimension(32767, 23));
-    jPanel3 = new JPanel();
+    bottomPanel = new JPanel();
+    saveActivateBtn = new JButton();
     jPanel4 = new JPanel();
     connectBtn = new JButton();
     jPanel5 = new JPanel();
@@ -256,7 +436,6 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
     bus2Spinner = new JSpinner();
     bus3Lbl = new JLabel();
     bus3Spinner = new JSpinner();
-    filler2 = new Box.Filler(new Dimension(100, 0), new Dimension(100, 0), new Dimension(100, 32767));
     updatePanel = new JPanel();
     updateBtn = new JButton();
     rightPanel = new JPanel();
@@ -358,8 +537,13 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
     feedbackProviderLbl.setName("feedbackProviderLbl"); // NOI18N
     mainCSPanel.add(feedbackProviderLbl);
 
+    discoverBtn.setIcon(new ImageIcon(getClass().getResource("/media/discover-24.png"))); // NOI18N
     discoverBtn.setText("Discover");
+    discoverBtn.setToolTipText("Discover Command Station");
+    discoverBtn.setHorizontalTextPosition(SwingConstants.RIGHT);
+    discoverBtn.setMargin(new Insets(2, 7, 2, 7));
     discoverBtn.setName("discoverBtn"); // NOI18N
+    discoverBtn.setPreferredSize(new Dimension(100, 30));
     discoverBtn.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
         discoverBtnActionPerformed(evt);
@@ -367,9 +551,13 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
     });
     mainCSPanel.add(discoverBtn);
 
+    checkBtn.setIcon(new ImageIcon(getClass().getResource("/media/check-24-g.png"))); // NOI18N
     checkBtn.setText("Check");
     checkBtn.setToolTipText("Check Connection");
+    checkBtn.setHorizontalTextPosition(SwingConstants.RIGHT);
+    checkBtn.setMargin(new Insets(2, 7, 2, 7));
     checkBtn.setName("checkBtn"); // NOI18N
+    checkBtn.setPreferredSize(new Dimension(100, 30));
     checkBtn.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
         checkBtnActionPerformed(evt);
@@ -445,23 +633,35 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
 
     add(topPanel, BorderLayout.PAGE_START);
 
-    jPanel3.setName("jPanel3"); // NOI18N
+    bottomPanel.setName("bottomPanel"); // NOI18N
+    FlowLayout flowLayout1 = new FlowLayout(FlowLayout.RIGHT);
+    flowLayout1.setAlignOnBaseline(true);
+    bottomPanel.setLayout(flowLayout1);
 
-    GroupLayout jPanel3Layout = new GroupLayout(jPanel3);
-    jPanel3.setLayout(jPanel3Layout);
-    jPanel3Layout.setHorizontalGroup(jPanel3Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-      .addGap(0, 1220, Short.MAX_VALUE)
-    );
-    jPanel3Layout.setVerticalGroup(jPanel3Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-      .addGap(0, 100, Short.MAX_VALUE)
-    );
+    saveActivateBtn.setIcon(new ImageIcon(getClass().getResource("/media/save-24.png"))); // NOI18N
+    saveActivateBtn.setText("Activate");
+    saveActivateBtn.setToolTipText("Save and Active the newly chosen Command Station");
+    saveActivateBtn.setHorizontalTextPosition(SwingConstants.RIGHT);
+    saveActivateBtn.setMargin(new Insets(2, 7, 2, 7));
+    saveActivateBtn.setName("saveActivateBtn"); // NOI18N
+    saveActivateBtn.setPreferredSize(new Dimension(100, 30));
+    saveActivateBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        saveActivateBtnActionPerformed(evt);
+      }
+    });
+    bottomPanel.add(saveActivateBtn);
 
-    add(jPanel3, BorderLayout.PAGE_END);
+    add(bottomPanel, BorderLayout.PAGE_END);
 
     jPanel4.setName("jPanel4"); // NOI18N
 
+    connectBtn.setIcon(new ImageIcon(getClass().getResource("/media/connecting.png"))); // NOI18N
     connectBtn.setText("Connect");
+    connectBtn.setHorizontalTextPosition(SwingConstants.RIGHT);
+    connectBtn.setMargin(new Insets(2, 7, 2, 7));
     connectBtn.setName("connectBtn"); // NOI18N
+    connectBtn.setPreferredSize(new Dimension(100, 30));
     connectBtn.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
         connectBtnActionPerformed(evt);
@@ -490,22 +690,22 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
 
     connectedToLbl.setText("Connected to: command station");
     connectedToLbl.setName("connectedToLbl"); // NOI18N
-    connectedToLbl.setPreferredSize(new Dimension(200, 17));
+    connectedToLbl.setPreferredSize(new Dimension(300, 17));
     controllerPanel.add(connectedToLbl);
 
     serialLbl.setText("Serial: xxxxxx");
     serialLbl.setName("serialLbl"); // NOI18N
-    serialLbl.setPreferredSize(new Dimension(150, 17));
+    serialLbl.setPreferredSize(new Dimension(200, 17));
     controllerPanel.add(serialLbl);
 
     swVersionLbl.setText("Software version: xxxxxxx");
     swVersionLbl.setName("swVersionLbl"); // NOI18N
-    swVersionLbl.setPreferredSize(new Dimension(160, 17));
+    swVersionLbl.setPreferredSize(new Dimension(200, 17));
     controllerPanel.add(swVersionLbl);
 
     hwVersionLbl.setText("Hardware version: xxxxxx");
     hwVersionLbl.setName("hwVersionLbl"); // NOI18N
-    hwVersionLbl.setPreferredSize(new Dimension(160, 17));
+    hwVersionLbl.setPreferredSize(new Dimension(200, 17));
     controllerPanel.add(hwVersionLbl);
 
     propertiesPanel.add(controllerPanel, BorderLayout.NORTH);
@@ -516,9 +716,9 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
     feedbackPanel.setLayout(new GridLayout(1, 2));
 
     feedbackModulesPanel.setName("feedbackModulesPanel"); // NOI18N
-    FlowLayout flowLayout16 = new FlowLayout(FlowLayout.LEFT);
-    flowLayout16.setAlignOnBaseline(true);
-    feedbackModulesPanel.setLayout(flowLayout16);
+    FlowLayout flowLayout2 = new FlowLayout(FlowLayout.LEFT);
+    flowLayout2.setAlignOnBaseline(true);
+    feedbackModulesPanel.setLayout(flowLayout2);
 
     mainLbl.setHorizontalAlignment(SwingConstants.TRAILING);
     mainLbl.setText("Main");
@@ -560,19 +760,20 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
     bus3Spinner.setName("bus3Spinner"); // NOI18N
     feedbackModulesPanel.add(bus3Spinner);
 
-    filler2.setName("filler2"); // NOI18N
-    feedbackModulesPanel.add(filler2);
-
     feedbackPanel.add(feedbackModulesPanel);
 
     updatePanel.setName("updatePanel"); // NOI18N
     updatePanel.setPreferredSize(new Dimension(350, 57));
-    FlowLayout flowLayout17 = new FlowLayout(FlowLayout.RIGHT);
-    flowLayout17.setAlignOnBaseline(true);
-    updatePanel.setLayout(flowLayout17);
+    FlowLayout flowLayout3 = new FlowLayout(FlowLayout.RIGHT, 5, 0);
+    flowLayout3.setAlignOnBaseline(true);
+    updatePanel.setLayout(flowLayout3);
 
+    updateBtn.setIcon(new ImageIcon(getClass().getResource("/media/sync-black-24.png"))); // NOI18N
     updateBtn.setText("Update");
+    updateBtn.setHorizontalTextPosition(SwingConstants.RIGHT);
+    updateBtn.setMargin(new Insets(2, 7, 2, 7));
     updateBtn.setName("updateBtn"); // NOI18N
+    updateBtn.setPreferredSize(new Dimension(100, 30));
     updateBtn.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
         updateBtnActionPerformed(evt);
@@ -595,7 +796,7 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
       .addGap(0, 750, Short.MAX_VALUE)
     );
     rightPanelLayout.setVerticalGroup(rightPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-      .addGap(0, 317, Short.MAX_VALUE)
+      .addGap(0, 371, Short.MAX_VALUE)
     );
 
     jPanel2.add(rightPanel, BorderLayout.EAST);
@@ -606,6 +807,18 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
 
     devicesSP.setName("devicesSP"); // NOI18N
 
+    DefaultMutableTreeNode treeNode1 = new DefaultMutableTreeNode("Properties");
+    DefaultMutableTreeNode treeNode2 = new DefaultMutableTreeNode("booster");
+    DefaultMutableTreeNode treeNode3 = new DefaultMutableTreeNode("b1");
+    treeNode2.add(treeNode3);
+    treeNode1.add(treeNode2);
+    treeNode2 = new DefaultMutableTreeNode("Feedback Modules");
+    treeNode3 = new DefaultMutableTreeNode("Module 1");
+    treeNode2.add(treeNode3);
+    treeNode3 = new DefaultMutableTreeNode("Module 2");
+    treeNode2.add(treeNode3);
+    treeNode1.add(treeNode2);
+    devicesTree.setModel(new DefaultTreeModel(treeNode1));
     devicesTree.setName("devicesTree"); // NOI18N
     devicesSP.setViewportView(devicesTree);
 
@@ -617,164 +830,174 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
   }// </editor-fold>//GEN-END:initComponents
 
   private void setComponents() {
-    controllerLbl.setVisible(selectedCommandStation.isDecoderControlSupport());
-    accessoryControllerLbl.setVisible(selectedCommandStation.isAccessoryControlSupport());
-    feedbackProviderLbl.setVisible(selectedCommandStation.isFeedbackSupport());
-
-    virtualCB.setSelected(selectedCommandStation.isVirtual());
-
-    discoverBtn.setVisible(selectedCommandStation.isIpAutoConfiguration());
-    ipTF.setText(selectedCommandStation.getIpAddress());
-
-    serialCB.setVisible(CommandStationBean.ConnectionType.SERIAL == selectedCommandStation.getConnectionType());
-    ipTF.setVisible(CommandStationBean.ConnectionType.NETWORK == selectedCommandStation.getConnectionType());
-
-    networkRB.setVisible(selectedCommandStation.getSupportedConnectionTypes().size() > 1);
-    serialRB.setVisible(selectedCommandStation.getSupportedConnectionTypes().size() > 1);
-    networkRB.setSelected(CommandStationBean.ConnectionType.NETWORK == selectedCommandStation.getConnectionType());
-
-    if (serialCB.isVisible()) {
-      ipOrPortLbl.setText("Serial Port:");
-    } else {
-      ipOrPortLbl.setText("ip Address:");
+    if (!SwingUtilities.isEventDispatchThread()) {
+      SwingUtilities.invokeLater(this::setComponents);
+      return;
+    }
+    if (selectedCommandStation == null) {
+      return;
     }
 
-    checkBtn.setVisible(CommandStationBean.ConnectionType.NETWORK == selectedCommandStation.getConnectionType() && selectedCommandStation.getIpAddress() != null && selectedCommandStation.getIpAddress().length() > 8);
-
-    if (selectedCommandStation.getIpAddress() == null || selectedCommandStation.getIpAddress().length() > 8) {
-      ipTF.setBackground(new java.awt.Color(255, 255, 255));
-      connectBtn.setEnabled(true);
+    DecoderController active = activeControllerForSelection();
+    if (provisionalController != null && provisionalController.isConnected()) {
+      controller = provisionalController;
     } else {
-      connectBtn.setEnabled(false);
+      controller = active;
     }
 
-    //no main controller feedback support, enable the secondary
-    feedbackCB.setVisible(!selectedCommandStation.isFeedbackSupport());
-    feedbackCB.setEnabled(!selectedCommandStation.isFeedbackSupport());
-    feedbackLbl.setVisible(!selectedCommandStation.isFeedbackSupport());
+    boolean editable = configurationAllowed() && !workflowBusy;
+    boolean hasId = selectedCommandStation.getId() != null;
+    boolean isNetwork = CommandStationBean.ConnectionType.NETWORK == selectedCommandStation.getConnectionType();
+    boolean isSerial = CommandStationBean.ConnectionType.SERIAL == selectedCommandStation.getConnectionType();
+    boolean borrowedActive = controller != null && controller == active;
+    boolean hasPreview = controller != null && controller == provisionalController;
 
-    secondfbpLbl.setVisible(!selectedCommandStation.isFeedbackSupport() && selectedFeedbackProvider.isFeedbackSupport() && selectedFeedbackProvider.getId() != null);
+    updatingUi = true;
+    try {
+      commandStationCB.setEnabled(editable);
+      virtualCB.setSelected(selectedCommandStation.isVirtual());
+      virtualCB.setEnabled(editable && hasId && !VIRTUAL.equals(selectedCommandStation.getId()));
+      controllerLbl.setVisible(selectedCommandStation.isDecoderControlSupport());
+      accessoryControllerLbl.setVisible(selectedCommandStation.isAccessoryControlSupport());
+      feedbackProviderLbl.setVisible(selectedCommandStation.isFeedbackSupport());
 
-    fbpSerialCB.setVisible(!selectedCommandStation.isFeedbackSupport());
-    fbpSerialCB.setEnabled(!selectedCommandStation.isFeedbackSupport());
-    fbpSerialLbl.setVisible(!selectedCommandStation.isFeedbackSupport());
+      discoverBtn.setVisible(selectedCommandStation.isIpAutoConfiguration() && isNetwork);
+      discoverBtn.setEnabled(editable && hasId);
+      ipTF.setVisible(isNetwork);
+      ipTF.setText(selectedCommandStation.getIpAddress());
+      ipTF.setEditable(editable && hasId);
+      ipTF.setEnabled(true); // Readable even when activation is locked.
+      serialCB.setVisible(isSerial);
+      serialCB.setSelectedItem(selectedCommandStation.getSerialPort());
+      serialCB.setEnabled(editable && hasId);
 
-    if (controller != null && controller.isConnected()) {
-      InfoBean ib = controller.getCommandStationInfo();
-      connectedToLbl.setText("Connected to : " + ib.getProductName());
-      connectedToLbl.setVisible(true);
+      ipOrPortLbl.setText(isSerial ? "Serial Port:" : "ip Address:");
+      boolean dualConnection = selectedCommandStation.getSupportedConnectionTypes().size() > 1;
+      networkRB.setVisible(dualConnection);
+      serialRB.setVisible(dualConnection);
+      networkRB.setSelected(isNetwork);
+      serialRB.setSelected(isSerial);
+      networkRB.setEnabled(editable && hasId);
+      serialRB.setEnabled(editable && hasId);
 
-      serialLbl.setText("Serial: " + ib.getSerialNumber());
-      serialLbl.setVisible(true);
+      boolean hasHost = selectedCommandStation.getIpAddress() != null && !selectedCommandStation.getIpAddress().isBlank();
+      checkBtn.setVisible(isNetwork && hasId);
+      checkBtn.setEnabled(editable && hasHost);
+      ipTF.setBackground(java.awt.Color.WHITE);
 
-      if (ib.getSoftwareVersion() != null) {
-        swVersionLbl.setText("Software version: " + ib.getSoftwareVersion());
-        swVersionLbl.setVisible(true);
+      boolean externalFeedback = !selectedCommandStation.isFeedbackSupport();
+      feedbackCB.setVisible(externalFeedback);
+      feedbackLbl.setVisible(externalFeedback);
+      feedbackCB.setEnabled(editable && externalFeedback);
+      secondfbpLbl.setVisible(externalFeedback && selectedFeedbackProvider != null
+              && selectedFeedbackProvider.getId() != null);
+      fbpSerialCB.setVisible(externalFeedback);
+      fbpSerialLbl.setVisible(externalFeedback);
+      fbpSerialCB.setSelectedItem(selectedFeedbackProvider == null ? null
+              : selectedFeedbackProvider.getSerialPort());
+      fbpSerialCB.setEnabled(editable && externalFeedback && selectedFeedbackProvider != null);
+
+      if (borrowedActive) {
+        connectBtn.setText("Active");
+        connectBtn.setEnabled(false);
+        connectBtn.setToolTipText("Viewing the operational connection; it cannot be disconnected here");
+      } else if (hasPreview) {
+        connectBtn.setText("Disconnect");
+        connectBtn.setEnabled(editable);
+        connectBtn.setToolTipText("Close this temporary inspection connection");
       } else {
-        swVersionLbl.setVisible(false);
+        connectBtn.setText("Connect");
+        connectBtn.setEnabled(editable && hasId && (selectedCommandStation.isVirtual() || (isNetwork && hasHost)
+                || (isSerial && selectedCommandStation.getSerialPort() != null)));
+        connectBtn.setToolTipText("Temporarily connect to inspect properties; does not activate!");
       }
 
-      if (ib.getHardwareVersion() != null) {
-        hwVersionLbl.setText(("Hardware version: " + ib.getHardwareVersion()));
-        hwVersionLbl.setVisible(true);
-      } else {
-        hwVersionLbl.setVisible(false);
-      }
+      boolean validated = VIRTUAL.equals(selectedCommandStation.getId())
+              || selectedCommandStation.isVirtual()
+              || (hasPreview && Objects.equals(verifiedConfigurationKey, configKey(selectedCommandStation)))
+              || (borrowedActive && Objects.equals(configKey(selectedCommandStation), configKey(active.getCommandStationBean())))
+              || (borrowedActive && selectedCommandStation.getId() != null);
 
-      connectBtn.setText("Disconnect");
+      saveActivateBtn.setEnabled(editable && hasId && validated);
+      saveActivateBtn.setToolTipText(validated ? "Save as default and activate; track power will remain OFF" : "Connect and verify the selected station before activating");
 
-      //feedback settings
-      List<FeedbackModule> modules = ((FeedbackController) controller).getFeedbackModules();
-      
-      if(modules == null) {
-        Logger.trace("No feedback modules found");
-        return;
-      }
-      mainLbl.setVisible(true);
-      mainSpinner.setVisible(true);
+      boolean connected = controller != null && controller.isConnected();
+      connectedToLbl.setVisible(connected);
+      serialLbl.setVisible(connected);
+      swVersionLbl.setVisible(connected);
+      hwVersionLbl.setVisible(connected);
 
-      updateBtn.setVisible(true);
-    
-      for (FeedbackModule fbm : modules) {
-        Integer busNr = fbm.getBusNumber();
-        if (busNr == null) {
-          //Assume null is the main
-          busNr = 0;
+      if (connected) {
+        InfoBean info = controller.getCommandStationInfo();
+        if (info != null) {
+          connectedToLbl.setText("Connected to: " + info.getProductName() + (borrowedActive ? " (active)" : " (temporary)"));
+          serialLbl.setText("Serial: " + info.getSerialNumber());
+          swVersionLbl.setVisible(info.getSoftwareVersion() != null);
+          swVersionLbl.setText("Software version: " + info.getSoftwareVersion());
+          hwVersionLbl.setVisible(info.getHardwareVersion() != null);
+          hwVersionLbl.setText("Hardware version: " + info.getHardwareVersion());
         }
-        switch (busNr) {
-          case 1 -> {
-            bus1Spinner.setValue(fbm.getBusSize());
-          }
-          case 2 -> {
-            bus2Spinner.setValue(fbm.getBusSize());
-          }
-          case 3 -> {
-            bus3Spinner.setValue(fbm.getBusSize());
-          }
-          default -> {
-            if (fbm.getBusSize() != null && fbm.getBusSize() > 0) {
-              mainSpinner.setValue(fbm.getBusSize());
+      }
+
+      // Feedback sync is allowed for the ACTIVE station even with power ON.
+      boolean canSync = connected && controller instanceof FeedbackController && !automationBusy();
+      updateBtn.setVisible(canSync);
+      updateBtn.setEnabled(canSync && !workflowBusy);
+      mainLbl.setVisible(canSync);
+      mainSpinner.setVisible(canSync);
+      boolean marklin = MARKLIN_CS.equals(selectedCommandStation.getId());
+      bus1Lbl.setVisible(canSync && marklin);
+      bus1Spinner.setVisible(canSync && marklin);
+      bus2Lbl.setVisible(canSync && marklin);
+      bus2Spinner.setVisible(canSync && marklin);
+      bus3Lbl.setVisible(canSync && marklin);
+      bus3Spinner.setVisible(canSync && marklin);
+      boolean spinnerEditable = canSync && editable
+              && !MARKLIN_CS.equals(selectedCommandStation.getId())
+              && !ESU_ECOS.equals(selectedCommandStation.getId());
+      mainSpinner.setEnabled(spinnerEditable);
+      bus1Spinner.setEnabled(spinnerEditable);
+      bus2Spinner.setEnabled(spinnerEditable);
+      bus3Spinner.setEnabled(spinnerEditable);
+
+      if (canSync) {
+        List<FeedbackModule> modules = ((FeedbackController) controller).getFeedbackModules();
+        if (modules != null) {
+          for (FeedbackModule module : modules) {
+            int bus, count;
+            if (module.getBusNumber() == null) {
+              bus = 0;
             } else {
-              mainSpinner.setValue(modules.size());
+              bus = module.getBusNumber();
+            }
+
+            if (module.getBusSize() == null) {
+              count = 0;
+            } else {
+              count = module.getBusSize();
+            }
+
+            switch (bus) {
+              case 1 ->
+                bus1Spinner.setValue(count);
+              case 2 ->
+                bus2Spinner.setValue(count);
+              case 3 ->
+                bus3Spinner.setValue(count);
+              default ->
+                mainSpinner.setValue(count > 0 ? count : modules.size());
             }
           }
         }
       }
-
-      if (selectedCommandStation.getId().equals(CommandStationBean.MARKLIN_CS)) {
-        bus1Lbl.setVisible(true);
-        bus1Spinner.setVisible(true);
-        bus2Lbl.setVisible(true);
-        bus2Spinner.setVisible(true);
-        bus3Lbl.setVisible(true);
-        bus3Spinner.setVisible(true);
-      } else {
-        bus1Lbl.setVisible(false);
-        bus1Spinner.setVisible(false);
-        bus2Lbl.setVisible(false);
-        bus2Spinner.setVisible(false);
-        bus3Lbl.setVisible(false);
-        bus3Spinner.setVisible(false);
-      }
-
-      //Command Stations Marklin CS and ESU-ECoS require that the setting 
-      //for the number of modules is done on the commandstation it self, hence disable the spinners
-      if (selectedCommandStation.getId().equals(MARKLIN_CS) || selectedCommandStation.getId().equals(ESU_ECOS)) {
-        mainSpinner.setEnabled(false);
-        bus1Spinner.setEnabled(false);
-        bus2Spinner.setEnabled(false);
-        bus3Spinner.setEnabled(false);
-      } else {
-        mainSpinner.setEnabled(true);
-        bus1Spinner.setEnabled(true);
-        bus2Spinner.setEnabled(true);
-        bus3Spinner.setEnabled(true);
-      }
-    } else {
-      connectedToLbl.setVisible(false);
-      serialLbl.setVisible(false);
-      swVersionLbl.setVisible(false);
-      hwVersionLbl.setVisible(false);
-      connectBtn.setText("Connect");
-
-      //Feedback modules
-      mainLbl.setVisible(false);
-      mainSpinner.setVisible(false);
-
-      bus1Lbl.setVisible(false);
-      bus1Spinner.setVisible(false);
-      bus2Lbl.setVisible(false);
-      bus2Spinner.setVisible(false);
-      bus3Lbl.setVisible(false);
-      bus3Spinner.setVisible(false);
-      updateBtn.setVisible(false);
+    } finally {
+      updatingUi = false;
     }
-
     buildTree();
   }
 
   private void buildTree() {
-    Logger.trace("build tree");
+    Logger.trace("building properties tree");
     String rootDesc;
     if (selectedCommandStation != null) {
       rootDesc = selectedCommandStation.getDescription();
@@ -794,7 +1017,7 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
   }
 
   private void createNodes(DefaultMutableTreeNode root) {
-    Logger.trace("Create feedback nodes");
+    Logger.trace("Creating feedback nodes");
     if (controller == null) {
       return;
     }
@@ -804,8 +1027,12 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
     for (Device d : devices) {
       DefaultMutableTreeNode deviceNode = new DefaultMutableTreeNode(d.getId() + " " + d.getName());
 
-      if (d.isFeedback()) {
-        List<FeedbackModule> modules = ((FeedbackController) controller).getFeedbackModules();
+      if (d.isFeedback() && controller instanceof FeedbackController fc) {
+        List<FeedbackModule> modules = fc.getFeedbackModules();
+        if (modules == null) {
+          continue;
+        }
+        modules = new ArrayList<>(modules);
         Collections.sort(modules);
 
         //Marklin show per bus
@@ -829,18 +1056,16 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
 
           deviceNode.add(moduleNode);
         }
-
       }
 
       root.add(deviceNode);
     }
-
   }
 
-  //TODO
+  @Override
   public void valueChanged(TreeSelectionEvent e) {
     DefaultMutableTreeNode node = (DefaultMutableTreeNode) devicesTree.getLastSelectedPathComponent();
-
+    //TODO !
     if (node == null) {
       return;
     }
@@ -853,338 +1078,452 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
     }
   }
 
-  private void changeDefaultCommandStation(final CommandStationBean newDefault) {
-    PersistenceFactory.getService().changeDefaultCommandStation(newDefault);
-    java.awt.EventQueue.invokeLater(() -> {
+  private void applyIpEdit() {
+    if (updatingUi || !configurationAllowed() || workflowBusy || selectedCommandStation == null) {
+      return;
+    }
+
+    String address = ipTF.getText().trim();
+    if (!Objects.equals(address, selectedCommandStation.getIpAddress())) {
+      selectedCommandStation.setIpAddress(address);
+      invalidateVerification();
       setComponents();
-    });
+    }
   }
 
-  private void persistCommandStation(final CommandStationBean commandStation) {
-    PersistenceFactory.getService().persist(commandStation);
-    java.awt.EventQueue.invokeLater(() -> {
-      setComponents();
+  private void saveFeedbackSelection(CommandStationBean choice) {
+    CommandStationBean previous = PersistenceFactory.getService().getEnabledFeedbackProvider();
+    if (previous != null && (choice == null || !Objects.equals(previous.getId(), choice.getId()))) {
+      previous.setEnabled(false);
+      PersistenceFactory.getService().persist(previous);
+    }
+    if (choice != null && choice.getId() != null) {
+      choice.setEnabled(true);
+      PersistenceFactory.getService().persist(choice);
+    }
+  }
+
+  private void saveAndActivate() {
+    if (selectedCommandStation == null || selectedCommandStation.getId() == null) {
+      showMessage("Select a command station first.", "Activation",
+              JOptionPane.WARNING_MESSAGE);
+      return;
+    }
+
+    DecoderController active = activeControllerForSelection();
+
+    boolean sameActive = active != null;
+
+    boolean verified = selectedCommandStation.isVirtual()
+            || VIRTUAL.equals(selectedCommandStation.getId())
+            || (provisionalController != null && provisionalController.isConnected()
+            && Objects.equals(verifiedConfigurationKey, configKey(selectedCommandStation)))
+            || sameActive;
+
+    if (!verified) {
+      showMessage("Connect to and verify this command station before activating it.",
+              "Not verified", JOptionPane.WARNING_MESSAGE);
+      return;
+    }
+
+    CommandStationBean csb = null;
+    if (active != null && active.getCommandStationBean() != null) {
+      csb = active.getCommandStationBean();
+    }
+
+    if (sameActive && !Objects.equals(configKey(selectedCommandStation), configKey(csb))) {
+
+      int answer = JOptionPane.showConfirmDialog(this, """
+                                                       You have edited the settings of the active station. Testing another address is not possible while its transport is in use.
+                                                       Save and reconnect using the new settings?""",
+              "Reconnect command station", JOptionPane.YES_NO_OPTION);
+      if (answer != JOptionPane.YES_OPTION) {
+        return;
+      }
+    }
+
+    CommandStationBean chosen = copyBean(selectedCommandStation);
+    chosen.setEnabled(true);
+    CommandStationBean feedback = selectedFeedbackProvider == null
+            ? null : copyBean(selectedFeedbackProvider);
+
+    setBusy(true);
+
+    // Provisional connection must be closed BEFORE the operational session
+    // is selected and started. The executor serializes these actions.
+    closeProvisionalAsync();
+    executor.execute(() -> {
+      try {
+        JCS.getJcsCommandStation().activateCommandStation(chosen);
+        if (!chosen.isFeedbackSupport()) {
+          saveFeedbackSelection(feedback);
+        }
+        SwingUtilities.invokeLater(() -> {
+          initModels(chosen);
+          setBusy(false);
+          showMessage("Saved " + chosen.getDescription()
+                  + " as the default command station. Connection startup was requested. "
+                  + "Track power remains OFF until the operator enables it.",
+                  "Activation requested", JOptionPane.INFORMATION_MESSAGE);
+        });
+      } catch (RuntimeException ex) {
+        Logger.error(ex, "Command station activation failed");
+        SwingUtilities.invokeLater(() -> {
+          setBusy(false);
+          showMessage("Activation failed: " + ex.getMessage(),
+                  "Activation failed", JOptionPane.ERROR_MESSAGE);
+        });
+      }
     });
   }
 
   private void commandStationCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_commandStationCBActionPerformed
-    CommandStationBean newSelectedCommandStation = (CommandStationBean) commandStationCBM.getSelectedItem();
-    if (selectedCommandStation != null && selectedCommandStation.getId() != null && !selectedCommandStation.getId().equals(newSelectedCommandStation.getId())) {
-      selectedCommandStation.setDefault(false);
-      selectedCommandStation.setEnabled(false);
-      try {
-        if (JCS.getJcsCommandStation() != null && JCS.getJcsCommandStation().isConnected()) {
-          JCS.getJcsCommandStation().switchPower(false);
-        }
-        if (JCS.getParentFrame() != null) {
-          JCS.getParentFrame().connect(false);
-        }
-      } catch (Exception e) {
-        Logger.error(e.getMessage());
-      }
-    } else {
-      selectedCommandStation = newSelectedCommandStation;
-    }
-
-    selectedCommandStation = (CommandStationBean) commandStationCBM.getSelectedItem();
-    selectedCommandStation.setEnabled(true);
-    selectedCommandStation.setDefault(true);
-    executor.execute(() -> changeDefaultCommandStation(selectedCommandStation));
-
-    Logger.trace("Selected CS: " + selectedCommandStation.getDescription());
-  }//GEN-LAST:event_commandStationCBActionPerformed
-
-  private void virtualCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_virtualCBActionPerformed
-    selectedCommandStation.setVirtual(virtualCB.isSelected());
-    persistCommandStation(selectedCommandStation);
-  }//GEN-LAST:event_virtualCBActionPerformed
-
-  private void ipTFFocusLost(FocusEvent evt) {//GEN-FIRST:event_ipTFFocusLost
-    Logger.trace("ip Address: " + this.ipTF.getText());
-    selectedCommandStation.setIpAddress(ipTF.getText());
-    persistCommandStation(selectedCommandStation);
-  }//GEN-LAST:event_ipTFFocusLost
-
-  private void ipTFMouseExited(MouseEvent evt) {//GEN-FIRST:event_ipTFMouseExited
-    Logger.trace("ip Address: " + this.ipTF.getText());
-    selectedCommandStation.setIpAddress(ipTF.getText());
-    persistCommandStation(selectedCommandStation);
-  }//GEN-LAST:event_ipTFMouseExited
-
-  private void ipTFActionPerformed(ActionEvent evt) {//GEN-FIRST:event_ipTFActionPerformed
-    Logger.trace("ip Address: " + this.ipTF.getText());
-    selectedCommandStation.setIpAddress(ipTF.getText());
-    persistCommandStation(selectedCommandStation);
-  }//GEN-LAST:event_ipTFActionPerformed
-
-  private void serialCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_serialCBActionPerformed
-    String selectedPort = (String) serialCB.getSelectedItem();
-    selectedCommandStation.setSerialPort(selectedPort);
-    persistCommandStation(selectedCommandStation);
-  }//GEN-LAST:event_serialCBActionPerformed
-
-  private void discoverBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_discoverBtnActionPerformed
-    Logger.trace("Try to discover " + selectedCommandStation.getDescription());
-    executor.execute(() -> discover(selectedCommandStation));
-  }//GEN-LAST:event_discoverBtnActionPerformed
-
-  private void checkBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_checkBtnActionPerformed
-    executor.execute(() -> checkConnection(selectedCommandStation));
-  }//GEN-LAST:event_checkBtnActionPerformed
-
-  private void networkRBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_networkRBActionPerformed
-    if (networkRB.isSelected()) {
-      selectedCommandStation.setConnectionType(CommandStationBean.ConnectionType.NETWORK);
-      selectedCommandStation.setSerialPort(null);
-    } else {
-      selectedCommandStation.setConnectionType(CommandStationBean.ConnectionType.SERIAL);
-    }
-    persistCommandStation(selectedCommandStation);
-  }//GEN-LAST:event_networkRBActionPerformed
-
-  private void serialRBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_serialRBActionPerformed
-    if (networkRB.isSelected()) {
-      selectedCommandStation.setConnectionType(CommandStationBean.ConnectionType.NETWORK);
-    } else {
-      selectedCommandStation.setConnectionType(CommandStationBean.ConnectionType.SERIAL);
-    }
-    persistCommandStation(selectedCommandStation);
-  }//GEN-LAST:event_serialRBActionPerformed
-
-  private void feedbackCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_feedbackCBActionPerformed
-    CommandStationBean newSelectedFeedbackProvider = (CommandStationBean) feedbackCBM.getSelectedItem();
-    //Check if it is not the empty one
-    if (feedbackCB.isEnabled()) {
-      if (selectedFeedbackProvider != null && selectedFeedbackProvider.getId() != null && newSelectedFeedbackProvider.getId() == null) {
-        //Disable the curren selected provider
-        selectedFeedbackProvider.setEnabled(false);
-        PersistenceFactory.getService().persist(selectedFeedbackProvider);
-        selectedFeedbackProvider = newSelectedFeedbackProvider;
-      } else {
-        selectedFeedbackProvider = newSelectedFeedbackProvider;
-        selectedFeedbackProvider.setEnabled(newSelectedFeedbackProvider.getId() != null);
-        //Persist the change
-        PersistenceFactory.getService().persist(selectedFeedbackProvider);
-      }
-      secondfbpLbl.setVisible(selectedFeedbackProvider.isFeedbackSupport() && selectedFeedbackProvider.getId() != null);
-    }
-  }//GEN-LAST:event_feedbackCBActionPerformed
-
-  private void fbpSerialCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_fbpSerialCBActionPerformed
-    String selectedPort = (String) fbpSerialCB.getSelectedItem();
-    selectedFeedbackProvider.setSerialPort(selectedPort);
-    persistCommandStation(selectedFeedbackProvider);
-  }//GEN-LAST:event_fbpSerialCBActionPerformed
-
-  private void connectBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_connectBtnActionPerformed
-    Logger.trace("Try to connect to " + selectedCommandStation.getDescription());
-
-    if ("Connect".equals(connectBtn.getText())) {
-      executor.execute(() -> connect(selectedCommandStation));
-    } else {
-      executor.execute(() -> disconnect());
-    }
-  }//GEN-LAST:event_connectBtnActionPerformed
-
-  private void updateBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_updateBtnActionPerformed
-    executor.execute(() -> {
-      updateBtn.setEnabled(false);
-      updateSensors();
-    });
-  }//GEN-LAST:event_updateBtnActionPerformed
-
-  private void formComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_formComponentShown
-    Logger.trace("Shown");
-  }//GEN-LAST:event_formComponentShown
-
-  private void formComponentHidden(ComponentEvent evt) {//GEN-FIRST:event_formComponentHidden
-    Logger.trace("Hidden");
-  }//GEN-LAST:event_formComponentHidden
-
-  @Override
-  public void setVisible(boolean aFlag) {
-    super.setVisible(aFlag);
-    Logger.trace("Shown " + aFlag);
-
-    if (!aFlag && this.controller != null) {
-      if (controller.isConnected()) {
-        controller.disconnect();
-      }
-      controller = null;
-      Logger.trace("Disconnected from " + selectedCommandStation.getId());
-    }
-
-  }
-
-  private void updateSensors() {
-    List<FeedbackModule> modules = ((FeedbackController) controller).getFeedbackModules();
-
-    Logger.trace("There are " + modules.size() + " feedback modules");
-    //Catch errors if any...
-    try {
-      for (FeedbackModule fbm : modules) {
-        List<SensorBean> sensors = fbm.getSensors();
-        for (SensorBean sb : sensors) {
-          Logger.trace("Storing : " + sb);
-          PersistenceFactory.getService().persist(sb);
-        }
-      }
-    } catch (Exception e) {
-      Logger.error("Error updating sensors! " + e);
-    }
-
-    java.awt.EventQueue.invokeLater(() -> {
-      setComponents();
-      updateBtn.setEnabled(true);
-    });
-  }
-
-//  private List<FeedbackModule> getFeedbackModules(String commandStationId) {
-//    List<SensorBean> sensors = PersistenceFactory.getService().getSensorsByCommandStationId(commandStationId);
-//
-//    List<FeedbackModule> modules = new ArrayList<>();
-//    if (!sensors.isEmpty()) {
-//      Integer id = -1;
-//      for (SensorBean sb : sensors) {
-//        if (!id.equals(sb.getDeviceId())) {
-//          FeedbackModule fbm = new FeedbackModule();
-//          fbm.setId(sb.getDeviceId());
-//          fbm.setIdentifier(sb.getNodeId());
-//          //The busnumber and address offset depend on the commandstation id 
-//          fbm.setBusNumber(sb.getBusNr());
-//        }
-//      }
-//    }
-//
-//    return modules;
-//  }
-  private InetAddress discover(final CommandStationBean commandStation) {
-    final JOptionPane optionPane = new JOptionPane("Try to discovering a " + commandStation.getDescription(),
-            JOptionPane.INFORMATION_MESSAGE,
-            JOptionPane.DEFAULT_OPTION);
-
-    final JDialog discoverDialog = new JDialog((JDialog) null, "Discovering...");
-    discoverDialog.setContentPane(optionPane);
-    discoverDialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-    discoverDialog.pack();
-    discoverDialog.setLocationRelativeTo(null);
-    discoverDialog.setVisible(true);
-
-    InetAddress inetAddress = null;
-    if (MARKLIN_CS.equals(commandStation.getId())) {
-      inetAddress = CSConnectionFactory.discoverCs();
-    } else if (ESU_ECOS.equals(commandStation.getId())) {
-      inetAddress = EcosConnectionFactory.discoverEcos();
-    }
-
-    if (inetAddress != null) {
-      Logger.trace("Discovered host " + inetAddress.getHostAddress() + " for " + commandStation.getDescription());
-      commandStation.setIpAddress(inetAddress.getHostAddress());
-      persistCommandStation(commandStation);
-    }
-
-    java.awt.EventQueue.invokeLater(() -> {
-      discoverDialog.setVisible(false);
-      discoverDialog.dispose();
-    });
-
-    return inetAddress;
-  }
-
-  private JFrame getParentFrame() {
-    if (SwingUtilities.getRoot(this) instanceof JFrame frame) {
-      return frame;
-    } else {
-      return null;
-    }
-  }
-
-  private void checkConnection(final CommandStationBean commandStation) {
-    String ip = commandStation.getIpAddress();
-    boolean canConnect = Ping.isReachable(ip);
-
-    java.awt.EventQueue.invokeLater(() -> {
-      if (canConnect) {
-        ipTF.setBackground(new java.awt.Color(204, 255, 204));
-        connectBtn.setEnabled(true);
-      } else {
-        ipTF.setBackground(new java.awt.Color(255, 255, 255));
-        connectBtn.setEnabled(false);
-
-        //Only show the MessageDial when in Dialog
-        if (!(getParentFrame() instanceof JCSFrame)) {
-          JOptionPane.showMessageDialog(this, "Can't connect with host " + ip, "Can't Connect", JOptionPane.WARNING_MESSAGE);
-        } else {
-          Logger.trace("Can't connect with host " + ip);
-        }
-      }
-    });
-  }
-
-  private void disconnect() {
-    if (controller != null) {
-      controller.disconnect();
-      controller = null;
-
-      java.awt.EventQueue.invokeLater(() -> {
-        setComponents();
-      });
-    }
-  }
-
-  private void connect(final CommandStationBean commandStation) {
-    final JOptionPane optionPane = new JOptionPane("Try to connect to " + commandStation.getDescription(),
-            JOptionPane.INFORMATION_MESSAGE,
-            JOptionPane.DEFAULT_OPTION);
-
-    final JDialog connectingDialog = new JDialog((JDialog) null, "Connecting...");
-    connectingDialog.setContentPane(optionPane);
-    connectingDialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-    connectingDialog.pack();
-    connectingDialog.setLocationRelativeTo(null);
-    connectingDialog.setVisible(true);
-
-    if (null == commandStation.getId()) {
-      Logger.trace("Unknown Controller!");
-    } else {
-      switch (commandStation.getId()) {
-        case MARKLIN_CS ->
-          controller = new MarklinCentralStationImpl(commandStation);
-        case ESU_ECOS ->
-          controller = new EsuEcosCommandStationImpl(commandStation);
-        case DCC_EX ->
-          Logger.info("TODO: DCC-EX!");
-        case HSI_S88 ->
-          Logger.info("TODO: HSI-S88!");
-        case VIRTUAL ->
-          controller = new VirtualCommandStationImpl(commandStation);
-        default ->
-          Logger.trace("Unknown Controller!");
-      }
-    }
-
-    if (controller == null) {
+    if (updatingUi) {
       return;
     }
 
-    controller.connect();
-    if (controller.isConnected()) {
-      //Obtain some info from the controller
-      Logger.trace("Connected to " + controller.getCommandStationInfo());
-
-      java.awt.EventQueue.invokeLater(() -> {
-        setComponents();
-      });
+    if (!requireConfigurationAllowed()) {
+      updatingUi = true;
+      commandStationCB.setSelectedItem(selectedCatalogEntry);
+      updatingUi = false;
+      return;
     }
 
-    java.awt.EventQueue.invokeLater(() -> {
-      connectingDialog.setVisible(false);
-      connectingDialog.dispose();
+    CommandStationBean choice = (CommandStationBean) commandStationCB.getSelectedItem();
+    if (choice == null) {
+      return;
+    }
+
+    closeProvisionalAsync();
+    selectedCatalogEntry = choice;
+    selectedCommandStation = copyBean(choice);
+    controller = activeControllerForSelection();
+    Logger.info("Previewing command station configuration: {}", selectedCommandStation.getId());
+    setComponents();
+  }//GEN-LAST:event_commandStationCBActionPerformed
+
+  private void virtualCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_virtualCBActionPerformed
+
+    if (updatingUi || !requireConfigurationAllowed()) {
+      return;
+    }
+
+    selectedCommandStation.setVirtual(virtualCB.isSelected());
+    invalidateVerification();
+    setComponents();
+  }//GEN-LAST:event_virtualCBActionPerformed
+
+  private void ipTFFocusLost(FocusEvent evt) {//GEN-FIRST:event_ipTFFocusLost
+    applyIpEdit();
+  }//GEN-LAST:event_ipTFFocusLost
+
+  private void ipTFMouseExited(MouseEvent evt) {//GEN-FIRST:event_ipTFMouseExited
+    applyIpEdit();
+  }//GEN-LAST:event_ipTFMouseExited
+
+  private void ipTFActionPerformed(ActionEvent evt) {//GEN-FIRST:event_ipTFActionPerformed
+    applyIpEdit();
+  }//GEN-LAST:event_ipTFActionPerformed
+
+  private void serialCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_serialCBActionPerformed
+    if (updatingUi || !requireConfigurationAllowed()) {
+      return;
+    }
+
+    selectedCommandStation.setSerialPort((String) serialCB.getSelectedItem());
+    invalidateVerification();
+    setComponents();
+  }//GEN-LAST:event_serialCBActionPerformed
+
+  private void discoverBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_discoverBtnActionPerformed
+    if (!requireConfigurationAllowed()) {
+      return;
+    }
+
+    CommandStationBean draft = copyBean(selectedCommandStation);
+    setBusy(true);
+    executor.execute(() -> discover(draft));
+  }//GEN-LAST:event_discoverBtnActionPerformed
+
+  private void checkBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_checkBtnActionPerformed
+    if (!requireConfigurationAllowed()) {
+      return;
+    }
+
+    CommandStationBean draft = copyBean(selectedCommandStation);
+    setBusy(true);
+    executor.execute(() -> checkConnection(draft));
+  }//GEN-LAST:event_checkBtnActionPerformed
+
+  private void networkRBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_networkRBActionPerformed
+    if (updatingUi || !requireConfigurationAllowed()) {
+      return;
+    }
+
+    selectedCommandStation.setConnectionType(CommandStationBean.ConnectionType.NETWORK);
+    invalidateVerification();
+    setComponents();
+  }//GEN-LAST:event_networkRBActionPerformed
+
+  private void serialRBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_serialRBActionPerformed
+    if (updatingUi || !requireConfigurationAllowed()) {
+      return;
+    }
+
+    selectedCommandStation.setConnectionType(CommandStationBean.ConnectionType.SERIAL);
+    invalidateVerification();
+    setComponents();
+  }//GEN-LAST:event_serialRBActionPerformed
+
+  private void feedbackCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_feedbackCBActionPerformed
+    if (updatingUi || !requireConfigurationAllowed()) {
+      return;
+    }
+
+    CommandStationBean fb = (CommandStationBean) feedbackCB.getSelectedItem();
+    if (fb != null) {
+      selectedFeedbackProvider = copyBean(fb);
+    }
+    setComponents();
+  }//GEN-LAST:event_feedbackCBActionPerformed
+
+  private void fbpSerialCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_fbpSerialCBActionPerformed
+    if (updatingUi || !requireConfigurationAllowed()) {
+      return;
+    }
+
+    if (selectedFeedbackProvider != null) {
+      selectedFeedbackProvider.setSerialPort((String) fbpSerialCB.getSelectedItem());
+    }
+  }//GEN-LAST:event_fbpSerialCBActionPerformed
+
+  private void connectBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_connectBtnActionPerformed
+    if (!requireConfigurationAllowed()) {
+      return;
+    }
+
+    if (provisionalController != null) {
+      closeProvisionalAsync();
+      setComponents();
+      return;
+    }
+
+    // The active connection is borrowed exclusively for viewing; NEVER
+    // acquire a second transport through its static connection factory.
+    if (activeControllerForSelection() != null) {
+      showMessage("The current command station is already connected. "
+              + "Its properties are shown without opening a second connection.",
+              "Active command station", JOptionPane.INFORMATION_MESSAGE);
+      return;
+    }
+
+    CommandStationBean draft = copyBean(selectedCommandStation);
+    setBusy(true);
+    executor.execute(() -> connect(draft));
+  }//GEN-LAST:event_connectBtnActionPerformed
+
+  private void updateBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_updateBtnActionPerformed
+    if (automationBusy() || workflowBusy || !(controller instanceof FeedbackController fc)) {
+      return;
+    }
+
+    setBusy(true);
+    executor.execute(() -> updateSensors(fc));
+  }//GEN-LAST:event_updateBtnActionPerformed
+
+  private void formComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_formComponentShown
+    refreshSafetyState();
+  }//GEN-LAST:event_formComponentShown
+
+  private void formComponentHidden(ComponentEvent evt) {//GEN-FIRST:event_formComponentHidden
+    closeProvisionalAsync();
+  }//GEN-LAST:event_formComponentHidden
+
+  private void saveActivateBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_saveActivateBtnActionPerformed
+    if (!requireConfigurationAllowed()) {
+      return;
+    }
+
+    saveAndActivate();
+  }//GEN-LAST:event_saveActivateBtnActionPerformed
+
+  @Override
+  public void setVisible(boolean visible) {
+    if (!visible) {
+      // Only close the temporary inspection connection. The real controller
+      // belongs to JCSCommandStation and must survive dialog closure.
+      closeProvisionalAsync();
+    }
+    super.setVisible(visible);
+    if (visible) {
+      refreshSafetyState();
+    }
+  }
+
+  private void updateSensors(FeedbackController feedback) {
+    try {
+      List<FeedbackModule> modules = feedback.getFeedbackModules();
+      if (modules == null) {
+        throw new IllegalStateException("No feedback modules returned by the station");
+      }
+      int updated = 0;
+      for (FeedbackModule module : modules) {
+        List<SensorBean> sensors = module.getSensors();
+        if (sensors == null) {
+          continue;
+        }
+        for (SensorBean sensor : sensors) {
+          PersistenceFactory.getService().persist(sensor);
+          updated++;
+        }
+      }
+      Logger.info("Updated {} feedback sensors from the command station", updated);
+    } catch (RuntimeException ex) {
+      Logger.error(ex, "Error updating feedback sensors");
+      showMessage("Updating feedback sensors failed: " + ex.getMessage(),
+              "Sensor update", JOptionPane.ERROR_MESSAGE);
+    } finally {
+      SwingUtilities.invokeLater(() -> setBusy(false));
+    }
+  }
+
+  private void discover(CommandStationBean draft) {
+    InetAddress found = null;
+    try {
+      if (MARKLIN_CS.equals(draft.getId())) {
+        found = CSConnectionFactory.discoverCs();
+      } else if (ESU_ECOS.equals(draft.getId())) {
+        found = EcosConnectionFactory.discoverEcos();
+      }
+      final InetAddress address = found;
+      SwingUtilities.invokeLater(() -> {
+        if (address != null && configurationAllowed()
+                && Objects.equals(draft.getId(), selectedCommandStation.getId())) {
+
+          selectedCommandStation.setIpAddress(address.getHostAddress());
+          invalidateVerification();
+          Logger.info("Discovered {} at {}", draft.getId(), address.getHostAddress());
+
+          showMessage("Discovered " + draft.getDescription() + " at "
+                  + address.getHostAddress(), "Discovery successful",
+                  JOptionPane.INFORMATION_MESSAGE);
+        } else if (address == null) {
+          showMessage("No " + draft.getDescription()
+                  + " was found on the network. Enter its address manually.",
+                  "Discovery unsuccessful", JOptionPane.INFORMATION_MESSAGE);
+        }
+        setBusy(false);
+      });
+    } catch (RuntimeException ex) {
+      Logger.error(ex, "Discovery failed");
+      SwingUtilities.invokeLater(() -> {
+        setBusy(false);
+        showMessage("Discovery failed: " + ex.getMessage(),
+                "Discovery error", JOptionPane.ERROR_MESSAGE);
+      });
+    }
+  }
+
+//  private JFrame getParentFrame() {
+//    if (SwingUtilities.getRoot(this) instanceof JFrame frame) {
+//      return frame;
+//    }
+//    return null;
+//  }
+  private void checkConnection(CommandStationBean draft) {
+    boolean reachable;
+    try {
+      reachable = Ping.isReachable(draft.getIpAddress());
+    } catch (RuntimeException ex) {
+      Logger.warn("Ping check failed for {}: {}", draft.getIpAddress(), ex.getMessage());
+      reachable = false;
+    }
+
+    final boolean pingResult = reachable;
+
+    SwingUtilities.invokeLater(() -> {
+      setBusy(false);
+      if (Objects.equals(configKey(draft), configKey(selectedCommandStation))) {
+        ipTF.setBackground(pingResult ? new java.awt.Color(204, 255, 204)
+                : new java.awt.Color(255, 226, 195));
+      }
+      if (!pingResult) {
+        showMessage("No Ping reply from " + draft.getIpAddress()
+                + ". This does not necessarily mean that the station protocol is unreachable. "
+                + "You can still try Connect.", "Reachability check",
+                JOptionPane.WARNING_MESSAGE);
+      }
     });
+  }
+
+  private void connect(CommandStationBean draft) {
+    DecoderController preview = null;
+    try {
+      // Ping is diagnostic only; a valid protocol connection is authoritative.
+      if (!draft.isVirtual()
+              && CommandStationBean.ConnectionType.NETWORK == draft.getConnectionType()
+              && !Ping.isReachable(draft.getIpAddress())) {
+        
+        Logger.warn("No ping response from {}; attempting protocol connection",draft.getIpAddress());
+      }
+
+      if (null == draft.getId()) {
+        throw new UnsupportedOperationException("Temporary property connection is not implemented for " + draft.getDescription());
+      } else {
+        switch (draft.getId()) {
+          case MARKLIN_CS ->
+            preview = new MarklinCentralStationImpl(draft);
+          case ESU_ECOS ->
+            preview = new EsuEcosCommandStationImpl(draft);
+          case "intellibox2" ->
+            preview = new Intellibox2Impl(draft);
+          case VIRTUAL ->
+            preview = new VirtualCommandStationImpl(draft);
+          default ->
+            throw new UnsupportedOperationException(
+                    "Temporary property connection is not implemented for "
+                    + draft.getDescription() + ".");
+        }
+      }
+
+      if (preview != null && (!preview.connect() || !preview.isConnected())) {
+        throw new IllegalStateException("The station did not complete protocol initialization");
+      }
+
+      DecoderController connectedPreview = preview;
+
+      SwingUtilities.invokeLater(() -> {
+        // Recheck safety after a potentially long connection attempt.
+        if (!isShowing() || !configurationAllowed() || !Objects.equals(configKey(draft), configKey(selectedCommandStation))) {
+          executor.execute(connectedPreview::disconnect);
+        } else {
+          provisionalController = connectedPreview;
+          verifiedConfigurationKey = configKey(draft);
+          controller = connectedPreview;
+          Logger.info("Provisional connection established to {}", draft.getDescription());
+        }
+        setBusy(false);
+      });
+    } catch (RuntimeException ex) {
+      if (preview != null) {
+        try {
+          preview.disconnect();
+        } catch (RuntimeException closeEx) {
+          Logger.warn("Provisional disconnect failed: {}", closeEx.getMessage());
+        }
+      }
+      Logger.warn("Provisional connection failed: {}", ex.getMessage());
+      SwingUtilities.invokeLater(() -> {
+        setBusy(false);
+        showMessage("Could not verify " + draft.getDescription() + ": " + ex.getMessage(),
+                "Connection failed", JOptionPane.ERROR_MESSAGE);
+      });
+    }
   }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   JLabel accessoryControllerLbl;
+  JPanel bottomPanel;
   JLabel bus1Lbl;
   JSpinner bus1Spinner;
   JLabel bus2Lbl;
@@ -1212,12 +1551,10 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
   JPanel feedbackPanel;
   JLabel feedbackProviderLbl;
   Box.Filler filler1;
-  Box.Filler filler2;
   JLabel hwVersionLbl;
   JLabel ipOrPortLbl;
   JTextField ipTF;
   JPanel jPanel2;
-  JPanel jPanel3;
   JPanel jPanel4;
   JPanel jPanel5;
   JPanel mainCSPanel;
@@ -1226,6 +1563,7 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
   JRadioButton networkRB;
   JPanel propertiesPanel;
   JPanel rightPanel;
+  JButton saveActivateBtn;
   JLabel secondfbpLbl;
   JComboBox<String> serialCB;
   JLabel serialLbl;

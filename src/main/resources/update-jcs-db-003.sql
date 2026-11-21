@@ -28,8 +28,8 @@ alter table blocks add block_length integer default 0;
 
 alter table locomotives add train_length integer default 0;
 
-alter table routes add allow_non_commuter_only bool not null default false;
-alter table routes add allow_commuter_only bool not null default false;
+alter table routes add allow_non_commuter_only bool not null default true;
+alter table routes add allow_commuter_only bool not null default true;
 
 
 update tiles set tile_type = 'CrossSwitch' where tile_type = 'Cross';

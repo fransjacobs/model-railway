@@ -312,12 +312,20 @@ public interface PersistenceService {
   List<AccessoryBean> getAccessoriesByCommandStationId(String commandStationId);
 
   /**
-   * Checks if an accessory is locked.
+   * Check is a candidate route does not have an overlap with other routes
    *
-   * @param accessoryId The ID of the accessory.
-   * @return True if the accessory is locked, false otherwise.
+   * @param candidateRouteId the route to check
+   * @return true when the is a conflict
    */
-  boolean isAccessoryLocked(String accessoryId);
+  boolean hasRouteConflict(String candidateRouteId);
+
+  /**
+   * Check is a candidate route does not have an overlap with other routes
+   *
+   * @param candidateRouteId the route to check
+   * @return true when the is a conflict
+   */
+  boolean hasNextRouteConflict(String candidateRouteId);
 
   /**
    * Retrieves all turnout AccessoryBeans.
@@ -480,6 +488,14 @@ public interface PersistenceService {
    * @return The persisted RouteBean.
    */
   RouteBean persist(RouteBean routeBean);
+
+  /**
+   * Persist only an existing Route without the route elements
+   *
+   * @param route the route to persist
+   * @return the persisted route
+   */
+  RouteBean persistRouteOnly(RouteBean route);
 
   /**
    * Removes a RouteBean.

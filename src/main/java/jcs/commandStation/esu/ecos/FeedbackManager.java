@@ -49,7 +49,7 @@ class FeedbackManager {
   }
 
   private List<SensorEvent> parse(EcosMessage message) {
-    Logger.trace(message.getResponse());
+    //Logger.trace(message.getResponse());
 
     List<SensorEvent> changedSensors;
     boolean event = message.isEvent();

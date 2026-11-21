@@ -53,7 +53,8 @@ class EcosVirtualConnection implements EcosConnection, VirtualConnection {
 
   private static final String ESU_ECOS_ID = "esu-ecos";
   
-  private boolean connected;
+  private volatile boolean connected;
+  private volatile boolean trackPower = true;
 
   EcosVirtualConnection(InetAddress address) {
     debug = System.getProperty("message.debug", "false").equalsIgnoreCase("true");
@@ -64,10 +65,11 @@ class EcosVirtualConnection implements EcosConnection, VirtualConnection {
   }
 
   private void disconnect() {
-    //this.connected = false;
+    // This connection is owned by the factory. Calling disconnectAll() from
+    // close() recursively closes this same object and overflows the stack.
+    connected = false;
     transferQueue.clear();
     eventQueue.clear();
-    EcosConnectionFactory.getInstance().disconnectAll();
   }
 
   @Override
@@ -83,36 +85,37 @@ class EcosVirtualConnection implements EcosConnection, VirtualConnection {
     StringBuilder replyBuilder = new StringBuilder();
     replyBuilder.append("<REPLY ");
     replyBuilder.append(message.getMessage());
-    replyBuilder.append(">");
+    replyBuilder.append(">\n");
 
     switch (msg) {
       case EcosMessageFactory.BASE_OBJECT -> {
-        replyBuilder.append("1 objectclass[model]");
-        replyBuilder.append("1 view[none]");
-        replyBuilder.append("1 listview[none]");
-        replyBuilder.append("1 control[none]");
-        replyBuilder.append("1 list1 size[10]");
-        replyBuilder.append("1 minarguments[64]");
-        replyBuilder.append("1 protocolversion[0.5]");
-        replyBuilder.append("1 commandstationtype[\"ECoS\"]");
-        replyBuilder.append("1 name[\"ECoS-Virtual\"]");
-        replyBuilder.append("1 serialnumber[\"0x00000000\"]");
-        replyBuilder.append("1 hardwareversion[1.3]");
-        replyBuilder.append("1 applicationversion[4.2.13]");
-        replyBuilder.append("1 applicationversionsuffix[\"\"]");
-        replyBuilder.append("1 updateonerror[0]");
-        replyBuilder.append("1 status[GO]");
-        replyBuilder.append("1 status2[ALL]");
-        replyBuilder.append("1 prog-status[0]");
-        replyBuilder.append("1 m4-status[none]");
-        replyBuilder.append("1 railcomplus-status[none]");
-        replyBuilder.append("1 watchdog[0,0]");
-        replyBuilder.append("1 railcom[1]");
-        replyBuilder.append("1 railcomplus[1]");
-        replyBuilder.append("1 railcomplus-range[1000]");
-        replyBuilder.append("1 railcomplus-mode[manual]");
-        replyBuilder.append("1 allowlocotakeover[1]");
-        replyBuilder.append("1 stoponlastdisconnect[0]");
+        replyBuilder.append("\n1 objectclass[model]");
+        replyBuilder.append("\n1 view[none]");
+        replyBuilder.append("\n1 listview[none]");
+        replyBuilder.append("\n1 control[none]");
+        replyBuilder.append("\n1 list");
+        replyBuilder.append("\n1 size[10]");
+        replyBuilder.append("\n1 minarguments[64]");
+        replyBuilder.append("\n1 protocolversion[0.5]");
+        replyBuilder.append("\n1 commandstationtype[\"ECoS\"]");
+        replyBuilder.append("\n1 name[\"ECoS-Virtual\"]");
+        replyBuilder.append("\n1 serialnumber[\"0x00000000\"]");
+        replyBuilder.append("\n1 hardwareversion[1.3]");
+        replyBuilder.append("\n1 applicationversion[4.2.13]");
+        replyBuilder.append("\n1 applicationversionsuffix[\"\"]");
+        replyBuilder.append("\n1 updateonerror[0]");
+        replyBuilder.append("\n1 status[").append(trackPower ? Ecos.GO : Ecos.STOP).append("]");
+        replyBuilder.append("\n1 status2[").append(trackPower ? "ALL" : "NONE").append("]");
+        replyBuilder.append("\n1 prog-status[0]");
+        replyBuilder.append("\n1 m4-status[none]");
+        replyBuilder.append("\n1 railcomplus-status[none]");
+        replyBuilder.append("\n1 watchdog[0,0]");
+        replyBuilder.append("\n1 railcom[1]");
+        replyBuilder.append("\n1 railcomplus[1]");
+        replyBuilder.append("\n1 railcomplus-range[1000]");
+        replyBuilder.append("\n1 railcomplus-mode[manual]");
+        replyBuilder.append("\n1 allowlocotakeover[1]");
+        replyBuilder.append("\n1 stoponlastdisconnect[0]");
       }
       case EcosMessageFactory.BASE_OBJECT_SUBSCRIBE_VIEW -> {
 
@@ -126,17 +129,17 @@ class EcosVirtualConnection implements EcosConnection, VirtualConnection {
 
         for (LocomotiveBean loco : locos) {
           //name,addr,protocol
-          replyBuilder.append(loco.getId());
+          replyBuilder.append("\n").append(loco.getId());
           replyBuilder.append(" name[");
           replyBuilder.append(loco.getName());
           replyBuilder.append("]");
 
-          replyBuilder.append(loco.getId());
+          replyBuilder.append("\n").append(loco.getId());
           replyBuilder.append(" addr[");
           replyBuilder.append(loco.getAddress());
           replyBuilder.append("]");
 
-          replyBuilder.append(loco.getId());
+          replyBuilder.append("\n").append(loco.getId());
           replyBuilder.append(" protocol[");
           replyBuilder.append(loco.getDecoderType());
           replyBuilder.append("]");
@@ -152,17 +155,17 @@ class EcosVirtualConnection implements EcosConnection, VirtualConnection {
       case EcosMessageFactory.QUERY_ACCESSORIES -> {
         List<AccessoryBean> accessories = db.getAccessories();
         for (AccessoryBean accessory : accessories) {
-          replyBuilder.append(accessory.getId());
+          replyBuilder.append("\n").append(accessory.getId());
           replyBuilder.append(" name1[");
           replyBuilder.append(accessory.getName());
           replyBuilder.append("]");
 
-          replyBuilder.append(accessory.getId());
+          replyBuilder.append("\n").append(accessory.getId());
           replyBuilder.append(" addr[");
           replyBuilder.append(accessory.getAddress());
           replyBuilder.append("]");
 
-          replyBuilder.append(accessory.getId());
+          replyBuilder.append("\n").append(accessory.getId());
           replyBuilder.append(" protocol[");
           String protocol = accessory.getProtocol().getValue();
           switch (protocol) {
@@ -173,7 +176,7 @@ class EcosVirtualConnection implements EcosConnection, VirtualConnection {
           }
           replyBuilder.append("]");
 
-          replyBuilder.append(accessory.getId());
+          replyBuilder.append("\n").append(accessory.getId());
           replyBuilder.append(" symbol[");
           replyBuilder.append(getSymbol(accessory.getType()));
           replyBuilder.append("]");
@@ -182,7 +185,7 @@ class EcosVirtualConnection implements EcosConnection, VirtualConnection {
       case EcosMessageFactory.FEEDBACK_MODULES_SIZE -> {
         List<SensorBean> sensors = db.getSensors();
         int size = sensors.size() / 16;
-        replyBuilder.append(" size[");
+        replyBuilder.append("\n26 size[");
         replyBuilder.append(size);
         replyBuilder.append("]");
       }
@@ -196,18 +199,16 @@ class EcosVirtualConnection implements EcosConnection, VirtualConnection {
 
         if (objId < 100) {
           if (objId == Ecos.BASEOBJECT_ID && Ecos.CMD_SET.equals(cmd)) {
-            replyBuilder.append(" status[");
-            if (msg.contains(Ecos.GO)) {
-              replyBuilder.append(Ecos.GO);
-            } else {
-              replyBuilder.append(Ecos.STOP);
-            }
-            replyBuilder.append("]");
+            trackPower = msg.contains("status[GO]") || msg.contains(",go)");
+            replyBuilder.append("\n1 status[").append(trackPower ? Ecos.GO : Ecos.STOP).append("]");
+          } else if (objId == Ecos.BASEOBJECT_ID && Ecos.CMD_GET.equals(cmd)) {
+            replyBuilder.append("\n1 status[").append(trackPower ? Ecos.GO : Ecos.STOP).append("]");
+            replyBuilder.append("\n1 status2[").append(trackPower ? "ALL" : "NONE").append("]");
           }
         } else if (objId >= 100 && objId < 999) {
           if (Ecos.CMD_GET.equals(cmd)) {
             FeedbackModule module = getFeedbackModule(objId);
-            replyBuilder.append(module.getAddressOffset() + module.getModuleNumber());
+            replyBuilder.append("\n").append(module.getAddressOffset() + module.getModuleNumber());
             replyBuilder.append(" state[0x");
             replyBuilder.append(module.getAccumulatedPortsValue());
             replyBuilder.append("]");
@@ -218,42 +219,42 @@ class EcosVirtualConnection implements EcosConnection, VirtualConnection {
               //Locomotive details
               Long lid = Long.parseLong(message.getId());
               LocomotiveBean loco = db.getLocomotiveById(lid, "esu-ecos");
-              replyBuilder.append(loco.getId());
+              replyBuilder.append("\n").append(loco.getId());
               replyBuilder.append(" name[\"");
               replyBuilder.append(loco.getName());
               replyBuilder.append("\"]");
 
-              replyBuilder.append(loco.getId());
+              replyBuilder.append("\n").append(loco.getId());
               replyBuilder.append(" addr[");
               replyBuilder.append(loco.getAddress());
               replyBuilder.append("]");
 
-              replyBuilder.append(loco.getId());
+              replyBuilder.append("\n").append(loco.getId());
               replyBuilder.append(" protocol[");
               replyBuilder.append(loco.getDecoderType());
               replyBuilder.append("]");
 
-              replyBuilder.append(loco.getId());
+              replyBuilder.append("\n").append(loco.getId());
               replyBuilder.append(" dir[");
               replyBuilder.append(loco.getDirection().getEcosValue());
               replyBuilder.append("]");
 
-              replyBuilder.append(loco.getId());
+              replyBuilder.append("\n").append(loco.getId());
               replyBuilder.append(" speed[");
               replyBuilder.append(loco.getVelocity() / 8);
               replyBuilder.append("]");
 
-              replyBuilder.append(loco.getId());
+              replyBuilder.append("\n").append(loco.getId());
               replyBuilder.append(" speedstep[");
               replyBuilder.append(loco.getVelocity() / 8);
               replyBuilder.append("]");
 
-              replyBuilder.append(loco.getId());
+              replyBuilder.append("\n").append(loco.getId());
               replyBuilder.append(" active[");
               replyBuilder.append(0);
               replyBuilder.append("]");
 
-              replyBuilder.append(loco.getId());
+              replyBuilder.append("\n").append(loco.getId());
               replyBuilder.append(" locodesc[\"");
               replyBuilder.append(loco.getIcon());
               replyBuilder.append("\"]");
@@ -261,7 +262,7 @@ class EcosVirtualConnection implements EcosConnection, VirtualConnection {
               //Locomotive functions
               List<FunctionBean> locoFunctions = new ArrayList<>(loco.getFunctions().values());
               for (FunctionBean fb : locoFunctions) {
-                replyBuilder.append(loco.getId());
+                replyBuilder.append("\n").append(loco.getId());
                 replyBuilder.append(" func[");
                 replyBuilder.append(fb.getNumber());
                 replyBuilder.append(",");
@@ -270,7 +271,7 @@ class EcosVirtualConnection implements EcosConnection, VirtualConnection {
               }
 
               for (FunctionBean fb : locoFunctions) {
-                replyBuilder.append(loco.getId());
+                replyBuilder.append("\n").append(loco.getId());
                 replyBuilder.append(" funcdesc[");
                 replyBuilder.append(fb.getNumber());
                 replyBuilder.append(",");
@@ -290,17 +291,17 @@ class EcosVirtualConnection implements EcosConnection, VirtualConnection {
           }
         } else if (objId >= 20000 && objId < 20999) {
           AccessoryBean accessory = db.getAccessory(id);
-          replyBuilder.append(accessory.getId());
+          replyBuilder.append("\n").append(accessory.getId());
           replyBuilder.append(" name1[");
           replyBuilder.append(accessory.getName());
           replyBuilder.append("]");
 
-          replyBuilder.append(accessory.getId());
+          replyBuilder.append("\n").append(accessory.getId());
           replyBuilder.append(" addr[");
           replyBuilder.append(accessory.getAddress());
           replyBuilder.append("]");
 
-          replyBuilder.append(accessory.getId());
+          replyBuilder.append("\n").append(accessory.getId());
           replyBuilder.append(" protocol[");
           String protocol = accessory.getProtocol().getValue();
           switch (protocol) {
@@ -311,12 +312,12 @@ class EcosVirtualConnection implements EcosConnection, VirtualConnection {
           }
           replyBuilder.append("]");
 
-          replyBuilder.append(accessory.getId());
+          replyBuilder.append("\n").append(accessory.getId());
           replyBuilder.append(" symbol[");
           replyBuilder.append(getSymbol(accessory.getType()));
           replyBuilder.append("]");
 
-          replyBuilder.append(accessory.getId());
+          replyBuilder.append("\n").append(accessory.getId());
           replyBuilder.append(" state[");
           AccessoryBean.AccessoryValue value = accessory.getAccessoryValue();
           switch (value) {
@@ -333,12 +334,12 @@ class EcosVirtualConnection implements EcosConnection, VirtualConnection {
           }
           replyBuilder.append("]");
 
-          replyBuilder.append(accessory.getId());
+          replyBuilder.append("\n").append(accessory.getId());
           replyBuilder.append(" duration[");
           replyBuilder.append(accessory.getSwitchTime());
           replyBuilder.append("]");
 
-          replyBuilder.append(accessory.getId());
+          replyBuilder.append("\n").append(accessory.getId());
           replyBuilder.append(" gates[");
           replyBuilder.append(accessory.getStates());
           replyBuilder.append("]");
@@ -347,7 +348,7 @@ class EcosVirtualConnection implements EcosConnection, VirtualConnection {
 
     }
 
-    replyBuilder.append("<END 0 (OK)>");
+    replyBuilder.append("\n<END 0 (OK)>");
     reply = replyBuilder.toString();
     message.addResponse(reply);
 
