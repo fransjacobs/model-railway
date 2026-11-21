@@ -291,17 +291,17 @@ public class StatusPanel extends javax.swing.JPanel implements MeasurementEventL
 
     voltageLbl.setText("-");
     voltageLbl.setToolTipText("Track Voltage");
-    voltageLbl.setPreferredSize(new java.awt.Dimension(55, 20));
+    voltageLbl.setPreferredSize(new java.awt.Dimension(70, 20));
     measurePanel.add(voltageLbl);
 
     currentLbl.setText("-");
     currentLbl.setToolTipText("Track Current");
-    currentLbl.setPreferredSize(new java.awt.Dimension(55, 20));
+    currentLbl.setPreferredSize(new java.awt.Dimension(70, 20));
     measurePanel.add(currentLbl);
 
     tempLbl.setText("-");
     tempLbl.setToolTipText("Command Station Temperature");
-    tempLbl.setPreferredSize(new java.awt.Dimension(55, 20));
+    tempLbl.setPreferredSize(new java.awt.Dimension(70, 20));
     measurePanel.add(tempLbl);
 
     add(measurePanel, java.awt.BorderLayout.EAST);
