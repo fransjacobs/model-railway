@@ -30,8 +30,6 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.AbstractListModel;
 import javax.swing.ImageIcon;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import jcs.JCS;
 import jcs.entities.AccessoryBean;
 import jcs.entities.BlockBean.BlockState;
@@ -46,6 +44,8 @@ import org.tinylog.Logger;
  * Dialog to show routes on the LayoutCanvas and to create or delete all routes
  */
 public class RoutesDialog extends javax.swing.JDialog {
+
+  private static final long serialVersionUID = -3258315623827848710L;
 
   private final RouteBeanListModel routeListModel;
 
@@ -94,13 +94,17 @@ public class RoutesDialog extends javax.swing.JDialog {
 
   void setReadonly(boolean readonly) {
     this.readonly = readonly;
-    if (readonly) {
-      routeBtn.setEnabled(readonly);
-      routeBtn.setVisible(readonly);
 
-      deleteRoutesBtn.setEnabled(readonly);
-      deleteRoutesBtn.setVisible(readonly);
-    }
+    // Route button remains visible in both modes.
+    routeBtn.setVisible(true);
+    routeBtn.setEnabled(true);
+
+    // Deleting routes is only allowed in edit mode.
+    deleteRoutesBtn.setVisible(!readonly);
+    deleteRoutesBtn.setEnabled(!readonly);
+
+    routeToolBar.revalidate();
+    routeToolBar.repaint();
   }
 
   void loadRoutes() {
@@ -139,6 +143,11 @@ public class RoutesDialog extends javax.swing.JDialog {
         tile.setShowRoute(false);
       }
     }
+  }
+
+  void displayRoutes(List<RouteBean> routes) {
+    routeListModel.clear();
+    routeListModel.addAll(routes);
   }
 
   private void showRoute(RouteBean routeBean) {
@@ -494,33 +503,5 @@ public class RoutesDialog extends javax.swing.JDialog {
   private javax.swing.JToolBar routeToolBar;
   private javax.swing.JPanel toolbarPanel;
   // End of variables declaration//GEN-END:variables
-
-  //For testing only
-  public static void main(String args[]) {
-    /* Set the FlatLightLaf look and feel */
-    //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-    try {
-      UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
-    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
-      Logger.warn("Can't set the LookAndFeel: " + ex);
-    }
-    //</editor-fold>
-
-    /* Create and display the dialog */
-    java.awt.EventQueue.invokeLater(() -> {
-      RoutesDialog dialog = new RoutesDialog(new javax.swing.JFrame(), true, null, false);
-      dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-        @Override
-        public void windowClosing(java.awt.event.WindowEvent e) {
-          System.exit(0);
-        }
-      });
-      dialog.setTitle("Test Routes Dialogs");
-      dialog.pack();
-      dialog.setLocationRelativeTo(null);
-
-      dialog.setVisible(true);
-    });
-  }
 
 }

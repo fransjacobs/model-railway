@@ -1,21 +1,21 @@
 -- H2 2.4.240; 
 ;              
-CREATE USER IF NOT EXISTS "JCS" SALT '97c24b7639edd403' HASH '46948dab3826080a9ed5952da99dd5a4da71754d924ff969ebdac26be1d4baf2' ADMIN;         
-CREATE USER IF NOT EXISTS "SA" SALT '837eb7c2d82cff22' HASH 'ca96fdbe71509cc06ddfa8434e75e41d68f4c4fc3db03284fb3b8932032102c3' ADMIN;          
+CREATE USER IF NOT EXISTS "JCS" SALT '283afe34906ac4fb' HASH 'bb77b4b626a8c44ac67085e4a50e57aa6d13d8e3fe5c00cc1813a7fcbba9402c' ADMIN;         
+CREATE USER IF NOT EXISTS "SA" SALT 'eb1afca2ae28ad08' HASH 'f2c8c398ba306b98b4cb3ecfe0865559d3a221c6c0bc6aaeaef142c3f78b5915' ADMIN;          
 CREATE SCHEMA IF NOT EXISTS "jcs" AUTHORIZATION "JCS";         
 DROP TABLE IF EXISTS "jcs"."tiles" CASCADE;    
 DROP TABLE IF EXISTS "jcs"."stations" CASCADE; 
 DROP TABLE IF EXISTS "jcs"."station_blocks" CASCADE;           
 DROP TABLE IF EXISTS "jcs"."accessories" CASCADE;              
-DROP TABLE IF EXISTS "jcs"."blocks" CASCADE;   
+DROP TABLE IF EXISTS "jcs"."locomotives" CASCADE;              
 DROP TABLE IF EXISTS "jcs"."sensors" CASCADE;  
 DROP TABLE IF EXISTS "jcs"."locomotive_functions" CASCADE;     
-DROP TABLE IF EXISTS "jcs"."locomotives" CASCADE;              
 DROP TABLE IF EXISTS "jcs"."command_stations" CASCADE;         
 DROP TABLE IF EXISTS "jcs"."routes" CASCADE;   
 DROP TABLE IF EXISTS "jcs"."route_elements" CASCADE;           
 DROP TABLE IF EXISTS "jcs"."jcs_properties" CASCADE;           
 DROP TABLE IF EXISTS "jcs"."jcs_version" CASCADE;              
+DROP TABLE IF EXISTS "jcs"."blocks" CASCADE;   
 CREATE CACHED TABLE "jcs"."tiles"(
     "id" CHARACTER VARYING(255) NOT NULL,
     "tile_type" CHARACTER VARYING(255) NOT NULL,
@@ -71,30 +71,32 @@ ALTER TABLE "jcs"."accessories" ADD CONSTRAINT "jcs"."acce_pk" PRIMARY KEY("id")
 -- 0 +/- SELECT COUNT(*) FROM jcs.accessories; 
 CREATE UNIQUE NULLS DISTINCT INDEX "jcs"."acce_address_un_idx" ON "jcs"."accessories"("address" NULLS FIRST, "protocol" NULLS FIRST, "command_station_id" NULLS FIRST);        
 CREATE UNIQUE NULLS DISTINCT INDEX "jcs"."acce_pk_idx" ON "jcs"."accessories"("id" NULLS FIRST);               
-CREATE CACHED TABLE "jcs"."blocks"(
-    "id" CHARACTER VARYING(255) NOT NULL,
-    "tile_id" CHARACTER VARYING(255) NOT NULL,
-    "description" CHARACTER VARYING(255),
-    "plus_sensor_id" INTEGER,
-    "min_sensor_id" INTEGER,
-    "plus_signal_id" CHARACTER VARYING(255),
-    "min_signal_id" CHARACTER VARYING(255),
-    "locomotive_id" BIGINT,
-    "allow_non_commuter_only" BOOLEAN DEFAULT FALSE NOT NULL,
-    "status" CHARACTER VARYING(255),
-    "incoming_suffix" CHARACTER VARYING(255),
-    "min_wait_time" INTEGER DEFAULT 10 NOT NULL,
-    "max_wait_time" INTEGER,
-    "random_wait" BOOLEAN DEFAULT FALSE NOT NULL,
-    "always_stop" BOOLEAN DEFAULT FALSE NOT NULL,
-    "allow_commuter_only" BOOLEAN DEFAULT FALSE NOT NULL,
-    "logical_direction" CHARACTER VARYING(255),
-    "allow_direction_change" BOOLEAN DEFAULT TRUE NOT NULL
-);              
-ALTER TABLE "jcs"."blocks" ADD CONSTRAINT "jcs"."bloc_pk" PRIMARY KEY("id");   
--- 0 +/- SELECT COUNT(*) FROM jcs.blocks;      
-CREATE UNIQUE NULLS DISTINCT INDEX "jcs"."bloc_pk_idx" ON "jcs"."blocks"("id" NULLS FIRST);    
-CREATE UNIQUE NULLS DISTINCT INDEX "jcs"."bloc_tile_idx" ON "jcs"."blocks"("tile_id" NULLS FIRST);             
+CREATE CACHED TABLE "jcs"."locomotives"(
+    "id" BIGINT NOT NULL,
+    "name" CHARACTER VARYING(255) NOT NULL,
+    "uid" BIGINT,
+    "address" INTEGER NOT NULL,
+    "icon" CHARACTER VARYING(255),
+    "decoder_type" CHARACTER VARYING(255) NOT NULL,
+    "tacho_max" INTEGER,
+    "v_min" INTEGER,
+    "velocity" INTEGER,
+    "synchronize" BOOLEAN DEFAULT FALSE NOT NULL,
+    "imported" CHARACTER VARYING(255),
+    "commuter" BOOLEAN DEFAULT FALSE NOT NULL,
+    "show" BOOLEAN DEFAULT TRUE NOT NULL,
+    "command_station_id" CHARACTER VARYING(255) NOT NULL,
+    "dispatcher_direction" CHARACTER VARYING(255),
+    "locomotive_direction" CHARACTER VARYING(255),
+    "speed_1" INTEGER,
+    "speed_2" INTEGER,
+    "speed_3" INTEGER,
+    "speed_4" INTEGER,
+    "train_length" INTEGER DEFAULT 20
+);           
+ALTER TABLE "jcs"."locomotives" ADD CONSTRAINT "jcs"."loco_pk" PRIMARY KEY("id");              
+-- 0 +/- SELECT COUNT(*) FROM jcs.locomotives; 
+CREATE UNIQUE NULLS DISTINCT INDEX "jcs"."loco_pk_idx" ON "jcs"."locomotives"("id" NULLS FIRST);               
 CREATE CACHED TABLE "jcs"."sensors"(
     "id" INTEGER NOT NULL,
     "name" CHARACTER VARYING(255) NOT NULL,
@@ -124,31 +126,6 @@ ALTER TABLE "jcs"."locomotive_functions" ADD CONSTRAINT "jcs"."lofu_pk" PRIMARY 
 -- 0 +/- SELECT COUNT(*) FROM jcs.locomotive_functions;        
 CREATE UNIQUE NULLS DISTINCT INDEX "jcs"."lofu_pk_idx" ON "jcs"."locomotive_functions"("id" NULLS FIRST);      
 CREATE UNIQUE NULLS DISTINCT INDEX "jcs"."lofu_loid_fnum_un_idx" ON "jcs"."locomotive_functions"("locomotive_id" NULLS FIRST, "f_number" NULLS FIRST);         
-CREATE CACHED TABLE "jcs"."locomotives"(
-    "id" BIGINT NOT NULL,
-    "name" CHARACTER VARYING(255) NOT NULL,
-    "uid" BIGINT,
-    "address" INTEGER NOT NULL,
-    "icon" CHARACTER VARYING(255),
-    "decoder_type" CHARACTER VARYING(255) NOT NULL,
-    "tacho_max" INTEGER,
-    "v_min" INTEGER,
-    "velocity" INTEGER,
-    "synchronize" BOOLEAN DEFAULT FALSE NOT NULL,
-    "imported" CHARACTER VARYING(255),
-    "commuter" BOOLEAN DEFAULT FALSE NOT NULL,
-    "show" BOOLEAN DEFAULT TRUE NOT NULL,
-    "command_station_id" CHARACTER VARYING(255) NOT NULL,
-    "dispatcher_direction" CHARACTER VARYING(255),
-    "locomotive_direction" CHARACTER VARYING(255),
-    "speed_1" INTEGER,
-    "speed_2" INTEGER,
-    "speed_3" INTEGER,
-    "speed_4" INTEGER
-);  
-ALTER TABLE "jcs"."locomotives" ADD CONSTRAINT "jcs"."loco_pk" PRIMARY KEY("id");              
--- 0 +/- SELECT COUNT(*) FROM jcs.locomotives; 
-CREATE UNIQUE NULLS DISTINCT INDEX "jcs"."loco_pk_idx" ON "jcs"."locomotives"("id" NULLS FIRST);               
 CREATE CACHED TABLE "jcs"."command_stations"(
     "id" CHARACTER VARYING(255) NOT NULL,
     "description" CHARACTER VARYING(255) NOT NULL,
@@ -187,7 +164,7 @@ INSERT INTO "jcs"."command_stations" VALUES
 ('hsi-s88', 'HSI S88', 'HSI', 'jcs.commandStation.hsis88.HSIImpl', 'SERIAL', NULL, NULL, 0, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, FALSE, '', FALSE, TRUE, NULL, 'SERIAL', '0', 1, 6, 0, 0, 0, FALSE),
 ('virtual', 'Virtual CS', 'VIR', 'jcs.commandStation.virtual.VirtualCommandStationImpl', 'NETWORK', NULL, '127.0.0.1', 0, FALSE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, 'DCC', TRUE, TRUE, '1', 'NETWORK', '0', 1, 1, 0, 0, 0, TRUE),
 ('esu-ecos', 'ESU ECoS', 'ECoS', 'jcs.commandStation.esu.ecos.EsuEcosCommandStationImpl', 'NETWORK', NULL, NULL, 15471, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, 'DCC,MFX,MM', FALSE, TRUE, '1', 'NETWORK', '0', 0, 0, 0, 0, 0, FALSE),
-('intellibox2', 'Uhlenbrock Intellibox 2', 'Loconet', 'jcs.commandStation.loconet.Intellibox2Impl', 'SERIAL', 'tty.BLTH', 'AUTO', NULL, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, 'DCC,MM', FALSE, TRUE, '1', 'SERIAL', '0', 0, 0, 0, 0, 0, FALSE);
+('intellibox2', 'Uhlenbrock Intellibox 2', 'Loconet', 'jcs.commandStation.loconet.Intellibox2Impl', 'SERIAL', 'tty.BLTH', 'AUTO', NULL, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, 'DCC,MM', FALSE, TRUE, '1', 'SERIAL', '0', 0, 0, 0, 0, 0, FALSE);      
 CREATE UNIQUE NULLS DISTINCT INDEX "jcs"."command_station_pk_idx" ON "jcs"."command_stations"("id" NULLS FIRST);               
 CREATE CACHED TABLE "jcs"."routes"(
     "id" CHARACTER VARYING(255) NOT NULL,
@@ -198,8 +175,10 @@ CREATE CACHED TABLE "jcs"."routes"(
     "route_color" CHARACTER VARYING(255),
     "locked" BOOLEAN DEFAULT FALSE NOT NULL,
     "status" CHARACTER VARYING(255),
-    "departure_signal_value" CHARACTER VARYING(255)
-);     
+    "departure_signal_value" CHARACTER VARYING(255),
+    "allow_non_commuter_only" BOOLEAN DEFAULT TRUE NOT NULL,
+    "allow_commuter_only" BOOLEAN DEFAULT TRUE NOT NULL
+);             
 ALTER TABLE "jcs"."routes" ADD CONSTRAINT "jcs"."rout_pk" PRIMARY KEY("id");   
 -- 0 +/- SELECT COUNT(*) FROM jcs.routes;      
 CREATE UNIQUE NULLS DISTINCT INDEX "jcs"."rout_pk_idx" ON "jcs"."routes"("id" NULLS FIRST);    
@@ -235,6 +214,31 @@ CREATE CACHED TABLE "jcs"."jcs_version"(
 -- 1 +/- SELECT COUNT(*) FROM jcs.jcs_version; 
 INSERT INTO "jcs"."jcs_version" VALUES
 ('0.0.4', '0.0.4');     
+CREATE CACHED TABLE "jcs"."blocks"(
+    "id" CHARACTER VARYING(255) NOT NULL,
+    "tile_id" CHARACTER VARYING(255) NOT NULL,
+    "description" CHARACTER VARYING(255),
+    "plus_sensor_id" INTEGER,
+    "min_sensor_id" INTEGER,
+    "plus_signal_id" CHARACTER VARYING(255),
+    "min_signal_id" CHARACTER VARYING(255),
+    "locomotive_id" BIGINT,
+    "allow_non_commuter_only" BOOLEAN DEFAULT FALSE NOT NULL,
+    "status" CHARACTER VARYING(255),
+    "incoming_suffix" CHARACTER VARYING(255),
+    "min_wait_time" INTEGER DEFAULT 10 NOT NULL,
+    "max_wait_time" INTEGER,
+    "random_wait" BOOLEAN DEFAULT FALSE NOT NULL,
+    "always_stop" BOOLEAN DEFAULT FALSE NOT NULL,
+    "allow_commuter_only" BOOLEAN DEFAULT FALSE NOT NULL,
+    "logical_direction" CHARACTER VARYING(255),
+    "allow_direction_change" BOOLEAN DEFAULT TRUE NOT NULL,
+    "block_length" INTEGER DEFAULT 0
+);        
+ALTER TABLE "jcs"."blocks" ADD CONSTRAINT "jcs"."bloc_pk" PRIMARY KEY("id");   
+-- 0 +/- SELECT COUNT(*) FROM jcs.blocks;      
+CREATE UNIQUE NULLS DISTINCT INDEX "jcs"."bloc_pk_idx" ON "jcs"."blocks"("id" NULLS FIRST);    
+CREATE UNIQUE NULLS DISTINCT INDEX "jcs"."bloc_tile_idx" ON "jcs"."blocks"("tile_id" NULLS FIRST);             
 ALTER TABLE "jcs"."tiles" ADD CONSTRAINT "jcs"."tile_acce_sens_arc_ck" CHECK((("accessory_id" IS NOT NULL)
     AND ("sensor_id" IS NULL))
     OR (("accessory_id" IS NULL)

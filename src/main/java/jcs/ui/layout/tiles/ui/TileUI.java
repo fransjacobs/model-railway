@@ -21,7 +21,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Point;
-import java.awt.RenderingHints;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
@@ -76,6 +75,7 @@ public abstract class TileUI extends ComponentUI {
   protected TileUI() {
     this.backgroundColor = DEFAULT_BACKGROUND_COLOR;
     this.trackColor = DEFAULT_TRACK_COLOR;
+    this.trackRouteColor = Tile.DEFAULT_ROUTE_TRACK_COLOR;
   }
 
   protected BufferedImage getOrCreateImage() {
@@ -277,8 +277,18 @@ public abstract class TileUI extends ComponentUI {
         };
       }
 
-      //tileImage = ImageUtil.resizeImage(bf, tile.getWidth(), tile.getHeight());
-      tileImage = ImageUtil.resizeImage(bf, targetW, targetH);
+      // Blocks contain text and fine details that require
+      // multi-pass scaling. Other tiles look good with two passes.
+      boolean useTwoPass = switch (tile.getTileType()) {
+        case BLOCK ->
+          false;
+        default ->
+          true;
+      };
+
+      tileImage = useTwoPass
+              ? ImageUtil.resizeImageTwoPass(bf, targetW, targetH)
+              : ImageUtil.resizeImage(bf, targetW, targetH);
 
       bf.flush();
     } else {
@@ -290,32 +300,6 @@ public abstract class TileUI extends ComponentUI {
     g2di.dispose();
   }
 
-//  // In TileUI.drawTile() — replace the Scalr/resize block:
-//if (model.isScaleImage()) {
-//    LayoutScale scale = LayoutScale.getInstance();
-//    Tile tile = (Tile) c;
-//    int s = scale.scaledTileSize();
-//    int targetW, targetH;
-//
-//    if (tile.isHorizontal()) {
-//        targetW = switch (tile.getTileType()) {
-//            case CROSS_SWITCH, CROSS -> s * 2;
-//            case BLOCK              -> s * 3;
-//            default                 -> s;
-//        };
-//        targetH = s;
-//    } else {
-//        targetW = s;
-//        targetH = switch (tile.getTileType()) {
-//            case CROSS_SWITCH, CROSS -> s * 2;
-//            case BLOCK              -> s * 3;
-//            default                 -> s;
-//        };
-//    }
-//    tileImage = resizeImage(bf, targetW, targetH);
-//} else {
-//    tileImage = bf;
-//}
   /**
    * Render a tile image Always starts at (0,0) used the default width and height
    *

@@ -20,13 +20,15 @@ import java.util.Map;
 import jcs.commandStation.events.AccessoryEvent;
 import jcs.commandStation.events.AccessoryEventListener;
 import jcs.entities.AccessoryBean;
+import jcs.entities.AccessoryBean.AccessoryValue;
 import org.tinylog.Logger;
 
 /**
  *
  * AccessoryManager (id=11)
  */
-class AccessoryManager implements AccessoryEventListener {
+class AccessoryManager
+        implements AccessoryEventListener {
 
   public static final int ID = 11;
   public static final int ACCESSORY_OFFSET = 20000;
@@ -43,6 +45,7 @@ class AccessoryManager implements AccessoryEventListener {
   }
 
   private void parse(EcosMessage message) {
+    Logger.trace("Message: {}", message.getResponse());
     boolean event = message.isEvent();
     Map<String, Object> values = message.getValueMap();
     int objectId = message.getObjectId();
@@ -147,42 +150,70 @@ class AccessoryManager implements AccessoryEventListener {
       accessory.setType(deriveType(symbol));
     }
 
+    // Read the number of possible positions BEFORE decoding state.
+    // ECoS sends "state[2]" before "gates[3]" for three-aspect signals.
+    // New AccessoryBean instances start with states == null.
+    if (values.containsKey(Ecos.GATES)) {
+      String gates = values.get(Ecos.GATES).toString();
+      accessory.setStates(Integer.parseInt(gates));
+    }
+
     if (values.containsKey(Ecos.STATE)) {
       String state = values.get(Ecos.STATE).toString();
 
-      AccessoryBean.AccessoryValue value;
+      AccessoryBean.AccessoryValue value = AccessoryValue.OFF;
+
       switch (state) {
-        case "0" ->
+        case "0" -> {
+          if (accessory.isSignal()) {
+            accessory.setSignalValue(AccessoryBean.SignalValue.Hp1);
+          }
           value = AccessoryBean.AccessoryValue.GREEN;
+        }
         case "1" -> {
           if (accessory.is3WaySwitch()) {
             value = AccessoryBean.AccessoryValue.RED2;
           } else {
             value = AccessoryBean.AccessoryValue.RED;
+            if (accessory.isSignal()) {
+              accessory.setSignalValue(AccessoryBean.SignalValue.Hp0);
+            }
           }
         }
         case "2" -> {
           if (accessory.is3WaySwitch()) {
             value = AccessoryBean.AccessoryValue.RED;
+          } else if (accessory.isTurnout()) {
+            value = AccessoryBean.AccessoryValue.RED2;
+          } else if (accessory.isSignal()) {
+            accessory.setSignalValue(AccessoryBean.SignalValue.Hp2);
+            value = AccessoryBean.AccessoryValue.GREEN2;
           } else {
-            if (accessory.isTurnout()) {
-              value = AccessoryBean.AccessoryValue.RED2;
-            } else {
-              value = AccessoryBean.AccessoryValue.WHITE;
-            }
+            value = AccessoryBean.AccessoryValue.GREEN2;
           }
         }
-        case "3" ->
-          value = AccessoryBean.AccessoryValue.YELLOW;
-        default ->
+        case "3" -> {
+          if (accessory.isSignal()) {
+            accessory.setSignalValue(AccessoryBean.SignalValue.Hp0Sh1);
+          } else {
+            value = AccessoryBean.AccessoryValue.RED2;
+          }
+        }
+        default -> {
+          if (accessory.isSignal()) {
+            accessory.setSignalValue(AccessoryBean.SignalValue.Hp1);
+          }
           value = AccessoryBean.AccessoryValue.GREEN;
+          Logger.trace("Default {} state: {}", value, state);
+        }
       }
-      accessory.setAccessoryValue(value);
+      if (!accessory.isSignal()) {
+        accessory.setAccessoryValue(value);
+      }
 
       if (event) {
-        Logger.debug(Ecos.STATE + " : " + accessory.getId() + " -> " + accessory.getAccessoryValue() + " State: " + state);
+        Logger.trace("{}: Id: {} State: {} -> v1: {} v2: ", Ecos.STATE, accessory.getId(), state, accessory.getAccessoryValue(), accessory.getAccessoryValue2());
       }
-
     }
 
     if (values.containsKey(Ecos.ADDREXT)) {
@@ -224,12 +255,6 @@ class AccessoryManager implements AccessoryEventListener {
       accessory.setSwitchTime(switchTime);
     }
 
-    if (values.containsKey(Ecos.GATES)) {
-      String gts = values.get(Ecos.GATES).toString();
-      int states = Integer.parseInt(gts);
-      accessory.setStates(states);
-    }
-
     if (values.containsKey(Ecos.VARIANT)) {
       String var = values.get(Ecos.VARIANT).toString();
     }
@@ -240,34 +265,6 @@ class AccessoryManager implements AccessoryEventListener {
     }
 
     if (values.containsKey(Ecos.SWITCHING)) {
-      String var = values.get(Ecos.SWITCHING).toString();
-      //an accessory has changed value
-      AccessoryBean.AccessoryValue value;
-//      switch (var) {
-//        case "0" ->
-//          value = AccessoryBean.AccessoryValue.RED;
-//        case "1" ->
-//          value = AccessoryBean.AccessoryValue.GREEN;
-//        case "2" -> {
-//          if (accessory.isTurnout()) {
-//            value = AccessoryBean.AccessoryValue.RED2;
-//          } else {
-//            value = AccessoryBean.AccessoryValue.WHITE;
-//          }
-//        }
-//        case "3" ->
-//          value = AccessoryBean.AccessoryValue.YELLOW;
-//        default ->
-//          value = AccessoryBean.AccessoryValue.GREEN;
-//      }
-//      accessory.setAccessoryValue(value);
-
-//      if (event) {
-//        Logger.debug(Ecos.SWITCHING + " : " + accessory.getId() + " -> " + accessory.getAccessoryValue() + " Var: " + var);
-//        AccessoryEvent ae = new AccessoryEvent(accessory);
-//        ecosCommandStation.fireAccessoryEventListeners(ae);
-//
-//      }
     }
 
     //Checks
@@ -302,8 +299,13 @@ class AccessoryManager implements AccessoryEventListener {
       //ignore for this check
     }
 
-    if (event) {
-      Logger.debug("Raise AccessoryEvent " + accessory.getId() + " " + accessory.getAccessoryValue());
+    if (event && values.containsKey(Ecos.STATE)) {
+      if (accessory.isSignal()) {
+        Logger.trace("Raising new AccessoryEvent: {}, Signal Value: {} value: {} value2: {} ", accessory.getId(), accessory.getSignalValue(), accessory.getAccessoryValue(), accessory.getAccessoryValue2());
+
+      } else {
+        Logger.trace("Raising new AccessoryEvent: {}, value: {} value2: {} ", accessory.getId(), accessory.getAccessoryValue(), accessory.getAccessoryValue2());
+      }
       AccessoryEvent ae = new AccessoryEvent(accessory);
       ecosCommandStation.fireAccessoryEventListeners(ae);
     }
@@ -347,10 +349,13 @@ class AccessoryManager implements AccessoryEventListener {
     return result;
   }
 
-  String findId(Integer address) {
+  String findId(Integer address, String protocol) {
     String id = null;
-    for (AccessoryBean accessory : this.accessories.values()) {
-      if (address.equals(accessory.getAddress())) {
+    for (AccessoryBean accessory : accessories.values()) {
+      Integer adr = accessory.getAddress();
+      String prt = accessory.getDecType();
+
+      if (address.equals(adr) && protocol.equals(prt)) {
         id = accessory.getId();
         break;
       }
@@ -363,7 +368,8 @@ class AccessoryManager implements AccessoryEventListener {
     AccessoryBean ab = accessoryEvent.getAccessoryBean();
     String id = accessoryEvent.getAccessoryBean().getId();
     if (!accessories.containsKey(id)) {
-      id = findId(ab.getAddress());
+      Logger.warn("Try to find Accessory {}, {} via fallback!", ab.getAddress(), ab.getDecType());
+      id = findId(ab.getAddress(), ab.getDecType());
     }
 
     AccessoryBean accessory = accessories.get(id);
@@ -372,49 +378,72 @@ class AccessoryManager implements AccessoryEventListener {
     }
   }
 
+  /**
+   * Handle an ECoS accessory-manager LIST_CHANGED event.
+   *
+   * ECoS reports the appended object's ID on its own line:
+   * <EVENT 11>\n11 msg[LIST_CHANGED]\n20006 appended\n11 size[7]\n<END 0 (OK)>
+   *
+   * Older virtual/test fixtures concatenate those lines:
+   * <EVENT 11>11 msg[LIST_CHANGED]20006 appended11 size[7]<END 0 (OK)>
+   *
+   * Parse these manager-specific tokens from the event body rather than depending on synthetic getValueMap() keys such as "appended11 size".
+   */
   String updateManager(EcosMessage event) {
-    Map<String, Object> values = event.getValueMap();
-
-    String addedId = null;
-    boolean accessoryAdded = false;
-    int newSize = 0;
-    for (String key : values.keySet()) {
-      Object o = values.get(key);
-      if (o instanceof Map) {
-        Map<String, Object> vm = (Map<String, Object>) o;
-        if (vm.containsKey(Ecos.ID)) {
-          addedId = vm.get(Ecos.ID).toString();
-        }
-
-        Logger.trace(vm.keySet());
-        Logger.trace(vm.values());
-        //id, appended11 size]
-
-        if (vm.containsKey("appended11 size")) {
-          String s = vm.get("appended11 size").toString();
-          newSize = Integer.parseInt(s);
-        }
-
-      } else {
-        if (Ecos.MSG.equals(key)) {
-          accessoryAdded = "LIST_CHANGED".equals(o);
-        } else if (Ecos.SIZE.equals(key) && o != null) {
-          size = Integer.parseInt(o.toString());
-        }
-      }
-    }
-
-    if (accessoryAdded && getSize() <= newSize) {
-      if (ecosCommandStation != null) {
-        EcosMessage reply = ecosCommandStation.factory.getConnection().sendMessage(EcosMessageFactory.getAccessoryDetails(addedId));
-        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
-        //this.update(reply);
-      }
-
-      return addedId;
-    } else {
+    if (event == null || !event.isEvent() || !event.isResponseComplete()) {
       return null;
     }
+
+    String body = event.getResponseContent();
+    if (body == null) {
+      return null;
+    }
+
+    if (!java.util.regex.Pattern.compile(
+            "(?:^|\\s|\\])11\\s+msg\\[LIST_CHANGED\\]")
+            .matcher(body).find()) {
+      return null;
+    }
+
+    java.util.regex.Matcher appended = java.util.regex.Pattern.compile(
+            "(?<!\\d)(2\\d{4})\\s+appended(?=\\s|11\\s+size\\[|$)")
+            .matcher(body);
+
+    java.util.regex.Matcher count = java.util.regex.Pattern.compile(
+            "(?<!\\d)11\\s+size\\[(\\d+)\\]")
+            .matcher(body);
+
+    int previousSize = size;
+    Integer reportedSize = count.find() ? Integer.valueOf(count.group(1)) : null;
+    if (reportedSize != null) {
+      size = reportedSize;
+    }
+
+    if (!appended.find()) {
+      // A LIST_CHANGED event can also describe a deletion or reordering.
+      return null;
+    }
+
+    String addedId = appended.group(1);
+    if (reportedSize != null && reportedSize <= previousSize) {
+      Logger.trace("ECoS accessory manager event did not increase size: {} -> {}",
+              previousSize, reportedSize);
+      return null;
+    }
+
+    if (ecosCommandStation != null) {
+      EcosMessage reply = ecosCommandStation.factory.getConnection()
+              .sendMessage(EcosMessageFactory.getAccessoryDetails(addedId));
+      if (reply != null && reply.isResponseComplete() && reply.isValid()) {
+        update(reply);
+        ecosCommandStation.factory.getConnection()
+                .sendMessage(EcosMessageFactory.subscribeAccessory(addedId));
+      } else {
+        Logger.warn("Could not load newly added ECoS accessory {}: {}",
+                addedId, reply == null ? "no reply" : reply.getResponse());
+      }
+    }
+    return addedId;
   }
 
   static String deriveType(String symbol) {

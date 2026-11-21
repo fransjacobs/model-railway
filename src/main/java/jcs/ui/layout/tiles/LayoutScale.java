@@ -37,12 +37,8 @@ public class LayoutScale {
   public static final int[] SCALE_STEPS = {100, 90, 80, 70, 60, 50};
   private static final int DEFAULT_SCALE = 100;
 
-  //private int grid = GRID;
   private int scalePercent = DEFAULT_SCALE;
 
-  //public int getGrid() {
-  //  return grid;
-  //}
   public boolean isScaled() {
     return DEFAULT_SCALE != scalePercent;
   }
@@ -70,7 +66,7 @@ public class LayoutScale {
   }
 
   public void setScalePercent(int percent) {
-    this.scalePercent = percent;
+    this.scalePercent = percent;    
   }
 
   /**

@@ -84,15 +84,19 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
     threadGroup = new ThreadGroup("INTELLIBOX2");
     devices = new ArrayList<>();
 
-    this.executor = Executors.newSingleThreadExecutor(runnable -> {
-      Thread thread = new Thread(runnable, "INBX-LN-BG-QUERY");
-      thread.setDaemon(true);
-      return thread;
-    });
+    this.executor = newBackgroundExecutor();
 
     accessoryManager = new AccessoryManager(this);
     locomotiveManager = new LocomotiveManager(this);
     feedbackManager = new FeedbackManager(this);
+  }
+
+  // The lifecycle coordinator owns retries and reconnections. An operational
+  // managed session is made safe (STOP confirmed) before reading station data.
+  private volatile boolean lifecycleManaged;
+
+  public void setLifecycleManaged(boolean managed) {
+    lifecycleManaged = managed;
   }
 
   @Override
@@ -100,20 +104,32 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
     if (connected && loconet != null && loconet.isConnected()) {
       return true;
     }
-    loconet = LoconetConnectionFactory.acquireConnection(2000);
-    this.connected = loconet != null && loconet.isConnected();
 
-    if (connected) {
+    loconet = LoconetConnectionFactory.acquireConnection(commandStationBean.getSerialPort());
+    connected = loconet != null && loconet.isConnected();
+    if (!connected) {
+      return false;
+    }
+
+    try {
+      // Register before initialization so unexpected USB removal is reported.
       if (!isVirtual() && !connectionListenerRegistered) {
         LoconetConnectionFactory.getInstance().registerConnectionListener(this);
         connectionListenerRegistered = true;
+      }
+
+      // No automatic GO after a serial reconnect or a station activation.
+      // Send STOP as the FIRST LocoNet command of a managed session.
+      if (lifecycleManaged && !stopTrackPowerForLifecycle()) {
+        Logger.warn("Intellibox STOP not acknowledged; refusing managed connection");
+        disconnect();
+        return false;
       }
 
       eventMessageHandler = new EventMessageHandler(loconet);
       eventMessageHandler.start();
 
       feedbackManager.refresh();
-
       getDevices();
 
       if (isVirtual()) {
@@ -122,19 +138,53 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
       }
 
       accessoryManager.start();
+      if (executor == null || executor.isShutdown()) {
+        executor = newBackgroundExecutor();
+      }
+      executor.execute(accessoryManager::refresh);
 
-      //refresh the accessories in the background
-      executor.execute(() -> accessoryManager.refresh());
-      //refresh the locomotives in the background
-      executor.execute(() -> locomotiveManager.refresh());
+      // Managed sessions must have their locomotive list/slots available
+      // before JCS begins connection-loss recovery and zero-speed handling.
+      if (lifecycleManaged) {
+        locomotiveManager.refresh();
+      } else {
+        executor.execute(locomotiveManager::refresh);
+      }
+
+      connected = loconet != null && loconet.isConnected();
+      if (!connected) {
+        Logger.warn("Intellibox transport was lost during initialization");
+        disconnect();
+      }
+      return connected;
+    } catch (RuntimeException ex) {
+      Logger.warn("Intellibox initialization failed: {}", ex.getMessage());
+      disconnect();
+      return false;
     }
+  }
 
-    return connected;
+  private java.util.concurrent.ExecutorService newBackgroundExecutor() {
+    return Executors.newSingleThreadExecutor(runnable -> {
+      Thread thread = new Thread(runnable, "INBX-LN-BG-QUERY");
+      thread.setDaemon(true);
+      return thread;
+    });
   }
 
   @Override
-  public void disconnect() {
-    this.devices.clear();
+  public synchronized void disconnect() {
+    // Unregister BEFORE closing the port; deliberate shutdown must never be
+    // reported as an unexpected connection loss.
+    if (connectionListenerRegistered) {
+      LoconetConnectionFactory.getInstance().unRegisterConnectionListener(this);
+      connectionListenerRegistered = false;
+    }
+    connected = false;
+
+    if (executor != null) {
+      executor.shutdownNow(); // Cancel queued/ongoing roster tasks from this session.
+    }
     if (eventMessageHandler != null) {
       eventMessageHandler.quit();
       try {
@@ -145,16 +195,11 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
       eventMessageHandler = null;
     }
 
-    if (connectionListenerRegistered) {
-      LoconetConnectionFactory.getInstance().unRegisterConnectionListener(this);
-      connectionListenerRegistered = false;
-    }
-
     locomotiveManager.shutdown();
     accessoryManager.shutdown();
-
     LoconetConnectionFactory.closeConnection();
-    connected = false;
+    loconet = null;
+    devices.clear();
   }
 
   @Override
@@ -233,23 +278,62 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
 
   @Override
   public boolean power(boolean on) {
-    power = on;
-    if (loconet != null) {
-      LoconetMessage reply;
-      if (power) {
-        reply = loconet.sendMessage(LoconetMessageFactory.powerOn());
-      } else {
-        reply = loconet.sendMessage(LoconetMessageFactory.powerOff());
-      }
+    if (!sendPowerCommand(on)) {
+      Logger.warn("Intellibox track power {} not acknowledged",
+              on ? "GO" : "STOP");
+    }
+    // DecoderController.power returns the resulting POWER STATE, not success.
+    return power;
+  }
 
-      if (reply != null) {
-        Logger.trace("Processing reply {}", reply.toString());
-        PowerEvent spe = LoconetMessageParser.parsePowerEvent(reply);
-        notifyPowerEventListeners(spe);
+  /**
+   * Unlike power(false), this explicitly returns whether the STOP request
+   * received a valid LocoNet echo. Used for activation and reconnect safety.
+   */
+  public boolean stopTrackPowerForLifecycle() {
+    return sendPowerCommand(false) && !power;
+  }
+
+  private boolean sendPowerCommand(boolean on) {
+    LoconetConnection current = loconet;
+    if (current == null || !current.isConnected()) {
+      return false;
+    }
+    LoconetMessage request = on
+            ? LoconetMessageFactory.powerOn()
+            : LoconetMessageFactory.powerOff();
+    LoconetMessage reply = current.sendMessage(request);
+    if (reply == null || !reply.sameMessage(request)) {
+      return false;
+    }
+    PowerEvent event = LoconetMessageParser.parsePowerEvent(reply);
+    notifyPowerEventListeners(event);
+    Logger.tag(TAG).debug("Intellibox track power confirmed {}",
+            event.isPower() ? "On" : "Off");
+    return event.isPower() == on;
+  }
+
+  /**
+   * Called by JCS after reconnect, while track power is OFF.
+   * No automatic power restoration is permitted.
+   */
+  public boolean stopLocomotivesForRecovery(List<Integer> addresses) {
+    if (!stopTrackPowerForLifecycle()) {
+      Logger.warn("Recovery STOP not acknowledged; leaving Intellibox disconnected");
+      return false;
+    }
+    // The managed connect has already refreshed locomotive slots.
+    boolean allStopped = true;
+    for (Integer address : addresses) {
+      if (address != null && !locomotiveManager.stopLocomotiveForRecovery(address)) {
+        allStopped = false;
       }
     }
-    Logger.tag(TAG).debug("CommandStation Track Power is {}", (power ? "On" : "Off"));
-    return power;
+    if (!allStopped) {
+      Logger.warn("Not every Intellibox locomotive zero-speed command was acknowledged; "
+              + "track power remains OFF, reconnect recovery remains pending");
+    }
+    return allStopped;
   }
 
   void notifyPowerEventListeners(final PowerEvent powerEvent) {
@@ -372,37 +456,19 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
   }
 
   @Override
-  public synchronized void onConnectionChange(ConnectionEvent event) {
+  public void onConnectionChange(ConnectionEvent event) {
     if (event.isConnected()) {
-
-      LoconetConnection newConnection = LoconetConnectionFactory.acquireConnection(1000);
-      if (newConnection == null || !newConnection.isConnected()) {
-        connected = false;
-        return;
+      return; // This factory no longer reports or performs automatic re-acquisition.
+    }
+    connected = false;
+    Logger.warn("Intellibox connection lost; forwarding to JCS lifecycle manager");
+    // Never acquire/close a port here: this can run on a serial callback thread.
+    for (ConnectionEventListener listener : new ArrayList<>(connectionEventListeners)) {
+      try {
+        listener.onConnectionChange(event);
+      } catch (RuntimeException ex) {
+        Logger.warn("Intellibox connection listener failed: {}", ex.getMessage());
       }
-
-      if (eventMessageHandler != null) {
-        eventMessageHandler.quit();
-        try {
-          eventMessageHandler.join(1000);
-        } catch (InterruptedException ex) {
-          Thread.currentThread().interrupt();
-        }
-      }
-
-      loconet = newConnection;
-      eventMessageHandler = new EventMessageHandler(loconet);
-      eventMessageHandler.start();
-
-      connected = true;
-      Logger.trace("Reconnected...");
-    } else {
-      connected = false;
-      if (eventMessageHandler != null) {
-        eventMessageHandler.quit();
-        eventMessageHandler = null;
-      }
-      Logger.warn("Disconnected...");
     }
   }
 
@@ -418,6 +484,7 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
 
     void quit() {
       this.running = false;
+      interrupt();
     }
 
     boolean isRunning() {
@@ -522,8 +589,8 @@ public class Intellibox2Impl extends AbstractController implements DecoderContro
               }
             }
           } catch (InterruptedException ex) {
-            Logger.error(ex);
             Thread.currentThread().interrupt();
+            break; // Normal during managed disconnect.
           }
         } catch (Exception e) {
           Logger.error("Error in Handling Thread. Cause: " + e.getMessage());

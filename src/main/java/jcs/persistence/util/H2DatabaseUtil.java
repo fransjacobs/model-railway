@@ -215,6 +215,8 @@ public class H2DatabaseUtil {
       executeSQLScript(script, connection, filename, closeConnection);
     } catch (IOException ex) {
       Logger.error("Error: " + ex.getMessage());
+
+      throw new RuntimeException(ex);
     }
   }
 

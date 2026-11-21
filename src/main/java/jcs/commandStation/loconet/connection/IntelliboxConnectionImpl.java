@@ -40,10 +40,10 @@ import org.tinylog.Logger;
 class IntelliboxConnectionImpl implements LoconetConnection {
 
   private final SerialPort serialPort;
+  private final Runnable onTransportFailure;
 
   private static final long DEFAULT_ECHO_TIMEOUT_MS = Long.getLong("loconet.echo.timeout.ms", 250L);
   private static final long DEFAULT_REPLY_TIMEOUT_MS = Long.getLong("loconet.reply.timeout.ms", 500L);
-  private static final boolean DEBUG = System.getProperty("message.debug", "false").equalsIgnoreCase("true");
 
   private OutputStream output;
   private LoconetMessageReceiver loconetMessageReceiver;
@@ -54,7 +54,8 @@ class IntelliboxConnectionImpl implements LoconetConnection {
 
   private final List<PendingMessage> pendingMessages;
 
-  IntelliboxConnectionImpl(SerialPort serialPort) {
+  IntelliboxConnectionImpl(SerialPort serialPort, Runnable onTransportFailure) {
+    this.onTransportFailure = onTransportFailure;
     this.messagesQueue = new LinkedBlockingQueue<>();
     this.serialPort = serialPort;
     output = serialPort.getOutputStream();
@@ -67,7 +68,6 @@ class IntelliboxConnectionImpl implements LoconetConnection {
       thread.setDaemon(true);
       return thread;
     });
-
   }
 
   private void initReceiver() {
@@ -87,35 +87,39 @@ class IntelliboxConnectionImpl implements LoconetConnection {
 
   @Override
   public void close() {
-    try {
-      txExecutor.shutdownNow();
-      messagesQueue.clear();
-
-      if (output != null) {
-        output.flush();
-      }
-
-      if (loconetMessageReceiver != null) {
-        loconetMessageReceiver.quit();
-        try {
-          loconetMessageReceiver.join(1000L);
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-          Logger.trace("Interrupted while waiting for receiver shutdown. {}", e.getMessage());
-        }
-      }
-
-      if (output != null) {
-        output.close();
-      }
-
-      loconetMessageReceiver = null;
-      output = null;
-
-    } catch (IOException e) {
-      Logger.trace("Error while closing. {}", e.getMessage());
+    txExecutor.shutdownNow();
+    messagesQueue.clear();
+    for (PendingMessage pending : pendingMessages) {
+      pending.future.complete(null);
     }
+    pendingMessages.clear();
 
+    // A removed USB device may throw on flush(). Cleanup must continue
+    // regardless; in particular the RX thread must never survive a close.
+    LoconetMessageReceiver receiver = loconetMessageReceiver;
+    if (receiver != null) {
+      receiver.quit();
+    }
+    OutputStream stream = output;
+    output = null;
+    if (stream != null) {
+      try {
+        stream.close();
+      } catch (IOException ex) {
+        Logger.debug("Intellibox output stream close failed: {}", ex.getMessage());
+      }
+    }
+    if (receiver != null && Thread.currentThread() != receiver) {
+      try {
+        receiver.join(1000L);
+      } catch (InterruptedException ex) {
+        Thread.currentThread().interrupt();
+      }
+      if (receiver.isAlive()) {
+        Logger.warn("Intellibox serial receiver has not yet stopped");
+      }
+    }
+    loconetMessageReceiver = null;
     Logger.debug("Connection closed");
   }
 
@@ -144,7 +148,11 @@ class IntelliboxConnectionImpl implements LoconetConnection {
 
       return echoPending.future.get(DEFAULT_ECHO_TIMEOUT_MS + 50, TimeUnit.MILLISECONDS);
 
-    } catch (IOException | InterruptedException | ExecutionException | TimeoutException ex) {
+    } catch (InterruptedException ex) {
+      Thread.currentThread().interrupt();
+      Logger.debug("LocoNet send interrupted");
+      return null;
+    } catch (IOException | ExecutionException | TimeoutException ex) {
       Logger.error("Could not send LocoNet message: {}", ex.getMessage());
       return null;
     } finally {
@@ -256,7 +264,11 @@ class IntelliboxConnectionImpl implements LoconetConnection {
 
       return reply;
 
-    } catch (IOException | InterruptedException | ExecutionException | TimeoutException ex) {
+    } catch (InterruptedException ex) {
+      Thread.currentThread().interrupt();
+      Logger.debug("LocoNet request/reply interrupted");
+      return null;
+    } catch (IOException | ExecutionException | TimeoutException ex) {
       Logger.error("Could not complete LocoNet request/reply transaction: {}", ex.getMessage());
       return null;
 
@@ -357,17 +369,35 @@ class IntelliboxConnectionImpl implements LoconetConnection {
           LoconetMessage received = parser.readMessage(in);
           if (received != null) {
             messageReceived(received);
+          } else if (!serialPort.isOpen()) {
+            signalConnectionLost("Serial port is no longer open");
+            break;
           }
-          //Logger.trace("RX: {}", ByteUtil.toHexString(in.read()));
         } catch (IOException e) {
           if (running) {
-            Logger.trace("Error: {}", e.getMessage());
+            signalConnectionLost(e.getMessage());
           }
+          break;
         }
       }
 
       cleanup();
       Logger.debug("Stopped receiving");
+    }
+
+    private void signalConnectionLost(String reason) {
+      if (!running) {
+        return;
+      }
+      running = false;
+      Logger.warn("Intellibox serial receiver lost connection: {}", reason);
+      if (onTransportFailure != null) {
+        try {
+          onTransportFailure.run();
+        } catch (RuntimeException ex) {
+          Logger.warn("Serial disconnect callback failed: {}", ex.getMessage());
+        }
+      }
     }
 
     private void cleanup() {

@@ -38,11 +38,27 @@ public class SystemStatusMessage {
   public static MeasurementBean parse(MeasuringChannel channel, CanMessage systemStatusmessage, long measurementMillis) {
 
     MeasurementBean measurement = null;
+    if (channel == null || systemStatusmessage == null) {
+      return null;
+    }
+    // CanMessage.getResponse() returns the original request on timeout.
+    // Do not mistake that DLC=6 request for a response from the CS.
+    if (systemStatusmessage.getResponses().isEmpty()) {
+      Logger.debug("No SystemStatus response for channel " + channel.getName());
+      return null;
+    }
     if (systemStatusmessage.getCommand() == CanMessage.SYSTEM_COMMAND && systemStatusmessage.getSubCommand() == CanMessage.SYSTEM_SUB_STATUS) {
       CanMessage response = systemStatusmessage.getResponse();
+      if (response == null || response == systemStatusmessage) {
+        return null;
+      }
       byte[] data = response.getData();
 
       switch (response.getDlc()) {
+        // The protocol permits a six-byte acknowledgement when the
+        // requested measurement channel is not available.
+        case CanMessage.DLC_6 -> Logger.debug(
+                "SystemStatus channel unavailable: " + channel.getName());
         case CanMessage.DLC_7 -> {
           int channelNumber = data[5];
           int valid = data[6];

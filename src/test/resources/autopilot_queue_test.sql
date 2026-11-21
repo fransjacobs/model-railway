@@ -136,24 +136,24 @@ INSERT INTO jcs.station_blocks (id,station_id,block_id,last_updated) VALUES
 
 commit;
 
-INSERT INTO jcs.routes (id,from_tile_id,from_suffix,to_tile_id,to_suffix,route_color,locked,status) VALUES
-	 ('[bk-3+]->[bk-1-]','bk-3','+','bk-1','-',NULL,false,NULL),
-	 ('[bk-1-]->[bk-3+]','bk-1','-','bk-3','+',NULL,false,NULL),
-	 ('[bk-3-]->[bk-2+]','bk-3','-','bk-2','+',NULL,false,NULL),
-	 ('[bk-1-]->[bk-4+]','bk-1','-','bk-4','+',NULL,false,NULL),
-	 ('[bk-3+]->[bk-2-]','bk-3','+','bk-2','-',NULL,false,NULL),
-	 ('[bk-1+]->[bk-3-]','bk-1','+','bk-3','-',NULL,false,NULL),
-	 ('[bk-4-]->[bk-1+]','bk-4','-','bk-1','+',NULL,false,NULL),
-	 ('[bk-4-]->[bk-2+]','bk-4','-','bk-2','+',NULL,false,NULL),
-	 ('[bk-2-]->[bk-4+]','bk-2','-','bk-4','+',NULL,false,NULL),
-	 ('[bk-2-]->[bk-3+]','bk-2','-','bk-3','+',NULL,false,NULL);
-INSERT INTO jcs.routes (id,from_tile_id,from_suffix,to_tile_id,to_suffix,route_color,locked,status) VALUES
-	 ('[bk-2+]->[bk-4-]','bk-2','+','bk-4','-',NULL,false,NULL),
-	 ('[bk-4+]->[bk-2-]','bk-4','+','bk-2','-',NULL,false,NULL),
-	 ('[bk-2+]->[bk-3-]','bk-2','+','bk-3','-',NULL,false,NULL),
-	 ('[bk-4+]->[bk-1-]','bk-4','+','bk-1','-',NULL,false,NULL),
-	 ('[bk-1+]->[bk-4-]','bk-1','+','bk-4','-',NULL,false,NULL),
-	 ('[bk-3-]->[bk-1+]','bk-3','-','bk-1','+',NULL,false,NULL);
+INSERT INTO jcs.routes (id,from_tile_id,from_suffix,to_tile_id,to_suffix,route_color,locked,status, allow_non_commuter_only,allow_commuter_only) VALUES
+	 ('[bk-3+]->[bk-1-]','bk-3','+','bk-1','-',NULL,false,NULL, true, true),
+	 ('[bk-1-]->[bk-3+]','bk-1','-','bk-3','+',NULL,false,NULL, true, true),
+	 ('[bk-3-]->[bk-2+]','bk-3','-','bk-2','+',NULL,false,NULL, true, true),
+	 ('[bk-1-]->[bk-4+]','bk-1','-','bk-4','+',NULL,false,NULL, true, true),
+	 ('[bk-3+]->[bk-2-]','bk-3','+','bk-2','-',NULL,false,NULL, true, true),
+	 ('[bk-1+]->[bk-3-]','bk-1','+','bk-3','-',NULL,false,NULL, true, true),
+	 ('[bk-4-]->[bk-1+]','bk-4','-','bk-1','+',NULL,false,NULL, true, true),
+	 ('[bk-4-]->[bk-2+]','bk-4','-','bk-2','+',NULL,false,NULL, true, true),
+	 ('[bk-2-]->[bk-4+]','bk-2','-','bk-4','+',NULL,false,NULL, true, true),
+	 ('[bk-2-]->[bk-3+]','bk-2','-','bk-3','+',NULL,false,NULL, true, true);
+INSERT INTO jcs.routes (id,from_tile_id,from_suffix,to_tile_id,to_suffix,route_color,locked,status, allow_non_commuter_only,allow_commuter_only) VALUES
+	 ('[bk-2+]->[bk-4-]','bk-2','+','bk-4','-',NULL,false,NULL, true, true),
+	 ('[bk-4+]->[bk-2-]','bk-4','+','bk-2','-',NULL,false,NULL, true, true),
+	 ('[bk-2+]->[bk-3-]','bk-2','+','bk-3','-',NULL,false,NULL, true, true),
+	 ('[bk-4+]->[bk-1-]','bk-4','+','bk-1','-',NULL,false,NULL, true, true),
+	 ('[bk-1+]->[bk-4-]','bk-1','+','bk-4','-',NULL,false,NULL, true, true),
+	 ('[bk-3-]->[bk-1+]','bk-3','-','bk-1','+',NULL,false,NULL, true, true);
 
 INSERT INTO jcs.route_elements (route_id,node_id,tile_id,accessory_value,order_seq,incoming_side) VALUES
 	 ('[bk-3+]->[bk-1-]','bk-3','bk-3',NULL,0,NULL),

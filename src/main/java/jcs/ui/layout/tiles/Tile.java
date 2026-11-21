@@ -542,8 +542,10 @@ public abstract class Tile extends JComponent implements Serializable {
   }
 
   public void setRouteValue(AccessoryValue value) {
-    this.routeValue = value;
-    repaint();
+    if (this.routeValue != value) {
+      this.routeValue = value;
+      markImageDirty();
+    }
   }
 
   public void setSignalValue(AccessoryBean.SignalValue signalValue) {
@@ -632,8 +634,11 @@ public abstract class Tile extends JComponent implements Serializable {
   }
 
   public void setTrackRouteColor(Color trackRouteColor) {
-    if (getUI() != null) {
-      getUI().setTrackRouteColor(trackRouteColor);
+    TileUI tileUI = getUI();
+
+    if (tileUI != null && !Objects.equals(tileUI.getTrackRouteColor(), trackRouteColor)) {
+      tileUI.setTrackRouteColor(trackRouteColor);
+      markImageDirty();
     }
   }
 
@@ -650,17 +655,17 @@ public abstract class Tile extends JComponent implements Serializable {
     return model.getIncomingSide();
   }
 
-  @Deprecated
-  public Map<Point, Orientation> getNeighborOrientations() {
-    Map<Point, Orientation> edgeOrientations = new HashMap<>();
-
-    Map<Orientation, Point> neighborPoints = getNeighborPoints();
-
-    for (Orientation o : Orientation.values()) {
-      edgeOrientations.put(neighborPoints.get(o), o);
-    }
-    return edgeOrientations;
-  }
+//  @Deprecated
+//  public Map<Point, Orientation> getNeighborOrientations() {
+//    Map<Point, Orientation> edgeOrientations = new HashMap<>();
+//
+//    Map<Orientation, Point> neighborPoints = getNeighborPoints();
+//
+//    for (Orientation o : Orientation.values()) {
+//      edgeOrientations.put(neighborPoints.get(o), o);
+//    }
+//    return edgeOrientations;
+//  }
 
   public Map<Point, Orientation> getEdgeOrNeighborOrientations(boolean edge) {
     Map<Orientation, Point> orientationPoints;

@@ -50,6 +50,7 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
   private final Map<Integer, Boolean> sensorStates;
 
   private volatile boolean running = false;
+  private volatile boolean stopRequested = false;
 
   public SensorMonitor() {
     this(null);
@@ -161,11 +162,9 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
 
   void stopMonitor() {
     Logger.tag(TAG).trace("Stopping Monitor...");
+    this.stopRequested = true;
     this.running = false;
-
-    synchronized (this) {
-      this.notifyAll();
-    }
+    interrupt(); // Wake a thread blocked in eventQueue.poll() promptly.
   }
 
   boolean isRunning() {
@@ -176,6 +175,9 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
   void refreshAllSensorValues() {
     List<SensorBean> sensors = PersistenceFactory.getService().getAssignedSensors();
     for (SensorBean sb : sensors) {
+      if (stopRequested) {
+        break;
+      }
       JCS.getJcsCommandStation().getSensorStatus(sb);
     }
     Logger.tag(TAG).debug("Refreshed " + sensors.size() + " sensor values");
@@ -188,6 +190,9 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
 
     List<SensorBean> sensors = PersistenceFactory.getService().getAssignedSensors();
     for (SensorBean sb : sensors) {
+      if (stopRequested) {
+        break;
+      }
       sensorBeans.put(sb.getId(), sb);
       sensorStates.put(sb.getId(), sb.isActive());
     }
@@ -271,7 +276,9 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
    */
   @Override
   public void onSensorChange(SensorEvent sensorEvent) {
-    this.eventQueue.offer(sensorEvent);
+    if (!stopRequested) {
+      this.eventQueue.offer(sensorEvent);
+    }
   }
 
   //The sensorMonitor thread is started with each new session of the RailWayController.
@@ -290,8 +297,8 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
 
     Logger.trace("SensorMonitor is watching " + sensorBeans.size());
 
-    running = true;
-    while (running) {
+    running = !stopRequested;
+    while (running && !stopRequested) {
       try {
         SensorEvent event = eventQueue.poll(100, TimeUnit.MILLISECONDS);
         if (event != null) {
