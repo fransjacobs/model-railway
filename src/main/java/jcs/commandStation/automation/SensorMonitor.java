@@ -15,7 +15,6 @@
  */
 package jcs.commandStation.automation;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -213,6 +212,9 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
 
           //Switch power OFF!
           JCS.getJcsCommandStation().switchPower(false);
+          // Also shutdown the automode
+          //TODO via event
+          //RailController.getInstance().enableAutomode(false);
 
           if (tile != null) {
             tile.setBlockState(BlockBean.BlockState.GHOST);

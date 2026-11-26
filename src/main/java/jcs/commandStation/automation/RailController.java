@@ -677,26 +677,6 @@ public final class RailController {
     return false;
   }
 
-//  public List<LocomotiveBean> getOnTrackLocomotivesOld() {
-//    List<BlockBean> blocks = PersistenceFactory.getService().getBlocks();
-//    //filter..
-//    List<BlockBean> occupiedBlocks = blocks.stream().filter(t -> t.getLocomotive() != null && t.getLocomotive().getId() != null).collect(Collectors.toList());
-//
-//    //Logger.trace("There " + (occupiedBlocks.size() == 1 ? "is" : "are") + " " + occupiedBlocks.size() + " occupied block(s)");
-//    //Set<LocomotiveBean> activeLocomotives = new HashSet<>();
-//    ArrayList<LocomotiveBean> activeLocomotives = new ArrayList<>();
-//    for (BlockBean occupiedBlock : occupiedBlocks) {
-//      LocomotiveBean dbl = PersistenceFactory.getService().getLocomotive(occupiedBlock.getLocomotiveId());
-//      if (dbl != null) {
-//        if (activeLocomotives.contains(dbl)) {
-//          Logger.warn("Loc " + dbl.getName() + " Is allready in the list! ");
-//        } else {
-//          activeLocomotives.add(dbl);
-//        }
-//      }
-//    }
-//    return activeLocomotives;
-//  }
   public List<LocomotiveBean> getOnTrackLocomotives() {
     return PersistenceFactory.getService().getOnTrackLocomotives();
   }
