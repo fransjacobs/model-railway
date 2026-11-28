@@ -77,7 +77,9 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
     dispatcher.showBlockState(destinationBlock);
 
     //Search for a next route...
-    candidateRoute = dispatcher.getRouteManager().findNextRoute();
+    if (!dispatcher.getStateMachine().isRequestStop() && dispatcher.getRailController().isAutoModeActive()) {
+      candidateRoute = dispatcher.getRouteManager().findNextRoute();
+    }
     nextRouteFound = candidateRoute != null;
 
     if (nextRouteFound) {
@@ -130,7 +132,9 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
         if (RailController.tryAquireLock()) {
           try {
             Logger.trace("##### Locked N ####");
-            nextRouteAvaliable = dispatcher.getRouteManager().validateAndReserveNextRoute(candidateRoute);
+            if (!dispatcher.getStateMachine().isRequestStop() && dispatcher.getRailController().isAutoModeActive()) {
+              nextRouteAvaliable = dispatcher.getRouteManager().validateAndReserveNextRoute(candidateRoute);
+            }
           } finally {
             //Make sure the lock is released
             RailController.releaseLock();
@@ -149,7 +153,7 @@ class PrepareNextRouteState extends AbstractState implements SensorEventCallback
       boolean automodeInActive = !dispatcher.getRailController().isAutoModeActive();
 
       //Check for a stop request
-      if (dispatcher.getStateMachine().isRequestStop() || !dispatcher.isLocomotiveStarted() || automodeInActive) {
+      if (!nextRouteAvaliable && (dispatcher.getStateMachine().isRequestStop() || !dispatcher.isLocomotiveStarted() || automodeInActive)) {
         nextRouteAvaliable = false;
         rollbackNextRoute();
       }

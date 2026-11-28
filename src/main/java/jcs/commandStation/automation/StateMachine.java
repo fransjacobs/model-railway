@@ -40,7 +40,7 @@ class StateMachine {
 
   private final Dispatcher dispatcher;
   private volatile AbstractState currentState;
-  private StateMachineRunner stateMachineRunner;
+  private volatile StateMachineRunner stateMachineRunner;
   private volatile boolean requestStop = false;
   private volatile boolean suspendedForConnectionLoss = false;
 
@@ -55,28 +55,19 @@ class StateMachine {
     currentState.onEnter(dispatcher);
   }
 
-  void startStateMachineThread() {
-    if (suspendedForConnectionLoss) {
-      Logger.tag(TAG).warn("Cannot restart a suspended state machine; reinitialize dispatcher first");
+  synchronized void startStateMachineThread() {
+    if (suspendedForConnectionLoss || !(currentState instanceof IdleState)) {
       return;
     }
-    if (stateMachineRunner == null || !stateMachineRunner.isRunning()) {
+    if (stateMachineRunner == null || !stateMachineRunner.isAlive()) {
       requestStop = false;
       stateMachineRunner = new StateMachineRunner(this);
       stateMachineRunner.start();
-    } else if (stateMachineRunner != null && !stateMachineRunner.isAlive()) {
-      Logger.tag(TAG).trace("Thread for " + dispatcher.getName() + " has stopped creating new one...");
-      requestStop = false;
-      stateMachineRunner = new StateMachineRunner(this);
-      stateMachineRunner.start();
-    } else {
-      Logger.tag(TAG).trace("Thread for " + dispatcher.getName() + " is already running...");
     }
   }
 
   /**
-   * Emergency suspension: retain the current state/route for reconciliation
-   * after reconnection. Do not run the normal on-exit speed command.
+   * Emergency suspension: retain the current state/route for reconciliation after reconnection. Do not run the normal on-exit speed command.
    */
   void suspendForConnectionLoss() {
     suspendedForConnectionLoss = true;
@@ -113,7 +104,7 @@ class StateMachine {
 
   boolean isRunning() {
     return !suspendedForConnectionLoss
-            && stateMachineRunner != null && stateMachineRunner.isRunning();
+            && stateMachineRunner != null && stateMachineRunner.isAlive();
   }
 
   boolean isRequestStop() {
@@ -133,24 +124,28 @@ class StateMachine {
   }
 
   //Reset the statemachine
-  void reset() {
+  synchronized void reset() {
     Logger.tag(TAG).trace("Resetting in state " + currentState.getName());
     dispatcher.changeLocomotiveVelocity(0);
 
     // Stop runner FIRST and wait for it
     StateMachineRunner runner = stateMachineRunner;
-    if (runner != null && runner.isRunning()) {
+    if (runner != null && runner.isAlive()) {
       runner.shutdown();
       runner.wakeUp();  // Wake it so it can exit
       try {
         runner.join(5000);  // Wait for thread to finish
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
+        return;
+      }
+      if (runner.isAlive()) {
+        Logger.tag(TAG).warn("Reset refused: runner has not terminated");
+        return;
       }
     }
+    dispatcher.changeLocomotiveVelocity(0);
     Logger.tag(TAG).trace(dispatcher.getName() + " StateMachineRunner stopped in state " + currentState.getName());
-    stateMachineRunner = null;
-
     currentState.onExit();
 
     //Remove listeners is still registered....
@@ -189,9 +184,9 @@ class StateMachine {
     }
 
     // Stop dispatcher and set state to Idle
-    dispatcher.stopLocomotive();
-    currentState = new IdleState();
-    currentState.onEnter(dispatcher);
+    String oldState = currentState.getName();
+    dispatcher.setLocomotiveStarted(false);
+    requestStop = false;
 
     dispatcher.setEnterSensorId(null);
     dispatcher.setInSensorId(null);
@@ -213,6 +208,14 @@ class StateMachine {
 
     RouteBean nextRoute = dispatcher.getNextRouteBean();
     if (nextRoute != null) {
+      BlockBean nextDestination = dispatcher.getNextDestinationBlock();
+      if (nextDestination != null && dispatcher.getLocomotiveId().equals(nextDestination.getLocomotiveId())) {
+        nextDestination.setLocomotive(null);
+        nextDestination.setBlockState(BlockBean.BlockState.FREE);
+        nextDestination.setArrivalSuffix(null);
+        PersistenceFactory.getService().persist(nextDestination);
+        dispatcher.showBlockState(nextDestination);
+      }
       nextRoute.setLocked(false);
       PersistenceFactory.getService().persist(nextRoute);
       dispatcher.resetRoute(nextRoute);
@@ -233,27 +236,47 @@ class StateMachine {
     dispatcher.setRouteBean(null);
     dispatcher.setDestinationBlockId(null);
 
+    currentState = new IdleState();
+    currentState.onEnter(dispatcher);
+    stateMachineRunner = null;
+    dispatcher.fireStateListeners(oldState, currentState.getName(), null);
     Logger.debug(dispatcher.getName() + " has been Reset");
   }
 
+  private void transitionTo(AbstractState nextState) {
+    String oldState = currentState.getName();
+    currentState.onExit();
+    currentState = nextState;
+    nextState.onEnter(dispatcher);
+    dispatcher.fireStateListeners(oldState, nextState.getName(), null);
+  }
+
+  private boolean stopAtSafeState() {
+    if ((requestStop || !dispatcher.getRailController().isAutoModeActive())
+            && currentState.canStopLocomotive()) {
+      if (!(currentState instanceof IdleState)) {
+        transitionTo(new IdleState());
+      }
+      return true;
+    }
+    return false;
+  }
+
   boolean executeState() {
+    AbstractState previous = currentState;
+    if (stopAtSafeState()) {
+      return previous != currentState;
+    }
     AbstractState nextState = currentState.execute();
-
-    boolean stateChanged = nextState != currentState;
-    if (stateChanged) {
-      currentState.onExit();
-      String oldState = currentState.getName();
-
-      if (requestStop && nextState.canStopLocomotive()) {
-        //A stop is requested 
+    if (nextState != currentState) {
+      if ((requestStop || !dispatcher.getRailController().isAutoModeActive())
+              && nextState.canStopLocomotive()) {
         nextState = new IdleState();
       }
-      dispatcher.fireStateListeners(oldState, nextState.getName(), null);
-
-      currentState = nextState;
-      nextState.onEnter(dispatcher);
+      transitionTo(nextState);
+      return true;
     }
-    return stateChanged;
+    return false;
   }
 
   private class StateMachineRunner extends Thread {
@@ -262,7 +285,7 @@ class StateMachine {
     private final StateMachine stateMachine;
     private final long threadSleepMillis;
 
-    private volatile boolean running = false;
+    private volatile boolean running = true;
 
     StateMachineRunner(StateMachine stateMachine) {
       super(stateMachine.getDispatcher().getThreadGroup(), "STM->" + stateMachine.getDispatcher().getLocomotiveBean().getName().toUpperCase());
@@ -280,82 +303,83 @@ class StateMachine {
 
     @Override
     public void run() {
-      running = true;
+      try {
+        while (running && !suspendedForConnectionLoss) {
 
-      while (running && !suspendedForConnectionLoss) {
+          if (Logger.isTraceEnabled() && 1 == 2) {
+            BlockBean departureBlock = dispatcher.getDepartureBlock();
+            BlockBean destinationBlock = dispatcher.getDestinationBlock();
+            BlockBean nextDestinationBlock = dispatcher.getNextDestinationBlock();
+            RouteBean route = dispatcher.getRouteBean();
+            RouteBean nextRoute = dispatcher.getNextRouteBean();
 
-        if (Logger.isTraceEnabled() && 1 == 2) {
-          BlockBean departureBlock = dispatcher.getDepartureBlock();
-          BlockBean destinationBlock = dispatcher.getDestinationBlock();
-          BlockBean nextDestinationBlock = dispatcher.getNextDestinationBlock();
-          RouteBean route = dispatcher.getRouteBean();
-          RouteBean nextRoute = dispatcher.getNextRouteBean();
+            StringBuilder sb = new StringBuilder();
 
-          StringBuilder sb = new StringBuilder();
-
-          if (departureBlock != null) {
-            sb.append("Departure: ");
-            sb.append(departureBlock.getId());
-          }
-          if (destinationBlock != null) {
-            sb.append("-> Destination: ");
-            sb.append(destinationBlock.getId());
-          }
-          if (nextDestinationBlock != null) {
-            sb.append("--> NextDestination: ");
-            sb.append(nextDestinationBlock.getId());
-          }
-          if (route != null) {
-            sb.append(" -Route: ");
-            sb.append(route.getId());
-          }
-          if (nextRoute != null) {
-            sb.append(" ->NextRoute: ");
-            sb.append(nextRoute.getId());
-          }
-          if (departureBlock != null && departureBlock.getLocomotive() != null) {
-            sb.append(" Loc Dir: ");
-            sb.append(departureBlock.getLocomotive().getDirection().toString());
-          }
-
-          Logger.trace(">>" + sb.toString());
-        }
-
-        // The connection can disappear while executeState() is working.
-        if (suspendedForConnectionLoss) {
-          break;
-        }
-        boolean stateChanged = stateMachine.executeState();
-        if (suspendedForConnectionLoss) {
-          break;
-        }
-
-        if (stateMachine.requestStop && stateMachine.getCurrentState().canStopLocomotive()) {
-          running = false;
-        }
-
-        if (!stateChanged) {
-          try {
-            synchronized (lock) {
-              lock.wait(threadSleepMillis);
+            if (departureBlock != null) {
+              sb.append("Departure: ");
+              sb.append(departureBlock.getId());
             }
-          } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+            if (destinationBlock != null) {
+              sb.append("-> Destination: ");
+              sb.append(destinationBlock.getId());
+            }
+            if (nextDestinationBlock != null) {
+              sb.append("--> NextDestination: ");
+              sb.append(nextDestinationBlock.getId());
+            }
+            if (route != null) {
+              sb.append(" -Route: ");
+              sb.append(route.getId());
+            }
+            if (nextRoute != null) {
+              sb.append(" ->NextRoute: ");
+              sb.append(nextRoute.getId());
+            }
+            if (departureBlock != null && departureBlock.getLocomotive() != null) {
+              sb.append(" Loc Dir: ");
+              sb.append(departureBlock.getLocomotive().getDirection().toString());
+            }
+
+            Logger.trace(">>" + sb.toString());
+          }
+
+          // The connection can disappear while executeState() is working.
+          if (suspendedForConnectionLoss) {
+            break;
+          }
+          boolean stateChanged = stateMachine.executeState();
+          if (suspendedForConnectionLoss) {
             break;
           }
 
+          if (!running || stopAtSafeState()) {
+            break;
+          }
+
+          if (!stateChanged) {
+            try {
+              synchronized (lock) {
+                lock.wait(threadSleepMillis);
+              }
+            } catch (InterruptedException e) {
+              Thread.currentThread().interrupt();
+              break;
+            }
+
+          }
         }
-      }
 
-      // Do not send a speed command after the command station is lost.
-      // Its physical locomotive state is unknown until communication resumes.
-      if (!suspendedForConnectionLoss) {
-        dispatcher.changeLocomotiveVelocity(0);
-      }
+      } finally {
+        // Do not send a speed command after the command station is lost.
+        // Its physical locomotive state is unknown until communication resumes.
+        if (!suspendedForConnectionLoss) {
+          dispatcher.changeLocomotiveVelocity(0);
+        }
 
-      stateMachine.requestStop = false;
-      dispatcher.locomotiveStarted = false;
-      Logger.tag(TAG).debug("StateMachineTread " + stateMachine.getDispatcher().getName() + " finished...");
+        dispatcher.locomotiveStarted = false;
+        running = false;
+        Logger.tag(TAG).debug("StateMachineThread {} finished...", stateMachine.getDispatcher().getName());
+      }
     }
 
     void wakeUp() {

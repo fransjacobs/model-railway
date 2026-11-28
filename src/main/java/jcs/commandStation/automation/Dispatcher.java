@@ -213,7 +213,9 @@ public class Dispatcher {
 
   public void stopLocomotive() {
     if (stateMachine != null) {
-      locomotiveStarted = !stateMachine.getCurrentState().canStopLocomotive();
+      if (!stateMachine.isThreadEnabled()) {
+        locomotiveStarted = !stateMachine.getCurrentState().canStopLocomotive();
+      }
       stateMachine.stopStateMachineThread();
     } else {
       locomotiveStarted = false;
@@ -454,6 +456,9 @@ public class Dispatcher {
   }
 
   void changeLocomotiveVelocity(double velocity) {
+    if (velocity > 0 && railController.isGhostRecovery()) {
+      return; // Manual cab commands remain available.
+    }
     try {
       int newVelocity = (int) velocity;
       LocomotiveBean locomotive = getLocomotiveBean();
