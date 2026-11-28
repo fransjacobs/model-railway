@@ -1255,6 +1255,7 @@ public class JCSFrame extends JFrame implements UICallback, ConnectionEventListe
         autoPilotBtn.setEnabled(false);
         startAllLocsBtn.setEnabled(false);
         autoPilotBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/cruise-control-on-red.png")));
+        autoPilotBtn.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/media/cruise-control-on-red.png")));
       }
       case RailController.STOPPED -> {
         autoPilotBtn.setSelected(false);

@@ -47,7 +47,7 @@ open module jcs {
   requires org.apache.xmlgraphics.batik.svgdom;
   requires org.apache.xmlgraphics.batik.awt.util;
   requires org.apache.xmlgraphics.commons;
-  requires org.apache.commons.io;
+  //requires org.apache.commons.io;
   requires org.apache.commons.logging;
   requires org.apache.xmlgraphics.batik.bridge;
   requires org.apache.xmlgraphics.batik.script;
@@ -61,8 +61,8 @@ open module jcs {
   requires org.apache.xmlgraphics.batik.xml;
   requires xml.apis.ext;
   requires com.formdev.flatlaf;
-  requires sierra;
-  requires kilo.client;
+  //requires sierra;
+  //requires kilo.client;
   requires SteelSeries;
   requires trident;
   requires imgscalr.lib;
@@ -73,5 +73,5 @@ open module jcs {
   requires ch.qos.logback.core;
   requires com.miglayout.core;
   requires com.miglayout.swing;
-  requires AbsoluteLayout.RELEASE310;
+  requires AbsoluteLayout.RELEASE320;
 }

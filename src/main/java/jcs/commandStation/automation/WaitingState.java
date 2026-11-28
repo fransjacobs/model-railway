@@ -78,7 +78,7 @@ class WaitingState
           // Automode disabled - cancel waiting
           Logger.tag(TAG).debug("Automode is disabled for " + dispatcher.getName() + " Exit " + dispatcher.getStateName());
           cancelled = true;
-          dispatcher.fireStateListeners(getName(), getName(), " (-)");
+
 
           stopScheduler();
           dispatcher.wakeup();
@@ -107,12 +107,16 @@ class WaitingState
   @Override
   AbstractState execute() {
     // Just check the status - actual waiting happens in scheduler
+    if (cancelled || dispatcher.getStateMachine().isRequestStop()
+            || !dispatcher.getRailController().isAutoModeActive()
+            || !dispatcher.isLocomotiveStarted()) {
+      return new IdleState();
+    }
     if (waitCompleted) {
       Logger.tag(TAG).trace("Wait completed for " + dispatcher.getName() + "...");
 
       return new PrepareRouteState();
-    } else if (cancelled || !dispatcher.isLocomotiveStarted()) {
-      return new IdleState();
+
     }
 
     // Stay in current state while waiting

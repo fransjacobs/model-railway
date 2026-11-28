@@ -69,6 +69,10 @@ class PrepareRouteState extends AbstractState {
 
   @Override
   AbstractState execute() {
+    if (dispatcher.getStateMachine().isRequestStop()
+            || !dispatcher.getRailController().isAutoModeActive()) {
+      return new IdleState();
+    }
     boolean canAdvanceToNextState = false;
     if (canDepart) {
       BlockBean departureBlock = dispatcher.getDepartureBlock();
@@ -81,7 +85,9 @@ class PrepareRouteState extends AbstractState {
       if (RailController.tryAquireLock()) {
         try {
           Logger.trace("##### Locked ####");
-          canAdvanceToNextState = dispatcher.getRouteManager().searchAndReserveRoute();
+          if (!dispatcher.getStateMachine().isRequestStop() && dispatcher.getRailController().isAutoModeActive()) {
+            canAdvanceToNextState = dispatcher.getRouteManager().searchAndReserveRoute();
+          }
         } finally {
           //Make sure the lock is released
           RailController.releaseLock();

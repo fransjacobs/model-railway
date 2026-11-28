@@ -110,7 +110,6 @@ public class JCSCommandStation {
 
   // Changes only for an explicit Save & Activate. No automatic GO during the
   // first connection to a newly activated station.
-  
   private volatile boolean activationPowerOffPending;
   // Retire callbacks from an earlier station after a session replacement.
   private volatile long connectionSessionVersion;
@@ -218,9 +217,8 @@ public class JCSCommandStation {
     if (bean == null || bean.getClassName() == null) {
       return false;
     }
-    
+
     //TODO: use Command Station ID for this
-    
     return MarklinCentralStationImpl.class.getName().equals(bean.getClassName())
             || EsuEcosCommandStationImpl.class.getName().equals(bean.getClassName())
             || Intellibox2Impl.class.getName().equals(bean.getClassName());
@@ -228,11 +226,11 @@ public class JCSCommandStation {
 
   private boolean lifecycleReady(DecoderController controller) {
     ConnectionLifecycleManager manager = connectionLifecycleManager;
-    
+
     if (controller instanceof MarklinCentralStationImpl
             || controller instanceof EsuEcosCommandStationImpl
             || controller instanceof Intellibox2Impl) {
-    
+
       return manager == null || manager.getState() == ConnectionState.CONNECTED;
     }
     return true;
@@ -242,7 +240,7 @@ public class JCSCommandStation {
     if (shuttingDown) {
       return;
     }
-    
+
     CommandStationBean bean = getCommandStationBean();
     if (supportsManagedLifecycle(bean)) {
       getOrCreateLifecycleManager(bean).start();
@@ -258,12 +256,12 @@ public class JCSCommandStation {
       // Preserve the Save & Activate safety policy for older (non-managed)
       // drivers as well; their legacy startup path otherwise issues GO.
       final boolean activating = activationPowerOffPending;
-      
+
       try {
         if (connect()) {
           long end = System.currentTimeMillis();
           Logger.trace("Connected to: {} in {} ms", decoderController.getCommandStationBean().getDescription(), (end - start));
-          
+
           if (!isVirtual()) {
             ConnectionEvent ce = new ConnectionEvent(commandStation.getDescription(), true, isVirtual());
             for (ConnectionEventListener cel : connectionEventListeners) {
@@ -813,62 +811,56 @@ public class JCSCommandStation {
   }
 
   /**
-   * Commit the chosen station and replace the entire operational session.
-   * Called from a background worker, never the Swing EDT. A successful return
-   * means that the new default was saved and connection startup was requested;
-   * connection readiness is reported asynchronously by lifecycle events.
+   * Commit the chosen station and replace the entire operational session. Called from a background worker, never the Swing EDT. A successful return means that the new default was saved and connection
+   * startup was requested; connection readiness is reported asynchronously by lifecycle events.
    */
   public void activateCommandStation(CommandStationBean next) {
     synchronized (activationLock) {
-    if (next == null || next.getId() == null || !next.isDecoderControlSupport()) {
-      throw new IllegalArgumentException("A valid decoder command station is required");
-    }
-    RailController railController = RailController.getInstance();
-    String railStatus = railController.getStatus();
-    if (railController.isAutoModeActive()
-            || RailController.STARTED.equals(railStatus)
-            || RailController.STOPPING.equals(railStatus)
-            || railController.getRunningDispatcherCount() > 0) {
-      throw new IllegalStateException("Cannot activate a command station while Automode is active or stopping");
-    }
-    if (isConnected() && isPowerOn()) {
-      throw new IllegalStateException("Turn track power OFF before changing command stations");
-    }
-    ConnectionLifecycleManager manager = connectionLifecycleManager;
-    if (manager != null) {
-      ConnectionState state = manager.getState();
-      if (state == ConnectionState.CONNECTING || state == ConnectionState.RECONNECTING
-              || state == ConnectionState.STOPPING) {
-        throw new IllegalStateException("Connection is changing; disconnect it before switching stations");
+      if (next == null || next.getId() == null || !next.isDecoderControlSupport()) {
+        throw new IllegalArgumentException("A valid decoder command station is required");
       }
-    }
+      RailController railController = RailController.getInstance();
+      String railStatus = railController.getStatus();
+      if (railController.isAutoModeActive()
+              || RailController.STARTED.equals(railStatus)
+              || RailController.STOPPING.equals(railStatus)
+              || railController.getRunningDispatcherCount() > 0) {
+        throw new IllegalStateException("Cannot activate a command station while Automode is active or stopping");
+      }
+      if (isConnected() && isPowerOn()) {
+        throw new IllegalStateException("Turn track power OFF before changing command stations");
+      }
+      // A disconnected station may be CONNECTING or RECONNECTING indefinitely.
+      // These lifecycle states must not prevent its replacement; closing the
+      // old manager below cancels pending retries and invalidates its attempts.
+      ConnectionLifecycleManager manager = connectionLifecycleManager;
 
-    // Close the old session before updating the default. In particular, do not
-    // leave an old lifecycle manager holding callbacks for a different station.
-    if (manager != null) {
-      manager.close();
-      connectionLifecycleManager = null;
-    } else {
-      disconnectControllers();
-    }
-    connectionSessionVersion++;
-    connectedSession = false;
-    recoveryStopPending = false;
-    powerWasOnBeforeLoss = false;
-    lastKnownPowerOn = false;
-    signalsRestored = false;
-    supportedProtocols.clear();
-    activationPowerOffPending = true;
+      // Close the old session before updating the default. In particular, do not
+      // leave an old lifecycle manager holding callbacks for a different station.
+      if (manager != null) {
+        manager.close();
+        connectionLifecycleManager = null;
+      } else {
+        disconnectControllers();
+      }
+      connectionSessionVersion++;
+      connectedSession = false;
+      recoveryStopPending = false;
+      powerWasOnBeforeLoss = false;
+      lastKnownPowerOn = false;
+      signalsRestored = false;
+      supportedProtocols.clear();
+      activationPowerOffPending = true;
 
-    // Only Save & Activate commits the selected default; choosing a combobox
-    // entry and provisional connection testing never call these methods.
-    PersistenceFactory.getService().persist(next);
-    CommandStationBean committed = PersistenceFactory.getService().changeDefaultCommandStation(next);
-    if (committed == null) {
-      throw new IllegalStateException("Could not save the chosen command station");
-    }
-    Logger.info("Command station activation requested: {}", next.getId());
-    connectInBackground();
+      // Only Save & Activate commits the selected default; choosing a combobox
+      // entry and provisional connection testing never call these methods.
+      PersistenceFactory.getService().persist(next);
+      CommandStationBean committed = PersistenceFactory.getService().changeDefaultCommandStation(next);
+      if (committed == null) {
+        throw new IllegalStateException("Could not save the chosen command station");
+      }
+      Logger.info("Command station activation requested: {}", next.getId());
+      connectInBackground();
     }
   }
 

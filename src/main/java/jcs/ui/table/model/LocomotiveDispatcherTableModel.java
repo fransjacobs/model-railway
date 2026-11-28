@@ -42,7 +42,8 @@ public class LocomotiveDispatcherTableModel extends AbstractBeanTableModel<Dispa
 
   @Override
   public void refresh() {
-    if (RailController.getInstance().isAutoModeActive()) {
+    if (RailController.getInstance().isAutoModeActive()
+            || RailController.STOPPING.equals(RailController.getInstance().getStatus())) {
       setBeans(RailController.getInstance().getDispatchers());
       Logger.trace("There are " + beans.size() + " dispatchers");
 
@@ -65,7 +66,11 @@ public class LocomotiveDispatcherTableModel extends AbstractBeanTableModel<Dispa
 
   @Override
   public void onStateChange(Dispatcher dispatcher, String oldState, String newState, String comment) {
-    if (beans.contains(dispatcher)) {
+    if (!javax.swing.SwingUtilities.isEventDispatchThread()) {
+      javax.swing.SwingUtilities.invokeLater(() -> onStateChange(dispatcher, oldState, newState, comment));
+      return;
+    }
+    if (beans.contains(dispatcher) && newState.equals(dispatcher.getStateName())) {
       int idx = beans.indexOf(dispatcher);
       beans.set(idx, dispatcher);
       extraStateInfo.put(dispatcher, comment);
@@ -118,7 +123,7 @@ public class LocomotiveDispatcherTableModel extends AbstractBeanTableModel<Dispa
 
       if (b != null) {
         String stateName = b.getStateName();
-        if (extraStateInfo.containsKey(b)) {
+        if ("Waiting".equals(stateName) && extraStateInfo.containsKey(b)) {
           if (extraStateInfo.get(b) != null && extraStateInfo.get(b).length() > 0) {
             stateName = stateName + "" + extraStateInfo.get(b) + "";
           }

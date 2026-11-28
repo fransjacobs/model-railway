@@ -182,6 +182,8 @@ public class StateMachineTest {
     //Stop the dispatcher!
     ns1631.stopLocomotive();
     assertFalse(ns1631.isLocomotiveStarted());
+    stateMachine.executeState();
+    assertEquals("Idle", stateMachine.getCurrentStateName());
 
     pause(250);
   }
@@ -244,7 +246,7 @@ public class StateMachineTest {
     //To build a clean next test the state machine should be reset.
     stateMachine.reset();
     assertEquals("Idle", stateMachine.getCurrentStateName());
-    //assertFalse(ns1631.isLocomotiveStarted());
+    assertFalse(ns1631.isLocomotiveStarted());
 
     pause(250);
   }

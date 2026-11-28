@@ -67,7 +67,6 @@ import jcs.commandStation.DecoderController;
 import jcs.commandStation.JCSCommandStation;
 import jcs.commandStation.automation.RailController;
 import jcs.commandStation.events.PowerEventListener;
-import jcs.commandStation.lifecycle.ConnectionState;
 import jcs.commandStation.FeedbackController;
 import jcs.commandStation.entities.Device;
 import jcs.commandStation.entities.FeedbackModule;
@@ -278,25 +277,17 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
     return jcs.isConnected() && jcs.isPowerOn();
   }
 
+  /**
+   * An unavailable command station must never lock the selection UI. CONNECTING and RECONNECTING are cancellable lifecycle activities, not evidence of track power being ON.
+   */
   private boolean configurationAllowed() {
-    if (automationBusy()) {
-      return false;
-    }
-    if (activePowerOn()) {
-      return false;
-    }
-
-    ConnectionState state = JCS.getJcsCommandStation().getConnectionState();
-
-    return state != ConnectionState.CONNECTING
-            && state != ConnectionState.RECONNECTING
-            && state != ConnectionState.STOPPING;
+    return !automationBusy() && !activePowerOn();
   }
 
   private boolean requireConfigurationAllowed() {
     if (!configurationAllowed() || workflowBusy) {
-      showMessage("The command station cannot be changed while track power is ON, "
-              + "Automode is active/stopping, or the active connection is changing.",
+      showMessage("Turn track power OFF before changing a connected command station. "
+              + "Changes are also unavailable while Automode is running or stopping.",
               "Configuration locked", JOptionPane.WARNING_MESSAGE);
 
       refreshSafetyState();
@@ -918,8 +909,12 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
               || (borrowedActive && Objects.equals(configKey(selectedCommandStation), configKey(active.getCommandStationBean())))
               || (borrowedActive && selectedCommandStation.getId() != null);
 
-      saveActivateBtn.setEnabled(editable && hasId && validated);
-      saveActivateBtn.setToolTipText(validated ? "Save as default and activate; track power will remain OFF" : "Connect and verify the selected station before activating");
+      // Verification is diagnostic, not a prerequisite for changing stations:
+      // power OFF (or no connection) is the operator's switching permission.
+      saveActivateBtn.setEnabled(editable && hasId);
+      saveActivateBtn.setToolTipText(validated
+              ? "Save as default and activate; track power will remain OFF"
+              : "Save and activate without verification; connection will be attempted in the background with track power OFF");
 
       boolean connected = controller != null && controller.isConnected();
       connectedToLbl.setVisible(connected);
@@ -1120,10 +1115,12 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
             && Objects.equals(verifiedConfigurationKey, configKey(selectedCommandStation)))
             || sameActive;
 
+    // A Check/temporary Connect is optional, even if the old station is
+    // connected with power OFF. Saving a selection never implies that the
+    // new station is already connected.
     if (!verified) {
-      showMessage("Connect to and verify this command station before activating it.",
-              "Not verified", JOptionPane.WARNING_MESSAGE);
-      return;
+      Logger.info("Activating {} without prior transport verification",
+              selectedCommandStation.getId());
     }
 
     CommandStationBean csb = null;
@@ -1163,7 +1160,8 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
           setBusy(false);
           showMessage("Saved " + chosen.getDescription()
                   + " as the default command station. Connection startup was requested. "
-                  + "Track power remains OFF until the operator enables it.",
+                  + "Track power remains OFF until the operator enables it."
+                  + (verified ? "" : " Connection has not yet been verified."),
                   "Activation requested", JOptionPane.INFORMATION_MESSAGE);
         });
       } catch (RuntimeException ex) {
@@ -1463,8 +1461,8 @@ public class CommandStationPanel extends JPanel implements TreeSelectionListener
       if (!draft.isVirtual()
               && CommandStationBean.ConnectionType.NETWORK == draft.getConnectionType()
               && !Ping.isReachable(draft.getIpAddress())) {
-        
-        Logger.warn("No ping response from {}; attempting protocol connection",draft.getIpAddress());
+
+        Logger.warn("No ping response from {}; attempting protocol connection", draft.getIpAddress());
       }
 
       if (null == draft.getId()) {

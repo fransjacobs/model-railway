@@ -77,7 +77,7 @@ public final class RailController {
 
   private final ThreadGroup threadGroup;
   private CommandStationBean commandStationBean;
-  private SensorMonitor sensorMonitor = null;
+  private volatile SensorMonitor sensorMonitor = null;
 
   private final BlockingQueue<RailControllerCommand> actionCommandQueue;
 
@@ -96,7 +96,8 @@ public final class RailController {
   private volatile boolean automodeOn = false;
   private volatile boolean suspendedForConnectionLoss = false;
 
-  private String status;
+  private volatile String status;
+  private volatile boolean ghostRecovery;
 
   private boolean functionsRestored;
 
@@ -110,7 +111,7 @@ public final class RailController {
   private RailController() {
     threadGroup = new ThreadGroup("RAILWAY-CONTROLLER");
     dispatchers = new ConcurrentHashMap<>();
-    railwayStatusListeners = new ArrayList<>();
+    railwayStatusListeners = new java.util.concurrent.CopyOnWriteArrayList<>();
     actionCommandQueue = new LinkedBlockingQueue();
     commandExecuter = new CommandExecuter(actionCommandQueue);
     status = PENDING;
@@ -169,6 +170,9 @@ public final class RailController {
   }
 
   boolean startAutoMode() {
+    if (STOPPING.equals(status) || ghostRecovery) {
+      return false;
+    }
     if (suspendedForConnectionLoss
             || !JCS.getJcsCommandStation().isConnected()
             || !JCS.getJcsCommandStation().isPowerOn()) {
@@ -283,6 +287,7 @@ public final class RailController {
       return;
     }
     suspendedForConnectionLoss = true;
+    ghostRecovery = false;
     automodeOn = false;
 
     if (sensorMonitor == null && dispatchers.isEmpty() && !STARTED.equals(status)) {
@@ -306,52 +311,58 @@ public final class RailController {
     fireStatusListeners(STOPPED);
   }
 
+  // Called by the active monitor before issuing track STOP. No joins here.
+  void beginGhostRecovery(SensorMonitor source) {
+    if (sensorMonitor == source && !suspendedForConnectionLoss) {
+      ghostRecovery = true;
+      automodeOn = false;
+    }
+  }
+
+  boolean isGhostRecovery() {
+    return ghostRecovery;
+  }
+
+  void requestGhostStop(SensorMonitor source) {
+    if (sensorMonitor == source && ghostRecovery) {
+      enableAutomode(false);
+    }
+  }
+
   void stopAutoMode() {
-    if (suspendedForConnectionLoss) {
-      // A queued normal stop must not clear dispatchers after emergency suspension.
+    if (suspendedForConnectionLoss || STOPPING.equals(status)) {
       return;
     }
-    if (sensorMonitor != null) {
-      //Notify all dispachers so that the ones which waiting and Idle will stop
-      Set<Dispatcher> snapshot = new HashSet<>(dispatchers.values());
-      for (Dispatcher d : snapshot) {
-        if (d.isLocomotiveStarted()) {
-          d.stopLocomotive();
-        }
-      }
-
-      fireStatusListeners(STOPPING);
-
-      long now = System.currentTimeMillis();
-      long start = now;
-      long timeout = now + ALL_DISPATCHER_STOPPING_TIMEOUT;
-      boolean dispatcherRunning = isAnyDispatcherRunning();
-
-      automodeOn = false;
-
-      while (dispatcherRunning && !suspendedForConnectionLoss && now < timeout) {
-        dispatcherRunning = isAnyDispatcherRunning();
-        now = System.currentTimeMillis();
-        pause(100);
-      }
-
-      if (suspendedForConnectionLoss) {
-        return; // Emergency suspension owns cleanup and preserves dispatchers.
-      }
-      Logger.tag(TAG).trace("All dispatchers are stopped in " + (now - start) + " ms...");
-      sensorMonitor.stopMonitor();
-
-      try {
-        sensorMonitor.join();
-      } catch (InterruptedException ex) {
-        Thread.currentThread().interrupt();
-        Logger.error("Interrupted during join " + ex);
+    automodeOn = false;
+    fireStatusListeners(STOPPING);
+    for (Dispatcher d : new HashSet<>(dispatchers.values())) {
+      if (d.isLocomotiveStarted()) {
+        d.stopLocomotive();
       }
     }
-    Logger.debug("ControllerMonitor Stopped");
+    checkAutoModeStopped();
+  }
+
+  private void checkAutoModeStopped() {
+    if (suspendedForConnectionLoss || !STOPPING.equals(status)
+            || isAnyDispatcherRunning()) {
+      return;
+    }
+    SensorMonitor monitor = sensorMonitor;
+    if (monitor != null) {
+      if (monitor.isRunning()) {
+        monitor.stopMonitor();
+      }
+      if (monitor.isAlive()) {
+        return; // Let the monitor finish on its own thread.
+      }
+    }
+    if (suspendedForConnectionLoss || sensorMonitor != monitor) {
+      return;
+    }
     sensorMonitor = null;
     dispatchers.clear();
-
+    ghostRecovery = false;
     fireStatusListeners(STOPPED);
   }
 
@@ -405,6 +416,9 @@ public final class RailController {
 
   public void enableAutomode(boolean flag) {
     if (flag) {
+      if (STOPPING.equals(status) || ghostRecovery) {
+        return;
+      }
       // Only an explicit user action AFTER the station is back can release
       // the connection-loss suspension.
       if (!JCS.getJcsCommandStation().isConnected()) {
@@ -459,7 +473,7 @@ public final class RailController {
   }
 
   public boolean isRunning(LocomotiveBean locomotive) {
-    if (isAutoModeActive() && dispatchers.containsKey(locomotive.getName())) {
+    if (dispatchers.containsKey(locomotive.getName())) {
       Dispatcher dispatcher = dispatchers.get(locomotive.getName());
       return dispatcher.isLocomotiveStarted();
     } else {
@@ -491,6 +505,10 @@ public final class RailController {
   }
 
   void removeDispatcher(LocomotiveBean locomotiveBean) {
+    if (isRunning(locomotiveBean)) {
+      Logger.tag(TAG).warn("Stop the dispatcher before removing it");
+      return;
+    }
     if (dispatchers.containsKey(locomotiveBean.getName())) {
       Dispatcher dispatcher = dispatchers.remove(locomotiveBean.getName());
       Logger.tag(TAG).trace("removing Dispatcher for locomotive " + locomotiveBean.getName());
@@ -505,6 +523,10 @@ public final class RailController {
   }
 
   public synchronized void removeDispatchers() {
+    if (isAnyDispatcherRunning()) {
+      Logger.tag(TAG).warn("Stop Automode before removing dispatchers");
+      return;
+    }
     Logger.tag(TAG).trace("Removing all Dispatchers...");
 
     for (Dispatcher dispatcher : dispatchers.values()) {
@@ -521,6 +543,9 @@ public final class RailController {
   }
 
   synchronized void startDispatcher(LocomotiveBean locomotiveBean, String status) {
+    if (!isAutoModeActive() || STOPPING.equals(this.status)) {
+      return;
+    }
     Logger.trace("Starting locomotive {} force {} ...", locomotiveBean.getName(), status);
     String key = locomotiveBean.getName();
 
@@ -576,7 +601,15 @@ public final class RailController {
 
   synchronized void resetStates() {
     Logger.tag(TAG).trace("Resetting RailController...");
-    stopAutoMode();
+    if (!suspendedForConnectionLoss && (sensorMonitor != null || isAnyDispatcherRunning())) {
+      stopAutoMode();
+      Logger.tag(TAG).warn("Reset deferred: wait for Automode STOPPED, then request reset again");
+      return;
+    }
+    if (isAnyDispatcherRunning()) {
+      Logger.tag(TAG).warn("Reset refused: dispatchers still running");
+      return;
+    }
 
     List<RouteBean> routes = PersistenceFactory.getService().getRoutes();
     int lockedCounter = 0;
@@ -677,26 +710,6 @@ public final class RailController {
     return false;
   }
 
-//  public List<LocomotiveBean> getOnTrackLocomotivesOld() {
-//    List<BlockBean> blocks = PersistenceFactory.getService().getBlocks();
-//    //filter..
-//    List<BlockBean> occupiedBlocks = blocks.stream().filter(t -> t.getLocomotive() != null && t.getLocomotive().getId() != null).collect(Collectors.toList());
-//
-//    //Logger.trace("There " + (occupiedBlocks.size() == 1 ? "is" : "are") + " " + occupiedBlocks.size() + " occupied block(s)");
-//    //Set<LocomotiveBean> activeLocomotives = new HashSet<>();
-//    ArrayList<LocomotiveBean> activeLocomotives = new ArrayList<>();
-//    for (BlockBean occupiedBlock : occupiedBlocks) {
-//      LocomotiveBean dbl = PersistenceFactory.getService().getLocomotive(occupiedBlock.getLocomotiveId());
-//      if (dbl != null) {
-//        if (activeLocomotives.contains(dbl)) {
-//          Logger.warn("Loc " + dbl.getName() + " Is allready in the list! ");
-//        } else {
-//          activeLocomotives.add(dbl);
-//        }
-//      }
-//    }
-//    return activeLocomotives;
-//  }
   public List<LocomotiveBean> getOnTrackLocomotives() {
     return PersistenceFactory.getService().getOnTrackLocomotives();
   }
@@ -801,6 +814,7 @@ public final class RailController {
           if (event != null) {
             executeCommand(event);
           }
+          checkAutoModeStopped();
         } catch (InterruptedException ex) {
           Logger.error(ex);
         }

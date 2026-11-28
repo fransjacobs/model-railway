@@ -38,7 +38,6 @@ import org.tinylog.Logger;
  */
 class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirectionEventListener, LocomotiveFunctionEventListener {
 
-  private int size;
   private final Intellibox2Impl intelliboxImpl;
 
   private final Map<Long, LocomotiveBean> locomotives;
@@ -82,9 +81,7 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
 
   void changeVelocity(int address, int speed, Direction direction) {
     Logger.trace("Changing speed for locomotive address {} to {}. Direction {}.", address, speed, direction);
-
-    //Scale the spd
-    // max scale of JCS is 1024 Intellibox 127 so roughly divede by 8
+    //Scale the spdmax scale of JCS is 1024 Intellibox 127 so roughly divide by 8
     int spd = speed / 8;
 
     if (locomotiveAddresses.containsKey(address)) {
@@ -102,9 +99,7 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
         }
       }
 
-      locomotive.setDirection(direction);
       locomotive.setVelocity(speed);
-
       LoconetMessage tx = LoconetMessageFactory.changeLocomotiveSpeed(slot, spd);
       intelliboxImpl.loconet.sendMessageNoWaitConsumeEcho(tx);
 
@@ -113,10 +108,12 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
     }
   }
 
-  void changeDirection(int address, Direction direction) {
+  void changeDirection(int address, Direction newDirection) {
     if (locomotiveAddresses.containsKey(address)) {
       Long id = locomotiveAddresses.get(address);
       LocomotiveBean locomotive = locomotives.get(id);
+      Direction curDirection = locomotive.getDirection();
+      Logger.trace("Changing direction of locomotive address {} with id {} from {} to {}", address, id, curDirection, newDirection);
 
       int slot;
       if (locomotiveSlotsReverse.containsKey(id)) {
@@ -129,7 +126,6 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
         }
       }
 
-      locomotive.setDirection(direction);
       Map<Integer, FunctionBean> functionValues = locomotive.getFunctions();
       boolean f0, f1, f2, f3, f4;
       if (functionValues.containsKey(0)) {
@@ -158,11 +154,61 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
         f4 = false;
       }
 
-      LoconetMessage tx = LoconetMessageFactory.setDirectionAndFunctions(slot, direction, f0, f1, f2, f3, f4);
-      intelliboxImpl.loconet.sendMessageNoWaitConsumeEcho(tx);
+      // Intellibox 2 direction changes require an additional
+      // stop sequence to reliably apply the new direction.
+      //
+      // Hardware-tested sequence:
+      // 1. OPC_LOCO_SPD with speed 1 (emergency stop).
+      // 2. OPC_LOCO_DIRF with the requested direction and F0-F4.
+      // 3. OPC_LOCO_SPD with speed 0 (normal stop).
+      //
+      // Without this sequence, the slot direction may change
+      // without the physical locomotive changing direction.
+      LoconetMessage stop = LoconetMessageFactory.changeLocomotiveSpeed(slot, 1);
+      LoconetMessage stopEcho = intelliboxImpl.loconet.sendMessage(stop);
 
+      if (stopEcho == null || !stopEcho.sameMessage(stop)) {
+        Logger.warn("No emergency stop echo for locomotive {}", address);
+        return;
+      }
+
+      LoconetMessage tx = LoconetMessageFactory.setDirectionAndFunctions(slot, newDirection, f0, f1, f2, f3, f4);
+      // Wait for the direction-command echo.
+      LoconetMessage echo = intelliboxImpl.loconet.sendMessage(tx);
+      if (echo == null || !echo.sameMessage(tx)) {
+        Logger.warn("No direction echo for locomotive {}", address);
+        return;
+      }
+
+      // Return the locomotive to normal zero speed.
+      LoconetMessage zero = LoconetMessageFactory.changeLocomotiveSpeed(slot, 0);
+      LoconetMessage zeroEcho = intelliboxImpl.loconet.sendMessage(zero);
+
+      if (zeroEcho == null || !zeroEcho.sameMessage(zero)) {
+        Logger.warn("No zero speed echo for locomotive {}", address);
+        return;
+      }
+
+      // Read back the actual slot contents.
+      LoconetMessage reply = readSlotData(slot, address);
+
+      if (reply == null) {
+        return;
+      }
+
+      int dirf = reply.getArgument(6);
+      Direction actualDirection = decodeSlotDirection(dirf);
+      if (actualDirection != newDirection) {
+        Logger.warn("Intellibox direction mismatch for locomotive {}", address);
+      }
+
+      locomotive.setDirection(actualDirection);
       LocomotiveDirectionEvent lde = new LocomotiveDirectionEvent(locomotive);
       intelliboxImpl.notifyLocomotiveDirectionEventListeners(lde);
+
+      Logger.trace("Locomotive with id {} Direction: {}", locomotive.getId(), locomotive.getDirection());
+    } else {
+      Logger.warn("Locomotive with address {} NOT found!", address);
     }
   }
 
@@ -264,9 +310,30 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
     }
   }
 
+  private LoconetMessage readSlotData(int slot, int address) {
+    LoconetMessage request = LoconetMessageFactory.requestSlotData(slot);
+
+    LoconetMessage reply = intelliboxImpl.loconet.sendMessageAwaitEchoAndReply(
+            request,
+            message -> message != null
+            && message.isChecksumValid()
+            && message.isExpectedsOpcode(LoconetMessage.OPC_SL_RD_DATA)
+            && message.getLength() == 14
+            && message.getArgument(2) == slot
+            && ((message.getArgument(9) << 7) | message.getArgument(4)) == address, 500);
+
+    if (reply == null) {
+      Logger.warn("No slot data received for slot {}", slot);
+    } else {
+      Logger.trace("Slot {} readback: {}", slot, reply);
+    }
+
+    return reply;
+  }
+
   /**
-   * Safety recovery uses an echoed zero-speed write, never a fire-and-forget
-   * command. Failure keeps the lifecycle in RECONNECTING with track power OFF.
+   * Safety recovery uses an echoed zero-speed write, never a fire-and-forget command.<br>
+   * Failure keeps the lifecycle in RECONNECTING with track power OFF.
    */
   synchronized boolean stopLocomotiveForRecovery(int address) {
     Long id = locomotiveAddresses.get(address);
@@ -314,7 +381,7 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
       return -1;
     }
 
-    parseSlotData(reply, locomotive, false);
+    parseSlotData(reply, locomotive);
 
     int slot;
     if (locomotiveSlotsReverse.containsKey(locomotive.getId())) {
@@ -513,9 +580,7 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
     }
   }
 
-  LocomotiveBean parseSlotData(LoconetMessage message, LocomotiveBean locomotive,
-          boolean updateDirAndFunc
-  ) {
+  LocomotiveBean parseSlotData(LoconetMessage message, LocomotiveBean locomotive) {
     if (message == null) {
       throw new IllegalArgumentException("message may not be null");
     }
@@ -541,6 +606,7 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
     int track = message.getArgument(7);
     int stat2 = message.getArgument(8);
     int addressHigh = message.getArgument(9);
+    //TODO
     int sound = message.getArgument(10);
 
     int id1 = message.getArgument(11);
@@ -587,6 +653,7 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
     LocomotiveBean.Direction direction = decodeSlotDirection(dirf);
 
     locomotive.setVelocity(velocity);
+    locomotive.setDirection(direction);
 
     int throttleId = ((id2 & 0x7F) << 7) | (id1 & 0x7F);
     boolean trackPower = (track & 0x01) != 0;
@@ -615,8 +682,7 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
     return locomotive;
   }
 
-  boolean parseLongAck(LoconetMessage message, LoconetMessage request
-  ) {
+  boolean parseLongAck(LoconetMessage message, LoconetMessage request) {
     if (message == null) {
       throw new IllegalArgumentException("message may not be null");
     }
@@ -677,12 +743,12 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
      *   01 = common/refreshed
      *   00 = free/no valid data
      */
-    return (stat1 & 0x30) != 0;
+    return (stat1 & 0x30) == 0x30;
   }
 
   private LocomotiveBean.Direction decodeSlotDirection(int dirf) {
-    boolean forwards = (dirf & 0x20) != 0;
-    return forwards ? LocomotiveBean.Direction.FORWARDS : LocomotiveBean.Direction.BACKWARDS;
+    boolean reverse = (dirf & 0x20) != 0;
+    return reverse ? LocomotiveBean.Direction.BACKWARDS : LocomotiveBean.Direction.FORWARDS;
   }
 
   Map<Long, LocomotiveBean> getLocomotives() {

@@ -83,7 +83,8 @@ public final class LoconetMessageFactory {
   public static LoconetMessage setDirectionAndFunctions(int slot, Direction direction, boolean f0, boolean f1, boolean f2, boolean f3, boolean f4) {
     int slt = slot & 0x7F;
     int dirf = 0;
-    if (Direction.FORWARDS == direction) {
+
+    if (Direction.BACKWARDS == direction) {
       dirf |= 0x20;
     }
     if (f0) {
@@ -351,10 +352,6 @@ public final class LoconetMessageFactory {
             arg1, arg2, arg3, arg4,
             arg5, arg6, arg7, arg8,
             arg9, arg10, arg11, arg12);
-  }
-
-  public static void main(String[] a) {
-    System.out.println(requestS88ReportAddress());
   }
 
 }

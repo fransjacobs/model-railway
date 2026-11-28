@@ -15,7 +15,6 @@
  */
 package jcs.commandStation.automation;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -211,8 +210,11 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
         if (event.getSensorBean().isActive() && block.getBlockState() != BlockBean.BlockState.GHOST && block.getBlockState() != BlockBean.BlockState.OUT_OF_ORDER) {
           block.setBlockState(BlockBean.BlockState.GHOST);
 
+          RailController controller = RailController.getInstance();
+          controller.beginGhostRecovery(this);
           //Switch power OFF!
           JCS.getJcsCommandStation().switchPower(false);
+
 
           if (tile != null) {
             tile.setBlockState(BlockBean.BlockState.GHOST);
@@ -221,6 +223,7 @@ public class SensorMonitor extends Thread implements AllSensorEventsListener {
           }
           //Also persist
           PersistenceFactory.getService().persist(block);
+          controller.requestGhostStop(this);
           Logger.tag(TAG).warn("Ghost Detected! Sensor " + sensorId + " Value " + (event.isActive() ? "On" : "Off") + " in block " + block.getId() + " ...");
         }
         break;
